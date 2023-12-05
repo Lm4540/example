@@ -20,7 +20,7 @@ const StockController = {
 
     general_report: async (req, res) => {
         let products = await Product.findAll({where: {stock: {[Op.gt]: 0}}});
-        return res.render('Inventory/product/stock_report', {
+        return res.render('Inventory/Product/stock_report', {
             pageTitle: 'Inventario general',
             products,
         });
