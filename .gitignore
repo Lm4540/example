@@ -1,0 +1,6 @@
+.env
+control.sql
+init.cmd
+node_modules
+.vscode
+public/upload/images
