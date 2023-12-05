@@ -110,7 +110,7 @@ const Sale = sequelize.define('Sale', {
     },
     dte: DataTypes.TEXT,
 }, {
-    tableName: 'CRM_sale',
+    tableName: 'crm_sale',
 });
 
 Sale.hasMany(SaleDetail, {
