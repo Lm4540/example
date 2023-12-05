@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <style>
+
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center">Lista de Reservas</h3>
+
+
+         <% let keys = Object.keys(sales);
+                    keys.forEach(key => {
+                        let sale = sales[key] %>
+
+         <div class="card">
+            <div class="card-header">
+               <h4><a href="/sales/client/view/<%= sale.sale.client %>"><%= clients[sale.sale.client] %></a></h4>
+            </div>
+
+            <div class="card-body">
+               <div class="row">
+
+                  <% sale.details.forEach(detail => { %>
+                  <div class="col-12 col-md-6 product_item">
+                     <div class="card">
+                        <div class="card-body text-center">
+                           <img src="<%= products[detail.product].image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                           <p style="cursor:pointer;"><a href="/inventory/product/view/<%= products[detail.product].id %>"><%= products[detail.product].name %></a> </p>
+                           <p class="text-danger"><%= detail.cant == 1 ? ' 1 Unidad Reservada' : `${detail.cant} Unidades Reservadas` %> </p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <% }) %>
+               </div>
+            </div>
+         </div>
+
+
+
+         <% }) %>
+
+
+
+
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   document.addEventListener('DOMContentLoaded', event => {
+
+
+
+   });
+</script>
+
+</html>

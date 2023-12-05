@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <style>
+
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-4">Numeros de Serie &nbsp;&nbsp;
+            <button class="btn btn-danger btn-sm round" data-bs-toggle="modal" data-bs-target="#registerSerie">Nuevo</button>
+         </h3>
+         <div class="row justify-content-center">
+            <table class="table table-sm table-bordered table-hover">
+               <thead>
+                  <tr>
+                     <th>Serie</th>
+                     <th>Desde</th>
+                     <th>Hasta</th>
+                     <th>Utilizadas</th>
+                     <th>Opciones</th>
+                  </tr>
+               </thead>
+
+               <tbody class="text-center">
+                  <% series.forEach(serie => { %>
+
+                  <tr>
+                     <td><%= serie.serie %><small>(<%= types[serie.type] %>)</small></td>
+                     <td><%= serie.init %></td>
+                     <td><%= serie.end %></td>
+                     <td><%= serie.used %></td>
+                     <td class="text-center">
+                        <span class="badge bg-warning" onclick="edit_serie('<%= serie.id %>', '<%= serie.serie %>', '<%= serie.init %>', '<%= serie.end %>', '<%= serie.sucursal %>')" style="cursor:pointer;">Editar</span>
+                     </td>
+                  </tr>
+                  <% }) %>
+               </tbody>
+
+            </table>
+
+         </div>
+      </div>
+
+      <!-- modal para los datos de la entrega -->
+      <div class="modal fade" id="registerSerie" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Serie</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+                  <form class="row g-3">
+                     <div class="form-floating mb-3 col-12">
+                        <input class="form-control" id="serieName" type="text" placeholder="Numero de Serie">
+                        <label for="serieName">Numero de Serie</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="desde" type="number" step="1" placeholder="SKU">
+                        <label for="desde">Desde</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="hasta" type="number" step="1" placeholder="SKU">
+                        <label for="hasta">Hasta</label>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="sucursal">Sucursal Asignada</label>
+                        <select name="sucursal" id="sucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="Type">Tipo de Documento</label>
+                        <select name="Type" id="Type" class="form-control">
+                           <option value="fcf">Factura de Consumidor Final</option>
+                           <option value="ccf">Comprobante de Credito Fiscal</option>
+                           <option value="fex">Factura de Exportacion</option>
+                           <option value="nr">Nota de Remision</option>
+                           <option value="nc">Nota de Crédito</option>
+                           <option value="nd">Nota de Debito</option>
+                        </select>
+                     </div>
+
+                  </form>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="saveSerie">Guardar</button>
+
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <div class="modal fade" id="editSerie" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="editSerieTittle"></h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+                  <form class="row g-3">
+                     <div class="form-floating mb-3 col-12">
+                        <input class="form-control" id="editSerieName" type="text" placeholder="Numero de Serie" disabled>
+                        <label for="editSerieName">Numero de Serie</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="editDesde" type="number" placeholder="desde">
+                        <label for="editDesde">Desde</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="editHasta" type="text" placeholder="Hasta">
+                        <label for="editHasta">Hasta</label>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="editSucursal">Sucursal Asignada</label>
+                        <select name="editSucursal" id="editSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="editType">Tipo de Documento</label>
+                        <select name="editType" id="editType" class="form-control" disabled>
+                           <option value="fcf">Factura de Consumidor Final</option>
+                           <option value="ccf">Comprobante de Credito Fiscal</option>
+                           <option value="fex">Factura de Exportacion</option>
+                           <option value="nr">Nota de Remision</option>
+                           <option value="nc">Nota de Crédito</option>
+                           <option value="nd">Nota de Debito</option>
+                        </select>
+                     </div>
+
+
+
+                  </form>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="editSerieButton">Actualizar</button>
+                     <% if (permission.includes('end_invoice_serie')) { %>
+                     <button type="button" class="btn btn-danger" id="endSerie">Finalizar</button>
+
+                     <% } %>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <div class="modal fade" id="endSerieModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="editSerieTittle"></h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="alert alert-danger">
+                     <h4 class="alert-heading">¿Esta Seguro de Finalizar esta Serie?</h4>
+                     <p>Al finalizarla ya no se podran generar documentos de la misma</p>
+                 </div>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <% if (permission.includes('end_invoice_serie')) { %>
+                     <button type="button" class="btn btn-danger" id="endSerie_">Finalizar</button>
+
+                     <% } %>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   var current_serie = null;
+   const edit_serie = (id, serie, init, end, sucursal) => {
+      current_serie = id;
+      let myModal = new bootstrap.Modal(document.getElementById('editSerie'), {});
+      document.querySelector("#editSerieTittle").innerHTML = "Editando " + serie;
+      document.querySelector("#editSerieName").value = serie;
+      document.querySelector("#editSerieName").disabled = true;
+      document.querySelector("#editDesde").value = init
+      document.querySelector("#editHasta").value = end
+      document.querySelector("#editSucursal").value = sucursal;
+      myModal.toggle();
+
+   };
+   document.addEventListener('DOMContentLoaded', event => {
+
+
+
+
+      document.querySelector("#editSerieButton").addEventListener('click', e => {
+         let data = {
+            serieName: document.querySelector("#editSerieName").value,
+            desde: Number.parseInt(document.querySelector("#editDesde").value),
+            hasta: Number.parseInt(document.querySelector("#editHasta").value),
+            sucursal: Number.parseInt(document.querySelector("#editSucursal").value),
+            serie_id: current_serie,
+         };
+
+
+         if (isNaN(data.desde) || data.desde < 1) {
+            return errorMessage("Proporcione el numero de inicio de la serie");
+
+         } else if (isNaN(data.hasta) || data.hasta < 1 || data.hasta < data.desde) {
+            return errorMessage("Proporcione el numero de final de la serie");
+         } else {
+            postData('/sales/update_invoice_serie', data)
+               .then(data => {
+                  if (data.status == 'success') {
+                     successMessage('Guardado con Exito, redirigiendo');
+                     /**Redirigir a la pagina del Proveedor*/
+                     setTimeout(() => {
+                        window.location.reload();
+                     }, 1500);
+
+                  } else if (data.status == 'errorMessage') {
+                     e.target.disabled = false;
+                     return errorMessage(data.message);
+                  } else {
+                     return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                  }
+               });
+         }
+      });
+
+
+      document.querySelector("#saveSerie").addEventListener('click', e => {
+         let data = {
+            serieName: document.querySelector("#serieName").value,
+            desde: Number.parseInt(document.querySelector("#desde").value),
+            hasta: Number.parseInt(document.querySelector("#hasta").value),
+            sucursal: Number.parseInt(document.querySelector("#sucursal").value),
+            type: document.querySelector("#Type").value,
+         };
+
+
+         if (data.serieName.length < 4) {
+            return errorMessage("Coloque el numero de Serie");
+         } else if (isNaN(data.desde) || data.desde < 1) {
+            return errorMessage("Proporcione el numero de inicio de la serie");
+
+         } else if (isNaN(data.hasta) || data.hasta < 1 || data.hasta < data.desde) {
+            return errorMessage("Proporcione el numero de final de la serie");
+         } else {
+            postData('/sales/invoice_serie', data)
+               .then(data => {
+                  if (data.status == 'success') {
+                     successMessage('Guardado con Exito, redirigiendo');
+                     /**Redirigir a la pagina del Proveedor*/
+                     setTimeout(() => {
+                        window.location.reload();
+                     }, 1500);
+
+                  } else if (data.status == 'errorMessage') {
+                     e.target.disabled = false;
+                     return errorMessage(data.message);
+                  } else {
+                     return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                  }
+               });
+         }
+
+
+
+
+      });
+
+   });
+</script>
+<% if (permission.includes('end_invoice_serie')) { %>
+<script>
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#endSerie").addEventListener('click', e => {
+         let myModal = new bootstrap.Modal(document.getElementById('endSerieModal'), {});
+         myModal.toggle();
+      });
+
+      document.querySelector("#endSerie_").addEventListener('click', e => {
+
+      });
+
+
+   });
+</script>
+<% } %>
+
+</html>

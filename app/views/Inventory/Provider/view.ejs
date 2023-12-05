@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+
+      <section class="section">
+        <div class="row max-med">
+          <div class="col-md-8">
+            <div class="card" style="min-height: 30vh;">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <% if(provider.image !== null && provider.image.length > 0) {%>
+                    <img src="<%= provider.image %>" class="rounded-circle shadow-4-strong" alt="<%= provider.name %>" style="max-width: 200px;">
+                    <% }else{ %>
+                    <img src="/upload/images/image-not-found.png" class="shadow-4-strong" alt="<%= provider.name %>" style="max-width: 200px;">
+                    <% } %>
+
+                  </div>
+                  <div class="col-md-8">
+                    <h3>
+                      <strong><%= pageTitle %></strong>
+                    </h3>
+                    <span class="badge bg-light" data-bs-toggle="modal" data-bs-target="#editprovider" style="cursor:pointer">
+                      <i class="fas fa-edit"></i>
+                      <b class="ml-2">Editar</b>
+                    </span>
+                    <br>
+
+                  </div>
+                </div>
+              </div>
+              <hr style="border-top: 2px dashed black;">
+              <div class="card-footer">
+                <div class="row">
+                  <div class="col-4 text-left">
+                    <h6>Compras Realizadas</h6><br>
+                    <h4><%= purchasesQty %> / $<%= purchasesAmount %>
+                      
+                  </div>
+                  <div class="col-4 text-center">
+                    <h6>Saldos</h6><br>
+                    <h4>$<%= providerBalance %></h4>
+                  </div>
+                  <div class="col-4 text-right">
+                    <h6>Numero de productos</h6><br>
+                    <h4><%= productQty %></h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card" style="min-height: 30vh;">
+              <div class="card-header">
+                <h5>Información de contacto</h5>
+              </div>
+              <hr>
+              <div class="card-body mb-5">
+                <div class="row">
+                  <div class="col">Dirección:</div>
+                  <div class="col"><%= provider.direction != null && provider.direction.length > 1 ? provider.direction : 'No Registrado' %></div>
+                </div>
+              </div>
+              <hr>
+              <div class="card-footer">
+                <div class="row">
+                  <div class="col">Email:</div>
+                  <div class="col">
+                    <% if(provider.email != null && provider.email.length > 1){ %>
+                    <a href="mailto:<%= provider.email %>"><%= provider.email %></a>
+                    <% }else{ %>
+                    No Registrado
+                    <% } %>
+                  </div>
+                </div>
+
+                <div class="row mt-2">
+                  <div class="col">Telefono:</div>
+                  <div class="col">
+                    <% if(provider.phone != null && provider.phone.length > 1){ %>
+                    <a href="tel:<%= provider.phone %>"><%= provider.phone %></a>
+                    <% }else{ %>
+                    No Registrado
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--div class="row">
+          <div class="col-12">
+
+            <div class="max-med">
+              <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap active" id="orders-tab" data-bs-toggle="tab" href="#tab-orders" role="tab" aria-controls="tab-orders" aria-selected="true">
+                    <i class="far fa-adjust"></i>Ordes
+                  </a>
+                </li>
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-reviews" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                    <i class="far fa-adjust"></i>Reviews
+                  </a>
+                </li>
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap" id="wishlist-tab" data-bs-toggle="tab" href="#tab-wishlist" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                    <i class="far fa-adjust"></i>Wishlist
+                  </a>
+                </li>
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap" id="stores-tab" data-bs-toggle="tab" href="#tab-stores" role="tab" aria-controls="tab-stores" aria-selected="false" tabindex="-1">
+                    <i class="far fa-adjust"></i>Stores
+                  </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link text-nowrap" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="false" tabindex="-1">
+                    <i class="far fa-adjust"></i>Personal info
+                  </a>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="profileTabContent">
+                <div class="tab-pane fade active show" id="tab-orders" role="tabpanel" aria-labelledby="orders-tab">
+                  orders Tab
+                  <br><br><br>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Consectetur commodi, animi harum perferendis ipsum aspernatur nostrum quisquam suscipit consequuntur id at nobis blanditiis. Excepturi consequuntur minus dolorem necessitatibus reprehenderit aliquam.
+                  Iste facere eius ea magnam, provident atque iusto error! At vitae id expedita eum laboriosam consectetur, nobis placeat dolorem esse vel fugiat! Ullam, aliquid praesentium adipisci totam harum hic deserunt!
+                  Perspiciatis magnam, animi nulla excepturi cum fugiat iusto natus hic quam deserunt eveniet reprehenderit voluptatibus dolor nam sed, officiis, ea sequi! Omnis mollitia vel ipsa sit corporis, ex cupiditate dolorem!
+                  Inventore, rerum soluta odit dolore ea, nulla adipisci exercitationem quos beatae impedit quod quae amet itaque corporis atque reprehenderit cum doloremque, saepe optio pariatur quas? Saepe facilis architecto dolores veritatis?
+                  Vel et inventore officiis dicta at in, quaerat soluta harum distinctio eveniet, eum minima? Sequi impedit facilis earum blanditiis consequuntur soluta nihil optio fuga accusantium autem, esse reiciendis minima. Rem.
+                </div>
+                <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                  reviewss Content
+                  <br><br><br>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus expedita a ad officiis, non repellendus eum in sit minus nostrum dolore perspiciatis similique, ducimus perferendis? Dolores veritatis perspiciatis ad. Sapiente?
+                  Consequatur deserunt odio numquam soluta, veniam perspiciatis quos nisi, non repellendus asperiores adipisci necessitatibus, ullam excepturi. Eos ipsum exercitationem odit impedit maxime corporis hic! Eveniet expedita porro amet! Dignissimos, quos.
+                  Nobis soluta perspiciatis facilis, cumque exercitationem odit repellat quibusdam doloribus eos magnam repudiandae voluptatum, totam minus accusantium culpa, alias vero earum doloremque architecto. Consequatur velit sunt nisi delectus repellat enim.
+                  Eveniet doloribus hic, suscipit quidem voluptas provident inventore earum iste quis asperiores. Tempore, quasi magni animi beatae ut minima laboriosam voluptates laborum dolore dignissimos ratione iste id exercitationem quibusdam amet!
+                  Nisi officia modi sed, dolorem id omnis! Necessitatibus ad dignissimos, nesciunt alias quasi eos repudiandae itaque mollitia sit nostrum quo, dolore vero rerum consequatur suscipit beatae quisquam. Commodi, perferendis obcaecati.
+                </div>
+                <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
+                  Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eum ut pariatur recusandae quia eveniet ullam ea rerum, laboriosam, quo aperiam, inventore tempora voluptates qui? Earum autem ipsa expedita itaque animi!
+                  Maiores eligendi illo deleniti iusto, minus, dolorem numquam ex, incidunt omnis reiciendis commodi laboriosam nostrum nam saepe velit officiis corrupti recusandae vero necessitatibus. Facilis vitae ducimus tenetur possimus exercitationem illo.
+                  Incidunt cum nihil, exercitationem impedit assumenda tenetur fuga aliquam repudiandae ad consequatur ex enim repellat cupiditate necessitatibus hic animi nulla at autem fugiat quas nostrum quos modi. Tempore, aspernatur numquam.
+                  Officiis praesentium mollitia quod, neque architecto quibusdam molestias laudantium fuga. Cum maiores quo, aspernatur minus itaque dolor laudantium in et sunt, aperiam molestias inventore, magni modi animi commodi neque ratione.
+                  Nesciunt numquam expedita, est mollitia consequuntur commodi dicta exercitationem explicabo vel unde nostrum quasi eos accusantium. Enim expedita quod fugit. Voluptatibus, optio vero. Quae atque voluptas adipisci labore distinctio quo.
+                </div>
+                <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
+                  Lorem ipsum, dolor sit amet consectetur adipisicing elit. Tempora tempore sit exercitationem inventore error id alias, porro repudiandae non, qui quas quo consectetur libero debitis sapiente harum, consequuntur temporibus at.
+                </div>
+                <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                  Personal Info profileRatingTable
+
+                  <p>
+                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Temporibus, dolore sunt. Doloremque illo dolorem, minus tempore officia animi, repellat aliquam modi unde quod exercitationem magni quas voluptatem molestiae ullam porro.
+                    Modi, earum veritatis! Vero distinctio mollitia facilis amet suscipit ut esse debitis quis praesentium libero nulla veritatis ipsam modi fugiat a alias totam, nihil recusandae illo rem animi repudiandae incidunt.
+                    Magnam adipisci dolorum quisquam itaque, reprehenderit laboriosam rerum saepe ad quod, voluptas repellendus placeat esse dolores nobis amet numquam omnis qui. Ratione molestiae alias iure inventore vel libero impedit quisquam.
+                    Facere tempora ad, sint dolorum error doloribus hic voluptate, explicabo dolore debitis itaque vitae officia consectetur corrupti numquam. Officiis totam qui voluptatem eaque necessitatibus consequuntur voluptates iste molestias quis suscipit!
+                    Facilis repellat qui sequi ex unde voluptatem officia nihil possimus earum? Officiis, nostrum enim dolores molestias et voluptatibus, omnis non nam, minima reiciendis asperiores inventore dicta libero quasi error. Provident!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+        </div -->
+
+
+      </section>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+  <div class="modal fade" id="editprovider" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Editando Proveedor</h5>
+          <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+        </div>
+        <div class="modal-body">
+          <form class="row g-3">
+            <div class="col-12">
+              <label for="providerName" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="providerName" value="<%= provider.name %>">
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isLocal">
+                <label class="form-check-label" for="isLocal">
+                  ¿Es un Proveedor Nacional?
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isRetentionAgent" disabled>
+                <label class="form-check-label" for="isRetentionAgent">
+                  ¿Es un agente de retención?
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="providerClassification" class="form-label">Clasificación</label>
+              <select name="providerClassification" id="providerClassification" class="form-control" disabled>
+                <option value="otro">Otro Contribuyente</option>
+                <option value="mediano">Mediano Contribuyente</option>
+                <option value="gran">Gran Contribuyente</option>
+                <option value="ninguno" selected>No Clasificado</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="providerType" class="form-label">Tipo de Proveedor</label>
+              <select name="providerType" id="providerType" class="form-control">
+                <option value="product">Productos</option>
+                <option value="services">Servicios</option>
+                <option value="transport">Transporte/Encomienda</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="providerNRC" class="form-label">NRC</label>
+              <input type="text" class="form-control" id="providerNRC" placeholder="66666-6" value="<%= provider.NRC %>">
+            </div>
+
+            <div class="col-md-6">
+              <label for="ProviderDUI" class="form-label">NIT/DUI</label>
+              <input type="text" class="form-control" id="ProviderDUI" placeholder="0550-101093-101-1 or 06666666-6" value="<%= provider.NIT_DUI %>">
+            </div>
+
+            <div class="col-md-12">
+              <label for="providerWeb" class="form-label">Página Web</label>
+              <input type="text" class="form-control" id="providerWeb" placeholder="www.provider.com" value="<%= provider.web %>">
+            </div>
+
+            <div class="col-md-6">
+              <label for="providerWeb" class="form-label">Teléfono de Contacto</label>
+              <input type="text" class="form-control" id="providerPhone" placeholder="+507 789-2565" value="<%= provider.phone %>">
+            </div>
+
+
+            <div class="col-md-6">
+              <label for="providerWeb" class="form-label">Correo Electrónico</label>
+              <input type="text" class="form-control" id="providerEmail" placeholder="contact@supplier.com" value="<%= provider.email %>">
+            </div>
+            <div class="col-md-12">
+              <label for="providerDirection" class="form-label">Dirección</label>
+              <input type="text" class="form-control" id="providerDirection" value="<%= provider.direction %>">
+            </div>
+
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="col-md-12">
+                    <div class="form-group text-center">
+                      <label for="fake_image_input" class="subir" style="font-size: x-large;">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <b>Subir</b>
+                        Imagen
+                      </label>
+                      <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                    </div>
+                  </div>
+                  <div class="col-md-12 text-center">
+                    Ó
+                  </div>
+
+                  <div class="col-md-12 text-center">
+                    <div class="form-group">
+                      <label style="font-size: large;" for="add-image-fake_text ">
+                        Pega una imagen o URL Aca
+                      </label>
+                      <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="col-md-6">
+                  <div id="add_image_preview">
+                    <% if (provider.image != null && provider.image !== ""){ %>
+                    <img src="<%= provider.image %>" alt="<%= provider.name%>_image" style="max-width: 150px;">
+                    <% } %>
+                  </div>
+                </div>
+
+                <input type="hidden" id="add_image_real" name="add_image_real">
+              </div>
+
+            </div>
+
+          </form>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="saveProvider">Guardar</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+{# <script src="https://unpkg.com/axios/dist/axios.min.js"></script> #}
+{# definicion de variables usadas en otros elementos javascript #}
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  captureImagePasted(document.getElementById("add-image-fake_text"));
+  var previewimagezone = document.getElementById("add_image_preview");
+  var realImage = document.getElementById("add_image_real");
+
+  document.getElementById('fake_image_input').onchange = function(e) {
+    if (addingImageValidateImage(this)) {
+      AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1);
+    } else {
+      document.getElementById("add_image_preview").innerHTML = "";
+      realImage.value = "";
+      return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+    }
+  };
+
+  // document ready
+  document.addEventListener("DOMContentLoaded", (event) => {
+    charge();
+
+    document.getElementById("providerName").focus();
+
+    // form controls validation
+    document.getElementById('isLocal').addEventListener('click', (e) => {
+      let classification = document.getElementById('providerClassification');
+      if (!e.target.checked) {
+        classification.value = 'ninguno';
+        document.getElementById('isRetentionAgent').disabled = true;
+        document.getElementById('providerClassification').disabled = true;
+        document.getElementById('providerNRC').disabled = true;
+        document.getElementById('ProviderDUI').disabled = true;
+
+      } else {
+        document.getElementById('providerClassification').disabled = false;
+        /*document.getElementById('isRetentionAgent').disabled = (classification.value == 'gran' ||  classification.value == 'ninguno');*/
+        document.getElementById('isRetentionAgent').disabled = false;
+        document.getElementById('isRetentionAgent').checked = false;
+        document.getElementById('providerNRC').disabled = false;
+        document.getElementById('ProviderDUI').disabled = false;
+      }
+    });
+
+    document.getElementById('providerClassification').addEventListener('change', (e) => {
+      if (e.target.value == 'gran') {
+        document.getElementById('isRetentionAgent').disabled = true
+        document.getElementById('isRetentionAgent').checked = true;
+      } else if (e.target.value == 'ninguno' && document.getElementById('isLocal').checked) {
+        document.getElementById('isRetentionAgent').disabled = false;
+        document.getElementById('isRetentionAgent').checked = false;
+      } else {
+        document.getElementById('isRetentionAgent').disabled = true
+        document.getElementById('isRetentionAgent').checked = false;
+      }
+
+    });
+
+    document.getElementById('saveProvider').addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      message = null;
+      let data = {
+        id: '<%= provider.id %>',
+        name: document.getElementById('providerName').value,
+        nrc: document.getElementById('providerNRC').value,
+        nit: document.getElementById('ProviderDUI').value,
+        type: document.getElementById('providerType').value,
+        classification: document.getElementById('providerClassification').value,
+        webpage: document.getElementById('providerWeb').value,
+        isLocal: document.getElementById('isLocal').checked,
+        isRetentionAgent: document.getElementById('isRetentionAgent').checked,
+        image: document.getElementById('add_image_real').value,
+        phone: document.getElementById('providerPhone').value,
+        email: document.getElementById('providerEmail').value,
+        direction: document.getElementById('providerDirection').value,
+      }
+
+      if (data.name.length < 2) {
+        message = 'Por favor, proporcione el nombre del proveedor';
+      } else if (data.classification != 'ninguno' && !verify_NRC(data.nrc)) {
+        message = 'No ha proporcionado el número de registro de contribuyente';
+      } /*else if (data.isLocal && data.classification == 'ninguno' && !verify_DUI(data.nit)) {
+        message = 'Si el proveedor es local y no está clasificado, debe proporcionar como mínimo el número de DUI';
+      } */else if (data.phone.length < 5 && data.email.length < 5) {
+        message = 'Proporcione el numero de contacto o e-mail del proveedor';
+      }
+
+      if (message === null) {
+        /** Enviar Informacion al Servidor y volver a Validar*/
+        postData('/inventory/provider/update', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('Guardado con Exito, redirigiendo');
+            setTimeout(() => location.reload(), 1500);
+
+          } else if (data.status == 'errorMessage') {
+            e.target.disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      } else {
+        e.target.disabled = false;
+        return errorMessage(message);
+      }
+    });
+  });
+
+
+  function charge() {
+    let islocal = '<%= provider.isLocal == 1 ? true : false %>' === 'true';
+    let classification = document.getElementById('providerClassification');
+    document.getElementById('isLocal').checked = islocal;
+    if (!islocal) {
+      classification.value = 'ninguno';
+      document.getElementById('isRetentionAgent').disabled = true;
+      document.getElementById('providerClassification').disabled = true;
+      document.getElementById('providerNRC').disabled = true;
+      document.getElementById('ProviderDUI').disabled = true;
+
+    } else {
+      document.getElementById('providerClassification').disabled = false;
+      /*document.getElementById('isRetentionAgent').disabled = (classification.value == 'gran' ||  classification.value == 'ninguno');*/
+      document.getElementById('isRetentionAgent').disabled = false;
+      document.getElementById('isRetentionAgent').checked = false;
+      document.getElementById('providerNRC').disabled = false;
+      document.getElementById('ProviderDUI').disabled = false;
+    }
+
+    document.getElementById('isRetentionAgent').checked = '<%= provider.isRetentionAgent == 1 ? true : false %>' === 'true';
+    document.getElementById('providerClassification').value = '<%= provider.classification %>';
+    document.getElementById('providerType').value = '<%= provider.type %>';
+
+  }
+</script>
+
+</html>

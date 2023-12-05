@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('./Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('./Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('./Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+		<%- include('./Layouts/Widgets/module-icons.ejs') %>
+    </div>
+    <%- include('./Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('./Layouts/Scripts.ejs') %>
+<script>
+</script>
+
+</html>

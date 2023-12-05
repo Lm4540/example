@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <%# custom styles %>
+</head>
+<% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid text-center">
+      <div class="page-title">
+        <h3><%= pageTitle %></h3>
+        <%# Tittle Options %>
+      </div>
+      <section class="section text-left">
+        <div class="card" style="max-width: 1000px; margin: auto;">
+          <div class="card-body">
+
+            <form class="row g-3">
+              <div class="form-floating mb-3 col-12">
+                <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente">
+                <label for="clientName">Nombre del cliente</label>
+              </div>
+
+              <div class="form-floating mb-3 col-md-6">
+                <input class="form-control" id="clientPhone" type="text" placeholder="Nunmero Telefonico">
+                <label for="clientPhone">Numero Telefonico</label>
+              </div>
+
+              <div class="form-floating mb-3 col-md-6">
+                <input class="form-control" id="clientMail" type="text" placeholder="SKU">
+                <label for="clientMail">E-Mial</label>
+              </div>
+
+              <div class="form-floating mb-3 col-md-12">
+                <input class="form-control" id="clientDirection" type="text" placeholder="SKU">
+                <label for="clientDirection">Dirección del Cliente</label>
+              </div>
+
+              
+
+              <div class=" mb-3 col-md-6">
+                <label for="clientType">Tipo de Compras</label>
+                <select name="clientType" id="clientType" class="form-control">
+                  <option value="minor">Comprador al Detalle</option>
+                  <option value="major">Comprador por Mayor</option>
+                </select>
+              </div>
+
+              <div class=" mb-3 col-md-6">
+                <label for="isLocal">¿Cliente Local?</label>
+                <select name="isLocal" id="isLocal" class="form-control">
+                  <option value="true">Si, es cliente local</option>
+                  <option value="false">No, es cliente Internacional</option>
+                </select>
+              </div>
+
+              <div class="form-floating mb-3 col-md-6">
+                <input class="form-control" id="clientDUI" type="text" placeholder="05507306-7">
+                <label for="clientDUI">NIT/DUI</label>
+              </div>
+
+
+
+              <div class="form-floating mb-3 col-md-6">
+                <input class="form-control" id="clientNRC" type="text" placeholder="1525-8">
+                <label for="clientNRC">NRC</label>
+              </div>
+
+              <div class=" mb-3 col-md-6">
+                <label for="clientClassification">Clasificación del Contribuyente</label>
+                <select name="clientClassification" id="clientClassification" class="form-control">
+                  <option value="ninguno">No Clasificado</option>
+                  <option value="otro">Otro Contribuyente</option>
+                  <option value="mediano">Mediano Contribuyente</option>
+                  <option value="gran">Gran Contribuyente</option>
+                </select>
+              </div>
+
+              <div class=" mb-3 col-md-6">
+                <label for="clientSeller">Vendedor Asignado</label>
+                <select name="clientSeller" id="clientSeller" class="form-control">
+                  <option value="none" selected>Ninguno</option>
+                  <% sellers.forEach(employee => { %>
+                    <option value="<%= employee.id %>"><%= employee.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="card-footer text-right">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Atrás</button>
+            <button type="button" class="btn btn-primary" id="saveClient">Guardar</button>
+          </div>
+        </div>
+
+
+      </section>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+{# definicion de variables usadas en otros elementos javascript #}
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  //document ready
+  document.addEventListener("DOMContentLoaded", (event) => {
+
+    document.getElementById("clientName").focus();
+    document.getElementById("isLocal").addEventListener('change', e => {
+      let a = e.target.value === 'true';
+      document.getElementById("clientDUI").disabled = !a;
+      document.getElementById("clientNRC").disabled = !a;
+      document.getElementById("clientClassification").disabled = !a;
+
+    });
+    //form controls validation
+    document.getElementById('saveClient').addEventListener('click', async (e) => {
+      // e.target.disabled = true;
+      let data = {
+        name: document.getElementById("clientName").value,
+        phone: document.getElementById("clientPhone").value,
+        mail: document.getElementById("clientMail").value,
+        type: document.getElementById("clientType").value,
+        isLocal: document.getElementById("isLocal").value === 'true',
+        dui: document.getElementById("clientDUI").value,
+        nrc: document.getElementById("clientNRC").value,
+        classification: document.getElementById("clientClassification").value,
+        direction: document.getElementById("clientDirection").value,
+        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
+      }
+
+      if (data.name.length < 2) {
+        e.target.disabled = false;
+        return errorMessage('Por favor, registre el nombre del Cliente');
+      } else if (data.phone.length < 8) {
+        e.target.disabled = false;
+        return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
+      }else{
+        /** Enviar Informacion al Servidor y volver a Validar*/
+        postData('/sales/client/create', data)
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Guardado con Exito, redirigiendo');
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/sales/client/view/${data.data}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              e.target.disabled = false;
+              return errorMessage(data.message);
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+
+      }
+    });
+
+
+  });
+</script>
+
+</html>

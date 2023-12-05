@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-body">
+               <ul class="list-group">
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Proveedor:</div>
+                        <div class="col"><%= provider.name %></div>
+                     </div>
+                  </li>
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Documento:</div>
+                        <div class="col"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Fecha de la Factura:</div>
+                        <div class="col"><%= Helper.format_date(purchase.invoice_date, false) %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Registrado:</div>
+                        <div class="col"><%= purchase.createdBy %><br><%= Helper.format_date(purchase.createdAt, true) %></div>
+                     </div>
+                  </li>
+                 
+               </ul>
+               <table class="table table-sm table-bordered table-hover text-center mt-5">
+                  <thead>
+                     <tr>
+                        <th style="width: 35%; max-width: 35%;">Descripcion</th>
+                        <th style="width: 7%; max-width: 7%;">Cantidad</th>
+                        <th style="width: 10%; max-width: 10%;">Precio<br>Unitario</th>
+                        <th style="width: 10%; max-width: 10%;">Valor del <br>Equipo</th>
+                        <% let total_cost = 0.00 %>
+                        <% costs.forEach(cost => { 
+                           total_cost += cost.price %>
+                           <th style="width: 10%; max-width: 10%;"><%= cost.description %></th>
+                        <% }) %>
+                        <th>Costo total del <br> Equipo</th>
+                        <th>Costo Unitario</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <% details.forEach(detail => {
+                        let percent = (detail.cant * detail.price) / purchase.subtotal %>
+                        
+                     <tr>
+                        <td><%= detail.description %> (<%= detail.code !== null && detail.code !== "" ? detail.code : 'Sin Codigo' %>)</td>
+                        <td><%= detail.cant %></td>
+                        <td>$<%= Helper.money_format(detail.price) %></td>
+                        <td>$<%= Helper.money_format(detail.cant *  detail.price) %></td>
+                        <% costs.forEach(cost => { %>
+                           <td>$<%= Helper.money_format(cost.price * percent) %></td>
+                        <% }) %>
+                        <td>$<%= Helper.money_format(detail.cost * detail.cant) %></td>
+                        <td>$<%= Helper.money_format(detail.cost) %></td>
+                     </tr>
+                     <% }) %>
+                  </tbody>
+                  <tbody>
+                     <tr>
+                        <td colspan="3" class="text-right">SUMAS</td>
+                        <td>$<%= Helper.money_format(purchase.subtotal) %></td>
+                        <% costs.forEach(cost => { %>
+                           <td>$<%= Helper.money_format(cost.price ) %></td>
+                        <% }) %>
+                        <td>$<%= Helper.money_format(total_cost + Number.parseFloat(purchase.subtotal)) %></td>
+                        <td>--</td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+<script>
+
+</script>
+
+</html>

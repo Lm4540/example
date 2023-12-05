@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .choices {
+         margin-bottom: 2px;
+      }
+
+      #details_body tr td {
+         padding-bottom: 10px;
+      }
+   </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="row" id="div_sucursal_control">
+            <div class="col-8">
+               <select name="selectSucursal" id="selectSucursal" class="form-control">
+                  <% sucursals.forEach(sucursal => { %>
+                  <option value="<%= sucursal.id %>"><%= sucursal.name %></option>
+                  <% }) %>
+               </select>
+            </div>
+            <div class="col-4"><button id="btnSelect_sucursal" class="btn btn-success">Seleccionar Sucursal</button></div>
+
+         </div>
+
+         <div class="row mb-3" id="div_span_tittle" style="display: none;">
+
+         </div>
+
+         <div class="row justify-content-center" id="block_content" style="display: none;">
+            <div class="col-md-6 col-12">
+               <div class="card">
+                  <div class="card-body">
+                     <h3>Productos a Unir (Formula)</h3>
+                     <table class="table table-borderless table-hover table-sm">
+                        <thead>
+                           <tr>
+                              <th>Image</th>
+                              <th>Qty</th>
+                              <th>op</th>
+                           </tr>
+                        </thead>
+                        <tbody id="details_body">
+
+                        </tbody>
+                     </table>
+                  </div>
+                  <div class="card-body text-center">
+                     <div class="form-group">
+                        <label for="joinSelect">Escribe el nombre o SKU para buscar</label>
+                        <select name="joinSelect" id="joinSelect" class="form-control pt-2"></select>
+                        <small class="text-danger">Solo apareceran productos con existencias</small>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="joinCant">Cantidad por Producto</label>
+                        <input type="number" class="form-control pt-3" id="joinCant" step="1" min="1" value="1">
+                        <small id="available_cant" class="text-danger">0 Disponibles</small>
+                     </div>
+                     <div id="image_in_select"> </div>
+                     <button class="btn btn-success mb-1" id="add_detail" disabled="true">Agregar</button>
+                  </div>
+               </div>
+            </div>
+
+            <div class="col-md-6 col-12">
+               <div class="card">
+                  <div class="card-header">
+                     <h3>Producto Resultante</h3>
+                  </div>
+                  <div class="card-body text-center" id="destinoProduct"></div>
+                  <div class="card-body">
+                     <div class="form-group">
+                        <label for="destinoSelect">Producto Resultante</label>
+                        <select name="destinoSelect" id="destinoSelect" class="form-control"></select>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="final_cant">Cantidad Resultante</label>
+                        <input type="number" class="form-control" id="final_cant" name="final_cant">
+                     </div>
+                     <div class="text-center">
+                        <button class="btn btn-round btn-primary text-center" id="processResult">Realizar Union</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   var tbody = document.querySelector('#details_body'),
+      destino = document.querySelector('#destinoProduct'),
+      destinoSelect = document.querySelector('#destinoSelect'),
+      joinSelect = document.querySelector('#joinSelect'),
+      timerJoin,
+      timerDestino,
+      destino_last_val = "",
+      join_last_val = "",
+      details = [],
+      added = [],
+      joinSearchResult = {},
+      destinoSearchResult = {},
+      current_max = null,
+      selectedSucursal = null;
+
+   const doSearchDestinoProduct = async (val, stock = false) => {
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=${stock}&sucursal=${selectedSucursal}`, {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      });
+      return response.json();
+   }
+
+   const choices_destino = new Choices(destinoSelect, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 3,
+   });
+
+   const choices_join = new Choices(joinSelect, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 3,
+   });
+
+   const clean_detail = () => {
+      document.querySelector('#available_cant').innerHTML = `0 Disponibles`;
+      document.querySelector('#joinCant').max = 1;
+      document.querySelector('#add_detail').disabled = true;
+      document.querySelector('#image_in_select').innerHTML = ``;
+      choices_join.removeActiveItems();
+   }
+
+   const deleteDetail = (id, index) => {
+      console.log(details)
+      delete details[index];
+      added = added.filter(element => element != id);
+      tbody.removeChild(document.querySelector(`#tr_${index}`));
+
+      console.log(details)
+   }
+
+   document.addEventListener("DOMContentLoaded", (event) => {
+
+      document.querySelector('#processResult').addEventListener('click', e => {
+         if (destinoSelect.value == "") {
+            return errorMessage('Seleccione el producto Resultante');
+         } else if (added.includes(Number.parseInt(destinoSelect.value))) {
+            return errorMessage('El mismo producto no puede estar en ambos lados de la operación');
+         } else if (document.querySelector('#final_cant').value == "") {
+            return errorMessage(`La cantidad Minima del producto resultante debe ser uno`);
+         } else {
+
+            let data = {
+               destino: destinoSelect.value,
+               cant: Number.parseInt(document.querySelector('#final_cant').value),
+               sucursal: selectedSucursal,
+               dt: [],
+            }
+            details.forEach(el => el !== undefined ? data.dt.push(el) : '');
+
+            if (data.cant < 1) {
+               return errorMessage(`La cantidad Mínima del producto resultante debe ser uno`);
+            } else if (data.dt.length < 2) {
+               return errorMessage(`Debe Seleccionar al menos dos productos para realizar una Unión de productos`);
+            } else if (data.cant > current_max) {
+               return errorMessage(`La Cantidad maxima producible es ${current_max} de acuerdo a los productos de origen seleccionados`);
+            } else {
+               e.target.disabled = true;
+               postData('/inventory/product/join', data)
+                  .then(data => {
+                     if (data.status == 'success') {
+                        successMessage('Operación exitosa');
+                        /**Redirigir a la pagina del Proveedor*/
+                        setTimeout(() => {
+                           location.href = `/inventory/product/view/${data.data}`;
+                        }, 1500);
+
+                     } else if (data.status == 'errorMessage') {
+                        e.target.disabled = false;
+                        return errorMessage(data.message);
+                     } else {
+                        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                     }
+                  });
+            }
+            e.target.disabled = false;
+         }
+      });
+
+      document.querySelector("#btnSelect_sucursal").addEventListener('click', e => {
+         document.querySelector("#block_content").style.display = 'flex';
+         selectedSucursal = document.querySelector('#selectSucursal').value;
+         document.querySelector("#div_span_tittle").style.display = 'flex';
+         document.querySelector("#div_sucursal_control").style.display = 'none';
+         document.querySelector("#div_span_tittle").innerHTML = `<h3 class="text-center">Uniendo Productos en Sucursal ${document.querySelector('#selectSucursal').selectedOptions[0].text}</h3>`;
+
+      });
+
+      document.querySelector('#add_detail').addEventListener('click', (e) => {
+         e.target.disabled = true;
+         let prod = joinSearchResult[joinSelect.value];
+         if (prod == undefined) {
+            clean_detail();
+            return errorMessage('Error, Producto no encontrado');
+         } else if (destinoSelect.value === joinSelect.value) {
+            clean_detail();
+            return errorMessage('El mismo producto no puede estar en ambos lados de la operación');
+         } else if (added.includes(prod.id)) {
+            clean_detail();
+            return errorMessage('Este producto ya esta Agregado a la formula');
+         } else {
+            let cant = Number.parseInt(document.querySelector('#joinCant').value);
+
+            if (cant > 0) {
+               let index = details.length;
+               details.push({
+                  id: prod.id,
+                  cant: cant,
+
+               });
+
+               let max = (prod.stock - prod.reserved) / cant;
+               current_max = current_max == null ? max : (current_max < max ? current_max : max);
+               added.push(prod.id);
+               //agregar detalle a la tabla
+               let tr = document.createElement('tr');
+               tr.id = `tr_${index}`;
+               tr.innerHTML = `<td><img src="${prod.image}" class="shadow-4-strong pl-1 pr-1" alt="${prod.name}" style="max-width:100px; border-radius: 1rem;"><p>${prod.name}</p></td>
+              <td><b style="font-size: 125%;">${cant}</b></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteDetail(${prod.id}, ${index})">Quit</button></td>`;
+               tbody.appendChild(tr);
+               clean_detail();
+            } else {
+               return errorMessage('Cantidad Invalida');
+            }
+         }
+
+      });
+
+      joinSelect.addEventListener('search', async (e) => {
+         let valor_actual = e.detail.value;
+         if (join_last_val !== valor_actual) {
+            join_last_val = valor_actual;
+            clearTimeout(timerJoin);
+            timerJoin = setTimeout(async () => {
+               let data = await doSearchDestinoProduct(e.detail.value, true);
+               joinSearchResult = {};
+               data.forEach(element => joinSearchResult[element.id] = element);
+               choices_join.setChoices(data, 'value', 'label', true);
+            }, 500);
+         }
+      });
+
+      joinSelect.addEventListener('change', (e) => {
+         let prod = joinSearchResult[joinSelect.value];
+         document.querySelector('#available_cant').innerHTML = `${ prod.stock - prod.reserved} Disponibles`;
+         document.querySelector('#joinCant').max = prod.stock - prod.reserved;
+         document.querySelector('#add_detail').disabled = false;
+         document.querySelector('#image_in_select').innerHTML = `<img src="${prod.image}" class="shadow-4-strong pl-1 pr-1" alt="${prod.name}" style="max-width:150px ; border-radius: 1rem;"><p>${prod.name}</p>`;
+      })
+
+
+
+      destinoSelect.addEventListener('change', (e) => {
+         let prod = destinoSearchResult[destinoSelect.value];
+
+         destino.innerHTML = `<img src="${prod.image}" class="shadow-4-strong mb-3" alt="${prod.name}" style="max-width:200px; width:200px; border-radius: 1rem;">
+      <h4>${prod.name} &nbsp;&nbsp;#SKU(${prod.sku})</h4>
+      <span style="font-size: 150%; font-weight: bold;">$${Money.money_format(prod.price)}</span> &nbsp;
+      <span style="font-size: 110%; font-weight: bold;" class="ml-2">($${Money.money_format(prod.major)})</span><br>
+      <b><p style="font-size: 125%; cursor: pointer;" class="text-${prod.stock > 0 ? 'success': 'danger'}">En Stock (${prod.stock} Disponibles)</p></b>`;
+      });
+
+
+      destinoSelect.addEventListener('search', async (e) => {
+         let valor_actual = e.detail.value;
+         if (destino_last_val !== valor_actual) {
+            destino_last_val = valor_actual;
+            clearTimeout(timerDestino);
+            timerDestino = setTimeout(async () => {
+               let data = await doSearchDestinoProduct(e.detail.value);
+               //indexar los datos para tenerlos a la mano
+               destinoSearchResult = {};
+               data.forEach(element => destinoSearchResult[element.id] = element);
+               choices_destino.setChoices(data, 'value', 'label', true);
+            }, 500);
+         }
+      });
+   });
+</script>
+
+</html>

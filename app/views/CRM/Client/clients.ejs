@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+</head>
+
+<% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title">
+            <h3><%= pageTitle %> <a href="/sales/client/create" class="badge bg-success mb-5">Nuevo</a> </h3>
+            <%# Tittle Options %>
+         </div>
+
+         <section class="section">
+            <div id="dataTable"></div>
+         </section>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/grid/gridjs.js"></script>
+<script>
+   const view_provider = (id) => window.location.href = `/inventory/provider/${id}`;
+   const cleanNumber = a => a.replaceAll(' ', '').replaceAll('+', '').replaceAll('-', '');
+   var dataGrid = new gridjs.Grid({
+      columns: [{
+         name: 'Nombre',
+         formatter: (cell) => gridjs.html(cell),
+      }, {
+         name: 'contacto',
+         formatter: (cell) => gridjs.html(cell),
+         sort: false,
+      }, ],
+      search: {
+         server: {
+            url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${keyword}` : prev,
+         }
+      },
+      sort: {
+         server: {
+            url: (prev, columns) => {
+               if (!columns.length) return prev;
+               const col = columns[0];
+               const dir = col.direction === 1 ? 'asc' : 'desc';
+               let colName = ['name', 'nrc'][col.index];
+               return `${prev}&order=${colName}&dir=${dir}`;
+            }
+         }
+      },
+      pagination: {
+         limit: 10,
+         summary: true,
+         server: {
+            url: (prev, page, limit) => `${prev}&limit=${limit}&offset=${page * limit}`,
+         }
+      },
+      server: {
+         url: '/sales/clients?a=a',
+         total: data => data.total_rows,
+         then: data => data.data.map(element => {
+            let name = `<a href="/sales/client/view/${element.id}">${element.name}</a>`;
+            name += element.NIT_DUI != null && element.NIT_DUI.length > 0 ? `<br><span>NIT / DUI: ${element.NIT_DUI}</span>` : '';
+            name += element.NRC != null && element.NRC.length > 0 ? `<br><span>NRC: ${element.NRC}</span><br>` : '';
+            name += element.type === 'minor' ? '<br>Compras al Detalle' : '<br>Compras al por Mayor';
+            let mail = element.email !== null ? `<span>Email: <a href="mailto:${element.email}">${element.email}</a></span><br><br>` : ''
+
+            return [
+               name,
+               `<span>Llamar a : <a href="tel:${element.phone}">${element.phone}</a></span><br>
+            <span>WhatsApp: <a href="https://wa.me/${cleanNumber(element.phone)}">${element.phone}</a></span><br>
+            ${mail}` +
+               (element.direction != null && element.direction.length > 0 ? `<br><span>Dir: ${element.direction}</span>` : ''),
+            ];
+         }),
+      },
+      className: {
+         search: 'text-center ml-5 mt-2 mb-2',
+         table: 'table table-bordered'
+      },
+      language: {
+         search: {
+            placeholder: 'Escribe para buscar...',
+         },
+         sort: {
+            sortAsc: 'Ordenar Columna hacia arriba',
+            sortDesc: 'Ordenar columna hacia abajo',
+         },
+         pagination: {
+            previous: 'Anterior',
+            next: 'Siguiente',
+            navigate: (page, pages) => `Página ${page} de ${pages}`,
+            page: (page) => `Página ${page}`,
+            showing: 'Mostrando',
+            of: 'de',
+            to: 'hasta',
+            results: 'resultados',
+         },
+         loading: 'Cargando...',
+         noRecordsFound: 'No hay Clientes para mostrar',
+         error: 'Ha ocurrido un error inesperado, por favor recargue la página',
+      }
+   }).render(document.getElementById("dataTable"));
+</script>
+
+</html>

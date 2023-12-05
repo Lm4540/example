@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-5">
+          <div class="card widget-todo">
+            <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+              <h4 class="card-title d-flex">
+                Procesos Abiertos &nbsp;&nbsp;<span class="badge bg-info" data-bs-toggle="modal" data-bs-target="#newProcess" style="cursor:pointer">Agregar</span>
+              </h4>
+            </div>
+            <div class="card-body px-0 py-1">
+              <table class="table table-borderless">
+                <tbody>
+
+                  <% if (in_process.length > 0) { 
+                        in_process.forEach(element => { %>
+                  <tr>
+                    <td class="col-8"><%= indexedSucursal[element.sucursal] %></td>
+                    <td class="col-4 text-center"><a href="/inventory/product/recount/<%= element.id %>" class="btn btn-success round">Ver Detalles</a></td>
+                  </tr>
+                  <% })
+                    } else { %>
+                  <tr>
+                    <td colspan="2"> No hay elementos para mostrar...</td>
+                  </tr>
+                  <% } %>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card widget-todo">
+            <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+              <h4 class="card-title d-flex">
+                Procesos Finalizados
+              </h4>
+            </div>
+            <div class="card-body px-0 py-1">
+              <table class="table table-borderless">
+                <tbody>
+                  <% if (finished.length > 0) { 
+                        finished.forEach(element => { %>
+                  <tr>
+                    <td class="col-8"><%= indexedSucursal[element.sucursal] %></td>
+                    <td class="col-4 text-center"><a href="/inventory/product/recount/<%= element.id %>" class="btn btn-success round">Ver Detalles</a></td>
+                  </tr>
+                  <% })
+                    } else { %>
+                  <tr>
+                    <td colspan="2"> No hay elementos para mostrar...</td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="newProcess" tabindex="-1" aria-labelledby="new inventory Recount Process" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Nuevo proceso</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <form class="row g-3">
+              <div class="col-12">
+                <label for="selectSucursal" class="form-label">Sucursal</label>
+                <select name="selectSucursal" id="selectSucursal" class="form-control">
+                  <% sucursal.forEach((element) => { %>
+                  <option value="<%= element.id %>"><%= element.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </form>
+          </div>
+
+          <div class="modal-footer text-right">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="saveProcess">Guardar</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  document.addEventListener("DOMContentLoaded", (event) => {
+    document.querySelector('#saveProcess').addEventListener('click',e => {
+      let data = {
+        sucursal: document.querySelector("#selectSucursal").value,
+      }
+      postData('/inventory/product/recount', data)
+        .then(data => {
+          if (data.status == 'success') {
+            successMessage('Guardado con Exito, redirigiendo');
+            /**Redirigir a la pagina del Proveedor*/
+            setTimeout(() => {
+              location.href = `/inventory/product/recount/${data.data}`;
+            }, 1500);
+
+          } else if (data.status == 'errorMessage') {
+            e.target.disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+
+    });
+
+
+
+  });
+</script>
+
+</html>

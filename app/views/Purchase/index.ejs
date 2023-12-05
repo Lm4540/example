@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+   <style>
+      .icon-card i {
+         font-size: 4rem;
+         padding-top: 20%;
+      }
+
+      .icon-card p {
+         padding-top: 60%;
+         font-weight: 550;
+         font-size: 1rem;
+         margin-bottom: 15px;
+         ;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10 col-12">
+               <h2 class="text-center">Modulo de Compras</h2>
+
+               <div class="row justify-content-center">
+                  <a class="card icon-card text-center" href="/purchase/register">
+                     <i class="fas fa-user-friends"></i>
+                     <p>Registrar Compra</p>
+                  </a>
+
+                  <a class="card icon-card text-center" href="/purchase/registered">
+                     <i class="fas fa-user-plus"></i>
+                     <p>Compras Registradas</p>
+                  </a>
+
+                  <a class="card icon-card text-center" href="/purchase/in">
+                     <i class="fas fa-calendar-alt"></i>
+                     <p>Ingreso de Compras(a Inventario)</p>
+                  </a>
+               </div>
+            </div>
+         </div>
+      </div>
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+
+</html>

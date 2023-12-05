@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+   <style>
+      .card-round {
+         border-radius: 15px !important;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="row widgets">
+            <div class="col-12 col-sm-12 col-md-4" onclick="show_reservas()" style="cursor: pointer;">
+               <div class="card br-2rem">
+                  <div class="card-body">
+                     <div class="row">
+                        <div class="col-2"><i class="fas fa-box-alt  mt-2 text-warning" style="font-size: 200%;"></i></span></div>
+                        <div class="col-10">
+                           <p><span style="font-size: 150%;" id="reservas_total">0 Paquetes </span><br><span>Pendientes de preparación</span></p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="col-12 col-sm-12 col-md-4" onclick="show_info()" style="cursor: pointer;">
+               <div class="card br-2rem">
+                  <div class="card-body">
+                     <div class="row">
+                        <div class="col-2"><i class="fas fa-box-check mt-2 text-primary" style="font-size: 200%;"></i></span></div>
+                        <div class="col-10">
+                           <p><span style="font-size: 150%;" id="info_total">0 productos por mayor</span><br><span>Pendeintes de Revision</span></p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="col-12 col-sm-12 col-md-4" onclick="show_delivery()" style="cursor: pointer;">
+               <div class="card br-2rem">
+                  <div class="card-body">
+                     <div class="row">
+                        <div class="col-2"><i class="fas fa-shipping-fast mt-2 text-success" style="font-size: 200%;"></i></span></div>
+                        <div class="col-10">
+                           <p><span style="font-size: 150%;" id="total_delivery">0 Listo para entrega</span><br><span>Local / Delivery</span></p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="col-12 col-sm-12 col-md-4" onclick="show_trasnport()" style="cursor: pointer;">
+               <div class="card br-2rem">
+                  <div class="card-body">
+                     <div class="row">
+                        <div class="col-2"><i class="fas fa-shipping-fast mt-2 text-primary" style="font-size: 200%;"></i></span></div>
+                        <div class="col-10">
+                           <p><span style="font-size: 150%;" id="total_trasnport">0 paquetes en Ruta</span><br><span>Local / Delivery</span></p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+
+            <div class="col-12 col-sm-12 col-md-4" onclick="show_delivery_failed()" style="cursor: pointer;">
+               <div class="card br-2rem">
+                  <div class="card-body">
+                     <div class="row">
+                        <div class="col-2"><i class="fas fa-shipping-fast mt-2 text-danger" style="font-size: 200%;"></i></span></div>
+                        <div class="col-10">
+                           <p><span style="font-size: 150%;" id="total_delivery_failed">0 entregas Fallidas</span><br><span>Local / Delivery</span></p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+
+         </div>
+
+         <div class="justify-content-center">
+
+            <div class="row" id="div_reservas">
+
+            </div>
+
+            <div id="div_info" class="row"></div>
+            <div id="div_delivery" class="row"></div>
+         </div>
+      </div>
+
+      <!-- modal para mostrar la imagen -->
+      <div class="modal fade" id="showImage" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <img src="" alt="galery_image" id="galery_image">
+
+            </div>
+         </div>
+      </div>
+
+
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../Layouts/Scripts.ejs') %>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+   var _process = '<%= Helper.randomString(5) %>';
+   var socket = io.connect('<%= baseURL %>/logistics'),
+      mayor = {},
+      reservas = {},
+      clients = {},
+      entregas = {},
+      mayor_resolved = {},
+      reservas_resolved = {},
+      totals = {},
+      sellers = {},
+      prepared = {},
+      on_screen = null;
+
+
+   const update_totals = () => {
+         document.querySelector("#info_total").innerHTML = `${totals.mayor_details} Productos por Mayor`;
+         document.querySelector("#reservas_total").innerHTML = `${totals.reservas} Paquetes por armar`;
+         document.querySelector("#total_delivery").innerHTML = `${totals.prepared} Listo para entrega`;
+         document.querySelector("#total_trasnport").innerHTML = `${totals.transport} En ruta`;
+         document.querySelector("#total_delivery_failed").innerHTML = `${totals.delivery_failed} Entregas Fallidas`;
+      },
+
+      showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {}),
+      show_image = src => {
+         document.getElementById('galery_image').src = src;
+         showImageModal.toggle();
+      },
+      show_sale = id => {
+         window.location.href = `/sales/view/${id}`;
+      },
+
+      paquete_listo = id => {
+         socket.emit('package_ready', {
+            sale_id: id,
+            _process
+         });
+      }
+
+   socket.on('logistics data', data => {
+      console.log(data);
+      clients = data.clients;
+      entregas = data.entregas;
+      mayor = data.mayor;
+      reservas = data.reservas;
+      sellers = data.sellers;
+      mayor_resolved = data.mayor_resolved;
+      reservas_resolved = data.reservas_resolved;
+      totals = data.totals;
+      providers = data.providers;
+      prepared = data.prepared;
+
+      //pintar los totales
+      update_totals();
+   });
+
+   socket.on('new_sale', data => {
+      console.log(data);
+      totals.reservas += 1;
+      update_totals();
+
+      reservas[data.sale.id] = data;
+
+      if (on_screen == 'reservas') {
+
+
+         let div = document.createElement('div');
+         div.classList.add('col-12', 'col-md-6', 'mb-3');
+         div.id = `reservas_sale_${data.sale.id}`;
+
+         let content = `<div class="card card-round">
+                     <div class="card-body">
+                        <h5 class="mb-2">${data.client} 
+                           &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${data.sale.id})">Paquete Listo</span>
+                           &nbsp;<span class="badge bg-success" onclick="show_sale(${data.sale.id})">Ver Venta</span>
+                        </h5>
+                        <p>${data.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (data.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[data.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+                        <div class="list-group">`;
+         //recorrer los detalles de la venta
+         data.details.forEach(detail => {
+
+            content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
+                  <div class="d-flex justify-content-start">
+                     <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                     <div class="ml-3">
+                        <span>${detail.description}</span>
+                        <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades' : 'Unidad'}</span>
+                     </div>
+
+                  </div>
+               </span>`;
+         });
+
+
+         content += `</div>
+                     </div>
+                  </div>
+               `;
+         div.innerHTML = content;
+         document.querySelector("#div_reservas").appendChild(div);
+      }
+
+
+   });
+
+   socket.on('package_ready_success', sale => {
+      reservas[sale.id] = null;
+      reservas_resolved[sale.id] = sale;
+      document.querySelector("#div_reservas").removeChild(document.getElementById(`reservas_sale_${sale.id}`));
+      totals.reservas -= 1;
+      totals.prepared += 1;
+      update_totals();
+
+      successMessage('Paquete Listo!');
+   });
+
+   socket.on('package_ready_error', data => {
+      console.log(data);
+      if (data._process == _process) {
+         return errorMessage(data.errorMessage);
+      }
+   });
+
+
+
+   socket.on('new_major_detail', data => {
+      totals.mayor_details++;
+      mayor[data.detail.sale].details.push(data.detail);
+      //agregar el detalle a los totales
+      update_totals();
+      if (on_screen == 'mayor') {
+         show_info();
+      }
+   });
+
+
+   socket.on('deleted_major_detail', data => {
+      console.log(data);
+      let new_details = [];
+
+      //recorrer los detalles
+      mayor[data.sale_id].details.forEach(el => {
+         el.id == data.deleted_detail
+      });
+
+
+      // errorMessage('Detalle de info Eliminado')
+   });
+
+   socket.on('mayor_detail_revised_error', data => {
+      console.log(data);
+   });
+
+   socket.on('mayor_detail_revised_success', data => {
+      //recorrer los detalles
+      let restantes = new Array();
+      mayor[data.sale].details.forEach(el => {
+         if (data.details.includes(el.id)) {
+            document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+         } else {
+            restantes.push(el);
+         }
+      });
+
+      if (restantes.length < 1) {
+         update_totals();
+      } else {
+         mayor[data.sale].details = restantes;
+      }
+
+
+   });
+</script>
+<!-- Manejo de las reservas -->
+<script>
+   const show_reservas = () => {
+      document.querySelector("#div_reservas").style.display = 'flex';
+      document.querySelector("#div_info").style.display = 'none';
+      document.querySelector("#div_delivery").style.display = 'none';
+      on_screen = 'reservas';
+      document.querySelector("#div_reservas").innerHTML = '';
+
+
+      //cargar los controlles de las reservas
+      let keys = Object.keys(reservas);
+      if (keys.length > 0) {
+         let content = '';
+         keys.forEach(index => {
+            element = reservas[index];
+            if (element !== null) {
+               content += `<div class="col-12 col-md-6 mb-3" id="reservas_sale_${element.sale.id}">
+                     <div class="card card-round">
+                        <div class="card-body">
+                           <h5 class="mb-2">${element.client} 
+                              &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${element.sale.id})">Paquete Listo</span>
+                              &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                           </h5>
+                           <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+                           <div class="list-group">`;
+               //recorrer los detalles de la venta
+               element.details.forEach(detail => {
+
+                  content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
+                     <div class="d-flex justify-content-start">
+                        <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                        <div class="ml-3">
+                           <span>${detail.description}</span>
+                           <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades Vendidas' : 'Unidad vendida'}</span>
+                           <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} / ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
+                        </div>
+   
+                     </div>
+                  </span>`;
+               });
+
+
+               content += `</div>
+                        </div>
+                     </div>
+                  </div>`;
+            }
+         });
+         document.querySelector("#div_reservas").innerHTML = content;
+      } else {
+         createToast('rose', 'No hay mas tareas por completar');
+      }
+
+
+      //recorrer los elementos del arreglo
+
+
+
+   }
+
+   const detail_revised = (detail_id, sale_id) => {
+      let data = {
+         sale: sale_id,
+         details: [detail_id, ],
+      }
+
+      socket.emit('mayor_detail_revised', data);
+
+   }
+
+   const all_detail_revised = (sale_id) => {
+      let data = {
+         sale: sale_id,
+         details: [],
+      }
+      mayor[sale_id].details.forEach(e => {
+         data.details.push(e.id);
+      })
+      socket.emit('mayor_detail_revised', data);
+   }
+
+   const package_delivered = (sale) => {
+     // socket.emit('pakage_delivered', sale)
+   }
+   const package_transport = (sale) => {
+      //socket.emit('pakage_trasnport', sale)
+   }
+
+
+   const show_info = () => {
+      document.querySelector("#div_reservas").style.display = 'none';
+      document.querySelector("#div_info").style.display = 'flex';
+      document.querySelector("#div_delivery").style.display = 'none';
+      on_screen = 'mayor';
+      document.querySelector("#div_reservas").innerHTML = '';
+
+
+      //cargar los controlles de las reservas
+      let keys = Object.keys(mayor);
+      if (keys.length > 0) {
+         let content = '';
+         keys.forEach(index => {
+            element = mayor[index];
+            if (element !== null) {
+               content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                     <div class="card card-round">
+                        <div class="card-body">
+                           <h5 class="mb-2">${element.client} 
+                              &nbsp;<span class="badge bg-danger" onclick="all_detail_revised(${element.sale.id})">Todo Revisado y Guardado</span>
+                              &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                           </h5>
+                           
+                           <div class="list-group">`;
+               //recorrer los detalles de la venta
+               element.details.forEach(detail => {
+
+                  content += `<span class="list-group-item list-group-item-action py-3 lh-sm" id="info_detail_div_${detail.id}">
+                     <div class="d-flex justify-content-start" >
+                        <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                        <div class="ml-3">
+                           <span>${detail.description}</span>
+                           <br><span>${detail.cant - detail.ready} Unidades por revisar </span>
+                           <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
+                           <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
+                        </div>
+   
+                     </div>
+                  </span>`;
+               });
+
+
+               content += `</div>
+                        </div>
+                     </div>
+                  </div>`;
+            }
+         });
+         document.querySelector("#div_info").innerHTML = content;
+      } else {
+         createToast('rose', 'No hay mas tareas por completar');
+      }
+   }
+
+
+   const show_delivery = () => {
+      document.querySelector("#div_reservas").style.display = 'none';
+      document.querySelector("#div_info").style.display = 'none';
+      document.querySelector("#div_delivery").style.display = 'flex';
+
+      on_screen = 'delivery';
+
+      let keys = Object.keys(prepared);
+      if (keys.length > 0) {
+         let content = '';
+         keys.forEach(index => {
+            element = prepared[index];
+            if (element !== null) {
+               let badge  = `&nbsp;<span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               if(element.sale.delivery_type == 'delivery'){
+                  badge  = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
+               }
+
+               content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                     <div class="card card-round">
+                        <div class="card-body">
+                           <h5 class="mb-2">${element.client} 
+                              ${badge}
+                              &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                           </h5>`;
+               content += `<div>
+                     <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+
+                     <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
+
+                     <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
+                  </div>`;
+
+
+               content += `</div>
+                     </div>
+                  </div>`;
+            }
+         });
+         document.querySelector("#div_delivery").innerHTML = content;
+      } else {
+         createToast('rose', 'No hay mas tareas por completar');
+      }
+   }
+</script>
+
+</html>

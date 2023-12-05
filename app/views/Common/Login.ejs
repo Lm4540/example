@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <base href="<%=baseURL%>/" />
+   <title>Rivera's ERP</title>
+   <link rel="stylesheet" href="assets/css/bootstrap.css">
+   <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon">
+   <link rel="stylesheet" href="assets/css/icon-font.css">
+   <link rel="stylesheet" href="assets/css/app.css">
+   <link rel="stylesheet" href="assets/css/toastr.css">
+   <style>
+      #btnLogIn {
+         background-color: #1c2136;
+      }
+
+      #auth .card {
+         box-shadow: 0 2px 2px #eeeee4;
+         border: none;
+         background: hsla(228, 48%, 16%, 0.801);
+         color: white;
+      }
+
+      .form-control {
+         color: white;
+      }
+
+      .form-control:focus {
+         color: #cccccc;
+      }
+   </style>
+</head>
+
+<body>
+   <div id="sidebar"></div>
+   <div id="auth">
+      <div class="container">
+         <div class="row">
+            <div class="col-1 col-md-4"></div>
+            <div class="col-10 col-md-4">
+               <div class="card">
+                  <div class="card-body">
+                     <div class="text-center mb-5">
+                        <img src="assets/images/favicon.svg" height="48" class='mb-4'>
+                        <h3>Iniciar Sesion</h3>
+                     </div>
+                     <form>
+                        <div class="form-group">
+                           <label for="username">Usuario</label>
+                           <input type="text" class="form-control" id="username">
+                        </div>
+
+                        <div class="form-group position-relative has-icon-right">
+                           <div class="clearfix">
+                              <label for="password">Contraseña</label>
+                           </div>
+                           <input type="password" class="form-control" placeholder="Contraseña" id="InputPass">
+                           <div class="form-control-icon" id="EyeIcon">
+                              <i class="fas fa-eye" style="margin-top: 18px; font-size: 125%; cursor: pointer;" onclick="showPass()"></i>
+
+                           </div>
+                        </div>
+
+                        <div class='form-check clearfix'>
+                           <div class="checkbox float-left">
+                              <input type="checkbox" id="checkRememberMe" class='form-check-input'>
+                              <label for="checkbox1">Recuerdame</label>
+                           </div>
+                        </div>
+                     </form>
+                     <div class="clearfix text-center">
+                        <button class="btn btn-secondary  mt-3" id="btnLogIn" onclick="sendData()">Iniciar Session</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-1 col-md-4"></div>
+         </div>
+      </div>
+
+   </div>
+   <script>
+      const _baseURL = '<%=baseURL%>';
+      const VoiceEnabled = true;
+  </script>
+   <script src="assets/js/toastr.js"></script>
+   <script src="assets/js/main.js"></script>
+   <script>
+      const showPass = () => {
+         document.querySelector('#InputPass').type = 'text';
+         document.querySelector('#EyeIcon').innerHTML = `<i class="fas fa-eye-slash"  style="margin-top: 18px; font-size: 125%; cursor: pointer;" onclick="hidePass()"></i>`;
+      }
+
+      const hidePass = () => {
+         document.querySelector('#InputPass').type = 'password';
+         document.querySelector('#EyeIcon').innerHTML = `<i class="fas fa-eye" style="margin-top: 18px; font-size: 125%; cursor: pointer;" onclick="showPass()"></i>`;
+      }
+
+
+      const sendData = () => {
+         let username = document.getElementById('username').value;
+         let password = document.getElementById('InputPass').value;
+         let remember = document.getElementById('checkRememberMe').checked;
+
+         if (username == '' || username.length < 4) {
+            return errorMessage('Proporcione un nombre de usuario');
+         } else if (password == '' || password.length < 4) {
+            return errorMessage('Ingrese su Contraseña o Pin de Acceso');
+         } else {
+            postData('/login', {
+               username,
+               password,
+               remember,
+            }).then(data => {
+               if (data.status == 'success') {
+                  successMessage(data.message);
+                  fetch('/loginValidate');
+                  setTimeout(() => {
+                     window.location.reload();
+                  }, 3000);
+               } else {
+                  return errorMessage(data.status == 'errorMessage' ? data.message : 'Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+               }
+
+            });
+         }
+      }
+
+      var input = document.getElementById("InputPass").addEventListener("keypress", function(event) {
+         if (event.key === "Enter") {sendData();}
+      });
+   </script>
+</body>
+
+</html>

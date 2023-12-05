@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+<% options = `
+<li class="dropdown ml-5">
+	<a data-bs-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+	  Opciones
+	</a>
+	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
+	  <a class="list-group-item" href="/inventory/product/kardex/${product.id}"><i class="fas fa-clipboard-list mr-3"></i>Kardex</a>
+	  <a class="list-group-item" href="/inventory/product/move/${product.id}"><i class="fas fa-list-alt mr-3"></i>Movimientos</a>
+	  <a class="list-group-item" href="/inventory/product/in/${product.id}"><i class="fas fa-arrow-alt-from-right mr-3"></i>Ingreso Manual</a>
+    <a class="list-group-item" href="/inventory/product/out/${product.id}"><i class="fas fa-arrow-alt-from-left mr-3"></i>Salida Manual</a>
+	  <div class="dropdown-divider"></div>
+    <span class="list-group-item"  onclick="dar_baja()"><i class="fas fa-long-arrow-down mr-3"></i>Dar de Baja</span>
+    <a class="list-group-item" href="/inventory/product/edit/${product.id}"><i class="fas fa-edit mr-3"></i>Editar</a>
+    <a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+	</div>
+  </li>
+ `; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+
+      <div class="row justify-content-center">
+        <section class="section col-8">
+          <div class="row">
+            <div class="col-12 col-md-5">
+              <% if(product.image !== null && product.image.length > 0) {%>
+              <img src="<%= product.image %>" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
+              <% }else{ %>
+              <img src="/upload/images/image-not-found.png" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
+              <% } %>
+            </div>
+            <div class="col-12 col-md-6 ml-3">
+              <h2>
+                <strong><%= product.name %></strong> #SKU(<%= product.internal_code %>) <button class="btn btn-soft-danger" onclick="copyNumber()"><i class="fas fa-copy"></i></button>
+              </h2>
+              <a href="/inventory/productClassifications/view/<%= product.classification %>" class="badge bg-green"> <%= classification.name %></a><br>
+              <span style="font-size: 3em; font-weight: bold;">$<%= Helper.money_format(product.base_price) %></span> &nbsp;
+              <span style="font-size: 2.2em; font-weight: bold;" class="ml-2">($<%= Helper.money_format(product.major_price) %>)</span>
+              <br>
+              <b>
+                <% if (stock > 0) { %>
+                  <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
+                  
+                  <% } else { %>
+                    <p style="font-size: 125%;" class="text-danger">No hay Existencias</p>
+                    
+                <% } %>
+              </b>
+              <br>
+              <p>
+                <%= product.description %>
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="Stock_detail"  tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Detalle de Existencias (SKU: <%= product.internal_code%>)</h5>
+      </div>
+      <div class="modal-body">
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                <th>Sucursal</th>
+                <th>Existencias</th>
+                <th>Reservado</th>
+                <th>Disponible</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% almacen.forEach(element => { %>
+                <tr>
+                  <td><%= element.name %></td>
+                  <td class="text-center"><%= element.cant %></td>
+                  <td class="text-center"><%= element.reserved %></td>
+                  <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
+                </tr>
+              <% })%>
+            </tbody>
+          </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+
+const copyNumber = () => {
+      copiarAlPortapapeles('<%= product.internal_code %>');
+      successMessage('Copiado');
+   }
+
+   const dar_baja = () => {
+    fetch('/inventory/product/archive/<%=product.id%>').then(data => data.json()).then(response => {
+      if(response.status == 'error'){
+        return errorMessage(response.message);
+      }else if(response.status == 'success'){
+        successMessage(response.message);
+        setTimeout(() => {window.location.href = '/inventory/product'}, 2000);
+      }
+    }).catch(response => console.log(response));
+   }
+
+</script>
+
+</html>

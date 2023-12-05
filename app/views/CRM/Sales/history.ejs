@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+<% options = `<a class="ml-5" href="/sales"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+
+      <div class="row justify-content-center">
+        <section class="section col-12">
+          <div class="card">
+            <div class="card-header">
+              <div class="row">
+                <div class="col form-group">
+                  <label for="init_date">Desde la Fecha</label>
+                  <input type="date" class="form-control" id="init_date">
+                </div>
+                <div class="col form-group">
+                  <label for="end_date">Hasta la Fecha</label>
+                  <input type="date" class="form-control" id="end_date">
+                </div>
+                <div class="col form-group">
+                  <label for="sucursal">Sucursal</label>
+                  <select name="sucursal" id="sucursal" class="form-control">
+                    <% if (sucursals.length > 0) { %>
+                    <% sucursals.forEach(suc => { %>
+                    <option value="<%= suc.id %>"><%= suc.name %></option>
+                    <% }) %>
+                    <% } %>
+                    <option value="all">Todas las sucursales</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <button class="btn btn-primary mt-3" id="search_details">Cargar Movimientos</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table table-striped table-hover table-bordered table-sm">
+                <thead class="text-center">
+                  
+                </thead>
+                <tbody id="details_body">
+
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </section>
+      </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+
+
+
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  document.addEventListener("DOMContentLoaded", (event) => {
+    
+    const get_details = async (init, end, sucursal) => {
+      var response = await fetch(`/sales/history_moves?init=${init}&end=${end}&sucursal=${sucursal}`, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+      });
+      return response.json();
+    }
+
+    const charge_details = async () => {
+      let init = document.querySelector('#init_date').value + 'T00:00:00';
+      let end = document.querySelector('#end_date').value + 'T23:59:59';
+      let sucursal = document.querySelector('#sucursal').value;
+
+      if (init.length < 10 || end.length < 10 || end < init) {
+        return errorMessage('Seleccione un rango de fechas correcto')
+      }
+
+
+      //buscando los detalles
+      let details = await get_details(init, end, sucursal);
+
+
+
+
+
+    }
+
+    //cargar los controles con la fecha actual
+    let d = new Date();
+    let m = d.getMonth() + 1;
+    m = m > 9 ? m : '0' + m;
+
+    document.getElementById('init_date').value = `${d.getFullYear()}-${m}-01`;
+    let _day = d.getDate() < 10 ? `0${d.getDate()}` : d.getDate();
+    document.getElementById('end_date').value = `${d.getFullYear()}-${m}-${_day}`;
+    console.log(`${d.getFullYear()}-${m}-${d.getDate()}`, `${d.getFullYear()}-${m}-01` );
+
+    charge_details();
+    document.querySelector('#search_details').addEventListener('click', async (e) => {
+      charge_details();
+    });
+
+  });
+</script>
+
+</html>

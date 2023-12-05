@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .botonF1 {
+         cursor: pointer;
+         z-index: 1050;
+         width: 60px;
+         height: 60px;
+         border-radius: 100%;
+         background: #568add !important;
+         right: 0;
+         bottom: 0;
+         display: scroll;
+         position: fixed;
+         margin-right: 2rem;
+         margin-bottom: 2rem;
+         border: none;
+         outline: none;
+         color: #FFF;
+         font-size: 36px;
+         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
+         transition: .3s
+      }
+
+      .botonF1:disabled,
+      .botonF1[disabled] {
+         border: 1px solid #999999 !important;
+         background-color: #cccccc !important;
+         color: #666666 !important;
+         cursor: not-allowed;
+      }
+
+      .botonF1:hover {
+         transform: scale(1.1)
+      }
+
+      .botonF1 i {
+         padding-left: 4px;
+         font-size: 100%;
+         color: white;
+      }
+
+      .product_item .card,
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item {
+         font-size: 110%;
+         min-height: 150px;
+      }
+
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item p {
+         margin-bottom: .2rem;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <button class="botonF1" id="btn_save"><span><i class="fas fa-save"></i></span></button>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-4">Venta en Sala: <%= sucursal.name %> <span id="span_amount"></span></h3>
+
+
+
+         <div class="row justify-content-center">
+
+            <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+               <div class="row">
+                  <div class="col-10">
+                     <div class="form-group">
+                        <label for="clientSelect" style="font-size: 120%;">Escribe el nombre, DUI/NCR o Telefono del Cliente</label>
+                        <select name="clientSelect" id="clientSelect" class="form-control"></select>
+                     </div>
+                  </div>
+                  <div class="col-2">
+                     <button class="btn btn-warning mt-4" data-bs-toggle="modal" data-bs-target="#registerClient">Registrar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="row justify-content-center mt-4" id="_tr_details"></div>
+
+         <div class="row justify-content-center">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+               <div class="card">
+                  <div class="card-body">
+                     <div id="form_adding" style="margin-bottom: 20px;">
+
+                        <div id="inventory_detail" class="row mt-4">
+                           <img alt=" " id="product__image" class="img round mb-4" style="max-width: 300px; display: none; margin:auto">
+                           <div class="form-group">
+                              <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                              <select name="productSelect" id="productSelect" class="form-control"></select>
+                           </div>
+
+                           <div class="mb-3 col-12">
+                              <span>Precio:</span>
+                              <div class="form-group">
+                                 <select name="priceSelect" id="priceSelect" class="form-control"></select>
+                                 <label for="priceSelect">Selecciona una opción</label>
+                              </div>
+                           </div>
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="personalizedPrice" type="number" step="0.01" placeholder="Precio Personalizado" disabled>
+                              <label for="personalizedPrice">Precio Personalizado</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="product_cant" type="number" step="1" placeholder="Cantidad" value="1">
+                              <label for="product_cant">Cantidad</label>
+                              <small class="text-danger" id="max_product_cant"></small>
+                           </div>
+                        </div>
+                        <div class="text-center mt-3">
+                           <button class="btn btn-outline-primary" id="add_detail">Agregar</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- modal para los datos de la entrega -->
+      <div class="modal fade" id="registerClient" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Cliente</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+                  <form class="row g-3">
+                     <div class="form-floating mb-3 col-12">
+                        <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente">
+                        <label for="clientName">Nombre del cliente</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="clientPhone" type="text" placeholder="Nunmero Telefonico">
+                        <label for="clientPhone">Numero Telefonico</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="clientMail" type="text" placeholder="SKU">
+                        <label for="clientMail">E-Mial</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-12">
+                        <input class="form-control" id="clientDirection" type="text" placeholder="SKU">
+                        <label for="clientDirection">Dirección del Cliente</label>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="clientType">Tipo de Compras</label>
+                        <select name="clientType" id="clientType" class="form-control">
+                           <option value="minor">Comprador al Detalle</option>
+                           <option value="major">Comprador por Mayor</option>
+                        </select>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="isLocal">¿Cliente Local?</label>
+                        <select name="isLocal" id="isLocal" class="form-control">
+                           <option value="true">Si, es cliente local</option>
+                           <option value="false">No, es cliente Internacional</option>
+                        </select>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="clientDUI" type="text" placeholder="05507306-7">
+                        <label for="clientDUI">NIT/DUI</label>
+                     </div>
+
+
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="clientNRC" type="text" placeholder="1525-8">
+                        <label for="clientNRC">NRC</label>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label for="clientClassification">Clasificación del Contribuyente</label>
+                        <select name="clientClassification" id="clientClassification" class="form-control">
+                           <option value="ninguno">No Clasificado</option>
+                           <option value="otro">Otro Contribuyente</option>
+                           <option value="mediano">Mediano Contribuyente</option>
+                           <option value="gran">Gran Contribuyente</option>
+                        </select>
+                     </div>
+
+                     <div class=" mb-3 col-md-6">
+                        <label>Vendedor Asignado:</label>
+                        <input type="text" class="form-control" disabled value="Ninguno">
+                     </div>
+                  </form>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="saveClient">Guardar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="addInvoice" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_type">Tipo de Documento</label>
+                           <select name="invoice_type" id="invoice_type" class="form-control">
+
+                           </select>
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_number">Numero del Documento</label>
+                           <input type="number" class="form-control" step="1" id="invoice_number">
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_name">Nombre en la factura</label>
+                     <input type="text" class="form-control" name="invoice_name" id="invoice_name">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_direction">Direccion</label>
+                     <input type="text" class="form-control" name="invoice_direction" id="invoice_direction">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_giro">Giro</label>
+                     <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
+                  </div>
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nit">NIT/DUI</label>
+                           <input type="text" class="form-control" name="invoice_nit" id="invoice_nit">
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nrc">NRC</label>
+                           <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
+                           <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+                           <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="row">
+                     <div class="col-8">
+                        <h4>Monto a Pagar</h4>
+                     </div>
+                     <div class="col-4">
+                        <h4> $<span id="span_amount2">150.00</span></h4>
+                     </div>
+                  </div>
+
+                  <div class="row" id="payments">
+
+                  </div>
+
+                  <div class="row">
+                     <div class="col-8">
+                        <h4>Monto Pagado</h4>
+                     </div>
+                     <div class="col-4">
+                        <h4>= $<span id="span_payed_amount">0.00</span></h4>
+                     </div>
+                  </div>
+
+                  <div class="row">
+                     <div class="col-8">
+                        <h4>Cambio</h4>
+                     </div>
+                     <div class="col-4">
+                        <h4> $<span id="span_payment_change" style="color:red">0.00</span></h4>
+                     </div>
+                  </div>
+
+                  <div class=" row text-center mt-4" style="cursor:pointer;" id="methods_payment_div">
+                     <div class="col" onclick="change_payment_form('money')">
+                        <i class="fas fa-money-bill-alt" style="color:#0c6909; font-size: 3rem;"></i>
+                        <p class="white_dark">Efectivo</p>
+                     </div>
+
+                     <div class="col" onclick="change_payment_form('transfer')">
+                        <i class="fas fa-dollar-sign" style="color:#cf225c; font-size: 3rem;"></i>
+                        <p class="white_dark">Transferencia</p>
+                     </div>
+
+                     <div class="col" onclick="change_payment_form('credit card')">
+                        <i class="fab fa-cc-visa" style="color:#1a10a8; font-size: 3rem;"></i>
+                        <p class="white_dark">Tarjeta de Credito (POS)</p>
+                     </div>
+
+                  </div>
+
+                  <div class="row g-3" id="add_payment_div">
+
+                     <div class="form-group mb-3 col-12">
+                        <label for="payment_amount">Monto Recibido</label>
+                        <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
+
+                     </div>
+                     <div id="other_pays">
+
+                        <div class="form-group mb-3 col-12">
+                           <label for="payment_bank">Banco</label>
+                           <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
+                        </div>
+
+                        <div class="form-group mb-3 col-12">
+                           <label for="payment_reference">Numero de Referencia / Numero de Voucher </label>
+                           <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
+                        </div>
+                     </div>
+
+                     <div class="col-12 text-center"><button class="btn btn-warning round btn-sm" id="btnAddPayment">Agregar Pago</button></div>
+                  </div>
+
+
+               </div>
+
+
+
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="saveReal" disabled>Guardar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/grid/gridjs.js"></script>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+   var _process = '<%= Helper.randomString(5) %>';
+   var socket = io.connect('<%= baseURL %>/sales');
+   //const socket = io('/logistics');
+   socket.on('new_sale_in_sucursal_error', data => {
+      console.log(data);
+      if (data._process == _process) {
+         return errorMessage(data.errorMessage);
+      }
+   });
+
+   socket.on('new_sale_in_sucursal_saved', data => {
+      console.log(data);
+      if (data._process == _process) {
+         successMessage('Guardado con Exito');
+         window.location.href = `/sales/print_invoice/${data.sale}`;
+      }
+   });
+
+   var product_in_select2 = {},
+      clients_in_select_to = {},
+      server_data = {},
+      product_last_val = '',
+      client_last_val = '',
+      selectProduct = document.querySelector('#productSelect'),
+      selectClient = document.querySelector('#clientSelect'),
+      option_default = 'minor',
+      detail_number = 0,
+      series = {},
+      amount = 0.00,
+      payed_amount = 0.00,
+      payments = {
+         money: 0.00,
+         credit_card: {
+            amount: 0.00,
+            details: [],
+         },
+         transfer: {
+            amount: 0.00,
+            details: [],
+         }
+      },
+      added = [],
+      details = [],
+      indexes = {},
+      tbody = document.querySelector('#_tr_details'),
+      current_payment_form = 'money',
+      s_options = {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      },
+      modal_new_client = new bootstrap.Modal(document.getElementById('registerClient'), {
+         keyboard: true
+      }),
+      modal_payment = new bootstrap.Modal(document.getElementById('addPaymentModal'), {
+         keyboard: false
+      }),
+      modal_invoice = new bootstrap.Modal(document.getElementById("addInvoice"), {
+         keyboard: true
+      });
+
+
+
+   const choices_product = new Choices(selectProduct, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+   const choices_client = new Choices(selectClient, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+   const change_payment_form = (_form) => {
+      current_payment_form = _form;
+
+      if (_form == 'money') {
+         setTimeout(() => {
+            document.querySelector("#payment_amount").focus()
+         }, 500);
+         document.querySelector("#other_pays").style.display = 'none';
+      } else {
+         document.querySelector("#payment_amount").value = amount - payed_amount;
+         setTimeout(() => {
+            document.querySelector("#payment_bank").focus()
+         }, 500);
+         document.querySelector("#other_pays").style.display = 'block';
+      }
+   }
+
+   const deleteDetail = (index) => {
+      //restar el monto y actualizar el total
+      amount -= (details[index].cant * details[index].price);
+      document.querySelector("#span_amount").innerHTML = `($${money_format(amount)})`;
+
+      // Eliminar el detalle y la tarjeta HTML
+      // added = added.filter(element => element != details[index].product);
+      delete details[index];
+      tbody.removeChild(document.querySelector(`#detail_${index}`));
+
+      detail_number -= 1;
+      document.querySelector("#btn_save").disabled = detail_number < 1;
+   };
+
+   const clean_detail_inputs = () => {
+
+      document.getElementById('product_cant').value = "1";
+      document.getElementById('personalizedPrice').value = "";
+      document.getElementById('personalizedPrice').disabled = true;
+      document.getElementById('personalizedPrice').style.display = 'none';
+      document.getElementById('product__image').style.display = 'none';
+      choices_product.removeActiveItems();
+   }
+
+   const doSearchProduct = async (val) => {
+
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
+      //Procesar la respuest para que me guarde los productos en cuestion en una variable
+      let res = await response.json();
+      product_in_select2 = {};
+      res.forEach(element => product_in_select2[element.id] = element);
+      return res;
+   }
+
+   var timer_product;
+   selectProduct.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (product_last_val !== valor_actual) {
+         product_last_val = valor_actual;
+         clearTimeout(timer_product);
+         timer_product = setTimeout(async () => {
+            let data = await doSearchProduct(e.detail.value);
+            choices_product.setChoices(data, 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+
+   /*Busqueda de Clientes*/
+   const doSearchClient = async (val) => {
+      const response = await fetch(`/sales/client/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
+
+      let res = await response.json();
+      clients_in_select_to = {};
+      res.forEach(element => clients_in_select_to[element.value] = element.client);
+      return res;
+
+      // return await response.json();
+   }
+
+   var timer_client;
+   selectClient.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (client_last_val !== valor_actual) {
+         client_last_val = valor_actual;
+         clearTimeout(timer_client);
+         timer_client = setTimeout(async () => {
+            choices_client.setChoices(await doSearchClient(e.detail.value), 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+   const get_facturation_options = async () => {
+      modal_invoice.toggle();
+      modal_payment.toggle();
+      series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+
+      let client = clients_in_select_to[server_data.client];
+
+      document.querySelector("#invoice_name").value = client.name;
+      document.querySelector("#invoice_direction").value = client.direction;
+      // document.querySelector("#invoice_giro").value = client.name;
+      document.querySelector("#invoice_nit").value = client.NIT_DUI;
+      document.querySelector("#invoice_nrc").value = client.NRC;
+
+      let k = Object.keys(series);
+      let content = '`<option value="0">Seleccione una opcion</option>`';
+      let df = false;
+      k.forEach(key => {
+         let _serie = series[key];
+         if (df == false) {
+            if (client.classification == 'ninguno' && _serie.type == "fcf") {
+               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+               document.querySelector("#invoice_number").value = _serie.number;
+               df = true;
+
+            } else if (client.classification != 'ninguno' && _serie.type == "ccf") {
+
+               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+               document.querySelector("#invoice_number").value = _serie.number;
+               df = true;
+            } else {
+               content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+            }
+         } else {
+            content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+         }
+
+      });
+
+      document.querySelector("#invoice_type").innerHTML = content;
+   };
+
+
+
+   const clean_payment_controls = () => {
+      if (payed_amount == amount) {
+         document.querySelector("#saveReal").disabled = false;
+         document.querySelector("#methods_payment_div").style.display = 'none';
+         document.querySelector("#add_payment_div").style.display = 'none';
+      }
+
+      document.querySelector("#payment_amount").value = (amount - payed_amount);
+      document.querySelector("#payment_bank").value = "";
+      document.querySelector("#payment_reference").value = "";
+   }
+
+   document.addEventListener('DOMContentLoaded', event => {
+      // modal_payment.toggle();
+
+      document.querySelector("#invoice_type").addEventListener('change', e => {
+         if (e.target.value !== "0") {
+            document.querySelector("#invoice_number").value = series[e.target.value].number;
+         } else {
+            createToast('rose', 'Seleccione el tipo de documento', null);
+         }
+
+      });
+
+
+      document.querySelector("#btn_save").disabled = true;
+
+      selectProduct.addEventListener('change', e => {
+         let product = product_in_select2[selectProduct.value];
+         if (product != undefined) {
+            document.querySelector('#priceSelect').innerHTML = option_default === 'minor' ? `<option value="minor" selected>Precio de Detalle $${product.price}</option>
+               <option value="major">Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>` : `<option value="minor">Precio de Detalle $${product.price}</option>
+               <option value="major" selected>Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>`;
+
+            document.querySelector("#max_product_cant").innerHTML = `Cantidad maxima ${product.stock - product.reserved}`;
+            document.querySelector("#product__image").src = product.image;
+            document.getElementById('product__image').style.display = 'block';
+         }
+      });
+
+      document.querySelector("#priceSelect").addEventListener('change', e => {
+         if (document.querySelector("#priceSelect").value == 'none') {
+            document.getElementById('personalizedPrice').style.display = 'block';
+            document.querySelector("#personalizedPrice").disabled = false;
+            document.querySelector("#personalizedPrice").focus();
+
+         } else {
+            document.getElementById('personalizedPrice').style.display = 'none';
+            document.querySelector("#personalizedPrice").disabled = true;
+         }
+      });
+
+      document.querySelector('#add_detail').addEventListener('click', e => {
+         //OBTENER LA DATA
+         let cant = document.getElementById('product_cant').value,
+            price_type = document.getElementById('priceSelect').value,
+            product = product_in_select2[document.getElementById('productSelect').value];
+
+         if (product == undefined || product == null) {
+            return errorMessage('No ha Seleccionado un producto');
+         }
+         let price = price_type == 'none' ?
+            Number.parseFloat(document.getElementById('personalizedPrice').value) :
+            (price_type == 'minor' ? product.price : product.major);
+
+         if (cant == "" || price == "" || price == undefined || price == null) {
+            return errorMessage('Seleccione un precio y una cantidad validos');
+         } else {
+            cant = Number.parseInt(cant);
+
+            if (price == '' || price < 0) {
+               return errorMessage('Si desea realizar una regalía por favor escriba el precio 0');
+            } else if (cant < 1) {
+               document.getElementById('product_cant').value = '1';
+               document.querySelector("#freeCant").value = "1";
+               return errorMessage('La cantidad no puede ser menor a 1');
+            }
+
+
+            if (added.includes(product.id)) {
+               //Sumar la cantidad agregada
+               let coincide = null,
+                  sum = 0;
+               let ins = indexes[product.id];
+               for (let index = 0; index < ins.length; index++) {
+                  if (details[ins[index]] !== undefined) {
+                     sum += details[ins[index]].cant;
+                     if (details[ins[index]].price == price) {
+                        coincide = ins[index];
+                     }
+                  }
+               }
+
+
+
+               if ((cant + sum) > (product.stock - product.reserved)) {
+                  return errorMessage(`La cantidad Maxima de este producto disponible en su sucursal es ${product.stock - product.reserved}`);
+               } else {
+                  let div = null;
+                  amount += (cant * price);
+
+                  if (coincide !== null) {
+                     //actualizar la cantidad
+                     details[coincide].cant += cant;
+                     cant = details[coincide].cant;
+                     div = document.querySelector(`#detail_${coincide}`);
+                  } else {
+                     //agregar el detalle a las linea
+                     coincide = details.length;
+
+                     //AGREGAR A LA LISTA DE DETALLES
+                     details.push({
+                        product: product.id,
+                        cant,
+                        price,
+                        price_type,
+                     });
+                     indexes[product.id].push(coincide)
+                     detail_number++;
+
+                     div = document.createElement('div');
+                     div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
+                     div.id = `detail_${coincide}`;
+                     tbody.appendChild(div);
+
+                  }
+
+                  div.innerHTML = `<div class="card">
+                              <div class="card-body text-center">
+                                 <img src="${product.image}" alt="Image" class="product_image" style="width: 150px; "><br>
+                                 <p style="cursor:pointer;">${product.name}</p>
+                                 <p> <b>${cant}</b> X $${money_format(price)} = $${money_format(cant  * price)}</p>
+                                 <button class="btn btn-outline-danger" onclick="deleteDetail(${coincide}, ${product.id})">Quitar</button>
+                              </div>
+                           </div>`;
+
+               }
+               clean_detail_inputs();
+            } else {
+               if (cant > product.stock - product.reserved) {
+                  return errorMessage(`La cantidad Maxima de este producto disponible en su sucursal es ${product.stock - product.reserved}`);
+               }
+
+               let index = details.length;
+
+               //AGREGAR A LA LISTA DE DETALLES
+               details.push({
+                  product: product.id,
+                  cant,
+                  price,
+                  price_type,
+               });
+               added.push(product.id);
+               indexes[product.id] = [index, ];
+               //Actualizar el monto
+               detail_number++;
+               amount += (cant * price);
+
+
+
+               //AGREGAR AL html
+               let div = document.createElement('div');
+               div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
+               div.id = `detail_${index}`;
+               tbody.appendChild(div);
+
+               div.innerHTML = `<div class="card">
+                              <div class="card-body text-center">
+                                 <img src="${product.image}" alt="Image" class="product_image" style="width: 150px; "><br>
+                                 <p style="cursor:pointer;">${product.name}</p>
+                                 <p> <b>${cant}</b> X $${money_format(price)} = $${money_format(cant  * price)}</p>
+                                 <button class="btn btn-outline-danger" onclick="deleteDetail(${index}, ${product.id})">Quitar</button>
+                              </div>
+                           </div>`;
+               clean_detail_inputs();
+            }
+
+            document.querySelector("#btn_save").disabled = false;
+            document.querySelector("#span_amount").innerHTML = `($${money_format(amount)})`;
+         }
+      });
+
+      document.querySelector("#btn_save").addEventListener('click', e => {
+         if (selectClient.value == null || selectClient.value == "") {
+            return errorMessage('Seleccione un Cliente');
+         }
+         modal_payment.toggle();
+         document.querySelector("#span_amount2").innerHTML = `${money_format(amount)}`;
+         //reiniciar el registro del pago
+         payments = {
+            money: 0.00,
+            credit_card: {
+               amount: 0.00,
+               details: [],
+            },
+            transfer: {
+               amount: 0.00,
+               details: [],
+            }
+         };
+
+         payed_amount = 0.00,
+
+
+            document.querySelector('#span_payed_amount').innerHTML = "0.00";
+         document.querySelector('#span_payment_change').innerHTML = "0.00";
+         document.querySelector("#payments").innerHTML = "";
+         document.querySelector("#saveReal").disabled = true;
+         document.querySelector("#methods_payment_div").style.display = 'flex';
+         document.querySelector("#add_payment_div").style.display = 'block';
+
+         setTimeout(change_payment_form('money'), 500);
+      });
+
+      document.querySelector("#btnAddPayment").addEventListener('click', e => {
+         //verificar el monto dle pago sea valido
+         let val = Number.parseFloat(document.querySelector("#payment_amount").value);
+         if (Number.isNaN(val) || val < 0.01) {
+            return errorMessage('Sea serio, agregue el monto del pago recibido');
+         }
+         // verificar el tipo de pago
+
+         if (current_payment_form == 'money') {
+            payments.money += val;
+            payed_amount += val;
+
+            clean_payment_controls();
+         } else {
+            if (val > (amount - payed_amount)) {
+               return errorMessage(`El monto no puede ser mayor a  ${money_format(amount - payed_amount)} dolares. Corrija los datos o vuelva a iniciar el registro del pago`);
+            } else {
+               //obtener los demas datos
+               let bank = document.querySelector("#payment_bank").value;
+               let reference = document.querySelector("#payment_reference").value;
+               if (bank.length < 3 || bank == "" || reference == "" || reference.length < 3) {
+                  return errorMessage('Debe completar los campos Banco y Referencia de la transacción');
+               } else {
+                  if (current_payment_form == 'credit_card') {
+                     payments.credit_card.amount += val;
+                     payments.credit_card.details.push({
+                        amount: val,
+                        bank,
+                        reference
+                     });
+                  } else {
+                     payments.transfer.amount += val;
+                     payments.transfer.details.push({
+                        amount: val,
+                        bank,
+                        reference
+                     });
+                  }
+
+                  payed_amount += val;
+
+
+
+                  clean_payment_controls();
+               }
+            }
+         }
+
+         //recorrer los pagos y escribir los datos 
+         //en los Span
+         document.querySelector('#span_payed_amount').innerHTML = money_format(payed_amount);
+
+         document.querySelector('#span_payment_change').innerHTML = payed_amount > amount ? money_format(payed_amount - amount) : '--';
+
+
+         //recorrer los pagos para colocarlos en la suma de lista de los detalles
+         let content = "";
+         if (payments.money > 0.00) {
+            content += `<div class="col-8">
+                        <h5>Efectivo</h5>
+                     </div>
+                     <div class="col-4">
+                        <h5> $${money_format(payments.money)}</h5>
+                     </div>`;
+
+
+         }
+
+         if (payments.transfer.amount > 0.00) {
+            payments.transfer.details.forEach(tr => {
+               content += `<div class="col-8">
+                        <h5>Transfer Banco ${tr.bank} / Ref# ${tr.reference}</h5>
+                     </div>
+                     <div class="col-4">
+                        <h5> $${money_format(tr.amount)}</h5>
+                     </div>`;
+            });
+         }
+
+         if (payments.credit_card.amount > 0.00) {
+            payments.credit_card.details.forEach(tr => {
+               content += `<div class="col-8">
+                        <h5>TC/POS Banco ${tr.bank} / Ref# ${tr.reference}</h5>
+                     </div>
+                     <div class="col-4">
+                        <h5> $${money_format(tr.amount)}</h5>
+                     </div>`;
+            });
+         }
+
+         document.querySelector("#payments").innerHTML = content;
+         console.log(payed_amount >= amount, payed_amount, amount);
+         if (payed_amount >= amount) {
+
+            document.querySelector("#saveReal").disabled = false;
+         }
+         //
+      });
+
+      document.querySelector("#saveReal").addEventListener('click', e => {
+         //RECOGER LOS  DATOS DEL PAGO
+         if (payed_amount < amount) {
+            return errorMessage('debe cobrar y registrar el apgo antes de Generar la factura');
+         }
+         //verificar que se haya seleccionado un cliente
+         if (detail_number < 1) {
+            return errorMessage('Agregue los productos al pedido');
+         }
+
+         server_data = {
+            _process,
+            dt: [],
+            client: selectClient.value,
+            payment: payments,
+         }
+
+         if (server_data.client == null || server_data.client == "") {
+            return errorMessage('Seleccione un Cliente');
+         }
+         details.forEach(el => el !== undefined ? server_data.dt.push(el) : '');
+         if (server_data.dt.length < 1) {
+            return errorMessage('Agregue los productos al pedido');
+         }
+         e.target.disabled = true;
+
+         get_facturation_options();
+      });
+
+
+      document.querySelector("#addInvoiceButton").addEventListener('click', e => {
+         //obtener los datos de facturacion
+         server_data.invoice_serie = document.querySelector("#invoice_type").value;
+         server_data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
+
+         let invoice_data = {
+            name: document.querySelector("#invoice_name").value,
+            direction: document.querySelector("#invoice_direction").value,
+            giro: document.querySelector("#invoice_giro").value,
+            nit: document.querySelector("#invoice_nit").value,
+            nrc: document.querySelector("#invoice_nrc").value,
+            nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
+            cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+         }
+
+         if (isNaN(server_data.invoice_number) || server_data.invoice_number < 1) {
+            return errorMessage('Coloque el numero de la factura');
+         }
+
+         let _s = series[server_data.invoice_serie];
+         if (_s.type == "ccf") {
+            if (invoice_data.direction.length < 5) {
+               return errorMessage('Coloque la direccion para el Credito Fiscal');
+            } else if (invoice_data.nrc.length < 3) {
+               return errorMessage('Coloque el Numero de Registro para el Credito Fiscal');
+            }
+         }
+
+         server_data.invoice_data = invoice_data;
+
+         console.log(server_data)
+         socket.emit('new_sale_in_sucursal', server_data);
+      });
+
+
+
+
+      //Para guardar un cliente
+      document.getElementById("isLocal").addEventListener('change', e => {
+         let a = e.target.value === 'true';
+         document.getElementById("clientDUI").disabled = !a;
+         document.getElementById("clientNRC").disabled = !a;
+         document.getElementById("clientClassification").disabled = !a;
+
+      });
+      //form controls validation
+      document.getElementById('saveClient').addEventListener('click', async (e) => {
+         // e.target.disabled = true;
+         let data = {
+            name: document.getElementById("clientName").value,
+            phone: document.getElementById("clientPhone").value,
+            mail: document.getElementById("clientMail").value,
+            type: document.getElementById("clientType").value,
+            isLocal: document.getElementById("isLocal").value === 'true',
+            dui: document.getElementById("clientDUI").value,
+            nrc: document.getElementById("clientNRC").value,
+            classification: document.getElementById("clientClassification").value,
+            direction: document.getElementById("clientDirection").value,
+            seller: null,
+         }
+
+         if (data.name.length < 2) {
+            e.target.disabled = false;
+            return errorMessage('Por favor, registre el nombre del Cliente');
+         } else if (data.phone.length < 8) {
+            e.target.disabled = false;
+            return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
+         } else {
+            /** Enviar Informacion al Servidor y volver a Validar*/
+            postData('/sales/client/create', data)
+               .then(data => {
+                  if (data.status == 'success') {
+                     successMessage('Cliente registrado!');
+                     choices_client.setChoices([{
+                           value: data.data,
+                           label: document.getElementById("clientName").value,
+                           selected: true
+                        }, ],
+                        'value',
+                        'label',
+                        false,
+                     );
+                     modal_new_client.toggle();
+                  } else if (data.status == 'errorMessage') {
+                     e.target.disabled = false;
+                     return errorMessage(data.message);
+                  } else {
+                     return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                  }
+               });
+
+         }
+      });
+
+
+   });
+</script>
+
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory/product/recount">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <h3 class="text-center">
+          Inventario Fisico Finalizado (<%= sucursal.name%>)
+        </h3>
+
+        <div class="col-lg-10">
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Inicial</th>
+                <th>Final</th>
+                <th>Diferencia</th>
+                <th>Justificación</th>
+                <th>Revisado por</th>
+              </tr>
+            </thead>
+            <tbody>
+
+
+              <% details.forEach(detail => { %>
+              <tr>
+                <td><%= detail.product_name %> <br>SKU# (<%= detail.sku %>) <small>id: <%= detail.product %> </small></td>
+                <td class="text-center"><%= detail.initial %></td>
+                <td class="text-center"><%= detail.final %></td>
+                <% if (detail.initial > detail.final) { %>
+                <td class="text-center"><b style="font-size: 125%;"> - </b> <%= detail.initial - detail.final %> U</td>
+                <td><%= detail.observation %></td>
+                <% } else if (detail.initial < detail.final) { %>
+                <td class="text-center"><b style="font-size: 125%;"> + </b> <%= detail.final - detail.initial %> U</td>
+                <td><%= detail.observation %></td>
+                <% } else { %>
+                <td class="text-center">- - </td>
+                <td class="text-center"> - -</td>
+                <% } %>
+                <td class="text-center"><%= detail.revised_by %></td>
+              </tr>
+
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+
+</script>
+
+</html>

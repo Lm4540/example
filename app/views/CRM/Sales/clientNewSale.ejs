@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .botonF1 {
+         cursor: pointer;
+         width: 60px;
+         height: 60px;
+         border-radius: 100%;
+         background: #568add !important;
+         right: 0;
+         bottom: 0;
+         display: scroll;
+         position: fixed;
+         margin-right: 2rem;
+         margin-bottom: 2rem;
+         border: none;
+         outline: none;
+         color: #FFF;
+         font-size: 36px;
+         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
+         transition: .3s
+      }
+
+      .botonF1:disabled,
+      .botonF1[disabled] {
+         border: 1px solid #999999 !important;
+         background-color: #cccccc !important;
+         color: #666666 !important;
+         cursor: not-allowed;
+      }
+
+      .botonF1:hover {
+         transform: scale(1.1)
+      }
+
+      .botonF1 i {
+         padding-left: 4px;
+         font-size: 100%;
+         color: white;
+      }
+
+      .product_item .card,
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item {
+         font-size: 110%;
+         min-height: 150px;
+      }
+
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item p {
+         margin-bottom: .2rem;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <button class="botonF1" id="btn_save"><span><i class="fas fa-save"></i></span></button>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-4">Creando Venta detalle para: <%= cliente.name %> <span id="span_amount"></span></h3>
+         <div class="row justify-content-center" id="_tr_details">
+
+         </div>
+
+         <div class="row justify-content-center">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+               <div class="card">
+                  <div class="card-body">
+                     <div id="form_adding" style="margin-bottom: 20px;">
+
+                        <div id="inventory_detail" class="row mt-4">
+                           <img alt=" " id="product__image" class="img round mb-4" style="max-width: 300px; display: none; margin:auto">
+                           <div class="form-group">
+                              <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                              <select name="productSelect" id="productSelect" class="form-control"></select>
+                           </div>
+
+                           <div class="mb-3 col-12">
+                              <span>Precio:</span>
+                              <div class="form-group">
+                                 <select name="priceSelect" id="priceSelect" class="form-control"></select>
+                                 <label for="priceSelect">Selecciona una opción</label>
+                              </div>
+                           </div>
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="personalizedPrice" type="number" step="0.01" placeholder="Precio Personalizado" disabled>
+                              <label for="personalizedPrice">Precio Personalizado</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="product_cant" type="number" step="1" placeholder="Cantidad" value="1">
+                              <label for="product_cant">Cantidad</label>
+                              <small class="text-danger" id="max_product_cant"></small>
+                           </div>
+                        </div>
+                        <div class="text-center mt-3">
+                           <button class="btn btn-outline-primary" id="add_detail">Agregar</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- modal para los datos de la entrega -->
+      <div class="modal fade" id="deliverydetailsModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Detalles de Entrega</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="text-white row bg-danger">
+                     <div class="col" style="padding: 1rem;">
+                        Advertencia: si ha tardado demasiado tiempo en redactar esta Orden puede que algun producto ya no este disponible
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-body">
+                  <div class="form-group">
+                     <label for="delivery_type">Tipo de Entrega:</label>
+                     <select name="delivery_type" id="delivery_type" class="form-control">
+                        <option value="local" selected>Retiro en Local</option>
+                        <option value="local_delivery">Entrega (Riveras Group)</option>
+                        <option value="delivery">Entrega (Transportista / Encomienda)</option>
+                     </select>
+                  </div>
+
+                  <div class="form-group" id="local_delivery_div" style="display: none;">
+                     <label for="delivery_provider">Tipo de Entrega:</label>
+                     <select name="delivery_provider" id="delivery_provider" class="form-control" disabled>
+                        <% providers.forEach(provider => { %>
+                        <option value="<%= provider.id %>"><%= provider.name %></option>
+                        <% }) %>
+                     </select>
+                  </div>
+
+
+                  <div class="form-group">
+                     <label for="delivery_amount">Costo del envio:</label>
+                     <input type="number" step="0.01" min="0" value="0" id="delivery_amount" class="form-control" disabled>
+                  </div>
+                  <div class="form-group">
+                     <label for="direction_">Direccion de Entrega:</label>
+                     <input type="text" name="direction_" id="direction_" class="form-control" list="directions" value="Retiro en Tienda" disabled>
+                  </div>
+
+                  <datalist id="directions">
+                  </datalist>
+
+                  <div class="form-group">
+                     <label for="reference_">Referencia o Instrucciones:</label>
+                     <input type="text" name="reference_" id="reference_" class="form-control">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="phone_">Telefono de Contacto:</label>
+                     <input type="text" name="phone_" id="phone_" class="form-control" value="<%= cliente.phone %>">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="day_">Dia de Entrega:</label>
+                     <input type="date" id="day_" name="day_" class="form-control" data-min="<%= Helper.date_to_input() %>" min="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="hour_">Hora de Entrega:</label>
+                     <input type="time" id="hour_" name="hour_" class="form-control">
+                  </div>
+
+
+
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-success" id="saveReal">Generar Venta</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/grid/gridjs.js"></script>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+   var _process = '<%= Helper.randomString(5) %>';
+   var socket = io.connect('<%= baseURL %>/sales');
+   //const socket = io('/logistics');
+   socket.on('new_sale_error', data => {
+      console.log(data);
+      if (data._process == _process) {
+         return errorMessage(data.errorMessage);
+
+      }
+   });
+
+   socket.on('sale_saved', data => {
+      console.log(data);
+      if (data._process == _process) {
+         successMessage('Guardado con Exito');
+         window.location.href = `/sales/view/${data.sale}`;
+      }
+   });
+
+   const locations = JSON.parse('<%- JSON.stringify(locations) %>');
+
+   var product_in_select2 = {},
+      product_last_val = '',
+      selectProduct = document.querySelector('#productSelect'),
+      option_default = 'minor',
+      detail_number = 0,
+      amount = 0.00,
+      added = [],
+      details = [],
+      tbody = document.querySelector('#_tr_details'),
+      sucursal = '<%= cliente.sucursal != undefined || cliente.sucursal !== null ? cliente.sucursal : UserSucursal %>';
+   modalfinish = new bootstrap.Modal(document.getElementById('deliverydetailsModal'), {
+      keyboard: true
+   });
+
+   const choices_product = new Choices(selectProduct, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+   const deleteDetail = (index) => {
+      //restar el monto y actualizar el total
+      amount -= (details[index].cant * details[index].price);
+      document.querySelector("#span_amount").innerHTML = `($${money_format(amount)})`;
+
+      // Eliminar el detalle y la tarjeta HTML
+      added = added.filter(element => element != details[index].product);
+      delete details[index];
+      tbody.removeChild(document.querySelector(`#detail_${index}`));
+
+      detail_number -= 1;
+      document.querySelector("#btn_save").disabled = detail_number < 1;
+   };
+   const clean_detail_inputs = () => {
+
+      document.getElementById('product_cant').value = "1";
+      document.getElementById('personalizedPrice').value = "";
+      document.getElementById('personalizedPrice').disabled = true;
+      document.getElementById('personalizedPrice').style.display = 'none';
+      document.getElementById('product__image').style.display = 'none';
+      choices_product.removeActiveItems();
+   }
+
+   const doSearchProduct = async (val) => {
+
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=${sucursal}`, {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      });
+
+      //Procesar la respuest para que me guarde los productos en cuestion en una variable
+      let res = await response.json();
+      product_in_select2 = {};
+      res.forEach(element => product_in_select2[element.id] = element);
+      return res;
+   }
+
+   
+
+   var timer_product;
+   selectProduct.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (product_last_val !== valor_actual) {
+         product_last_val = valor_actual;
+         clearTimeout(timer_product);
+         timer_product = setTimeout(async () => {
+            let data = await doSearchProduct(e.detail.value);
+            choices_product.setChoices(data, 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+   document.addEventListener('DOMContentLoaded', event => {
+
+      document.querySelector("#btn_save").disabled = true;
+
+      selectProduct.addEventListener('change', e => {
+         let product = product_in_select2[selectProduct.value];
+         if (product != undefined) {
+            document.querySelector('#priceSelect').innerHTML = option_default === 'minor' ? `<option value="minor" selected>Precio de Detalle $${product.price}</option>
+               <option value="major">Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>` : `<option value="minor">Precio de Detalle $${product.price}</option>
+               <option value="major" selected>Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>`;
+
+            document.querySelector("#max_product_cant").innerHTML = `Cantidad maxima ${product.stock - product.reserved}`;
+            document.querySelector("#product__image").src = product.image;
+            document.getElementById('product__image').style.display = 'block';
+         }
+      });
+
+      document.querySelector("#priceSelect").addEventListener('change', e => {
+         if (document.querySelector("#priceSelect").value == 'none') {
+            document.getElementById('personalizedPrice').style.display = 'block';
+            document.querySelector("#personalizedPrice").disabled = false;
+            document.querySelector("#personalizedPrice").focus();
+
+         } else {
+            document.getElementById('personalizedPrice').style.display = 'none';
+            document.querySelector("#personalizedPrice").disabled = true;
+         }
+      });
+
+      document.querySelector('#add_detail').addEventListener('click', e => {
+         //OBTENER LA DATA
+         let cant = document.getElementById('product_cant').value,
+            price_type = document.getElementById('priceSelect').value,
+            product = product_in_select2[document.getElementById('productSelect').value];
+
+
+
+         if (product == undefined || product == null) {
+            return errorMessage('No ha Seleccionado un producto');
+         }
+         let price = price_type == 'none' ?
+            Number.parseFloat(document.getElementById('personalizedPrice').value) :
+            (price_type == 'minor' ? product.price : product.major);
+
+         if (cant == "" || price == "" || price == undefined || price == null) {
+            return errorMessage('Seleccione un precio y una cantidad validos');
+         } else if (added.includes(product.id)) {
+            return errorMessage('Este producto ya está agregado a la lista, si desea aumentar la cantidad, elimínelo y agréguelo nuevamente');
+         } else {
+            cant = Number.parseInt(cant);
+            if (cant > product.stock - product.reserved) {
+               return errorMessage(`La cantidad Maxima de este producto disponible en su sucursal es ${product.stock - product.reserved}`);
+            }
+
+            if (price == '' || price < 0) {
+               return errorMessage('Si desea realizar una regalía por favor escriba el precio 0');
+            } else if (cant < 1) {
+               document.getElementById('product_cant').value = '1';
+               document.querySelector("#freeCant").value = "1";
+               return errorMessage('La cantidad no puede ser menor a 1');
+            }
+            //AGREGAR A LA LISTA DE DETALLES
+            let dt = {
+               product: product.id,
+               cant,
+               price,
+               price_type
+            }
+            //AGREGAR A LA LISTA DE AGREGADOS
+            let index = details.length;
+            details.push(dt);
+            added.push(product.id);
+
+            //Actualizar el monto
+            amount += (cant * price);
+
+            detail_number++;
+            document.querySelector("#btn_save").disabled = false;
+
+            document.querySelector("#span_amount").innerHTML = `($${money_format(amount)})`;
+
+
+            //AGREGAR AL html
+            let div = document.createElement('div');
+            div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
+            div.id = `detail_${index}`;
+            tbody.appendChild(div);
+
+            div.innerHTML = `<div class="card">
+                              <div class="card-body text-center">
+                                 <img src="${product.image}" alt="Image" class="product_image" style="width: 150px; "><br>
+                                 <p style="cursor:pointer;">${product.name}</p>
+                                 <p> <b>${cant}</b> X $${money_format(price)} = $${money_format(cant  * price)}</p>
+                                 <button class="btn btn-outline-danger" onclick="deleteDetail(${index}, ${product.id})">Quitar</button>
+                              </div>
+                           </div>`;
+            clean_detail_inputs();
+         }
+      });
+
+      document.querySelector("#btn_save").addEventListener('click', e => {
+         if (detail_number < 1) {
+            return errorMessage('Agregue los productos al pedido');
+         }
+         modalfinish.toggle();
+      });
+
+      document.querySelector("#delivery_type").addEventListener('change', e => {
+         document.querySelector("#direction_").disabled = false;
+         document.querySelector("#direction_").value = '<%= cliente.direction %>';
+         if (e.target.value == 'delivery') {
+            document.querySelector("#local_delivery_div").style.display = 'block';
+            document.querySelector("#delivery_provider").disabled = false;
+            document.querySelector("#delivery_amount").disabled = false;
+            document.querySelector("#delivery_amount").value = 4.55;
+            document.querySelector("#direction_").focus();
+         } else {
+            if (e.target.value == 'local') {
+               document.querySelector("#delivery_amount").disabled = true;
+               document.querySelector("#delivery_amount").value = 0.00;
+               document.querySelector("#direction_").value = 'Retiro en Tienda';
+               document.querySelector("#direction_").disabled = true;
+               document.querySelector("#reference_").focus();
+            } else {
+               document.querySelector("#delivery_amount").disabled = false;
+               document.querySelector("#delivery_amount").value = 3.00;
+               document.querySelector("#direction_").focus();
+            }
+
+            document.querySelector("#local_delivery_div").style.display = 'none';
+            document.querySelector("#delivery_provider").disabled = true;
+         }
+      });
+
+      document.querySelector("#delivery_provider").addEventListener('change', e => {
+         let value = e.target.value;
+         let local = locations[e.target.value];
+         let content = '';
+
+         if (local !== null && local !== undefined) {
+            local.forEach(l => {
+               content += `<option value="${l}">`;
+            });
+         }
+         document.querySelector("#directions").innerHTML = content;
+      });
+
+      document.querySelector('#saveReal').addEventListener('click', e => {
+         if (detail_number < 1) {
+            return errorMessage('Agregue los productos al pedido');
+         }
+
+         let data = {
+            dt: [],
+            client: '<%= cliente.id %>',
+            delivery_type: document.querySelector("#delivery_type").value,
+            delivery_provider: null,
+            direction: document.querySelector("#direction_").value,
+            reference: document.querySelector("#reference_").value,
+            phone: document.querySelector("#phone_").value,
+            day: document.querySelector("#day_").value,
+            time: document.querySelector("#hour_").value,
+            delivery_amount: document.querySelector("#delivery_amount").value,
+            sucursal,
+            _process,
+         }
+
+         if (data.delivery_type == 'delivery') {
+            data.delivery_provider = document.querySelector("#delivery_provider").value;
+         }
+
+         console.log(data);
+
+         if (data.direction.length < 5) {
+            return errorMessage('Coloque una Dirección válida');
+         } else if (data.phone.length < 8) {
+            return errorMessage('Coloque el teléfono de contacto');
+         } else if (data.day.length < 10) {
+            return errorMessage('Seleccione una fecha válida');
+         } else if (data.time.length < 5) {
+            return errorMessage('Seleccione una hora valida');
+         }
+
+         details.forEach(el => el !== undefined ? data.dt.push(el) : '');
+         if (data.dt.length < 1) {
+            return errorMessage('Agregue los productos al pedido');
+         }
+
+         e.target.disabled = true;
+         //enviar los datos al servidor
+         socket.emit('new_sale', data)
+
+      });
+
+   });
+</script>
+
+</html>

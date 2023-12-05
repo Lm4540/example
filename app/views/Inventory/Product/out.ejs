@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+<% options = `
+<a class="navbar-singe-option" href="#" onclick="history.back()"><i class="fas fa-clipboard-list mr-3"></i>Atras</a>
+
+`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+
+      <section class="section">
+        <div class="card" style="max-width: 700px; margin: auto;">
+          <div class="card-header">
+            <h4 class="card-tittle text-center ">
+              Salida Manual en: <%= product.name.toUpperCase()  %>
+            </h4>
+          </div>
+          <div class="card-body row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="moveCant">Cantidad</label>
+                <input type="number" step="1" class="form-control" id="moveCant">
+              </div>
+            </div>
+            
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="moveSucursal">Sucursal o Bodega</label>
+                <select name="moveSucursal" id="moveSucursal" class="form-control">
+                  <% if (sucursals.length > 0) { %>
+                    <% sucursals.forEach(sucursal => { %>
+                      <% if (sucursal !== null && sucursal.stock > 0) { %>
+                        <option value="<%= sucursal.id %>"><%= sucursal.name %> ( <b><%= sucursal.stock %></b>   Disponibles) </option>
+                      <% } %>
+                    <% }) %>
+                  <% } %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <label for="moveConcept">Concepto o Justificante</label>
+              <input name="moveConcept" id="moveConcept" class="form-control" list="concepts_list">
+              <datalist id="concepts_list">
+                <option value="Salida por averias"></option>
+                <option value="Salidas por regalias"></option>
+                <option value="Salida por ajustes de inventario"></option>
+              </datalist>
+              
+            </div>
+
+          </div>
+          <div class="card-footer text-center">
+            <button class="btn btn-outline-secondary" onclick="history.back()">Volver</button>
+            <button class="btn btn-outline-primary" id="saveMovement">Guardar</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+{# definicion de variables usadas en otros elementos javascript #}
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  window.addEventListener("DOMContentLoaded", (event) => {
+    document.getElementById('saveMovement').addEventListener('click', e => {
+      let data = {
+        cant: document.getElementById('moveCant').value,
+        sucursal: document.getElementById('moveSucursal').value,
+        concept: document.getElementById('moveConcept').value,
+      }
+      e.target.disabled = true;
+      let error = null;
+      if (data.concept.length < 10) {
+        error = 'Proporcione una justificación de al menos 10 caracteres';
+      } else if (data.cant < 1) {
+        error = 'Ingrese una cantidad válida';
+      } else if (data.sucursal == '') {
+        error = 'Seleccione una sucursal';
+      }
+
+      if (error !== null) {
+        e.target.disabled = false;
+        return errorMessage(error);
+      } else {
+        postData('/inventory/product/out/<%= product.id %>', data)
+        .then(data => {
+            if (data.status == 'success') {
+              successMessage('Guardado con Exito, redirigiendo');
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href ='/inventory/product/view/<%= product.id %>';
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              e.target.disabled = false;
+              return errorMessage(data.message);
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+        });
+      }
+
+    });
+  });
+</script>
+
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <style>
+    .pulse {
+      color: #f80d18;
+      margin-right: 1rem;
+      /* animation-name: _pulse; */
+      animation-duration: .5s;
+      animation-timing-function: ease;
+      animation-iteration-count: infinite;
+    }
+
+    .choices {
+      margin-bottom: 2px;
+    }
+
+    #revised .pulse {
+      color: #078f1e;
+    }
+
+    @keyframes _pulse {
+      from {
+        font-size: 100%;
+      }
+
+      to {
+        font-size: 125%;
+      }
+    }
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory/product/recount">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <h3 class="text-center">
+          Inventario Fisico en Proceso (<%= sucursal.name%>)
+          <% if (details.pending.length > 0) { %>
+          <button class="btn btn-danger round" onclick="javascript:location.reload();">Recargar</button>
+          <% } else { %>
+          <button class="btn btn-success round" data-bs-toggle="modal" data-bs-target="#finalizeProcess" onclick="setInputFocus()">Finalizar</button>
+          <% } %>
+        </h3>
+
+        <div class="col-lg-10">
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th colspan="2">Item</th>
+                <th>Cantidad<br>Real</th>
+                <th>Costo</th>
+                <th>Justificación</th>
+                <th>Options</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="2">
+                  <select name="destinoSelect" id="destinoSelect" class="form-control"></select>
+                  <small>Escribe el nombre o SKU del Producto</small>
+                </td>
+                <td>
+                  <input class="form-control" type="number" id="add_cant" step="1" style="max-width: 120px;">
+                  <small>Escribe la cantidad</small>
+                </td>
+
+                <td>
+                  <input class="form-control" type="number" id="add_cost" step="0.01" style="max-width: 120px;">
+                  <small>Escribe el costo</small>
+                </td>
+                <td>
+                  <input id="add_text" class="form-control" value="Inventario Inicial 12/2023">
+                  <small>Justificación</small>
+                </td>
+                <td>
+                  <button class="btn btn-warning round" id="btn_add">Agregar</button>
+                </td>
+              </tr>
+
+
+              <% details.pending.forEach(detail => { %>
+              <tr id="tr_<%= detail.id %>">
+                <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
+                <td><%= detail.product_name %><br> #SKU <%= detail.sku %></td>
+                <td>
+                  <input class="form-control" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.initial %>" style="max-width: 120px;">
+                  <small>Registrado: <%= detail.initial %></small>
+                </td>
+                <td>
+                    Costo: $<%= Helper.money_format(detail.cost) %>
+                </td>
+                <td colspan="">
+                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control">
+                  <small>Justificación</small>
+                </td>
+                <td>
+                  <button class="btn btn-primary round" onclick="verificar('<%= detail.id %>', '<%= detail.initial %>')">OK</button>
+                </td>
+              </tr>
+
+              <% }) %>
+            </tbody>
+            <tbody id="revised">
+              <% details.revised.forEach(detail => { %>
+              <tr id="tr_<%= detail.id %>">
+                <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
+                <td><%= detail.product_name %><br> #SKU <%= detail.sku %></td>
+                <td>
+                  <input class="form-control" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final %>" style="max-width: 120px;">
+                  <small>Registrado: <%= detail.initial %></small>
+                </td>
+                <td>
+                  Costo: $<%= Helper.money_format(detail.cost) %>
+                </td>
+                <td>
+                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control" value="<%= detail.observation %>">
+                  <small>Justificación</small>
+                </td>
+                <td>
+                  <button class="btn btn-primary round" onclick="verificar('<%= detail.id %>', '<%= detail.initial %>')">OK</button>
+                </td>
+              </tr>
+
+              <% }) %>
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="finalizeProcess" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Cerrar proceso</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger">
+              <h4 class="alert-heading">¿Estas Seguro de Finalizar este proceso?</h4>
+              <p>->Tome en cuenta las siguientes situaciones:</p>
+              <p>->El costo de los productos sera tomado del ultimo costo registrado en cada uno de los productos</p>
+              <p>->En caso de que el producto no tenga ningun costo registrado, se tomara el valor que el usuario coloco en la casilla costo</p>
+              <p>->A continuación puedes agregar las observaciones finales:</p><br>
+              <textarea name="finalObservation" id="finalObservation" class="form-control"></textarea>
+              <br><br>
+              <p>Para confirmar el cierre de este proceso escriba "CONFIRMAR" en el siguiente recuadro. luego presione el boton guardar</p>
+
+
+              <input type="text" id="processConfirmation" class="form-control" value="">
+            </div>
+          </div>
+          <div class="modal-footer text-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="finalizeProcessButton" disabled>Guardar</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const destinoSelect = document.querySelector('#destinoSelect');
+  const verificado = document.getElementById("revised");
+  var timerDestino;
+  var destino_last_val = "";
+  var destinoSearchResult = {};
+
+
+
+
+  const doSearchDestinoProduct = async (val, stock = false) => {
+    // Opciones por defecto estan marcadas con un *
+    const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=${stock}`, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    });
+    return response.json();
+  }
+
+  const choices_destino = new Choices(destinoSelect, {
+    'searchResultLimit': 15,
+    'searchChoices': false,
+    'searchFloor': 3,
+  });
+
+  const verificar = (id, initial) => {
+    let cant = document.querySelector(`#input_${id}`).value;
+    let observation = document.querySelector(`#textarea_${id}`).value;
+
+    if (cant == "") {
+      return errorMessage("Coloque una cantidad");
+    }
+
+    cant = Number.parseInt(cant);
+    initial = Number.parseInt(initial);
+    if ((cant > initial || cant < initial) && observation.length < 3) {
+      return errorMessage("Coloque un justificante");
+    } else {
+      postData('/inventory/product/recount/update', {
+          id: '<%= recount.id %>',
+          detail: id,
+          cant,
+          observation,
+          case: 'verification'
+        })
+        .then(data => {
+          if (data.status == 'success') {
+            let tr = document.getElementById(`tr_${id}`);
+            verificado.appendChild(tr);
+          } else if (data.status == 'errorMessage') {
+            return errorMessage(data.data);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+    }
+  }
+
+  const setInputFocus = () => document.getElementById('processConfirmation').focus({
+    focusVisible: true
+  });
+
+  document.addEventListener("DOMContentLoaded", (event) => {
+
+    document.getElementById('processConfirmation').addEventListener('input', (e) => document.querySelector('#finalizeProcessButton').disabled = e.target.value != 'CONFIRMAR');
+    document.querySelector('#finalizeProcessButton').addEventListener('click', e => {
+      if (document.getElementById('processConfirmation').value == 'CONFIRMAR') {
+        //enviar los datos al server
+        postData('/inventory/product/recount/update', {
+          id: '<%= recount.id %>',
+          case: 'finish',
+          observation: document.getElementById('finalObservation').value,
+        }).then(data => {
+
+          if (data.status == 'success') {
+            successMessage('Proceso finalizado Exitosamente, generando Reporte');
+            setTimeout(() => {window.location.reload()}, 2000);
+
+          } else if (data.status == 'warning') {
+            errorMessage('Aun tienes productos sin verificar');
+            setTimeout(() => {window.location.reload()}, 1500);
+          } else if (data.status == 'errorMessage') {
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
+
+    document.getElementById('btn_add').addEventListener('click', e => {
+      let cant = document.getElementById('add_cant').value;
+      let observation = document.getElementById('add_text').value;
+      let cost = document.getElementById('add_cost').value;
+
+
+      if (cant === '') {
+        return errorMessage('Coloque una cantidad para agregar un ítem a la lista');
+      } else if (observation.length < 4) {
+        return errorMessage('Coloque una justificación del porqué este ítem aún no se encuentra en Inventario');
+      } else {
+
+        //enviar los datos al server
+        postData('/inventory/product/recount/update', {
+          id: '<%= recount.id %>',
+          product: destinoSelect.value,
+          cant: Number.parseInt(cant),
+          case: 'add',
+          observation,
+          cost
+        }).then(data => {
+
+          if (data.status == 'success') {
+            let detail = data.detail;
+
+            let tr = document.createElement('tr');
+            tr.id = `tr_${detail.id}`;
+
+            tr.innerHTML = `<td style="width: 75px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
+                <td>${detail.product_name}<br> #SKU ${detail.sku}</td>
+                <td>
+                  <input class="form-control" type="number" id="input_${detail.id}" step="1" value="${detail.final}" style="max-width: 120px;">
+                  <small>Registrado: 0</small>
+                </td>
+                <td>
+                    Costo: $${Money.money_format(detail.cost)}
+                </td>
+                <td>
+                  <input name="textarea_${detail.id}" id="textarea_${detail.id}" class="form-control" value="${detail.observation}">
+                  <small>Justificación</small>
+                </td>
+                <td>
+                  <button class="btn btn-primary round" onclick="verificar('${detail.id}', '0')">OK</button>
+                </td>`;
+            verificado.appendChild(tr);
+
+            //limpiar el control
+
+            choices_destino.removeActiveItems();
+            document.getElementById('add_cant').value = "";
+            document.getElementById('add_text').value = "";
+            document.getElementById('add_cost').value = "0.00";
+          } else if (data.status == 'warning') {
+
+            //Significa que ya esta ingresado//Buscar el tr, e insertarlo en la tabla
+            let tr = document.getElementById(`tr_${data.data.id}`);
+            document.getElementById(`input_${data.data.id}`).value = data.data.final;
+            verificado.appendChild(tr);
+
+            return infoMessage('El producto ya estaba en la lista, se ha actualizado la cantidad')
+          } else if (data.status == 'errorMessage') {
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+
+    });
+
+    destinoSelect.addEventListener('change', (e) => {
+      document.getElementById('add_cant').focus();
+    });
+
+
+    destinoSelect.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (destino_last_val !== valor_actual) {
+        destino_last_val = valor_actual;
+        clearTimeout(timerDestino);
+        timerDestino = setTimeout(async () => {
+          let data = await doSearchDestinoProduct(e.detail.value);
+          //indexar los datos para tenerlos a la mano
+          destinoSearchResult = {};
+          data.forEach(element => destinoSearchResult[element.id] = element);
+          choices_destino.setChoices(data, 'value', 'label', true);
+        }, 500);
+      }
+    });
+
+
+  });
+</script>
+
+</html>

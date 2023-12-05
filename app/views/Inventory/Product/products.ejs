@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+  <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="page-title">
+        <h3><%= pageTitle %> <a href="/inventory/product/create" class="badge bg-success mb-5">Nuevo</a> </h3>
+        <%# Tittle Options %>
+      </div>
+
+
+      <section class="section">
+        <div id="dataTable" style="min-width: 800px; max-width: 1300px; margin: auto;"></div>
+      </section>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/grid/gridjs.js"></script>
+<script>
+  var last_search_value = '';
+  var search_timer;
+  const view_provider = (id) => window.location.href = `/inventory/provider/${id}`;
+
+  var dataGrid = new gridjs.Grid({
+    columns: [{
+      name: 'Nombre',
+      formatter: (cell) => gridjs.html(cell),
+      // width: '250px'
+    }, {
+      name: 'Descripción',
+      formatter: (cell) => gridjs.html(cell),
+      sort: false,
+      // width: '100px'
+    }, {
+      name: 'Identificacion',
+      formatter: (cell) => gridjs.html(cell),
+      sort: false,
+      // width: '100px'
+    }],
+    search: {
+      server: {
+        url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${encodeURIComponent(keyword)}` : prev
+      },
+      debounceTimeout : 2000,
+    },
+    sort: {
+      server: {
+        url: (prev, columns) => {
+          if (!columns.length) return prev;
+          const col = columns[0];
+          const dir = col.direction === 1 ? 'asc' : 'desc';
+          let colName = ['name', 'nrc'][col.index];
+          return `${prev}&order=${colName}&dir=${dir}`;
+        }
+      }
+    },
+    pagination: {
+      limit: 10,
+      summary: true,
+      server: {
+        url: (prev, page, limit) => `${prev}&limit=${limit}&offset=${page * limit}`,
+      }
+    },
+    server: {
+      url: '/inventory/products?a=a',
+      total: data => data.total_rows,
+      then: data => data.data.map(element => {
+
+        let image = element.image !== null && element.image.length > 10 ? `<img src="${element.image}" class="rounded" style="max-width: 120px;" alt="${element.name}">` : `<img src="/upload/images/image-not-found.png" class="rounded" style="max-width: 120px;" alt="${element.name}">`;
+        let name = ` <div class="row">
+                        <div class="col-4">
+                            ${image}
+                        </div>
+                        <div class="col-8">
+                            <a href="/inventory/product/view/${element.id}"><b>${element.name}</b></a>
+                        </div>
+                    </div>`;
+        let ident = `# Parte: ${element.provider_code}<br>SKU: ${element.internal_code}`;
+        let stock = '';
+
+        return [
+          name,
+          element.description,
+          ident,
+          stock,
+        ]
+      }),
+    },
+    className: {
+      search: 'text-center ml-5 mt-2 mb-2',
+      table: 'table table-bordered'
+    },
+    language: {
+      search: {
+        placeholder: 'Escribe para buscar...',
+      },
+      sort: {
+        sortAsc: 'Ordenar Columna hacia arriba',
+        sortDesc: 'Ordenar columna hacia abajo',
+      },
+      pagination: {
+        previous: 'Anterior',
+        next: 'Siguiente',
+        navigate: (page, pages) => `Página ${page} de ${pages}`,
+        page: (page) => `Página ${page}`,
+        showing: 'Mostrando',
+        of: 'de',
+        to: 'hasta',
+        results: 'resultados',
+      },
+      loading: 'Cargando...',
+      noRecordsFound: 'No hay productos que mostrar',
+      error: 'Ha ocurrido un error inesperado, por favor recargue la página',
+    }
+  }).render(document.getElementById("dataTable"));
+</script>
+
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+   <style>
+      .card-round {
+         border-radius: 15px !important;
+      }
+
+      .botonF1 {
+         z-index: 1;
+         cursor: pointer;
+         width: 60px;
+         height: 60px;
+         border-radius: 100%;
+         background: #568add;
+         right: 0;
+         bottom: 0;
+         display: scroll;
+         position: fixed;
+         margin-right: 16px;
+         margin-bottom: 16px;
+         border: none;
+         outline: none;
+         color: #FFF;
+         font-size: 36px;
+         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
+         transition: .3s
+      }
+
+      .botonF1:disabled,
+      .botonF1[disabled] {
+         border: 1px solid #999999;
+         background-color: #cccccc;
+         color: #666666;
+      }
+
+      .botonF1:hover {
+         transform: scale(1.1)
+      }
+
+      .botonF1 i {
+         padding-left: 8px
+      }
+
+      input.custom_input,
+      select.custom_input {
+         width: 99%;
+         border: transparent;
+         background-color: transparent;
+      }
+
+      .select2-container--default .select2-selection--single {
+         width: 100%;
+         height: 35px;
+      }
+
+      .transparent_input {
+         width: 98%;
+         border-color: transparent;
+         background-color: transparent;
+         line-height: 1.1;
+      }
+
+      .transparent_input2 {
+         width: 98%;
+         border-color: transparent;
+         background-color: transparent;
+         line-height: 0.9;
+      }
+
+      .transparent_input2:focus {
+         width: 98%;
+         border-color: transparent;
+         background-color: transparent;
+         line-height: 0.9;
+      }
+
+      .table-sm td,
+      .table-sm th {
+         padding: 0.1rem;
+      }
+
+      .btn-sm {
+         border-radius: 1em;
+      }
+
+      .valid_input {
+         border-color: #28B840 1px solid !important;
+      }
+
+      .invalid_input {
+         border-color: #F12D0D 1px solid !important;
+      }
+
+      body.dark .transparent_input2,
+      body.dark .transparent_input {
+         color: white;
+      }
+
+      body.dark .detail_type .select-items {
+         background-color: #252b42 !important;
+         color: white !important;
+      }
+
+      body.dark .transparent_input2:focus {
+         border-color: red !important;
+         color: white;
+         border-style: none !important;
+         border-width: 0;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+
+         <div class="card">
+            <div class="card-header text-center h3">Registrar Compra</div>
+            <div class="card-body">
+               <div class="row">
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="select_supplier">Proveedor/Acreedor</label>
+                        <select id="select_supplier" class="form-control" style="width: 100%">
+
+                           <optgroup label="Proveedores de Productos">
+                              <% providers.product.forEach(provider => { %>
+                                 <option value="<%= provider.id %>"><%= provider.name %></option>
+      
+                                 <% }) %>
+                           </optgroup>
+                           <optgroup label="Proveedores de Servicios">
+                              <% providers.services.forEach(provider => { %>
+                                 <option value="<%= provider.id %>"><%= provider.name %></option>
+      
+                                 <% }) %>
+                           </optgroup>
+
+                           <optgroup label="Transportistas y Encomiendas">
+                              <% providers.transport.forEach(provider => { %>
+                                 <option value="<%= provider.id %>"><%= provider.name %></option>
+      
+                                 <% }) %>
+                           </optgroup>
+
+
+                          
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="provider_nit">NIT/DUI Proveedor</label>
+                        <input type="text" id="provider_nit" class="form-control">
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="provider_nrc">Numero de Registro del Proveedor</label>
+                        <input type="text" id="provider_nrc" class="form-control">
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="provider_retention_type">¿es gente de Retención? </label>
+                        <select id="provider_retention_type" class="form-control" disabled>
+                           <option value="0">NO</option>
+                           <option value="1">SI</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="purchase_type">Tipo de compra</label>
+                        <select id="purchase_type" class="form-control">
+                           <option class="pt_option_local" value="local" selected>Compra Nacional</option>
+                           <option class="pt_option_local" value="services">Gastos Administrativos(Servicios, Papeleria, etc)</option>
+                           <option value="purchase_expense">Gastos S/Compras</option>
+                           <option class="pt_option_local" value="sale_expense">Gastos S/Ventas</option>
+                           <option value="equipment_purchase">Compra de equipo/Mobiliario</option>
+                           <option class="pt_option_international" value="internacional">Importacion/Compra Internacional</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="invoice_type">Tipo de Documento</label>
+                        <select id="invoice_type" class="form-control">
+                           <option class="pt_option_local" value="ccf" disabled>Comprobante de Credito Fiscal</option>
+                           <option class="pt_option_local" value="fcf" selected>Factura de Consumidor Final</option>
+                           <option class="pt_option_international" value="invoice">Factura (Importacion)</option>
+                           <option class="pt_option_local_fc" value="fc" disabled>Factura Comercial (Emitir Factura Sujeto Excluido)</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="invoice_date">Fecha del Documento</label>
+                        <input type="date" id="invoice_date" class="form-control" value="<%= Helper.date_to_input() %>">
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="invoice_number">Numero de Documento</label>
+                        <input type="text" id="invoice_number" class="form-control">
+                     </div>
+                  </div>
+
+                  <div class="col-md-6 col-sm-6 col-lg-3 form-group">
+                     <div class="form-group">
+                        <label for="credit_days">Dias de Credito</label>
+                        <input type="number" id="credit_days" class="form-control" step="1" min="0" value="0">
+                     </div>
+                  </div>
+               </div>
+
+            </div>
+
+            <div class="card-body" id="data_for_excluded" style="display:none">
+               <h5 class="mb-4 text-center">Datos para la Factura de Sujeto Excluido</h5>
+               <div class="row">
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="excluded_invoice_serie">Serie</label>
+                        <select name="excluded_invoice_serie" id="excluded_invoice_serie" class="form-control">
+                           <% excluded_series.forEach(serie => { %>
+                           <option value="<%= serie.id %>" selected><%= serie.serie %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="excluded_invoice_number"># Factura de Sujeto Excluido</label>
+                        <input type="number" id="excluded_invoice_number" class="form-control">
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="excluded_invoice_number"># Telefono de Sujeto Excluido</label>
+                        <input type="text" id="excluded_phone" class="form-control">
+                     </div>
+                  </div>
+                  <div class="col-md-6 col-sm-6 col-lg-3">
+                     <div class="form-group">
+                        <label for="excluded_invoice_number">Dirección de Sujeto Excluido</label>
+                        <input type="text" id="excluded_direction" class="form-control">
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="card-body table-responsive">
+               <h4 class="text-center">Cuerpo de la factura de Compra</h4>
+               <table class="table table-sm table-bordered table-hover" style="min-width: 1100px;">
+                  <thead>
+                     <tr>
+                        <th style="width: 35%; max-width: 35%;">Descripcion</th>
+                        <th style="width: 7%; max-width: 7%;">Cantidad</th>
+                        <th style="width: 10%; max-width: 10%;">Precio</th>
+                        <th style="width: 10%; max-width: 10%;">Subtotal</th>
+                        <th style="width: 10%; max-width: 10%;">Codigo (Proveedor)</th>
+                        <th style="width: 10%; max-width: 10%;">Color</th>
+                        <th style="width: 13%; max-width: 13%;">Tipo</th>
+                        <th style="width: 5%; max-width: 5%;">--</th>
+                     </tr>
+                  </thead>
+                  <tbody id="invoice_details">
+
+
+
+
+                  </tbody>
+                  <tbody id="totals">
+                     <tr>
+                        <td colspan="3" class="text-right">SUBTOTAL</td>
+                        <td class="text-right"><span id="subtotal_val"></span></td>
+                        <td colspan="4" rowspan="6" class="text-center">
+                           <button onclick="add_lines(5)" class="btn btn-sm btn-info mt-3 mb-3">Agregar Lineas</button>
+                           <button onclick="totalizar()" class="btn btn-sm btn-danger ml-3 mr-3 mt-3 mb-3">Totalizar</button>
+                           <button class="btn btn-success btn-sm mt-3 mb-3" id="btn_save_purchase">Guardar</button>
+                        </td>
+
+                     </tr>
+                     <tr>
+                        <td colspan="3" class="text-right"><span id="iva_span">(+) IVA</span></td>
+                        <td class="text-right"><span id="iva_val">--</span></td>
+                     </tr>
+                     <tr>
+                        <td colspan="3" class="text-right"><span id="perception_span">(+) IVA PERCIBIDO</span></td>
+                        <td class="text-right"><span id="perception_val">--</span></td>
+                     </tr>
+                     <tr>
+                        <td colspan="3" class="text-right"><span id="renta_span">(-) 10% RENTA</span></td>
+                        <td class="text-right"><span id="renta_val">--</span></td>
+                     </tr>
+                     <tr>
+                        <td colspan="3" class="text-right">(+) OTROS IMPUESTOS</td>
+                        <td class="text-right">
+                           <input oninput="totalizar()" type="number" step="0.01" id="other_taxes_val" name="other_taxes_val" class="transparent_input2" dir="rtl">
+                        </td>
+                     </tr>
+                     <tr>
+                        <td colspan="3" class="text-right"><b>(=) TOTAL</b></td>
+                        <td class="text-right"><b><span id="total_val"></span></b></td>
+                     </tr>
+                  </tbody>
+
+
+               </table>
+            </div>
+         </div>
+
+      </div>
+
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../Layouts/Scripts.ejs') %>
+<script>
+   const providers = JSON.parse('<%- JSON.stringify(indexed_providers) %>');
+   var tr_index = 0,
+      is_changed = true,
+      details = [];
+   const tr_subtotal = index => {
+      let cant = document.querySelector(`#cant_tr_${index}`).value;
+      let price = document.querySelector(`#price_tr_${index}`).value;
+      cant = cant == "" ? 0 : Number.parseInt(cant);
+      price = price == "" ? 0 : Number.parseFloat(price);
+      document.querySelector(`#subtotal_tr_${index}`).innerHTML = '$' + money_format(cant * price);
+
+      changed();
+   };
+
+   const delete_tr = index => {
+      document.querySelector("#invoice_details").removeChild(document.querySelector(`#tr_${index}`));
+   };
+
+   const changed = () => is_changed = true;
+
+
+   const totalizar = () => {
+      details = [];
+      let trs = document.querySelectorAll('.tr_detail');
+      if (trs.length > 0) {
+         let subtotal = 0.00;
+
+         trs.forEach(tr => {
+            let tr_index = tr.dataset.index;
+            let row = {
+               description: document.querySelector(`#descrption_tr_${tr_index}`).value,
+               cant: document.querySelector(`#cant_tr_${tr_index}`).value,
+               price: document.querySelector(`#price_tr_${tr_index}`).value,
+               code: document.querySelector(`#code_tr_${tr_index}`).value,
+               color: document.querySelector(`#color_tr_${tr_index}`).value,
+               type: document.querySelector(`#type_tr_${tr_index}`).value,
+            }
+
+
+            if (row.description == '' || row.cant == "" || row.price == "" || row.description.length < 1) {
+               document.querySelector("#invoice_details").removeChild(tr);
+            } else {
+               row.cant = Number.parseInt(row.cant);
+               row.price = Number.parseFloat(row.price);
+               if (row.cant < 1 || row.price < 0) {
+                  document.querySelector("#invoice_details").removeChild(tr);
+               } else {
+                  subtotal += (row.cant * row.price);
+                  details.push(row);
+               }
+            }
+         });
+
+         if (details.length > 0) {
+            document.querySelector("#subtotal_val").innerHTML = `$${money_format(subtotal)}`;
+            let perception = 0.00,
+               iva = 0.00,
+               renta = 0.00;
+            let other_taxes = document.querySelector("#other_taxes_val").value;
+            other_taxes = other_taxes !== '' ? Number.parseFloat(other_taxes) : 0.00;
+
+
+            if (document.querySelector("#invoice_type").value == "ccf") {
+               if (subtotal >= 100 && document.querySelector("#provider_retention_type").value == "1") {
+                  perception = (subtotal * constants.IVA_PERCEPTION);
+               }
+               iva = (subtotal * constants.IVA);
+            } else if (document.querySelector("#invoice_type").value == "fc") {
+               renta = subtotal * constants.RENTA_PERCENT;
+            }
+
+
+            document.querySelector("#iva_val").innerHTML = (iva > 0 ? `$${money_format(iva)} ` : '--');
+            document.querySelector("#perception_val").innerHTML = (perception > 0 ? `$${money_format(perception)} ` : '--');
+            document.querySelector("#renta_val").innerHTML = (renta > 0 ? `$${money_format(renta)} ` : '--');
+            document.querySelector("#total_val").innerHTML = (`<b>$${money_format(subtotal + iva + perception - renta + other_taxes)}</b>`);
+
+            is_changed = false;
+            return true;
+         }
+      }
+      return errorMessage('No hay detalles en el cuerpo de la factura');
+   }
+
+
+
+
+   const add_lines = (number) => {
+      let tbody = document.querySelector("#invoice_details");
+      for (let index = 0; index < number; index++) {
+
+         let tr = document.createElement('tr');
+         tr.id = `tr_${tr_index}`;
+         tr.dataset.index = tr_index;
+         tr.classList.add('tr_detail');
+         tr.innerHTML = `<td>
+                           <input type="text" id="descrption_tr_${tr_index}" name="descrption_tr_${tr_index}" class="transparent_input2" oninput="changed()">
+                        </td>
+                        <td>
+                           <input type="number" step="1" id="cant_tr_${tr_index}" name="cant_tr_${tr_index}" class="transparent_input2" oninput="tr_subtotal(${tr_index})" dir="rtl">
+                        </td>
+                        <td>
+                           <input type="number" step="0.01" id="price_tr_${tr_index}" name="price_tr_${tr_index}" oninput="tr_subtotal(${tr_index})" class="transparent_input2" dir="rtl">
+                        </td>
+                        <td id="subtotal_tr_${tr_index}"></td>
+                        <td>
+                           <input  type="text" id="code_tr_${tr_index}" name="code_tr_${tr_index}" class="transparent_input2" oninput="changed()">
+                        </td>
+                        <td>
+                           <input  type="text" id="color_tr_${tr_index}" name="color_tr_${tr_index}" class="transparent_input2" oninput="changed()">
+                        </td>
+                        <td>
+                           <select id="type_tr_${tr_index}" class="transparent_input detail_type" data-id="${tr_index}" data-case="type">
+                              <option class="select-items" value="product" selected>Producto para Inventario</option>
+                              <option class="select-items" value="factured_expense">Gastos Facturados</option>
+                              <option class="select-items" value="services">Gastos Administrativos (Servicios, Papeleria, etc)</option>
+                              <option class="select-items" value="purchase_expense">Gastos S/Compras</option>
+                              <option class="select-items" value="sale_expense">Gastos S/Ventas</option>
+                              <option class="select-items" value="equipment_purchase">Compra de equipo/Mobiliario</option>
+                          </select>
+                        </td>
+                        <td class="text-center"  onclick="delete_tr(${tr_index})">
+                           <span class="badge bg-danger">Quit</span>
+                        </td>`;
+         tbody.appendChild(tr);
+         tr_index++;
+      }
+   };
+
+
+   document.addEventListener('DOMContentLoaded', event => {
+
+      add_lines(10);
+
+
+      document.querySelector("#btn_save_purchase").addEventListener('click', (e) => {
+
+         if (is_changed) {
+            totalizar();
+         }
+
+
+         if (details.length > 0) {
+            let data = {
+               provider: document.querySelector("#select_supplier").value,
+               nit: document.querySelector("#provider_nit").value,
+               nrc: document.querySelector("#provider_nrc").value,
+               isRetentionAgent: document.querySelector("#provider_retention_type").value,
+               purchase_type: document.querySelector("#purchase_type").value,
+               invoice_type: document.querySelector("#invoice_type").value,
+               invoice_date: document.querySelector("#invoice_date").value,
+               invoice_number: document.querySelector("#invoice_number").value,
+               credit_days: document.querySelector("#credit_days").value,
+               other_taxes: document.querySelector("#other_taxes_val").value,
+               details
+            }
+
+            data.other_taxes = data.other_taxes == "" ? 0 : Number.parseFloat(data.other_taxes);
+            data.credit_days = data.credit_days == '' ? 0 : Number.parseInt(data.credit_days);
+
+            //validar los datos 
+            if ((data.invoice_type == 'fc' || data.invoice_type == 'ccf') && data.nit.length < 9) {
+               return errorMessage('El numero de NIT o DUI del proveedor es un dato Obligatorio');
+            } else if (data.invoice_type == 'ccf' && data.nrc == "") {
+               return errorMessage('El numero de Registro del proveedor es un dato Obligatorio');
+            } else if (data.invoice_date == '' || data.invoice_date.length < 10) {
+               return errorMessage('ingrese la fecha de la factura');
+            } else if (data.invoice_number == '' || data.invoice_number.length < 1) {
+               return errorMessage('Ingrese el numero de la factura');
+            }
+
+            e.target.disabled = true;
+            //enviar los datos
+            postData('/purchase/register', data).then(data => {
+               if (data.status == 'success') {
+                  successMessage('Guardado con Exito, redirigiendo');
+                  console.log(data);
+                  setTimeout(() => {
+                     location.href = `/purchase/view/${data.data}`;
+                  }, 1500);
+
+               } else if (data.status == 'errorMessage') {
+                  e.target.disabled = false;
+                  return errorMessage(data.message);
+               } else {
+                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+               }
+            });
+
+
+         }
+      });
+
+      document.querySelector("#invoice_type").addEventListener('click', e => {
+         is_changed = true;
+      });
+
+      document.querySelector('#select_supplier').addEventListener('change', e => {
+         is_changed = true;
+
+         let provider = providers[e.target.value];
+         document.querySelector('#invoice_number').focus();
+         if (provider.isLocal == 1) {
+            document.querySelector('#provider_nit').disabled = false;
+            document.querySelector('#provider_nrc').disabled = false;
+            document.querySelector('#provider_nit').value = provider.NIT_DUI;
+            document.querySelector('#provider_nrc').value = provider.NRC;
+            document.querySelector('#provider_retention_type').disabled = true;
+            document.querySelector('#provider_retention_type').value = provider.isRetentionAgent;
+            document.querySelector('#purchase_type').value = 'local';
+
+            if (provider.classification == 'otro') {
+               // document.querySelector('#invoice_type').value = 'fc';
+            } else {
+               document.querySelector('#invoice_type').value = 'fcf';
+            }
+
+         } else {
+            document.querySelector('#purchase_type').value = 'internacional';
+            document.querySelector('#invoice_type').value = 'invoice';
+            document.querySelector('#provider_nit').disabled = true;
+            document.querySelector('#provider_nrc').disabled = true;
+            document.querySelector('#provider_nit').value = '';
+            document.querySelector('#provider_nrc').value = '';
+            document.querySelector('#provider_retention_type').disabled = true;
+            document.querySelector('#provider_retention_type').value = '0';
+         }
+      });
+   });
+</script>
+
+</html>

@@ -1,0 +1,1646 @@
+{
+    "Deptos": {
+        "06": {
+            "name": "San Salvador",
+            "municipios": [
+                {
+                    "name": "Aguilares",
+                    "code": "0601",
+                    "post": "CP 1122",
+                    "old_post": "01122"
+                },
+                {
+                    "name": "Apopa",
+                    "code": "0602",
+                    "post": "CP 1123",
+                    "old_post": "01123"
+                },
+                {
+                    "name": "Ayutuxtepeque",
+                    "code": "0603",
+                    "post": "CP 1121",
+                    "old_post": "01121"
+                },
+                {
+                    "name": "Delgado",
+                    "code": "0619",
+                    "post": "CP 1118",
+                    "old_post": "01118"
+                },
+                {
+                    "name": "Cuscatancingo",
+                    "code": "0604",
+                    "post": "CP 1119",
+                    "old_post": "01119"
+                },
+                {
+                    "name": "El Paisnal",
+                    "code": "0605",
+                    "post": "CP 1124",
+                    "old_post": "01124"
+                },
+                {
+                    "name": "Guazapa",
+                    "code": "0606",
+                    "post": "CP 1125",
+                    "old_post": "01125"
+                },
+                {
+                    "name": "Ilopango",
+                    "code": "0607",
+                    "post": "CP 1117",
+                    "old_post": "01117"
+                },
+                {
+                    "name": "Mejicanos",
+                    "code": "0608",
+                    "post": "CP 1120",
+                    "old_post": "01120"
+                },
+                {
+                    "name": "Nejapa",
+                    "code": "0609",
+                    "post": "CP 1126",
+                    "old_post": "01126"
+                },
+                {
+                    "name": "Panchimalco",
+                    "code": "0610",
+                    "post": "CP 1127",
+                    "old_post": "01127"
+                },
+                {
+                    "name": "Rosario de Mora",
+                    "code": "0611",
+                    "post": "CP 1128",
+                    "old_post": "01128"
+                },
+                {
+                    "name": "San Marcos",
+                    "code": "0612",
+                    "post": "CP 1115",
+                    "old_post": "01115"
+                },
+                {
+                    "name": "San Martín",
+                    "code": "0613",
+                    "post": "CP 1129",
+                    "old_post": "01129"
+                },
+                {
+                    "name": "San Salvador",
+                    "code": "0614",
+                    "post": "CP 1101",
+                    "old_post": "01101"
+                },
+                {
+                    "name": "Santiago Texacuangos",
+                    "code": "0615",
+                    "post": "CP 1130",
+                    "old_post": "01130"
+                },
+                {
+                    "name": "Santo Tomás",
+                    "code": "0616",
+                    "post": "CP 1131",
+                    "old_post": "01131"
+                },
+                {
+                    "name": "Soyapango",
+                    "code": "0617",
+                    "post": "CP 1116",
+                    "old_post": "01116"
+                },
+                {
+                    "name": "Tonacatepeque",
+                    "code": "0618",
+                    "post": "CP 1132",
+                    "old_post": "01132"
+                }
+            ]
+        },
+        "01": {
+            "name": "Ahuachapán",
+            "municipios": [
+                {
+                    "name": "Ahuachapán",
+                    "code": "0101",
+                    "post": "CP 2101",
+                    "old_post": "02101"
+                },
+                {
+                    "name": "Apaneca",
+                    "code": "0102",
+                    "post": "CP 2102",
+                    "old_post": "02102"
+                },
+                {
+                    "name": "Atiquizaya",
+                    "code": "0103",
+                    "post": "CP 2103",
+                    "old_post": "02103"
+                },
+                {
+                    "name": "Concepción de Ataco",
+                    "code": "0104",
+                    "post": "CP 2106",
+                    "old_post": "02106"
+                },
+                {
+                    "name": "El Refugio",
+                    "code": "0105",
+                    "post": "CP 2107",
+                    "old_post": "02107"
+                },
+                {
+                    "name": "Guaymango",
+                    "code": "0106",
+                    "post": "CP 2108",
+                    "old_post": "02108"
+                },
+                {
+                    "name": "Jujutla",
+                    "code": "0107",
+                    "post": "CP 2109",
+                    "old_post": "02109"
+                },
+                {
+                    "name": "San Francisco Menéndez ",
+                    "code": "0108",
+                    "post": "CP 2113",
+                    "old_post": "02113"
+                },
+                {
+                    "name": "San Lorenzo",
+                    "code": "0109",
+                    "post": "CP 2115",
+                    "old_post": "02115"
+                },
+                {
+                    "name": "San Pedro Puxtla",
+                    "code": "0110",
+                    "post": "CP 2116",
+                    "old_post": "02116"
+                },
+                {
+                    "name": "Tacuba",
+                    "code": "0111",
+                    "post": "CP 2117",
+                    "old_post": "02117"
+                },
+                {
+                    "name": "Turín",
+                    "code": "0112",
+                    "post": "CP 2118",
+                    "old_post": "02118"
+                }
+            ]
+        },
+        "09": {
+            "name": "Cabañas",
+            "municipios": [
+                {
+                    "name": "Cinquera",
+                    "code": "0901",
+                    "post": "CP 1202",
+                    "old_post": "01202"
+                },
+                {
+                    "name": "Dolores / Villa Dolores",
+                    "code": "0909",
+                    "post": "CP 1209",
+                    "old_post": "01209"
+                },
+                {
+                    "name": "Guacotecti",
+                    "code": "0902",
+                    "post": "CP 1203",
+                    "old_post": "01203"
+                },
+                {
+                    "name": "Ilobasco",
+                    "code": "0903",
+                    "post": "CP 1204",
+                    "old_post": "01204"
+                },
+                {
+                    "name": "Jutiapa",
+                    "code": "0904",
+                    "post": "CP 1206",
+                    "old_post": "01206"
+                },
+                {
+                    "name": "San Isidro",
+                    "code": "0905",
+                    "post": "CP 1207",
+                    "old_post": "01207"
+                },
+                {
+                    "name": "Sensuntepeque",
+                    "code": "0906",
+                    "post": "CP 1201",
+                    "old_post": "01201"
+                },
+                {
+                    "name": "Tejutepeque",
+                    "code": "0907",
+                    "post": "CP 1208",
+                    "old_post": "01208"
+                },
+                {
+                    "name": "Victoria",
+                    "code": "0908",
+                    "post": "CP 1210",
+                    "old_post": "01210"
+                }
+            ]
+        },
+        "04": {
+            "name": "Chalatenango",
+            "municipios": [
+                {
+                    "name": "Agua Caliente",
+                    "code": "0401",
+                    "post": "CP 1302",
+                    "old_post": "1302"
+                },
+                {
+                    "name": "Arcatao",
+                    "code": "0402",
+                    "post": "CP 1303",
+                    "old_post": "1303"
+                },
+                {
+                    "name": "Azacualpa",
+                    "code": "0403",
+                    "post": "CP 1304",
+                    "old_post": "1304"
+                },
+                {
+                    "name": "Chalatenango",
+                    "code": "0407",
+                    "post": "CP 1301",
+                    "old_post": "1301"
+                },
+                {
+                    "name": "Citalá",
+                    "code": "0404",
+                    "post": "CP 1306",
+                    "old_post": "1306"
+                },
+                {
+                    "name": "Comalapa",
+                    "code": "0405",
+                    "post": "CP 1307",
+                    "old_post": "1307"
+                },
+                {
+                    "name": "Concepción Quezaltepeque",
+                    "code": "0406",
+                    "post": "CP 1308",
+                    "old_post": "1308"
+                },
+                {
+                    "name": "Dulce Nombre de María",
+                    "code": "0408",
+                    "post": "CP 1309",
+                    "old_post": "1309"
+                },
+                {
+                    "name": "El Carrizal",
+                    "code": "0409",
+                    "post": "CP 1311",
+                    "old_post": "1311"
+                },
+                {
+                    "name": "El Paraíso",
+                    "code": "0410",
+                    "post": "CP 1312",
+                    "old_post": "1312"
+                },
+                {
+                    "name": "La Laguna",
+                    "code": "0411",
+                    "post": "CP 1313",
+                    "old_post": "1313"
+                },
+                {
+                    "name": "La Palma",
+                    "code": "0412",
+                    "post": "CP 1314",
+                    "old_post": "1314"
+                },
+                {
+                    "name": "La Reina",
+                    "code": "0413",
+                    "post": "CP 1315",
+                    "old_post": "1315"
+                },
+                {
+                    "name": "Las Vueltas",
+                    "code": "0414",
+                    "post": "CP 1317",
+                    "old_post": "1317"
+                },
+                {
+                    "name": "Nombre de Jesús",
+                    "code": "0415",
+                    "post": "CP 1318",
+                    "old_post": "1318"
+                },
+                {
+                    "name": "Nueva Concepción",
+                    "code": "0416",
+                    "post": "CP 1319",
+                    "old_post": "1319"
+                },
+                {
+                    "name": "Nueva Trinidad",
+                    "code": "0417",
+                    "post": "CP 1320",
+                    "old_post": "1320"
+                },
+                {
+                    "name": "Ojos de Agua",
+                    "code": "0418",
+                    "post": "CP 1321",
+                    "old_post": "1321"
+                },
+                {
+                    "name": "Potonico",
+                    "code": "0419",
+                    "post": "CP 1322",
+                    "old_post": "1322"
+                },
+                {
+                    "name": "San Antonio de la Cruz",
+                    "code": "0420",
+                    "post": "CP 1324",
+                    "old_post": "1324"
+                },
+                {
+                    "name": "San Antonio Los Ranchos",
+                    "code": "0421",
+                    "post": "CP 1325",
+                    "old_post": "1325"
+                },
+                {
+                    "name": "San Fernando",
+                    "code": "0422",
+                    "post": "CP 1326",
+                    "old_post": "1326"
+                },
+                {
+                    "name": "San Francisco Lempa",
+                    "code": "0423",
+                    "post": "CP 1327",
+                    "old_post": "1327"
+                },
+                {
+                    "name": "San Francisco Morazán",
+                    "code": "0424",
+                    "post": "CP 1328",
+                    "old_post": "1328"
+                },
+                {
+                    "name": "San Ignacio",
+                    "code": "0425",
+                    "post": "CP 1329",
+                    "old_post": "1329"
+                },
+                {
+                    "name": "San Isidro Labrador",
+                    "code": "0426",
+                    "post": "CP 1330",
+                    "old_post": "1330"
+                },
+                {
+                    "name": "San José Cancasque / Cancasque",
+                    "code": "0427",
+                    "post": "CP 1305",
+                    "old_post": "1305"
+                },
+                {
+                    "name": "San José Las Flores / Las Flores",
+                    "code": "0428",
+                    "post": "CP 1316",
+                    "old_post": "1316"
+                },
+                {
+                    "name": "San Luis del Carmen",
+                    "code": "0429",
+                    "post": "CP 1331",
+                    "old_post": "1331"
+                },
+                {
+                    "name": "San Miguel de Mercedes",
+                    "code": "0430",
+                    "post": "CP 1332",
+                    "old_post": "1332"
+                },
+                {
+                    "name": "San Rafael",
+                    "code": "0431",
+                    "post": "CP 1333",
+                    "old_post": "1333"
+                },
+                {
+                    "name": "Santa Rita",
+                    "code": "0432",
+                    "post": "CP 1334",
+                    "old_post": "1334"
+                },
+                {
+                    "name": "Tejutla",
+                    "code": "0433",
+                    "post": "CP 1335",
+                    "old_post": "1335"
+                }
+            ]
+        },
+        "07": {
+            "name": "Cuscatlán",
+            "municipios": [
+                {
+                    "name": "Candelaria",
+                    "code": "0701",
+                    "post": "CP 1302",
+                    "old_post": "01302"
+                },
+                {
+                    "name": "Cojutepeque",
+                    "code": "0702",
+                    "post": "CP 1401",
+                    "old_post": "01401"
+                },
+                {
+                    "name": "El Carmen",
+                    "code": "0703",
+                    "post": "CP 1403",
+                    "old_post": "01403"
+                },
+                {
+                    "name": "El Rosario",
+                    "code": "0704",
+                    "post": "CP 1404",
+                    "old_post": "01404"
+                },
+                {
+                    "name": "Monte San Juan",
+                    "code": "0705",
+                    "post": "CP 1405",
+                    "old_post": "01405"
+                },
+                {
+                    "name": "Oratorio de Concepción",
+                    "code": "0706",
+                    "post": "CP 1406",
+                    "old_post": "01406"
+                },
+                {
+                    "name": "San Bartolomé Perulapía",
+                    "code": "0707",
+                    "post": "CP 1407",
+                    "old_post": "01407"
+                },
+                {
+                    "name": "San Cristóbal",
+                    "code": "0708",
+                    "post": "CP 1408",
+                    "old_post": "01408"
+                },
+                {
+                    "name": "San José Guayabal",
+                    "code": "0709",
+                    "post": "CP 1409",
+                    "old_post": "01409"
+                },
+                {
+                    "name": "San Pedro Perulapán",
+                    "code": "0710",
+                    "post": "CP 1410",
+                    "old_post": "01410"
+                },
+                {
+                    "name": "San Rafael Cedros",
+                    "code": "0711",
+                    "post": "CP 1411",
+                    "old_post": "01411"
+                },
+                {
+                    "name": "San Ramón",
+                    "code": "0712",
+                    "post": "CP 1412",
+                    "old_post": "01412"
+                },
+                {
+                    "name": "Santa Cruz Analquito",
+                    "code": "0713",
+                    "post": "CP 1413",
+                    "old_post": "01413"
+                },
+                {
+                    "name": "Santa Cruz Michapa",
+                    "code": "0714",
+                    "post": "CP 1414",
+                    "old_post": "01414"
+                },
+                {
+                    "name": "Suchitoto",
+                    "code": "0715",
+                    "post": "CP 1415",
+                    "old_post": "01415"
+                },
+                {
+                    "name": "Tenancingo",
+                    "code": "0716",
+                    "post": "CP 1416",
+                    "old_post": "01416"
+                }
+            ]
+        },
+        "13": {
+            "name": "Morazan",
+            "municipios": [
+                {
+                    "name": "Arambala",
+                    "code": "1301",
+                    "post": "CP 3202",
+                    "old_post": "03202"
+                },
+                {
+                    "name": "Cacaopera",
+                    "code": "1302",
+                    "post": "CP 3216",
+                    "old_post": "03216"
+                },
+                {
+                    "name": "Chilanga",
+                    "code": "1304",
+                    "post": "CP 3203",
+                    "old_post": "03203"
+                },
+                {
+                    "name": "Corinto",
+                    "code": "1303",
+                    "post": "CP 3204",
+                    "old_post": "03204"
+                },
+                {
+                    "name": "Delicias de Concepción",
+                    "code": "1305",
+                    "post": "CP 3206",
+                    "old_post": "03206"
+                },
+                {
+                    "name": "El Divisadero",
+                    "code": "1306",
+                    "post": "CP 3207",
+                    "old_post": "03207"
+                },
+                {
+                    "name": "El Rosario",
+                    "code": "1307",
+                    "post": "CP 3208",
+                    "old_post": "03208"
+                },
+                {
+                    "name": "Gualococti",
+                    "code": "1308",
+                    "post": "CP 3209",
+                    "old_post": "03209"
+                },
+                {
+                    "name": "Guatajiagua",
+                    "code": "1309",
+                    "post": "CP 3210",
+                    "old_post": "03210"
+                },
+                {
+                    "name": "Joateca",
+                    "code": "1310",
+                    "post": "CP 3211",
+                    "old_post": "03211"
+                },
+                {
+                    "name": "Jocoaitique",
+                    "code": "1311",
+                    "post": "CP 3212",
+                    "old_post": "03212"
+                },
+                {
+                    "name": "Jocoro",
+                    "code": "1312",
+                    "post": "CP 3213",
+                    "old_post": "03213"
+                },
+                {
+                    "name": "Lolotiquillo",
+                    "code": "1313",
+                    "post": "CP 3214",
+                    "old_post": "03214"
+                },
+                {
+                    "name": "Meanguera",
+                    "code": "1314",
+                    "post": "CP 3215",
+                    "old_post": "03215"
+                },
+                {
+                    "name": "Osicala",
+                    "code": "1315",
+                    "post": "CP 3216",
+                    "old_post": "03216"
+                },
+                {
+                    "name": "Perquín",
+                    "code": "1316",
+                    "post": "CP 3217",
+                    "old_post": "03217"
+                },
+                {
+                    "name": "San Carlos",
+                    "code": "1317",
+                    "post": "CP 3218",
+                    "old_post": "03218"
+                },
+                {
+                    "name": "San Fernando",
+                    "code": "1318",
+                    "post": "CP 3219",
+                    "old_post": "03219"
+                },
+                {
+                    "name": "San Francisco Gotera",
+                    "code": "1319",
+                    "post": "CP 3201",
+                    "old_post": "03201"
+                },
+                {
+                    "name": "San Isidro",
+                    "code": "1320",
+                    "post": "CP 3220",
+                    "old_post": "03220"
+                },
+                {
+                    "name": "San Simón",
+                    "code": "1321",
+                    "post": "CP 3221",
+                    "old_post": "03221"
+                },
+                {
+                    "name": "Sensembra",
+                    "code": "1322",
+                    "post": "CP 3222",
+                    "old_post": "03222"
+                },
+                {
+                    "name": "Sociedad",
+                    "code": "1323",
+                    "post": "CP 3223",
+                    "old_post": "03223"
+                },
+                {
+                    "name": "Torola",
+                    "code": "1324",
+                    "post": "CP 3224",
+                    "old_post": "03224"
+                },
+                {
+                    "name": "Yamabal",
+                    "code": "1325",
+                    "post": "CP 3225",
+                    "old_post": "03225"
+                },
+                {
+                    "name": "Yoloaiquín",
+                    "code": "1326",
+                    "post": "CP 3226",
+                    "old_post": "03226"
+                }
+            ]
+        },
+        "05": {
+            "name": "La Libertad",
+            "municipios": [
+                {
+                    "name": "Antiguo Cuscatlán",
+                    "code": "0501",
+                    "post": "CP 1502",
+                    "old_post": "01502"
+                },
+                {
+                    "name": "Chiltiupán",
+                    "code": "0505",
+                    "post": "CP 1507",
+                    "old_post": "01507"
+                },
+                {
+                    "name": "Ciudad Arce",
+                    "code": "0502",
+                    "post": "CP 1504",
+                    "old_post": "01504"
+                },
+                {
+                    "name": "Colón",
+                    "code": "0503",
+                    "post": "CP 1512",
+                    "old_post": "01512"
+                },
+                {
+                    "name": "Comasagua",
+                    "code": "0504",
+                    "post": "CP 1506",
+                    "old_post": "01506"
+                },
+                {
+                    "name": "Huizúcar",
+                    "code": "0506",
+                    "post": "CP 1508",
+                    "old_post": "01508"
+                },
+                {
+                    "name": "Jayaque",
+                    "code": "0507",
+                    "post": "CP 1509",
+                    "old_post": "01509"
+                },
+                {
+                    "name": "Jicalapa",
+                    "code": "0508",
+                    "post": "CP 1510",
+                    "old_post": "01510"
+                },
+                {
+                    "name": "La Libertad",
+                    "code": "0509",
+                    "post": "CP 1511",
+                    "old_post": "01511"
+                },
+                {
+                    "name": "Santa Tecla",
+                    "code": "0511",
+                    "post": "CP 1501",
+                    "old_post": "01501"
+                },
+                {
+                    "name": "Nuevo Cuscatlán",
+                    "code": "0510",
+                    "post": "CP 1513",
+                    "old_post": "01513"
+                },
+                {
+                    "name": "San Juan Opico",
+                    "code": "0515",
+                    "post": "CP 1514",
+                    "old_post": "01514"
+                },
+                {
+                    "name": "Quezaltepeque",
+                    "code": "0512",
+                    "post": "CP 1515",
+                    "old_post": "01515"
+                },
+                {
+                    "name": "Sacacoyo",
+                    "code": "0513",
+                    "post": "CP 1516",
+                    "old_post": "01516"
+                },
+                {
+                    "name": "San José Villanueva",
+                    "code": "0514",
+                    "post": "CP 1517",
+                    "old_post": "01517"
+                },
+                {
+                    "name": "San Matías",
+                    "code": "0516",
+                    "post": "CP 1518",
+                    "old_post": "01518"
+                },
+                {
+                    "name": "San Pablo Tacachico",
+                    "code": "0517",
+                    "post": "CP 1519",
+                    "old_post": "01519"
+                },
+                {
+                    "name": "Talnique",
+                    "code": "0519",
+                    "post": "CP 1521",
+                    "old_post": "01521"
+                },
+                {
+                    "name": "Tamanique",
+                    "code": "0518",
+                    "post": "CP 1522",
+                    "old_post": "01522"
+                },
+                {
+                    "name": "Teotepeque",
+                    "code": "0520",
+                    "post": "CP 1523",
+                    "old_post": "01523"
+                },
+                {
+                    "name": "Tepecoyo",
+                    "code": "0521",
+                    "post": "CP 1524",
+                    "old_post": "01524"
+                },
+                {
+                    "name": "Zaragoza",
+                    "code": "0522",
+                    "post": "CP 1525",
+                    "old_post": "01525"
+                }
+            ]
+        },
+        "08": {
+            "name": "La Paz",
+            "municipios": [
+                {
+                    "name": "Cuyultitán",
+                    "code": "0801",
+                    "post": "CP 1603",
+                    "old_post": "01603"
+                },
+                {
+                    "name": "El Rosario / Rosario de La Paz",
+                    "code": "0802",
+                    "post": "CP 1604",
+                    "old_post": "01604"
+                },
+                {
+                    "name": "Jerusalén",
+                    "code": "0803",
+                    "post": "CP 1605",
+                    "old_post": "01605"
+                },
+                {
+                    "name": "Mercedes La Ceiba",
+                    "code": "0804",
+                    "post": "CP 1607",
+                    "old_post": "01607"
+                },
+                {
+                    "name": "Olocuilta",
+                    "code": "0805",
+                    "post": "CP 1608",
+                    "old_post": "01608"
+                },
+                {
+                    "name": "Paraíso de Osorio",
+                    "code": "0806",
+                    "post": "CP 1609",
+                    "old_post": "01609"
+                },
+                {
+                    "name": "San Antonio Masahuat",
+                    "code": "0807",
+                    "post": "CP 1610",
+                    "old_post": "01610"
+                },
+                {
+                    "name": "San Emigdio",
+                    "code": "0808",
+                    "post": "CP 1611",
+                    "old_post": "01611"
+                },
+                {
+                    "name": "San Francisco Chinameca",
+                    "code": "0809",
+                    "post": "CP 1612",
+                    "old_post": "01612"
+                },
+                {
+                    "name": "San Juan Nonualco",
+                    "code": "0810",
+                    "post": "CP 1613",
+                    "old_post": "01613"
+                },
+                {
+                    "name": "San Juan Talpa",
+                    "code": "0811",
+                    "post": "CP 1614",
+                    "old_post": "01614"
+                },
+                {
+                    "name": "San Juan Tepezontes",
+                    "code": "0812",
+                    "post": "CP 1615",
+                    "old_post": "01615"
+                },
+                {
+                    "name": "San Luis La Herradura",
+                    "code": "0822",
+                    "post": "CP 1606",
+                    "old_post": "01606"
+                },
+                {
+                    "name": "San Luis Talpa",
+                    "code": "0813",
+                    "post": "CP 1616",
+                    "old_post": "01616"
+                },
+                {
+                    "name": "San Miguel Tepezontes",
+                    "code": "0814",
+                    "post": "CP 1617",
+                    "old_post": "01617"
+                },
+                {
+                    "name": "San Pedro Masahuat",
+                    "code": "0815",
+                    "post": "CP 1618",
+                    "old_post": "01618"
+                },
+                {
+                    "name": "San Pedro Nonualco",
+                    "code": "0816",
+                    "post": "CP 1619",
+                    "old_post": "01619"
+                },
+                {
+                    "name": "San Rafael Obrajuelo",
+                    "code": "0817",
+                    "post": "CP 1620",
+                    "old_post": "01620"
+                },
+                {
+                    "name": "Santa María Ostuma",
+                    "code": "0818",
+                    "post": "CP 1621",
+                    "old_post": "01621"
+                },
+                {
+                    "name": "Santiago Nonualco",
+                    "code": "0819",
+                    "post": "CP 1622",
+                    "old_post": "01622"
+                },
+                {
+                    "name": "Tapalhuaca",
+                    "code": "0820",
+                    "post": "CP 1623",
+                    "old_post": "01623"
+                },
+                {
+                    "name": "Zacatecoluca",
+                    "code": "0821",
+                    "post": "CP 1601",
+                    "old_post": "01601"
+                }
+            ]
+        },
+        "14": {
+            "name": "La Unión",
+            "municipios": [
+                {
+                    "name": "Anamorós",
+                    "code": "1401",
+                    "post": "CP 3104",
+                    "old_post": "03104"
+                },
+                {
+                    "name": "Bolívar",
+                    "code": "1402",
+                    "post": "CP 3105",
+                    "old_post": "03105"
+                },
+                {
+                    "name": "Concepción de Oriente",
+                    "code": "1403",
+                    "post": "CP 3106",
+                    "old_post": "03106"
+                },
+                {
+                    "name": "Conchagua",
+                    "code": "1404",
+                    "post": "CP 3107",
+                    "old_post": "03107"
+                },
+                {
+                    "name": "El Carmen",
+                    "code": "1405",
+                    "post": "CP 3108",
+                    "old_post": "03108"
+                },
+                {
+                    "name": "El Sauce",
+                    "code": "1406",
+                    "post": "CP 3109",
+                    "old_post": "03109"
+                },
+                {
+                    "name": "Intipucá",
+                    "code": "1407",
+                    "post": "CP 3111",
+                    "old_post": "03111"
+                },
+                {
+                    "name": "La Unión",
+                    "code": "1408",
+                    "post": "CP 3101",
+                    "old_post": "03101"
+                },
+                {
+                    "name": "Lilisque",
+                    "code": "1409",
+                    "post": "CP 3112",
+                    "old_post": "03112"
+                },
+                {
+                    "name": "Meanguera del Golfo",
+                    "code": "1410",
+                    "post": "CP 3113",
+                    "old_post": "03113"
+                },
+                {
+                    "name": "Nueva Esparta",
+                    "code": "1411",
+                    "post": "CP 3114",
+                    "old_post": "03114"
+                },
+                {
+                    "name": "Pasaquina",
+                    "code": "1412",
+                    "post": "CP 3116",
+                    "old_post": "03116"
+                },
+                {
+                    "name": "Polorós",
+                    "code": "1413",
+                    "post": "CP 3117",
+                    "old_post": "03117"
+                },
+                {
+                    "name": "San Alejo",
+                    "code": "1414",
+                    "post": "CP 3119",
+                    "old_post": "03119"
+                },
+                {
+                    "name": "San José",
+                    "code": "1415",
+                    "post": "CP 3120",
+                    "old_post": "03120"
+                },
+                {
+                    "name": "Santa Rosa de Lima",
+                    "code": "1416",
+                    "post": "CP 3121",
+                    "old_post": "03121"
+                },
+                {
+                    "name": "Yayantique",
+                    "code": "1417",
+                    "post": "CP 3122",
+                    "old_post": "03122"
+                },
+                {
+                    "name": "Yucuaiquín",
+                    "code": "1418",
+                    "post": "CP 3123",
+                    "old_post": "03123"
+                }
+            ]
+        },
+        "12": {
+            "name": "San Miguel",
+            "municipios": [
+                {
+                    "name": "Carolina",
+                    "code": "1201",
+                    "post": "CP 3302",
+                    "old_post": "03302"
+                },
+                {
+                    "name": "Chapeltique",
+                    "code": "1204",
+                    "post": "CP 3305",
+                    "old_post": "03305"
+                },
+                {
+                    "name": "Chinameca",
+                    "code": "1205",
+                    "post": "CP 3306",
+                    "old_post": "03306"
+                },
+                {
+                    "name": "Chirilagua",
+                    "code": "1206",
+                    "post": "CP 3307",
+                    "old_post": "03307"
+                },
+                {
+                    "name": "Ciudad Barrios",
+                    "code": "1202",
+                    "post": "CP 3303",
+                    "old_post": "03303"
+                },
+                {
+                    "name": "Comacarán",
+                    "code": "1203",
+                    "post": "CP 3304",
+                    "old_post": "03304"
+                },
+                {
+                    "name": "El Tránsito",
+                    "code": "1207",
+                    "post": "CP 3309",
+                    "old_post": "03309"
+                },
+                {
+                    "name": "Lolotique",
+                    "code": "1208",
+                    "post": "CP 3311",
+                    "old_post": "03311"
+                },
+                {
+                    "name": "Moncagua",
+                    "code": "1209",
+                    "post": "CP 3312",
+                    "old_post": "03312"
+                },
+                {
+                    "name": "Nueva Guadalupe",
+                    "code": "1210",
+                    "post": "CP 3313",
+                    "old_post": "03313"
+                },
+                {
+                    "name": "Nuevo Edén de San Juan",
+                    "code": "1211",
+                    "post": "CP 3314",
+                    "old_post": "03314"
+                },
+                {
+                    "name": "Quelepa",
+                    "code": "1212",
+                    "post": "CP 3315",
+                    "old_post": "03315"
+                },
+                {
+                    "name": "San Antonio del Mosco",
+                    "code": "1213",
+                    "post": "CP 3316",
+                    "old_post": "03316"
+                },
+                {
+                    "name": "San Gerardo",
+                    "code": "1214",
+                    "post": "CP 3318",
+                    "old_post": "03318"
+                },
+                {
+                    "name": "San Jorge",
+                    "code": "1215",
+                    "post": "CP 3319",
+                    "old_post": "03319"
+                },
+                {
+                    "name": "San Luis de la Reina",
+                    "code": "1216",
+                    "post": "CP 3320",
+                    "old_post": "03320"
+                },
+                {
+                    "name": "San Miguel",
+                    "code": "1217",
+                    "post": "CP 3301",
+                    "old_post": "03301"
+                },
+                {
+                    "name": "San Rafael Oriente",
+                    "code": "1218",
+                    "post": "CP 3322",
+                    "old_post": "03322"
+                },
+                {
+                    "name": "Sesori",
+                    "code": "1219",
+                    "post": "CP 3323",
+                    "old_post": "03323"
+                },
+                {
+                    "name": "Uluazapa",
+                    "code": "1220",
+                    "post": "CP 3324",
+                    "old_post": "03324"
+                }
+            ]
+        },
+        "10": {
+            "name": "San Vicente",
+            "municipios": [
+                {
+                    "name": "Apastepeque",
+                    "code": "1001",
+                    "post": "CP 1702",
+                    "old_post": "01702"
+                },
+                {
+                    "name": "Guadalupe",
+                    "code": "1002",
+                    "post": "CP 1703",
+                    "old_post": "01703"
+                },
+                {
+                    "name": "San Cayetano Istepeque",
+                    "code": "1003",
+                    "post": "CP 1704",
+                    "old_post": "01704"
+                },
+                {
+                    "name": "San Esteban Catarina",
+                    "code": "1006",
+                    "post": "CP 1705",
+                    "old_post": "01705"
+                },
+                {
+                    "name": "San Ildefonso",
+                    "code": "1007",
+                    "post": "CP 1706",
+                    "old_post": "01706"
+                },
+                {
+                    "name": "San Lorenzo",
+                    "code": "1008",
+                    "post": "CP 1707",
+                    "old_post": "01707"
+                },
+                {
+                    "name": "San Sebastián",
+                    "code": "1009",
+                    "post": "CP 1708",
+                    "old_post": "01708"
+                },
+                {
+                    "name": "San Vicente",
+                    "code": "1010",
+                    "post": "CP 1701",
+                    "old_post": "01701"
+                },
+                {
+                    "name": "Santa Clara",
+                    "code": "1004",
+                    "post": "CP 1709",
+                    "old_post": "01709"
+                },
+                {
+                    "name": "Santo Domingo",
+                    "code": "1005",
+                    "post": "CP 1710",
+                    "old_post": "01710"
+                },
+                {
+                    "name": "Tecoluca",
+                    "code": "1011",
+                    "post": "CP 1711",
+                    "old_post": "01711"
+                },
+                {
+                    "name": "Tepetitán",
+                    "code": "1012",
+                    "post": "CP 1712",
+                    "old_post": "01712"
+                },
+                {
+                    "name": "Verapaz",
+                    "code": "1013",
+                    "post": "CP 1713",
+                    "old_post": "01713"
+                }
+            ]
+        },
+        "11": {
+            "name": "Usulutan",
+            "municipios": [
+                {
+                    "name": "Alegría",
+                    "code": "1101",
+                    "post": "CP 3404",
+                    "old_post": "03404"
+                },
+                {
+                    "name": "Berlín",
+                    "code": "1102",
+                    "post": "CP 3403",
+                    "old_post": "03403"
+                },
+                {
+                    "name": "California",
+                    "code": "1103",
+                    "post": "CP 3404",
+                    "old_post": "03404"
+                },
+                {
+                    "name": "Concepción Batres",
+                    "code": "1104",
+                    "post": "CP 3405",
+                    "old_post": "03405"
+                },
+                {
+                    "name": "El Triunfo",
+                    "code": "1105",
+                    "post": "CP 3406",
+                    "old_post": "03406"
+                },
+                {
+                    "name": "Ereguayquín",
+                    "code": "1106",
+                    "post": "CP 3407",
+                    "old_post": "03407"
+                },
+                {
+                    "name": "Estanzuelas",
+                    "code": "1107",
+                    "post": "CP 3408",
+                    "old_post": "03408"
+                },
+                {
+                    "name": "Jiquilisco",
+                    "code": "1108",
+                    "post": "CP 3409",
+                    "old_post": "03409"
+                },
+                {
+                    "name": "Jucuapa",
+                    "code": "1109",
+                    "post": "CP 3410",
+                    "old_post": "03410"
+                },
+                {
+                    "name": "Jucuarán",
+                    "code": "1110",
+                    "post": "CP 3411",
+                    "old_post": "03411"
+                },
+                {
+                    "name": "Mercedes Umaña",
+                    "code": "1111",
+                    "post": "CP 3412",
+                    "old_post": "03412"
+                },
+                {
+                    "name": "Nueva Granada",
+                    "code": "1112",
+                    "post": "CP 3413",
+                    "old_post": "03413"
+                },
+                {
+                    "name": "Ozatlán",
+                    "code": "1113",
+                    "post": "CP 3415",
+                    "old_post": "03415"
+                },
+                {
+                    "name": "Puerto El Triunfo",
+                    "code": "1114",
+                    "post": "CP 3417",
+                    "old_post": "03417"
+                },
+                {
+                    "name": "San Agustín",
+                    "code": "1115",
+                    "post": "CP 3418",
+                    "old_post": "03418"
+                },
+                {
+                    "name": "San Buenaventura",
+                    "code": "1116",
+                    "post": "CP 3419",
+                    "old_post": "03409"
+                },
+                {
+                    "name": "San Dionisio",
+                    "code": "1117",
+                    "post": "CP 3420",
+                    "old_post": "03420"
+                },
+                {
+                    "name": "San Francisco Javier",
+                    "code": "1119",
+                    "post": "CP 3421",
+                    "old_post": "03421"
+                },
+                {
+                    "name": "Santa Elena",
+                    "code": "1118",
+                    "post": "CP 3422",
+                    "old_post": "03422"
+                },
+                {
+                    "name": "Santa María",
+                    "code": "1120",
+                    "post": "CP 3423",
+                    "old_post": "03423"
+                },
+                {
+                    "name": "Santiago de María",
+                    "code": "1121",
+                    "post": "CP 3424",
+                    "old_post": "03424"
+                },
+                {
+                    "name": "Tecapán",
+                    "code": "1122",
+                    "post": "CP 3426",
+                    "old_post": "03426"
+                },
+                {
+                    "name": "Usulután",
+                    "code": "1123",
+                    "post": "CP 3401",
+                    "old_post": "03401"
+                }
+            ]
+        },
+        "03": {
+            "name": "Sonsonate",
+            "municipios": [
+                {
+                    "name": "Acajutla",
+                    "code": "0301",
+                    "post": "CP 2302",
+                    "old_post": "02302"
+                },
+                {
+                    "name": "Armenia",
+                    "code": "0302",
+                    "post": "CP 2303",
+                    "old_post": "02303"
+                },
+                {
+                    "name": "Caluco",
+                    "code": "0303",
+                    "post": "CP 2304",
+                    "old_post": "02304"
+                },
+                {
+                    "name": "Cuisnahuat",
+                    "code": "0304",
+                    "post": "CP 2305",
+                    "old_post": "02305"
+                },
+                {
+                    "name": "Izalco",
+                    "code": "0306",
+                    "post": "CP 2306",
+                    "old_post": "02306"
+                },
+                {
+                    "name": "Juayúa",
+                    "code": "0307",
+                    "post": "CP 2307",
+                    "old_post": "02307"
+                },
+                {
+                    "name": "Nahuizalco",
+                    "code": "0308",
+                    "post": "CP 2311",
+                    "old_post": "02311"
+                },
+                {
+                    "name": "Nahulingo",
+                    "code": "0309",
+                    "post": "CP 2312",
+                    "old_post": "02312"
+                },
+                {
+                    "name": "Salcoatitán",
+                    "code": "0310",
+                    "post": "CP 2313",
+                    "old_post": "02313"
+                },
+                {
+                    "name": "San Antonio del Monte",
+                    "code": "0311",
+                    "post": "CP 2314",
+                    "old_post": "02314"
+                },
+                {
+                    "name": "San Julián",
+                    "code": "0312",
+                    "post": "CP 2316",
+                    "old_post": "02316"
+                },
+                {
+                    "name": "Santa Catarina Masahuat",
+                    "code": "0313",
+                    "post": "CP 2317",
+                    "old_post": "02317"
+                },
+                {
+                    "name": "Santa Isabel Ishuatán",
+                    "code": "0305",
+                    "post": "CP 2318",
+                    "old_post": "02318"
+                },
+                {
+                    "name": "Santo Domingo de Guzmán",
+                    "code": "0314",
+                    "post": "CP 2319",
+                    "old_post": "02319"
+                },
+                {
+                    "name": "Sonsonate",
+                    "code": "0315",
+                    "post": "CP 2301",
+                    "old_post": "02301"
+                },
+                {
+                    "name": "Sonzacate",
+                    "code": "0316",
+                    "post": "CP 2320",
+                    "old_post": "02320"
+                }
+            ]
+        },
+        "02": {
+            "name": "Santa Ana",
+            "municipios": [
+                {
+                    "name": "Candelaria de la Frontera",
+                    "code": "0201",
+                    "post": "CP 2203",
+                    "old_post": "02203"
+                },
+                {
+                    "name": "Chalchuapa",
+                    "code": "0203",
+                    "post": "CP 2205",
+                    "old_post": "02205"
+                },
+                {
+                    "name": "Coatepeque",
+                    "code": "0202",
+                    "post": "CP 2204",
+                    "old_post": "02204"
+                },
+                {
+                    "name": "El Congo",
+                    "code": "0204",
+                    "post": "CP 2207",
+                    "old_post": "02207"
+                },
+                {
+                    "name": "El Porvenir",
+                    "code": "0205",
+                    "post": "CP 2208",
+                    "old_post": "02208"
+                },
+                {
+                    "name": "Masahuat",
+                    "code": "0206",
+                    "post": "CP 2210",
+                    "old_post": "02210"
+                },
+                {
+                    "name": "Metapán",
+                    "code": "0207",
+                    "post": "CP 2211",
+                    "old_post": "02211"
+                },
+                {
+                    "name": "San Antonio Pajonal",
+                    "code": "0208",
+                    "post": "CP 2212",
+                    "old_post": "02212"
+                },
+                {
+                    "name": "San Sebastián Salitrillo",
+                    "code": "0209",
+                    "post": "CP 2215",
+                    "old_post": "02215"
+                },
+                {
+                    "name": "Santa Ana",
+                    "code": "0210",
+                    "post": "CP 2201",
+                    "old_post": "02201"
+                },
+                {
+                    "name": "Santa Rosa Guachipilín",
+                    "code": "0211",
+                    "post": "CP 2216",
+                    "old_post": "02216"
+                },
+                {
+                    "name": "Santiago de la Frontera",
+                    "code": "0212",
+                    "post": "CP 2217",
+                    "old_post": "02217"
+                },
+                {
+                    "name": "Texistepeque",
+                    "code": "0213",
+                    "post": "CP 2218",
+                    "old_post": "02218"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+<% options = `<a class="ml-5 back_link" href="/hrm">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title">
+            <h3><%= pageTitle %> <a href="/hrm/employee/create" class="badge bg-success mb-5">Nuevo</a> </h3>
+         </div>
+         <section class="section" style="min-width: 600px;">
+
+         </section>
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+
+</script>
+
+</html>

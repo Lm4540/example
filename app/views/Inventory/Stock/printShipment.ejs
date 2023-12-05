@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>ENVIO N° <%= shipment.type == "transfer" ? `TR-${shipment.originSucursal}-${shipment.destinoSucursal}-${shipment.id}` : `EN-${shipment.originSucursal}-${shipment.id}` %></title>
+   <base href="<%=baseURL%>/" />
+   <link rel="manifest" href="manifest.json">
+   <link rel="stylesheet" href="assets/css/bootstrap.css">
+   <link rel="stylesheet" href="assets/css/icon-font.css">
+   <link rel="shortcut" href="assets/images/favicon.svg" type="image/x-icon">
+   <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+   <style>
+      .main-content {
+         border: 1px solid #a8acb2;
+         color: #5b5b5b;
+      }
+
+      .list-group-item {
+         border: 1px solid #a8acb2;
+      }
+
+      th,
+      td {
+         border-color: #a8acb2;
+         border-top-color: #a8acb2;
+         border-bottom-color: #a8acb2;
+      }
+
+      .blue-text {
+         color: #058dc2;
+         font-weight: 800;
+      }
+
+      .blue_back li,
+      tr>th {
+         background-color: #e5f2f8 !important;
+      }
+
+      .pr_section {
+         page-break-inside: avoid;
+      }
+
+      @media print {
+         html {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+         }
+
+         .print {
+            display: none;
+         }
+      }
+
+      
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <div id="main">
+      <div id="ocultables">
+         <div class="row">
+            <div class="col text-center mt-2 mb-3">
+               <button id="print" class="btn btn-danger">Imprimir</button>
+               <button class="btn btn-secondary" onclick="history.back();">Atrás</button>
+            </div>
+         </div>
+      </div>
+      <div class="main-content" style="max-width: 19cm;">
+
+         <div class="card">
+            <% if (shipment.type == "transfer" ) { %>
+            <div class="card-header">
+               <div class="row">
+                  <div class="col-6">
+                     <img src="/assets/images/docs-logo.png" width="300px">
+                  </div>
+
+                  <div class="col-6">
+                     <h3 class="text-center blue-text">ENVIO <br>N° <%= shipment.type == "transfer" ? `TR-${shipment.originSucursal}-${shipment.destinoSucursal}-${shipment.id}` : `EN-${shipment.originSucursal}-${shipment.id}` %></h3>
+
+                  </div>
+               </div>
+               <hr>
+               <div class="row">
+                  <div class="col-6">
+                     <h4 class="blue-text">Entrega:</h4>
+                     <ul class="list-group blue_back">
+                        <li class="list-group-item">Solicitado por: <%= shipment.requestedBy %></li>
+                        <li class="list-group-item">Destino: <%= sucursals[shipment.destinoSucursal] %></li>
+                        <li class="list-group-item">Fecha: <%= Helper.format_date(shipment.createdAt) %></li>
+                     </ul>
+                  </div>
+
+                  <div class="col-6">
+                     <h4 class="blue-text">Elaboración:</h4>
+                     <ul class="list-group blue_back">
+                        <li class="list-group-item">Origen: <%= sucursals[shipment.originSucursal] %></li>
+                        <li class="list-group-item">Elaborado por: <%= shipment.createdBy %></li>
+                        <li class="list-group-item">Transporta: <%= shipment.transportsBy %></li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+
+
+            <div class="card-body">
+               <div class="table-responsive">
+                  <table class="table table-hover table-sm table-bordered" id="simple_body">
+                     <thead>
+                        <tr>
+                           <th>Descripcion</th>
+                           <th>Cantidad</th>
+                        </tr>
+                     </thead>
+
+                     <tbody>
+                        <% shipment_details.forEach(detail => { %>
+                        <tr>
+                           <td><%= detail.description %></td>
+                           <td><%= detail.cant %></td>
+                        </tr>
+
+                        
+                        <% }) %>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+            <% } else { %>
+            //configurar aca el cuerpo cuando no sea trasnferencia
+            <% } %>
+
+
+            <div class="card-body pr_section">
+               <div class="row">
+                  <div class="col-4 text-center align-middle">
+                     <span style="color:#cfcfcf">SELLO</span>
+                  </div>
+                  <div class="col-8">
+                     <ul class="list-group">
+                        <li class="list-group-item">
+                           <div style="height: 15px;">Observaciones:</div>
+                        </li>
+                        <li class="list-group-item">
+                           <div style="height: 15px;"></div>
+                        </li>
+                        <li class="list-group-item">
+                           <div style="height: 15px;"></div>
+                        </li>
+                        <li class="list-group-item">
+                           <div style="height: 15px;"></div>
+                        </li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </div>
+
+   </div>
+</body>
+
+<script>
+   const _baseURL = '<%=baseURL%>';
+   const VoiceEnabled = true;
+   const constants = {
+      IVA_PERCEPTION: 0.01,
+      IVA: 0.13,
+      IVA_RETENTION: 0.01,
+      RENTA_PERCENT: 0.1,
+   }
+</script>
+<script>
+   document.addEventListener('DOMContentLoaded', event => {
+
+      document.querySelector('#print').addEventListener('click', e => {
+         window.print();
+      });
+
+      window.addEventListener("beforeprint", (event) => {
+         document.querySelector("#ocultables").style.display = "none";
+      });
+
+      window.addEventListener("afterprint", (event) => {
+         document.querySelector("#ocultables").style.display = "block";
+      });
+
+   });
+</script>
+
+</html>

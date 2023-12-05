@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-4">Ventas en Proceso</h3>
+         <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered">
+               <thead>
+                  <tr>
+                     <th>Cliente</th>
+                     <th>Monto</th>
+                     <th>Vendedor</th>
+                     <th>Estado</th>
+                     <th>opt</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <% sales.forEach(sale => { %>
+                     <tr class="text-center">
+                        <td>
+                           <%= clients[sale.client] %>
+                        </td>
+                        <td>$<%= Helper.money_format(sale.balance) %></td>
+                        <td><%= sellers[sale.seller] %></td>
+                        <td>
+                           <%= status[sale._status] %>
+                        </td>
+                        <td>
+                           <a href="/sale/view/<%= sale.id %>" class="badge bg-red">Ver</a>
+                        </td>
+                     </tr>
+                  <% }) %>
+               </tbody>
+            </table>
+         </div>
+
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+</script>
+
+</html>

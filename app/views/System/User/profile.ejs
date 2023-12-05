@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <style>
+      .list-group-item.active {
+         font-weight: bolder;
+         color: #fff !important;
+         background-color: #121520 !important;
+      }
+
+      .btn-sm,
+      .btn-group-sm>.btn {
+         padding: 0.4rem 0.4rem;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid ">
+         <div class="page-title text-center">
+            <h4><%= pageTitle %></h4>
+         </div>
+         <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+               <button class="btn btn-danger" onclick="modalChangePassword.toggle()">Cambiar contraseña</button>
+            </div>
+         </div>
+      </div>
+
+
+
+     
+
+      
+
+      <div class="modal fade" id="changePass" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" >Actualizar Contraseña</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                <div class="form-group">
+                    <label for="oldPassword">Contraseña Anterior</label>
+                    <input id="oldPassword" type="password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Nueva Contraseña</label>
+                    <input id="newPassword" type="password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordC">Confirme Contraseña</label>
+                    <input id="newPasswordC" type="password" class="form-control">
+                </div>
+               </div>
+               <div class="modal-footer text-right">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button class="btn btn-primary" onclick="changePassword()">Actualizar Contraseña</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   var modalChangePassword = new bootstrap.Modal(document.getElementById('changePass'), {
+      keyboard: true
+   });
+
+   const changePassword = () => {
+      let new_pass = document.querySelector('#newPassword').value;
+
+      
+
+      if (new_pass.length < 8) {
+         return errorMessage('la nueva contraseña debe tener al menos 8 caracteres');
+      }else if(new_pass !== document.querySelector('#newPasswordC').value){
+        return errorMessage('La contraseña no coincide con la confirmación');
+      }else if(document.querySelector('#newPassword').value == ""){
+        return errorMessage('Proporcione su contraseña Anterior');
+      }
+
+      return update_user_data({
+         option: 'password',
+         new_pass,
+         old_pass: document.querySelector('#oldPassword').value,
+         user: '<%= user.id %>'
+
+      })
+   }
+
+
+   const update_user_data = _data => postData('/user/update', _data).then(data => {
+      if (data.status == 'success') {
+         successMessage('usuario Actualizado');
+         /**Redirigir a la pagina del Proveedor*/
+         setTimeout(() => {
+            window.location.reload();
+            return true;
+         }, 1500);
+
+      } else if (data.status == 'errorMessage') {
+         return errorMessage(data.message);
+      } else {
+         return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+
+   });
+
+   document.addEventListener('DOMContentLoaded', (event) => {
+
+
+   });
+</script>
+
+</html>

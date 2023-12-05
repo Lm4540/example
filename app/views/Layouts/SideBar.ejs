@@ -1,0 +1,183 @@
+<div id="sidebar" class="">
+  <div class="sidebar-wrapper active">
+    <div class="sidebar-header">
+      <a href="/"><img src="<%=baseURL%>/assets/images/logo.svg"></a>
+    </div>
+    <button class="sidebar-toggler btn x">
+		<i class="fas fa-times"></i>
+	</button>
+    <div class="sidebar-menu">
+      <ul class="menu">
+        <li class='sidebar-title'>Main Menu</li>
+        <li class="sidebar-item active ">
+          <a href="/" class='sidebar-link'>
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="sidebar-item  has-sub">
+          <a href="#" class='sidebar-link'>
+            <i class="fas fa-warehouse-alt"></i>
+            <span>Inventario</span>
+          </a>
+          <ul class="submenu ">
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="fas fa-warehouse-alt"></i>
+                Modulo
+              </a>
+            </li>
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="fas fa-box-full"></i>
+                Productos
+              </a>
+            </li>
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="fas fa-list-alt"></i>
+                Categorias
+              </a>
+            </li>
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="fas fa-truck-moving"></i>
+                Envios en Proceso
+              </a>
+            </li>
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="far fa-truck-loading"></i>
+                Envios Pendientes
+              </a>
+            </li>
+            <li>
+              <a href="/inventory" class="sidebar_sub_option">
+                <i class="fas fa-user-friends"></i>
+                Proveedores y Transportistas
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="sidebar-item  has-sub">
+          <a href="#" class='sidebar-link'>
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Ventas</span>
+          </a>
+
+          <ul class="submenu ">
+            <li>
+              <a href="/sales/add/salesroom" class="sidebar_sub_option">
+                <i class="fas fa-warehouse"></i>
+                Registrar Venta en Sala
+              </a>
+            </li>
+            <li>
+              <a href="/sales/add/wholesales" class="sidebar_sub_option">
+                <i class="fas fa-box-usd"></i>
+                Registrar Venta de Mayoreo
+              </a>
+            </li>
+            <li>
+              <a href="/sales/add/regular" class="sidebar_sub_option">
+                <i class="far fa-file-invoice-dollar"></i>
+                Registro de Venta Regular
+              </a>
+            </li>
+            <li>
+              <a href="/sales/inprogress" class="sidebar_sub_option">
+                <i class="fas fa-file-import"></i>
+                Ventas en Proceso
+              </a>
+            </li>
+            <li>
+              <a href="/sales/all/finished" class="sidebar_sub_option">
+                <i class="fas fa-user-chart"></i>
+                Historico de Ventas Finalizadas
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-users"></i>
+                Registro de Clientes
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="sidebar-item  has-sub">
+          <a href="#" class='sidebar-link'>
+            <i class="fas fa-file-invoice"></i>
+            <span>Compras</span>
+          </a>
+          <ul class="submenu ">
+            <li>
+              <a href="/purchase" class="sidebar_sub_option">
+                <i class="fas fa-file-medical"></i>
+                Registro de Compras
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-user-friends"></i>
+                Proveedores y Transportistas
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-chart-bar"></i>
+                Historico de Compras
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="sidebar-item">
+          <a href="/reports" class='sidebar-link'>
+            <i class="fas fa-analytics"></i>
+            <span>Reportes</span>
+          </a>
+        </li>
+        <li class="sidebar-item  has-sub">
+          <a href="#" class='sidebar-link'>
+            <i class="far fa-user-cog"></i>
+            <span>Sistema</span>
+          </a>
+          <ul class="submenu ">
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-user-headset"></i>
+                Usuarios
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-key"></i>
+                Roles y Permisos
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-database"></i>
+                Rastreo de registros
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-database"></i>
+                Rastreo de Movimientos
+              </a>
+            </li>
+            <li>
+              <a href="/sales/clients" class="sidebar_sub_option">
+                <i class="fas fa-tools"></i>
+                Configuracion
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <button class="sidebar-toggler btn x">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+</div>

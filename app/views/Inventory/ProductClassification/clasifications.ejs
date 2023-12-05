@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="page-title">
+        <h3><%= pageTitle %> <button class="badge bg-success mb-5" data-bs-toggle="modal" data-bs-target="#addClassification" style="cursor:pointer">Nuevo</button> </h3>
+      </div>
+      <section class="section">
+        <div class="row">
+          <div class="col-md-2"></div>
+          <div class="col-md-8">
+            <div class="row">
+              <% if (clasifications.length > 0) { %>
+                <% clasifications.forEach(classification => { %>
+                <div class="col-3">
+                  <a href="/inventory/productClassifications/view/<%= classification.id %>">
+
+
+                    <figure class="figure">
+                      <img src="<%= classification.image %>" class="figure-img img-fluid rounded" alt="<%= classification.name %>">
+                      <figcaption class="figure-caption caption-lg text-center"><%= classification.name %></figcaption>
+                    </figure>
+                  </a>
+                </div>
+
+
+                <% }) %>
+              <% } else { %>
+              <h3>No Hay Registros para mostrar</h3>
+              <% } %>
+            </div>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+
+
+      </section>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+  <!-- modal -->
+  <div class="modal fade" id="addClassification" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Sucursal</h5>
+          <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+        </div>
+        <div class="modal-body">
+          <form class="row g-3">
+            <div class="col-12">
+              <label for="classificationName" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="classificationName">
+            </div>
+
+
+            <div class="col-12">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="col-md-12">
+                    <div class="form-group text-center">
+                      <label for="fake_image_input" class="subir" style="font-size: x-large;">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <b>Subir</b>
+                        Imagen
+                      </label>
+                      <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                    </div>
+                  </div>
+                  <div class="col-md-12 text-center">
+                    Ó
+                  </div>
+
+                  <div class="col-md-12 text-center">
+                    <div class="form-group">
+                      <label style="font-size: large;" for="add-image-fake_text ">
+                        Pega una imagen o URL Aca
+                      </label>
+                      <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
+                    </div>
+                  </div>
+
+                </div>
+                <div class="col-md-6">
+                  <div id="add_image_preview"></div>
+                  <input type="hidden" id="add_image_real" name="add_image_real">
+                </div>
+              </div>
+
+
+
+            </div>
+
+          </form>
+        </div>
+
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="saveClassification">Guardar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  var previewimagezone = document.getElementById("add_image_preview");
+  var realImage = document.getElementById("add_image_real");
+  captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, realImage);
+
+  document.getElementById('fake_image_input').onchange = function(e) {
+    if (addingImageValidateImage(this)) {
+      AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+    } else {
+      document.getElementById("add_image_preview").innerHTML = "";
+      realImage.value = "";
+      return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", function(event) {
+    document.getElementById('saveClassification').addEventListener('click', (e) => {
+      let data = {
+        name: document.getElementById('classificationName').value,
+        image: document.getElementById('add_image_real').value,
+      };
+      if (data.name.length < 3) {
+        return errorMessage('Ingrese un nombre para la Clasificación que intenta guardar');
+      } else if (data.image == "") {
+        return errorMessage('Por favor proporcione una imagen para la nueva Clasificación');
+      } else {
+        postData('/inventory/productClassifications/create', data)
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Guardado con Exito, redirigiendo');
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/inventory/productClassifications/view/${data.data}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              e.target.disabled = false;
+              return errorMessage(data.message);
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+      }
+    });
+  });
+</script>
+
+</html>

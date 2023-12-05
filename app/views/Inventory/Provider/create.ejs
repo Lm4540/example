@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<%- include('../../Layouts/Head.ejs') %>
+		<%# custom styles %>
+	</head>
+
+	<body class="<%= darkMode %>">
+		<%- include('../../Layouts/SideBar.ejs') %>
+		<div id="main">
+            <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+			<%- include('../../Layouts/NavBar.ejs') %>
+			<div class="main-content container-fluid">
+				<div class="page-title">
+					<h3><%= pageTitle %></h3>
+					<%# Tittle Options %>
+				</div>
+				<section class="section">
+                    <div class="card">
+                        <div class="card-body">
+                            <form class="row g-3">
+                                <div class="col-12">
+                                    <label for="providerName" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" id="providerName">
+                                    
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isLocal">
+                                        <label class="form-check-label" for="isLocal">
+                                            ¿Es un Proveedor Nacional?
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isRetentionAgent" disabled>
+                                        <label class="form-check-label" for="isRetentionAgent">
+                                            ¿Es un agente de retención?
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="providerClassification" class="form-label">Clasificación</label>
+                                    <select name="providerClassification" id="providerClassification" class="form-control" disabled>
+                                        
+                                        <option value="otro">Otro Contribuyente</option>
+                                        <option value="mediano">Mediano Contribuyente</option>
+                                        <option value="gran">Gran Contribuyente</option>
+                                        <option value="ninguno" selected>No Clasificado</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="providerType" class="form-label">Tipo de Proveedor</label>
+                                    <select name="providerType" id="providerType" class="form-control">
+                                        <option value="product">Productos</option>
+                                        <option value="services">Servicios</option>
+                                        <option value="transport">Transporte/Encomienda</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="providerNRC" class="form-label">NRC</label>
+                                    <input type="text" class="form-control" id="providerNRC" placeholder="66666-6" disabled>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="ProviderDUI" class="form-label">NIT/DUI</label>
+                                    <input type="text" class="form-control" id="ProviderDUI" placeholder="0550-101093-101-1 or 06666666-6" disabled>
+                                </div>
+                                
+                                <div class="col-md-12">
+                                    <label for="providerWeb" class="form-label">Página Web</label>
+                                    <input type="text" class="form-control" id="providerWeb" placeholder="www.provider.com">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="providerWeb" class="form-label">Teléfono de Contacto</label>
+                                    <input type="text" class="form-control" id="providerPhone" placeholder="+507 789-2565">
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <label for="providerWeb" class="form-label">Correo Electrónico</label>
+                                    <input type="text" class="form-control" id="providerEmail" placeholder="contact@supplier.com">
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label for="providerDirection" class="form-label">Dirección</label>
+                                    <input type="text" class="form-control" id="providerDirection">
+                                </div>
+
+                                <div class="row col-md-12 mt-5">
+                                    <div class="col-md-6">
+                                        <div class="col-md-12">
+                                            <div class="form-group text-center">
+                                                <label for="fake_image_input" class="subir" style="font-size: x-large;">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                    <b>Subir</b>
+                                                    Imagen
+                                                </label>
+                                                <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 text-center">
+                                            Ó
+                                        </div>
+                                        
+                                        <div class="col-md-12 text-center">
+                                            <div class="form-group">
+                                                <label style="font-size: large;" for="add-image-fake_text ">
+                                                   Pega una imagen o URL Aca
+                                                </label>
+                                                <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
+                                            </div>
+                                        </div>
+            
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div id="add_image_preview"></div>
+                                    </div>
+
+                                    <input type="hidden" id="add_image_real" name="add_image_real">
+                                </div>
+                                
+                            </form>
+                        </div>
+                        <div class="card-footer text-right">
+                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cerrar</button>
+							<button type="button" class="btn btn-primary" id="saveProvider">Guardar</button>
+                        </div>
+                    </div>
+					
+					
+				</section>
+			</div>
+
+			<%- include('../../Layouts/Footer.ejs') %>
+		</div>
+	</body>
+	{# <script src="https://unpkg.com/axios/dist/axios.min.js"></script> #}
+    {# definicion de variables usadas en otros elementos javascript #}
+	<%- include('../../Layouts/Scripts.ejs') %>
+	<script>
+        var previewimagezone = document.getElementById("add_image_preview");
+        var realImage = document.getElementById("add_image_real");
+        captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, realImage);
+
+        document.getElementById('fake_image_input').onchange = function (e) {
+            if (addingImageValidateImage(this)) {
+                AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+            } else {
+                document.getElementById("add_image_preview").innerHTML = "";
+                realImage.value="";
+                return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+            }
+        };
+
+        //document ready
+        document.addEventListener("DOMContentLoaded", (event) =>  {
+            document.getElementById("providerName").focus();
+
+            //form controls validation
+            document.getElementById('isLocal').addEventListener('click', (e) => {
+                let classification = document.getElementById('providerClassification');
+                if(!e.target.checked){
+                    classification.value = 'ninguno';
+                    document.getElementById('isRetentionAgent').disabled = true;
+                    document.getElementById('providerClassification').disabled = true;
+                    document.getElementById('providerNRC').disabled = true;
+                    document.getElementById('ProviderDUI').disabled = true;
+
+                }else{
+                    document.getElementById('providerClassification').disabled = false;
+                    /*document.getElementById('isRetentionAgent').disabled = (classification.value == 'gran' ||  classification.value == 'ninguno');*/
+                    document.getElementById('isRetentionAgent').disabled = false;
+                    document.getElementById('isRetentionAgent').checked = false;
+                    document.getElementById('providerNRC').disabled = false;
+                    document.getElementById('ProviderDUI').disabled = false;
+                }
+            });
+
+            document.getElementById('providerClassification').addEventListener('change', (e) => {
+                if(e.target.value == 'gran'){
+                    document.getElementById('isRetentionAgent').disabled = true
+                    document.getElementById('isRetentionAgent').checked = true;
+                }else if (e.target.value == 'ninguno' && document.getElementById('isLocal').checked){
+                    document.getElementById('isRetentionAgent').disabled = false;
+                    document.getElementById('isRetentionAgent').checked = false;
+                }else{
+                    document.getElementById('isRetentionAgent').disabled = true
+                    document.getElementById('isRetentionAgent').checked = false;
+                }
+               
+            });
+
+            document.getElementById('saveProvider').addEventListener('click', async (e) => {
+                e.target.disabled = true;
+                message = null;
+                let data = {
+                    name: document.getElementById('providerName').value,
+                    nrc: document.getElementById('providerNRC').value,
+                    nit: document.getElementById('ProviderDUI').value,
+                    type: document.getElementById('providerType').value,
+                    classification: document.getElementById('providerClassification').value,
+                    webpage: document.getElementById('providerWeb').value,
+                    isLocal: document.getElementById('isLocal').checked,
+                    isRetentionAgent: document.getElementById('isRetentionAgent').checked,
+                    image: document.getElementById('add_image_real').value,
+                    phone: document.getElementById('providerPhone').value,
+                    email: document.getElementById('providerEmail').value,
+                    direction: document.getElementById('providerDirection').value,
+                }
+                
+                if(data.name.length < 2){
+                    message = 'Por favor, proporcione el nombre del proveedor';
+                }else if(data.classification != 'ninguno' && !verify_NRC(data.nrc)){
+                    message = 'No ha proporcionado el número de registro de contribuyente';
+                }/*else if(data.isLocal && data.classification == 'ninguno' && !verify_DUI(data.nit)){
+                    message = 'Si el proveedor es local y no está clasificado, debe proporcionar como mínimo el número de DUI';
+                }*/else if(data.phone.length < 5 && data.email.length < 5){
+                    message = 'Proporcione el numero de contacto o e-mail del proveedor';
+                }
+
+                if (message === null){
+                    /** Enviar Informacion al Servidor y volver a Validar*/
+                    postData('/inventory/provider/create', data)
+                    .then(data => {
+                        if(data.status == 'success'){
+                            successMessage('Guardado con Exito, redirigiendo');
+                            /**Redirigir a la pagina del Proveedor*/
+                            setTimeout(() => {
+                                location.href = `/inventory/provider/view/${data.data}`;
+                            }, 1500);
+                            
+                        }else if(data.status == 'errorMessage'){
+                            e.target.disabled = false;
+                            return errorMessage(data.message);
+                        }else{
+                            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                        }
+                    });
+
+                }else{
+                    e.target.disabled = false;
+                    return errorMessage(message);
+                }
+            });
+        });
+
+	</script>
+</html>

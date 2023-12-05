@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <style>
+      .product_item .card,
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item {
+         font-size: 110%;
+         min-height: 150px;
+         cursor: pointer;
+      }
+
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item .product_name {
+         margin-top: 15px;
+      }
+
+      .product_item .product_price {
+         color: #d82e04;
+         font-size: 150%;
+      }
+
+      .product_item .product_stock {
+         cursor: pointer;
+         color: #0d703e;
+      }
+
+      body.dark .product_item .product_stock {
+         color: #39da8a;
+      }
+   </style>
+</head>
+<% options = `<a class="ml-5" href="javascript:history.back()" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-3"> Producos Clasificados como <%= classification.name %></h3>
+
+         <div class="mb-4 text-center">
+            <% if (onlyStocks == true) { %>
+            <a href="/inventory/productClassifications/view/<%= classification.id %>?onlyStock=false" class="btn btn-primary round">
+               <font style="vertical-align: inherit;">
+                  <font style="vertical-align: inherit;">Mostrar Todos los Productos</font>
+               </font>
+            </a>
+            <% } else { %>
+            <a href="/inventory/productClassifications/view/<%= classification.id %>?onlyStock=true" class="btn btn-success round">
+               <font style="vertical-align: inherit;">
+                  <font style="vertical-align: inherit;">Mostrar solo productos con existencias</font>
+               </font>
+            </a>
+            
+            <% } %>
+         </div>
+
+         <div class="row justify-content-center">
+            <div class="col-md-10 col-12">
+               <div class="row" id="product_div">
+
+                  <% products.forEach(product => { %>
+
+                  <div class="col-6 col-md-3 product_item" onclick="view_product('<%= product.id %>')">
+                     <div class="card">
+                        <div class="card-body">
+                           <img src="<%= product.image%>" alt="Image" class="product_image" style="width: 100%; "><br>
+                           <span class="product_name"><%= product.name%> #SKU <%= product.internal_code%></span><br>
+                           <span class="product_price">$<%= product.price %></span><br>
+                           <span class="product_major">Mayor $<%= product.major %></span><br>
+                           <span class="product_stock"><%= product.stock - product.reserved %> en Existencias</span>
+                        </div>
+                     </div>
+                  </div>
+                  <% }) %>
+
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- modales -->
+
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   const view_product = id => window.location.href = `/inventory/product/view/${id}`;
+</script>
+
+</html>

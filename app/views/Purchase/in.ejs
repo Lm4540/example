@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-body">
+               <ul class="list-group">
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Proveedor:</div>
+                        <div class="col"><%= provider.name %></div>
+                     </div>
+                  </li>
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Documento:</div>
+                        <div class="col"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Fecha de la Factura:</div>
+                        <div class="col"><%= Helper.format_date(purchase.invoice_date, false) %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Registrado:</div>
+                        <div class="col"><%= purchase.createdBy %><br><%= Helper.format_date(purchase.createdAt, true) %></div>
+                     </div>
+                  </li>
+               </ul>
+               <div class="row mt-5">
+                  <div class="form-group">
+                     <label for="in_sucursal">Selecciona la sucursal a la cual Ingreso el producto</label>
+                     <select name="in_sucursal" id="in_sucursal" class="form-control">
+                        <% sucursals.forEach(sucursal => { %>
+                        <option value="<%= sucursal.id %>"><%= sucursal.name %></option>
+                        <% }) %>
+                     </select>
+                  </div>
+
+                  <div class="form-group">
+                     <label for="in_comments">Notas u Observaciones sobre el Ingreso</label>
+                     <textarea name="in_comments" id="in_comments" class="form-control"></textarea>
+                  </div>
+
+                  <div id="expenses">
+                     <h5 class="text-center mt-4">Costos</h5>
+
+
+                  </div>
+                  <div class="text-center mt-3">
+                     <button id="add_xpense" class="badge bg-warning" data-bs-toggle="modal" data-bs-target="#addCostModal">Agregar Costo</button>
+                  </div>
+
+
+               </div>
+            </div>
+            <div class="card-body table-responsive">
+               <table class="table table-sm table-bordered table-hover text-center mt-5">
+                  <thead>
+                     <tr>
+                        <th>Descripcion</th>
+                        <th>Cantidad</th>
+                        <th style="max-width: 50%;width: 50%;">Opciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <% details.forEach(detail => { %>
+                     <% if (detail.detail_type == 'product') { %>
+
+                     <tr>
+                        <td class="text-left"><%= detail.description %><br> Codigo: <%= detail.code %><br>Color: <%= detail.color %></td>
+                        <td><%= detail.cant %></td>
+                        <td>
+                           <div id="dt_div_<%= detail.id %>"></div>
+                           <button class="badge bg-danger" onclick="identify('<%= detail.id %>')" data-bs-toggle="modal" data-bs-target="#identofyModal" id="_btn_dt_<%= detail.id %>"> Identificar</button>
+                        </td>
+                     </tr>
+                     <% } %>
+                     <% }) %>
+
+                     <tr>
+                        <td class="text-center" colspan="3">
+                           <button class="btn btn-success btn-round mt-3 mb-3" id="save_1">GUARDAR</button>
+                        </td>
+                     </tr>
+                  </tbody>
+
+               </table>
+            </div>
+         </div>
+      </div>
+
+      <!-- area de modales -->
+      <div class="modal fade" id="addCostModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Agregando Costo</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+                  <div class="form-group">
+                     <label for="cost_description_control">Descripcion o etiqueta del Costo</label>
+                     <input type="text" class="form-control" name="cost_description_control" id="cost_description_control">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="cost_control">Monto</label>
+                     <input type="number" step="0.01" class="form-control" name="cost_control" id="cost_control">
+                  </div>
+               </div>
+
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-sm btn-warning" id="add_cost">Agregar</button>
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <div class="modal fade" id="identofyModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">identificando productos</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div id="product_resume">
+
+                  </div>
+                  <div class="row mt-4">
+
+                     <div class="col form-group">
+                        <label for="resume_cant">Cantidad por Identificar</label>
+                        <input type="number" step="1" disabled id="resume_cant" class="form-control">
+                     </div>
+                     <div class="form-group col">
+                        <label for="faltante">Unidades Faltantes</label>
+                        <input type="number" id="faltante" step="1" class="form-control">
+                     </div>
+                  </div>
+               </div>
+
+               <div class="modal-body">
+                  <table class="table table-sm table-borderless table-hover">
+                     <tbody id="identify_tbody">
+
+                     </tbody>
+                     <tfoot>
+                        <tr>
+                           <td style="width: 65%; min-width: 200px;">
+                              <div class="form-group">
+                                 <label for="productSelect">Seleccione un producto</label>
+                                 <select name="productSelect" class="form-control" id="productSelect"></select>
+                              </div>
+                           </td>
+                           <td style="width: 20%; min-width: 50px;">
+                              <div class="form-group">
+                                 <label for="indentify_cant">Cantidad</label>
+                                 <input type="number" step="1" class="form-control" id="indentify_cant">
+                              </div>
+                           </td>
+                           <td class="text-center"><span id="add_identification" class="badge bg-warning">Agregar</span></td>
+                        </tr>
+                     </tfoot>
+                  </table>
+
+
+               </div>
+
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-sm btn-primary" id="next_detail" disabled>Confirmar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="modal_Confirmation" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-body">
+                  <div class="text-white row bg-danger">
+                     <div class="col" style="padding: 1rem;">
+                        Advertencia: Este proceso no se puede Revertir ni corregir, por favor asegúrese que todos los datos ingresados son correctos
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-sm btn-primary" id="save_purchase">Ingresar a Inventario</button>
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- fin del area de modales -->
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   const detail_count = Number.parseInt('<%= details.length %>');
+   var details = JSON.parse('<%- JSON.stringify(indexed_details) %>');
+   var current_detail = null,
+      current_cant = null,
+      current_faltante = 0,
+      cantidad_identificados = 0,
+      sucursal = '<%= UserSucursal %>',
+      product_in_select2 = {},
+      product_last_val = '',
+      selectProduct = document.querySelector('#productSelect'),
+      costs = [],
+      post_data = {
+         details: {},
+         costs: [],
+         purchase: '<%= purchase.id %>',
+         sucursal: '<%= UserSucursal %>',
+         observation: '',
+      };
+   identofyModal = new bootstrap.Modal(document.getElementById('identofyModal')),
+      modal_Confirmation = new bootstrap.Modal(document.getElementById('modal_Confirmation'));
+
+
+   const identify = id => {
+      let dt = details[id];
+      document.querySelector("#product_resume").innerHTML = `${dt.description} <br> Codigo: ${dt.code} / Color: ${dt.color}`;
+      document.querySelector("#resume_cant").value = dt.cant;
+      current_detail = id;
+      current_cant = dt.cant;
+      document.querySelector("#faltante").value = 0;
+      current_faltante = 0;
+
+   };
+
+   const pintar_identificacion = id => {
+      if (details[id].identification !== null) {
+         let a = Object.keys(details[id].identification);
+         let htm = ``;
+         a.forEach(e => {
+            e = details[id].identification[e];
+            htm += `<div class="d-flex justify-content-between pl-2 pr-3">
+            <img src="${e.image}" alt="Producto" width="100px">
+            <span class="">${e.name}</span>
+            <span>${e.cant}</span>
+         </div>`;
+         });
+
+         if (details[id].faltante > 0) {
+            htm += `<div class="d-flex justify-content-between pl-5 pr-3">
+            <h6>Faltantes en Fisico:</h6>
+            <h6>${details[id].faltante}</h6>
+         </div>`;
+         }
+
+         document.querySelector(`#dt_div_${id}`).innerHTML = htm;
+      } else {
+         document.querySelector(`#dt_div_${id}`).innerHTML = `<div class="d-flex justify-content-between pl-5 pr-3">
+            <h6>Faltantes en Fisico:</h6>
+            <h6>${details[id].faltante}</h6>
+         </div>`;
+      }
+   };
+
+
+   const quit_cost = index => {
+      delete costs[index];
+      document.querySelector(`#expenses`).removeChild(document.querySelector(`#_cost_${index}`));
+
+   }
+
+   const quit_identify = index => {
+      let dt = details[current_detail].identification[index];
+
+      console.log(dt);
+      current_cant += dt.cant;
+      document.querySelector('#resume_cant').value = current_cant;
+      let tr = document.querySelector(`#_tr_tr_identificaion_${index}`);
+      document.querySelector(`#identify_tbody`).removeChild(tr);
+      delete details[current_detail].identification[index];
+
+   }
+
+   const choices_product = new Choices(selectProduct, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+   const doSearchProduct = async (val) => {
+
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=false`, {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      });
+
+      //Procesar la respuest para que me guarde los productos en cuestion en una variable
+      let res = await response.json();
+      product_in_select2 = {};
+      res.forEach(element => product_in_select2[element.id] = element);
+      return res;
+   }
+
+   var timer_product;
+   selectProduct.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (product_last_val !== valor_actual) {
+         product_last_val = valor_actual;
+         clearTimeout(timer_product);
+         timer_product = setTimeout(async () => {
+            let data = await doSearchProduct(e.detail.value);
+            choices_product.setChoices(data, 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+   document.addEventListener('DOMContentLoaded', event => {
+
+      document.querySelector('#save_purchase').addEventListener('click', e => {
+         console.log(post_data);
+         postData('/purchase/in', post_data)
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Guardado con Exito, redirigiendo');
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+               location.href = `/purchase/view/<%= purchase.id %>`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              e.target.disabled = false;
+              return errorMessage(data.message);
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+      });
+
+      document.querySelector('#save_1').addEventListener('click', e => {
+         var faltan = false;
+         post_data.sucursal = document.querySelector("#in_sucursal").value;
+         post_data.observation = document.querySelector("#in_comments").value;
+         post_data.costs = costs;
+         
+
+         //preparar los datos de los detalles
+         let keys = Object.keys(details);
+
+         keys.forEach(key => {
+            let dt = details[key];
+
+            let dt_to_post = {
+               detail: key,
+               products: [],
+               faltante: 0,
+            }
+
+            let restante = dt.cant;
+
+
+            if (dt.identification !== null) {
+               let claves = Object.keys(dt.identification);
+               console.log(claves);
+               claves.forEach(clave => {
+                  dt_to_post.products.push({
+                     product: clave,
+                     cant: dt.identification[clave].cant,
+                  });
+
+                  restante -= dt.identification[clave].cant;
+               });
+            }
+
+            if (dt.faltante !== undefined) {
+               restante -= dt.faltante;
+               dt_to_post.faltante = dt.faltante;
+            }
+            //verificar si hay faltante
+            if (restante > 0 && faltan == false) {
+               faltan = true;
+            }
+
+            post_data.details[key] = dt_to_post;
+         });
+
+         if (faltan) {
+            // post_data.details = {};
+            return errorMessage('No has identificado todos los Ítems de la compra');
+         } else {
+            modal_Confirmation.toggle();
+         }
+
+         if(sucursal !== post_data.sucursal){
+            infoMessage('Advertencia, esta ingresando estos productos a una sucursal diferente a la suya');
+         }
+      });
+
+      document.querySelector("#next_detail").addEventListener('click', e => {
+         if (current_cant - current_faltante == 0) {
+            details[current_detail].faltante = current_faltante;
+
+            pintar_identificacion(current_detail);
+            //mover el html a la tabla
+            document.querySelector(`#_btn_dt_${current_detail}`).parentNode.removeChild(document.querySelector(`#_btn_dt_${current_detail}`));
+
+            //limpiar el DIV
+            document.querySelector('#identify_tbody').innerHTML = "";
+            current_detail = null;
+            current_cant = null;
+            current_faltante = 0;
+            identofyModal.toggle();
+            return true;
+         }
+
+         return errorMessage('Por Favor termina de Indentificar este Ítem');
+      });
+
+      document.querySelector("#add_identification").addEventListener('click', e => {
+         let p = product_in_select2[selectProduct.value];
+
+         if (p == undefined || p == null) {
+            return errorMessage('No Ha seleccionado ningun Producto');
+         }
+         let _cant = Number.parseFloat(document.querySelector("#indentify_cant").value);
+         if (isNaN(_cant) || _cant < 1 || _cant > current_cant) {
+            return errorMessage('Ingrese una cantidad Valida');
+         }
+         if (details[current_detail].identified == undefined) {
+            details[current_detail].identified = _cant;
+            details[current_detail].identification = {};
+         } else {
+            details[current_detail].identified += _cant;
+         }
+         details[current_detail].identification[p.id] = {
+            product: p.id,
+            image: p.image,
+            name: p.name,
+            cant: _cant
+         };
+         current_cant -= _cant;
+
+         //pintar el seleccionado
+
+         let tr = document.createElement('tr');
+         tr.id = `_tr_tr_identificaion_${p.id}`;
+         tr.innerHTML = `<td>
+               <img src="${p.image}" alt="product image" style="width: 100px;">
+               <br>
+               <p>${p.name} SKU# ${p.sku}</p>
+            </td><td>${_cant} Un.</td>
+            <td><span class="badge bg-secondary" onclick="quit_identify(${p.id})">Quit</span></td>`;
+         document.querySelector('#identify_tbody').appendChild(tr);
+
+         document.querySelector('#resume_cant').value = current_cant;
+         choices_product.removeActiveItems();
+         document.querySelector("#indentify_cant").value = '';
+
+         if (current_cant == 0) {
+            document.querySelector("#next_detail").disabled = false;
+            current_faltante = 0;
+            document.querySelector("#faltante").value = 0;
+         } else if (current_cant - current_faltante < 0) {
+            current_faltante = current_cant;
+            document.querySelector("#faltante").value = current_faltante;
+            document.querySelector("#next_detail").disabled = false;
+         } else if (current_cant - current_faltante == 0) {
+            document.querySelector("#next_detail").disabled = false;
+         }
+
+      });
+
+      document.querySelector("#faltante").addEventListener('input', e => {
+         current_faltante = Number.parseInt(e.target.value);
+         if (isNaN(current_faltante)) {
+            current_faltante = 0;
+         }
+
+         if (current_cant - current_faltante == 0) {
+            document.querySelector("#next_detail").disabled = false;
+         } else {
+            document.querySelector("#next_detail").disabled = true;
+         }
+      });
+
+      document.querySelector("#add_cost").addEventListener('click', e => {
+         let cost = Number.parseFloat(document.querySelector("#cost_control").value);
+         let description = document.querySelector("#cost_description_control").value;
+         if (isNaN(cost)) {
+            return errorMessage('Coloque una cantidad para agregar un costo');
+         } else if (description.length < 5) {
+            return errorMessage('debe indicar el nombre de este costo en la factura, por ejemplo "Transporte"');
+         } else {
+            let div = document.createElement('div');
+            div.id = `_cost_${costs.length}`;
+            div.classList.add('row', 'mt-2');
+            div.innerHTML = `<div class="col-md-6">${description}</div>
+                        <div class="col-md-6">$${money_format(cost)} <span onclick="quit_cost(${costs.length})" class="badge bg-secondary ml-3">Quitar</span></div>`;
+
+            document.querySelector("#expenses").appendChild(div);
+
+            document.querySelector("#cost_control").value = "";
+            document.querySelector("#cost_description_control").value = "";
+            document.querySelector("#cost_description_control").focus();
+            costs.push({
+               description,
+               cost
+            });
+
+            createToast('purple', 'Costo Agregado')
+         }
+
+      });
+   });
+</script>
+
+</html>

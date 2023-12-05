@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+
+         <div class="card">
+            <% if (shipment.type == "transfer" ) { %>
+            <div class="card-header">
+               <h3 class="text-center">ENVIO N° <%= shipment.type == "transfer" ? `TR-${shipment.originSucursal}-${shipment.destinoSucursal}-${shipment.id}` : `EN-${shipment.originSucursal}-${shipment.id}` %></h3>
+            </div>
+            <div class="card-body">
+               <div class="row">
+                  <div class="col text-center">
+                     <a class="btn btn-primary mt-3 mb-3" href="/inventory/shipment/print/<%= shipment.id %>">Imprimir</a>
+
+                     <% if (shipment.isIn === false && (permission.includes('trasnfer_between_all_warehouses') || permission.includes('receive_transfered_product'))) { %>
+
+                     <button class="btn btn-danger mt-3 mb-3" id="in_button">Ingresa en Destino</button>
+
+
+                     <% } %>
+                  </div>
+
+                  <table class="table-bordered table-sm">
+                     <tbody>
+                        <tr>
+                           <td>Sucursal/Almacen<br> de Destino: </td>
+                           <td><%= sucursals[shipment.destinoSucursal] %></td>
+                        </tr>
+
+                        <tr>
+                           <td>Sucursal/Almacen<br> de Origen: </td>
+                           <td><%= sucursals[shipment.originSucursal] %></td>
+                        </tr>
+
+                        <tr>
+                           <td>Solicitado por: </td>
+                           <td><%= shipment.requestedBy %></td>
+                        </tr>
+
+                        <tr>
+                           <td>Supervisado y Elaborado por: </td>
+                           <td><%= shipment.createdBy %></td>
+                        </tr>
+                        <tr>
+                           <td>Fecha de Creacion</td>
+                           <td><%= Helper.date_to_spanish(shipment.createdAt) %></td>
+                        </tr>
+
+                     </tbody>
+                  </table>
+
+               </div>
+            </div>
+
+            <div class="card-body">
+               <div class="table-responsive">
+                  <table class="table table-hover table-sm table-bordered" id="simple_body">
+                     <thead>
+                        <tr>
+                           <th>Descripcion</th>
+                           <th>Cantidad</th>
+                           <th>Recibido</th>
+                        </tr>
+                     </thead>
+
+                     <tbody>
+                        <% shipment_details.forEach(detail => { %>
+                        <tr>
+                           <td><%= detail.description %></td>
+                           <td><%= detail.cant %></td>
+                           <td><%= detail.in %></td>
+                        </tr>
+                        <% }) %>
+                     </tbody>
+                  </table>
+
+                  <table class="table table-hover table-sm table-bordered" id="in_body" style="display:none">
+                     <thead>
+                        <tr>
+                           <th>Descripcion</th>
+                           <th>Cantidad</th>
+                           <th>Recibido</th>
+
+                        </tr>
+                     </thead>
+
+                     <tbody>
+                        <% shipment_details.forEach(detail => { %>
+                        <tr>
+                           <td><%= detail.description %></td>
+                           <td><%= detail.cant %></td>
+                           <td>
+                              <input type="number" step="1" id="input_in_<%= detail.id %>" class="form-control" value="<%= detail.cant - detail.in %>">
+                           </td>
+                        </tr>
+                        <% }) %>
+
+                        <tr>
+                           <td colspan="3" class="text-center">
+                              <button class="btn btn-success btn-sm mt-3 mb-3" id="in_shipment">Ingresar en Destino</button>
+
+                              <button class="btn btn-secondary btn-sm mt-3 mb-3" id="cancel_in">Cancelar</button>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+
+
+            </div>
+            <% } else { %>
+            //configurar aca el cuerpo cuando no sea trasnferencia
+            <% } %>
+
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+   document.addEventListener('DOMContentLoaded', event => {
+
+
+      document.querySelector("#in_shipment").addEventListener('click', e => {
+         //obtener los detalles y recorrelos,
+         let shipment_details = JSON.parse('<%- JSON.stringify(shipment_details) %>');
+         details = {};
+         shipment_details.forEach(el => {
+            let valor = document.querySelector(`#input_in_${el.id}`).value;
+            valor = valor > 0 ? valor : 0;
+            if (valor > el.cant) {
+               valor = el.cant;
+               warningMessage('Si ha recibido mas producto del detallado notifique a la bodega de origen');
+            }
+            details[el.id] = valor;
+         });
+         //enviar detalle spara su ingreso
+
+         postData('/inventory/shipment/in/', {
+            details,
+            shipment: '<%= shipment.id %>'
+         }).then(data => {
+            console.log(data);
+            if (data.status == 'success') {
+               successMessage('Guardado con exito');
+               setTimeout(window.location.reload(), 1500);
+            } else if (data.status == 'errorMessage') {
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+
+
+      });
+
+      document.querySelector("#cancel_in").addEventListener('click', e => {
+         document.querySelector("#simple_body").style.display = "table";
+         document.querySelector("#in_button").style.display = "inline-block";
+         document.querySelector("#in_body").style.display = "none";
+      });
+
+   });
+</script>
+<% if(shipment.isIn == false) {%>
+<script>
+   document.querySelector("#in_button").addEventListener('click', e => {
+      document.querySelector("#simple_body").style.display = "none";
+      document.querySelector("#in_button").style.display = "none";
+      document.querySelector("#in_body").style.display = "table";
+   });
+</script>
+<% }%>
+
+</html>

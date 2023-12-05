@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-body">
+               <ul class="list-group">
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Proveedor:</div>
+                        <div class="col"><%= provider.name %></div>
+                     </div>
+                  </li>
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Documento:</div>
+                        <div class="col"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Fecha de la Factura:</div>
+                        <div class="col"><%= Helper.format_date(purchase.invoice_date, false) %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Registrado:</div>
+                        <div class="col"><%= purchase.createdBy %><br><%= Helper.format_date(purchase.createdAt, true) %></div>
+                     </div>
+                  </li>
+
+                  <li class="list-group-item">
+                     <div class="row">
+                        <div class="col">Tipo de Compra:</div>
+                        <div class="col">
+
+
+                           <% if (purchase.purchase_type == 'product') { %>
+                           Producto para inventario
+                           <% if (purchase.isIn == 0) { %>
+                           <a href="/purchase/in/<%= purchase.id %>" class="mr-4 badge bg-danger"> Ingresar al Inventario</a>
+                           <% } else if(permission.includes('view_product_cost')) { %>
+                           <a href="/purchase/cost/<%= purchase.id %>" class="mr-4 badge bg-danger"> Ver cuadro de costos</a>
+                           <% } %>
+                           <% } else { %>
+                           <%= purchase_types[purchase.purchase_type]%>
+                           <% } %>
+                        </div>
+                     </div>
+                  </li>
+
+
+               </ul>
+               <table class="table table-sm table-bordered table-hover text-center mt-5">
+                  <thead>
+                     <tr>
+                        <th style="width: 35%; max-width: 35%;">Descripcion</th>
+                        <th style="width: 7%; max-width: 7%;">Cantidad</th>
+                        <th style="width: 10%; max-width: 10%;">Precio</th>
+                        <th style="width: 10%; max-width: 10%;">Subtotal</th>
+                        <th style="width: 10%; max-width: 10%;">Codigo</th>
+                        <th style="width: 10%; max-width: 10%;">Color</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <% details.forEach(detail => { %>
+                     <tr>
+                        <td><%= detail.description %></td>
+                        <td><%= detail.cant %></td>
+                        <td>$<%= Helper.money_format(detail.price) %></td>
+                        <td>$<%= Helper.money_format(detail.cant *  detail.price) %></td>
+                        <td><%= detail.code %></td>
+                        <td><%= detail.color %></td>
+                     </tr>
+                     <% }) %>
+                  </tbody>
+                  <tbody>
+                     <tr>
+                        <td colspan="3" class="text-right">Subtotal</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.subtotal)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% if (purchase.iva > 0) { %>
+                     <tr>
+                        <td colspan="3" class="text-right">(+) IVA</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.iva)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% } %>
+
+                     <% if (purchase.iva_percibido > 0) { %>
+                     <tr>
+                        <td colspan="3" class="text-right">(+) IVA Percibido</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.iva_percibido)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% } %>
+
+                     <% if (purchase.iva_retenido > 0) { %>
+                     <tr>
+                        <td colspan="3" class="text-right">(-) IVA Retenido</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.iva_retenido)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% } %>
+
+                     <% if (purchase.renta > 0) { %>
+                     <tr>
+                        <td colspan="3" class="text-right">(-) 10% Renta</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.renta)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% } %>
+
+                     <% if (purchase.other_taxes > 0) { %>
+                     <tr>
+                        <td colspan="3" class="text-right">(+) Otros Impuestos</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.other_taxes)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+                     <% } %>
+
+                     <tr>
+                        <td colspan="3" class="text-right">(=) Total</td>
+                        <td class="text-center">$<%= Helper.money_format(Number.parseFloat(purchase.subtotal) + Number.parseFloat(purchase.iva) + Number.parseFloat(purchase.iva_percibido) + Number.parseFloat(purchase.other_taxes) - Number.parseFloat(purchase.renta) - Number.parseFloat(purchase.iva_retenido)) %></td>
+                        <td colspan="2">--</td>
+                     </tr>
+
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+<script>
+
+</script>
+
+</html>

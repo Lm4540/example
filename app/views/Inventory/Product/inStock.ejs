@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+    .product_item .card,
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
+    .product_item {
+      font-size: 110%;
+      min-height: 150px;
+    }
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
+    .product_item .product_name {
+      margin-top: 15px;
+    }
+    .product_item .product_price {
+      color: #d82e04;
+      font-size: 150%;
+    }
+    .product_item .product_stock {
+      cursor: pointer;
+      color: #0d703e;
+    }
+    body.dark .product_item .product_stock {
+      color: #39da8a;
+    }
+    
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        
+        <div class="col-8 col-md-6">
+          <div class="form-group">
+            <label for="searchBox">Terminos de busqueda</label>
+            <input type="text" class="form-control" name="searchBox" id="searchBox">
+            <small>Write the SKU or Name to search</small>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-md-10 col-12">
+          <div class="row" id="product_div"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- modales -->
+
+    <div class="modal fade" id="Stock_detail"  tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalStockProductName"></h5>
+          </div>
+          <div class="modal-body">
+              <table class="table table-sm table-bordered">
+                <thead>
+                  <tr>
+                    <th>Sucursal</th>
+                    <th>Existencias</th>
+                    <th>Reservado</th>
+                    <th>Disponible</th>
+                  </tr>
+                </thead>
+                <tbody id="stocks_details">
+                  
+                </tbody>
+              </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  //obtener las sucursales
+  var sucursal = {},
+    query_offset = 0,
+    query_limit = Number.parseInt('<%= limit %>'),
+    search_last_val = "",
+    last_query = '',
+    more = true,
+    last_product,
+    details = {};
+    var myModal = new bootstrap.Modal(document.getElementById('Stock_detail'), {keyboard: true})
+
+  const observer = new IntersectionObserver((observed, observer) => {
+    observed.forEach((entry => {
+      if (entry.isIntersecting) {
+        console.log(`Mostrando ${query_offset} entradas`);
+        getproducts(false);
+      }
+    }));
+  }, {
+    rootMargin: '0px 0px 0px 0px',
+    threshold: 1.0,
+  });
+
+  const stock_detail = (id, name) => {
+    console.log()
+    let body = document.querySelector('#stocks_details');
+    body.innerHTML = '';
+    let content = '';
+    document.querySelector('#modalStockProductName').innerHTML = name;
+    if(details[id].length > 0){
+      details[id].forEach(el => {
+        content += `<tr><td>${sucursal[el.sucursal]}</td>
+                  <td>${el.cant}</td>
+                  <td>${el.reserved}</td>
+                  <td>${el.cant - el.reserved}</td></tr>`;
+      });
+      body.innerHTML = content;
+
+      //mostrar el modal
+      myModal.show();
+    }else{
+      return errorMessage('No hay Elementos para mostrar');
+    }
+    
+    
+  }
+
+  const charge_sucursals = async () => {
+    fetch(`/inventory/sucursals`, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    }).then(response => response.json()).then(data => {
+      if (data.length > 0) {
+        data.forEach(element => {
+          sucursal[element.id] = element.name
+        });
+      } else {
+        return errorMessage('Por favor registra una sucursal antes de utilizar esta seccion');
+      }
+    });
+  }
+
+  const getproducts = async (reset = false) => {
+    let parent = document.querySelector('#product_div');
+    if (reset) {
+      more = true;
+      query_offset = 0;
+    } else if (more == false) {
+      return false;
+    }
+    //Construir la Url
+    //Verificar si hay terminos de busqueda
+    let query = search_last_val.length > 2 ?
+      `/inventory/product/stock?search=${encodeURIComponent(search_last_val)}&offset=${query_offset}` :
+      `/inventory/product/stock?offset=${query_offset}`;
+
+    if (last_query == query) {
+      return false;
+    } else {
+      if (reset) {
+        parent.innerHTML = '';
+      }
+      last_query = query;
+    }
+
+    let data = await fetch(query, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+      })
+      .then(response => response.json())
+      .then(data => {
+        let len = data.length;
+        if (len > 0) {
+          data.forEach(element => {
+            details[element.id] = element.stocks;
+
+            let div = document.createElement('div');
+            div.classList.add('col-6', 'col-md-3', 'product_item');
+            div.innerHTML = `<div class="card">
+            <div class="card-body">
+              <img src="${element.image}" alt="Image" class="product_image" style="width: 100%; "><br>
+              <span class="product_name" style="cursor:pointer;" onclick="copy('${element.sku}')">${element.name} #SKU ${element.sku}</span><br>
+              <span class="product_price">$${element.price}</span><br>
+              <span class="product_major">Mayor $${element.major}</span><br>
+              <span class="product_stock" onclick="stock_detail(${element.id}, '${element.name}')">${element.cant - element.reserved} en Existencias</span>
+            </div>
+          </div>`;
+            parent.appendChild(div);
+          });
+        }
+        query_offset += len;
+
+        if (last_product !== undefined) {
+          observer.unobserve(last_product);
+        }
+        if (len < query_limit) {
+          let div = document.createElement('div');
+          div.classList.add('col-12');
+          div.innerHTML = `<h4 class="text-center"> < < Fin de la lista > ></h4>`;
+          parent.appendChild(div);
+          more = false;
+        } else {
+          let to_observe = document.querySelectorAll('.product_item');
+          last_product = to_observe[to_observe.length - 1];
+          observer.observe(last_product);
+        }
+      });
+  }
+
+  
+
+  document.addEventListener("DOMContentLoaded", (event) => {
+    charge_sucursals();
+    getproducts();
+
+    var timer_search;
+    document.querySelector('#searchBox').addEventListener('input', async (e) => {
+      let val = e.target.value;
+      if (search_last_val !== val) {
+        search_last_val = val;
+        clearTimeout(timer_search);
+        timer_search = setTimeout(async () => {
+          getproducts(true);
+        }, 500);
+      }
+
+    });
+
+
+  });
+</script>
+
+</html>

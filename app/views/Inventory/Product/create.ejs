@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <%# custom styles %>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title text-center">
+            <h4><%= pageTitle %></h4>
+         </div>
+         <section class="section">
+            <div class="row justify-content-center">
+               <div class="col-12 col-md-7">
+                  <div class="card">
+                     <div class="card-body">
+
+                        <form class="row g-3">
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="productName" type="text" placeholder="Nombre del Producto">
+                              <label for="productName">Nombre del producto</label>
+                           </div>
+                           <div class="form-floating mb-3 col-12">
+                              <input class="form-control" id="productColor" type="text" placeholder="Color del Producto">
+                              <label for="productColor">Color del Producto</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-6">
+                              <input class="form-control" id="provider_code" type="text" placeholder="Codigo del Proveedor / Numero de Parte">
+                              <label for="provider_code">Codigo del Proveedor</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-4 col-9">
+                              <input class="form-control" id="internal_code" type="text" placeholder="SKU">
+                              <label for="internal_code">SKU</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-2 col-2 text-center">
+                              <button type="button" class="btn btn-outline-secondary" id="genSKU">Gen SKU</button>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-12">
+                              <textarea class="form-control" name="description" id="description" rows="4"></textarea>
+                              <label for="description">Descripción del producto</label>
+                           </div>
+
+                           <div class=" mb-3 col-md-6">
+                              <label for="productProvider">Proveedor</label>
+                              <select name="productProvider" id="productProvider" class="form-control">
+                              </select>
+                           </div>
+
+                           <div class=" mb-3 col-md-6">
+                              <label for="productClassification">Clasificación</label>
+                              <select name="productClassification" id="productClassification" class="form-control">
+                                 <% classification.forEach(element => { %>
+                                 <option value="<%= element.id %>"><%= element.name %></option>
+
+                                 <% }) %>
+                              </select>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-6">
+                              <input class="form-control" id="min_stock" type="number" step="1" placeholder="Stock minimo" value="0">
+                              <label for="min_stock">Stock Minimo</label>
+                           </div>
+
+
+                           <div class="form-floating mb-3 col-md-6">
+                              <input class="form-control" id="max_stock" type="number" placeholder="0" value="100">
+                              <label for="max_stock">Stock Maximo</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-6">
+                              <input class="form-control" id="base_price" type="number" step="0.01" min="0.01" placeholder="10.25">
+                              <label for="base_price">Precio Regular</label>
+                           </div>
+
+                           <div class="form-floating mb-3 col-md-6">
+                              <input class="form-control" id="major_price" type="number" step="0.01" min="0.01" placeholder="10.25">
+                              <label for="major_price">Precio de Revendedor</label>
+                           </div>
+
+                           <div class="col-md-12 row">
+                              <div class="col-md-6">
+                                 <div class="col-md-12">
+                                    <div class="form-group text-center">
+                                       <label for="fake_image_input" class="subir" style="font-size: 2rem; cursor: pointer;">
+                                          <i class="fas fa-cloud-upload-alt"></i>
+                                          <b>Subir</b>
+                                          Imagen
+                                       </label>
+                                       <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12 text-center">Ó</div>
+
+                                 <div class="col-md-12 text-center">
+                                    <div class="form-group">
+                                       <input type="text" id="add-image-fake_text" class="form-control" placeholder="Pega aqui una imagen">
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-md-6">
+                                 <div id="add_image_preview"></div>
+                              </div>
+                              <input type="hidden" id="add_image_real" name="add_image_real">
+                           </div>
+
+                        </form>
+                     </div>
+                     <div class="card-footer text-center">
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="saveproduct">Guardar</button>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-12 col-md-5">
+                  <div class="card">
+                     <div class="card-header">
+                        <h4 class="text-center">Variaciones</h4>
+                     </div>
+                     <div class="card-body table-responsive">
+                        <table class="table table-borderless table-sm table-hover">
+                           <thead>
+                              <tr>
+                                 <td colspan="3" class="text-center"> <button class="btn btn-warning btn-sm btn-round" data-bs-toggle="modal" data-bs-target="#addVariationModal" style="cursor:pointer">Agregar</button></td>
+                              </tr>
+                           </thead>
+                           <tbody id="variations">
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+      </div>
+
+      <div class="modal fade" id="addVariationModal" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Agregando Variación</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="row">
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="variationColor" type="text">
+                        <label for="variationColor">Color</label>
+                     </div>
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="variationCode" type="text">
+                        <label for="variationCode">SKU</label>
+                     </div>
+                  </div>
+                  <div class="col-md-12 row">
+                     <div class="col-md-6">
+                        <div class="col-md-12">
+                           <div class="form-group text-center">
+                              <label for="fake_image_input2" class="subir" style="font-size: 2rem; cursor: pointer;">
+                                 <i class="fas fa-cloud-upload-alt"></i>
+                                 <b>Subir</b>
+                                 Imagen
+                              </label>
+                              <input type="file" accept="image/*" name="add_image" id="fake_image_input2" style="display: none;">
+                           </div>
+                        </div>
+                        <div class="col-md-12 text-center">Ó</div>
+                        <div class="col-md-12 text-center">
+                           <div class="form-group">
+                              <input type="text" id="variation_image_text" class="form-control" placeholder="Pega aqui una imagen">
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-md-6">
+                        <div id="add_image_preview2"></div>
+                     </div>
+                     <input type="hidden" id="add_image_real2" name="add_image_real2">
+                  </div>
+               </div>
+               <div class="modal-footer text-right">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button type="button" class="btn btn-primary" id="addVariationButton">Agregar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   var variations = [];
+   var product_last_val = '',
+      category_last_val = '';
+
+
+   //recorte de imagen del pproducto principal
+   var previewimagezone = document.getElementById("add_image_preview");
+   var realImage = document.getElementById("add_image_real");
+   captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, 1 / 1, realImage);
+
+   document.getElementById('fake_image_input').onchange = function(e) {
+      if (addingImageValidateImage(this)) {
+         AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+      } else {
+         document.getElementById("add_image_preview").innerHTML = "";
+         realImage.value = "";
+         return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+      }
+   };
+
+
+   //recorte de imagen de las variaciones
+
+   captureImagePasted(document.getElementById("variation_image_text"), document.getElementById("add_image_preview2"), 1 / 1, document.getElementById("add_image_real2"));
+
+   document.getElementById('fake_image_input2').onchange = function(e) {
+      if (addingImageValidateImage(this)) {
+         AddingImageChargeFromFile(e.srcElement, document.getElementById("add_image_preview2"), 1 / 1, document.getElementById("add_image_real2"));
+      } else {
+         document.getElementById("add_image_preview2").innerHTML = "";
+         document.getElementById("add_image_real2").value = "";
+         return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+      }
+   };
+
+   const doSearchProvider = async (val) => {
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/provider/select2?search=${encodeURIComponent(val)}`, {
+         mode: 'cors', // no-cors, *cors, same-origin
+         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+         credentials: 'same-origin', // include, *same-origin, omit
+         headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+         },
+         redirect: 'follow', // manual, *follow, error
+         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, 
+      });
+      return response.json(); // parses JSON response into native JavaScript objects
+   }
+
+
+   const quit_variation = (index) => {
+      if (variations[index] !== undefined) {
+         variations[index].deleted = true;
+         document.getElementById('variations').removeChild(document.getElementById(`tr_${index}`));
+      }
+   }
+
+
+   //document ready
+   document.addEventListener("DOMContentLoaded", (event) => {
+
+      document.getElementById('addVariationButton').addEventListener('click', e => {
+         let _v = {
+            color: document.getElementById('variationColor').value,
+            code: document.getElementById('variationCode').value,
+            image: document.getElementById('add_image_real2').value,
+            deleted: false,
+         }
+
+         if (_v.color == "" || _v.color.length < 2) {
+            return errorMessage('Proporcione un color');
+         } else if (_v.code == "" || _v.code.length < 2) {
+            return errorMessage('Proporcione un codigo');
+         } else if (_v.image == "" || _v.image.length < 2) {
+            return errorMessage('la imagen es Obligatoria si quiere ingresar una variacion');
+         } else if (document.getElementById("internal_code").value !== '' && document.getElementById("internal_code").value == _v.code) {
+            return errorMessage('El SKU de la variación no puede ser el mismo que el de el producto principal');
+         } else {
+
+            let index = variations.length;
+            let tr = document.createElement('tr');
+            tr.id = `tr_${index}`;
+            tr.innerHTML = `<td><img src="${_v.image}" style="width: 75px;" alt="variation"></td>
+                      <td>Color: ${_v.color}<br>SKU: ${_v.code}</td>
+                      <td><button class="btn btn-danger btn-sm btn-round" onclick="quit_variation(${index})">Quit</button></td>`;
+            document.getElementById('variations').appendChild(tr);
+            variations.push(_v);
+            createToast('purple', 'Variación Agregada', 'es-MX')
+            document.getElementById('variationColor').value = '';
+            document.getElementById('variationCode').value = '';
+            document.getElementById('add_image_real2').value = '';
+            document.getElementById("add_image_preview2").innerHTML = "";
+         }
+      });
+
+      document.getElementById("productName").focus();
+
+      document.getElementById('max_stock').addEventListener('focus', e => {
+         if (e.target.value == 100) {
+            e.target.value = '';
+         }
+      });
+
+      document.getElementById('min_stock').addEventListener('focus', e => {
+         if (e.target.value == 0) {
+            e.target.value = '';
+         }
+      });
+
+      document.getElementById('max_stock').addEventListener('blur', e => {
+         if (e.target.value == '') {
+            e.target.value = 100;
+         }
+      });
+
+      document.getElementById('min_stock').addEventListener('blur', e => {
+         if (e.target.value == '') {
+            e.target.value = 0;
+         }
+      });
+
+      document.getElementById('base_price').addEventListener('focus', e => {
+         if (e.target.value == 0.00) {
+            e.target.value = '';
+         }
+      });
+
+      document.getElementById('base_price').addEventListener('blur', e => {
+         if (e.target.value == '') {
+            e.target.value = 0.00;
+         }
+      });
+
+      document.getElementById("internal_code").addEventListener('blur', e => {
+         if (document.getElementById("internal_code").value == '' && document.getElementById("provider_code").value !== '') {
+            e.target.value = document.getElementById("provider_code").value;
+         }
+      });
+
+      document.getElementById('genSKU').addEventListener('click', e => {
+         let sku = '';
+         if (document.getElementById('productName').value.length > 2) {
+            let cadena = document.getElementById('productName').value.toUpperCase();
+            sku = cadena[0] + cadena[1] + cadena[2] + (cadena[3] !== undefined ? cadena[3] : '');
+         }
+         document.getElementById('internal_code').value = sku + genStrLong(5, 15).toUpperCase();
+      });
+
+      //form controls validation
+      document.getElementById('saveproduct').addEventListener('click', async (e) => {
+         e.target.disabled = true;
+         message = null;
+         let data = {
+            name: document.getElementById("productName").value,
+            code: document.getElementById("provider_code").value,
+            SKU: document.getElementById("internal_code").value,
+            description: document.getElementById("description").value,
+            min_stock: document.getElementById("min_stock").value,
+            max_stock: document.getElementById("max_stock").value,
+            price: document.getElementById("base_price").value,
+            major: document.getElementById("major_price").value,
+            image: document.getElementById("add_image_real").value,
+            provider: document.getElementById("productProvider").value,
+            classification: document.getElementById("productClassification").value,
+            color: document.getElementById("productColor").value,
+            variations: []
+         }
+
+         if (data.name.length < 2) {
+            message = 'Por favor, proporcione el nombre de este producto';
+         } else if (data.SKU.length < 2) {
+            message = 'Debe proporcionar un numero unico para ';
+         } else if (data.description.length < 10) {
+            message = 'Proporcione una descripción';
+         } else if (data.classification == "") {
+            message = 'Seleccione una clasificación';
+         } else if (data.color.length < 4) {
+            message = 'Escriba el color del Producto';
+         }
+
+         if (variations.length > 0) {
+            variations.forEach(_v => {
+               if (_v.deleted == false) {
+                  //verificar el codigo
+                  if (data.SKU == _v.code) {
+                     message = 'hay una Variacion con el mismo codigo que el producto principal';
+                     return false;
+                  } else {
+                     data.variations.push({
+                        code: _v.code,
+                        color: _v.color,
+                        image: _v.image
+                     })
+                  }
+               }
+            });
+         }
+
+         if (data.provider == "") {
+            data.provider = null;
+         }
+
+         if (message === null) {
+            console.log(data);
+            /** Enviar Informacion al Servidor y volver a Validar*/
+            postData('/inventory/product/create', data).then(data => {
+               if (data.status == 'success') {
+                  successMessage('Guardado con Exito, redirigiendo');
+                  console.log(data);
+                  setTimeout(() => {
+                     location.href = `/inventory/product/view/${data.data}`;
+                  }, 1500);
+
+               } else if (data.status == 'errorMessage') {
+                  e.target.disabled = false;
+                  return errorMessage(data.message);
+               } else {
+                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+               }
+            });
+
+         } else {
+            e.target.disabled = false;
+            return errorMessage(message);
+         }
+      });
+
+
+      const select_provider = document.querySelector('#productProvider');
+      const choices_provider = new Choices(select_provider, {
+         'searchResultLimit': 15,
+         'searchChoices': false,
+         'searchFloor': 3,
+
+      });
+
+
+      var timer_provider;
+      select_provider.addEventListener('search', async (e) => {
+         let valor_actual = e.detail.value;
+         if (product_last_val !== valor_actual) {
+            product_last_val = valor_actual;
+            clearTimeout(timer_provider);
+            timer_provider = setTimeout(async () => {
+               let data = await doSearchProvider(e.detail.value);
+               choices_provider.setChoices(data, 'value', 'label', true);
+            }, 500);
+         }
+      });
+
+
+
+
+   });
+</script>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="page-title">
+        <h3><%= pageTitle %> <button class="badge bg-success mb-5" data-bs-toggle="modal" data-bs-target="#AddSucursal" style="cursor:pointer">Nuevo</button> </h3>
+      </div>
+      <section class="section">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Ubicación</th>
+              <th>opt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (sucursals.length > 0) { %>
+            <% sucursals.forEach(sucursal => { %>
+            <tr>
+              <td><%= sucursal.name %></td>
+              <td>
+                <% if (sucursal.mapLink != null && sucursal.mapLink.length > 0) { %>
+                <a href="<%= sucursal.mapLink %>" target="_blank"><%= sucursal.location %></a>
+                <% } else { %>
+                <%= sucursal.location %>
+                <% } %>
+              </td>
+              <td>
+                <a href="/inventory/sucursal/view/<%= sucursal.id %>" class="btn btn-success btn-rounded">Ver detalles</a>
+              </td>
+            </tr>
+
+            <% }) %>
+            <% } else { %>
+            <tr>
+              <td colspan="3" class="text-center"> No Hay Registros para mostrar</td>
+            </tr>
+            <% } %>
+
+          </tbody>
+        </table>
+      </section>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+  <!-- modal -->
+  <div class="modal fade" id="AddSucursal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Sucursal</h5>
+          <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+        </div>
+        <div class="modal-body">
+          <form class="row g-3">
+            <div class="col-12">
+              <label for="sucursalName" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="sucursalName">
+            </div>
+
+            <div class="col-md-12">
+              <label for="Ubication" class="form-label">Ubicación</label>
+              <input type="text" class="form-control" id="Ubication">
+            </div>
+
+            <div class="col-md-6">
+              <label for="mapUrl" class="form-label">URL del Mapa</label>
+              <input type="text" class="form-control" id="mapUrl">
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check mt-4">
+                <input class="form-check-input pt-2" type="checkbox" id="isSalesRoom">
+                <label class="form-check-label" for="isSalesRoom">
+                  ¿Es sala de ventas?
+                </label>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="saveSucursal">Guardar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    document.getElementById('saveSucursal').addEventListener('click', (e) => {
+      let data = {
+        name: document.getElementById('sucursalName').value,
+        location: document.getElementById('Ubication').value,
+        mapLink: document.getElementById('mapUrl').value,
+        isSalesRoom: document.getElementById('isSalesRoom').checked,
+      };
+
+      if (data.name === '' || data.name === null || data.name.length < 3) {
+        return errorMessage('Por favor Proporcione un nombre para la nueva Sucursal');
+      } else if (data.location === '' || data.location === null || data.location.length < 3) {
+        return errorMessage('Por favor Proporcione la direccion de la sucursal');
+      } else {
+        postData('/inventory/sucursal/create', data)
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Guardado con Exito, redirigiendo');
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/inventory/sucursal/view/${data.data}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              e.target.disabled = false;
+              return errorMessage(data.message);
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+      }
+    });
+  });
+</script>
+
+</html>

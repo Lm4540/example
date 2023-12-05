@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .botonF1 {
+         cursor: pointer;
+         z-index: 1050;
+         width: 60px;
+         height: 60px;
+         border-radius: 100%;
+         background: #568add !important;
+         right: 0;
+         bottom: 0;
+         display: scroll;
+         position: fixed;
+         margin-right: 2rem;
+         margin-bottom: 2rem;
+         border: none;
+         outline: none;
+         color: #FFF;
+         font-size: 36px;
+         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
+         transition: .3s
+      }
+
+      .botonF1:disabled,
+      .botonF1[disabled] {
+         border: 1px solid #999999 !important;
+         background-color: #cccccc !important;
+         color: #666666 !important;
+         cursor: not-allowed;
+      }
+
+      .botonF1:hover {
+         transform: scale(1.1)
+      }
+
+      .botonF1 i {
+         padding-left: 4px;
+         font-size: 100%;
+         color: white;
+      }
+      </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-header">
+               <h3 class="text-center">Traslado entre Almacenes</h3>
+            </div>
+            <div class="card-body">
+               <div class="row">
+                  <% if (permission.includes('trasnfer_between_all_warehouses')) { %>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="originSucursal">Sucursal de Origen</label>
+                        <select name="originSucursal" id="originSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>" <% if (user.sucursal == el.id) { %>selected<% } %>><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="destinoSucursal">Sucursal de Destino</label>
+                        <select name="destinoSucursal" id="destinoSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+
+                  <% } else { %>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="originSucursal">Sucursal de Origen</label>
+                        <select name="originSucursal" id="originSucursal" class="form-control" disabled>
+                           <% sucursals.forEach(el => { %>
+                           <% if (user.sucursal == el.id) { %>
+                           <option value="<%= el.id %>" selected><%= el.name %></option>
+                           <% } %>
+
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="destinoSucursal">Sucursal de Destino</label>
+                        <select name="destinoSucursal" id="destinoSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <% if (user.sucursal != el.id) { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% } %>
+
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <% } %>
+
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="requestedBy">Solicita</label>
+                        <input type="text" id="requestedBy" name="requestedBy" class="form-control">
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="trasnportedBy">Transporta</label>
+                        <input type="text" id="trasnportedBy" name="trasnportedBy" class="form-control">
+                     </div>
+                  </div>
+               </div>
+               <button class="botonF1" id="btn_save"><i class="fas fa-save"></i></button>
+
+            </div>
+
+            <div class="card-body">
+               <h4 class="text-center">Detalles</h4>
+               <div class="table-responsive">
+                  <table class="table table-sm table-hover table-bordered">
+                     <tbody id="_tr_details"></tbody>
+                  </table>
+               </div>
+
+               <div class="row">
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                        <select name="productSelect" id="productSelect" class="form-control"></select>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-3">
+                     <div class="form-group">
+                        <label for="product_cant">Cantidad</label>
+                        <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
+                        <small class="text-danger" id="max_cant_small"></small>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-3 text-center">
+                     <button class="btn round btn-sm btn-warning mt-4" id="add_detail">Agregar</button>
+                  </div>
+               </div>
+
+            </div>
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+   var _process = '<%= Helper.randomString(5) %>';
+   var socket = io.connect('<%= baseURL %>/logistics');
+
+
+
+socket.on('save_new_transfer_error', data => {
+      console.log(data);
+      if (data._process == _process) {
+         return errorMessage(data.errorMessage);
+      }
+   });
+
+   socket.on('save_new_transfer_success', data => {
+      console.log(data);
+      if (data._process == _process) {
+         successMessage('Guardado con Exito');
+         window.location.href = `/inventory/shipment/${data.shipment.id}`;
+      }
+   });
+
+   var product_in_select2 = {},
+      selected_sucursal = document.querySelector("#originSucursal").value,
+      selectProduct = document.querySelector('#productSelect'),
+      product_last_val = '',
+      detail_number = 0,
+      added = [],
+      details = [],
+      tbody = document.querySelector('#_tr_details'),
+      s_options = {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      };
+
+
+   const choices_product = new Choices(selectProduct, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+
+   const deleteDetail = (index) => {
+      added = added.filter(element => element != details[index].product);
+      delete details[index];
+      tbody.removeChild(document.querySelector(`#detail_${index}`));
+      detail_number--;
+      document.querySelector("#btn_save").disabled = detail_number < 1;
+   };
+
+   const clean_detail_inputs = () => {
+
+      document.getElementById('product_cant').value = "1";
+      choices_product.removeActiveItems();
+   }
+
+   const doSearchProduct = async (val) => {
+
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=${selected_sucursal}`, s_options);
+      //Procesar la respuest para que me guarde los productos en cuestion en una variable
+      let res = await response.json();
+      product_in_select2 = {};
+      res.forEach(element => product_in_select2[element.id] = element);
+      return res;
+   }
+
+   var timer_product;
+   selectProduct.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value;
+      if (product_last_val !== valor_actual) {
+         product_last_val = valor_actual;
+         clearTimeout(timer_product);
+         timer_product = setTimeout(async () => {
+            let data = await doSearchProduct(e.detail.value);
+            choices_product.setChoices(data, 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#originSucursal").addEventListener('change', (e) => {
+         selected_sucursal = document.querySelector("#originSucursal").value;
+         detail_number = 0;
+         added = [];
+         details = [];
+         tbody.innerHTML = "";
+      });
+
+      selectProduct.addEventListener('change', e => {
+         let max = product_in_select2[e.target.value].stock - product_in_select2[e.target.value].reserved;
+         document.querySelector("#max_cant_small").innerHTML = `${max} unidades Maximo`;
+         document.querySelector("#product_cant").max = max;
+      });
+
+      document.querySelector("#add_detail").addEventListener('click', e => {
+         let dt = {
+            product: selectProduct.value,
+            cant: Number.parseInt(document.querySelector("#product_cant").value)
+         }
+         let prod = product_in_select2[selectProduct.value];
+
+         if (added.includes(selectProduct.value)) {
+            return errorMessage('Este producto ya ha sido agregadoa a la lista');
+         } else if (prod.stock - prod.reserved < dt.cant) {
+            return errorMessage(`la cantidad maxima es ${prod.stock - prod.reserved} para este producto`);
+
+         }
+
+         added.push(selectProduct.value);
+         details.push(dt);
+
+         let tr = document.createElement('tr');
+         tr.id = 'detail_' + detail_number;
+         tr.innerHTML = `
+         <td><img src="${prod.image}" alt="product" style="max-width: 100px;"></td>
+         <td>${prod.name} SKU: ${prod.sku}</td>
+         <td>${dt.cant}</td>
+         <td><span class="badge round bg-danger" onclick="deleteDetail(${detail_number})">Quitar</span></td>`;
+         tbody.appendChild(tr);
+         detail_number++;
+
+         clean_detail_inputs();
+      });
+
+      document.querySelector("#btn_save").addEventListener('click', e => {
+         if (detail_number < 1) {
+            return errorMessage('Agregue los ítems que va a trasladar');
+         } else if (selected_sucursal == document.querySelector("#destinoSucursal").value) {
+            return errorMessage('La sucursal de origen y destino deben ser diferentes');
+         }
+
+         let data = {
+            requestedBy: document.querySelector("#requestedBy").value,
+            trasnportedBy: document.querySelector("#trasnportedBy").value,
+            sucursal: selected_sucursal,
+            destino: document.querySelector("#destinoSucursal").value,
+            details : details,
+            _process,
+         }
+
+         if(data.requestedBy.length < 5){
+            return errorMessage('Indique quien ha solicitado el traslado');
+         }else if(data.trasnportedBy.length < 5){
+            return errorMessage('Indique quien realizara el traslado');
+         }
+
+         //enviar los resultados
+         socket.emit('save_new_transfer', data);
+      });
+   });
+</script>
+
+</html>

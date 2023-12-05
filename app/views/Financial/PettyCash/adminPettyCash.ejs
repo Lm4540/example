@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .form-group label {
+         font-size: 0.85rem;
+         font-weight: 500;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h2 class="text-center">Caja Chica <%= sucursal.name %> (<span id="total_amount">$<%= Helper.money_format(sucursal.balance) %></span>)</h2>
+         <div class="row" id="move_controls" style="display: none;">
+            <div class="col form-group">
+               <label for="init_date">Desde la Fecha</label>
+               <input type="date" class="form-control" id="init_date" max="<%= Helper.date_to_input() %>">
+            </div>
+            <div class="col form-group">
+               <label for="end_date">Hasta la Fecha</label>
+               <input type="date" class="form-control" id="end_date" max="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+            </div>
+
+            <div class="col">
+               <button class="btn btn-primary round mt-3" id="btnSearchMoves" onclick="get_moves(false)">Ver</button>
+               <button class="btn btn-secondary round mt-3" id="btnReportMoves" onclick="get_moves(true)">Reporte</button>
+            </div>
+         </div>
+
+
+         <div class="row justify-content-center mt-5">
+
+            <div class="col-lg-8 col-md-10 col-12 text-center">
+               <button class="btn btn-warning round mt-1" data-bs-toggle="modal" data-bs-target="#add_move">Registrar Movimiento</button>
+               <button class="btn btn-primary round mt-1">Recoleccion Pendiente</button>
+               <button class="btn btn-success round mt-1" onclick="view_move_controls()">Consultar movimientos</button>
+               <button class="btn btn-danger round mt-1">Cierre Diario</button>
+
+
+               <div class="row justify-content-center mt-5 table-responsive">
+                  <table class="table table-sm table-bordered table-hover">
+                     <thead>
+                        <tr>
+                           <th>Fecha</th>
+                           <th>Concepto</th>
+                           <th>Ingreso</th>
+                           <th>Salidas</th>
+                           <th>Saldo</th>
+                        </tr>
+                     </thead>
+                     <tbody id="moves">
+                        <% moves.forEach(move => { %>
+                        <% if (move.isin == true) { %>
+                        <tr class="">
+                           <td><%= Helper.format_date(move.createdAt) %></td>
+                           <td class="text-left">
+                              <%= move.concept %> <br>
+                              Asignado a <%= move.asigned_to %><br>
+                              R: <%= move.createdBy %> 
+                           </td>
+                           <td>$<%= Helper.money_format(move.amount) %></td>
+                           <td></td>
+                           <td><b>$<%= Helper.money_format(move.amount + move.last_amount) %></b></td>
+                        </tr>
+                        <% } else { %>
+                        <tr class="table-secondary">
+                           <td><%= Helper.format_date(move.createdAt) %></td>
+                           <td class="text-left">
+                              <%= move.concept %> <br>
+                              Asignado a <%= move.asigned_to %><br>
+                              R: <%= move.createdBy %>
+                           </td>
+                           <td></td>
+                           <td class="text-danger">$<%= Helper.money_format(move.amount) %></td>
+                           <td><b>$<%= Helper.money_format(move.last_amount - move.amount) %></b></td>
+                        </tr>
+                        <% } %>
+                        <% }) %>
+                     </tbody>
+                  </table>
+
+               </div>
+            </div>
+         </div>
+
+      </div>
+
+      <div class="modal fade" id="add_move" tabindex="-1" style="display: none;">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Agregar Movimiento</h5>
+               </div>
+               <div class="modal-body">
+                  <div class="form-group">
+                     <label for="move_type">Tipo de Movimiento</label>
+                     <select name="move_type" id="move_type" class="form-control">
+                        <option value="extra">Ingreso Adicional</option>
+                        <option value="out">Pagos o Gastos</option>
+                        <option value="refill">Reposicion de Saldo</option>
+                     </select>
+                  </div>
+
+                  <div class="form-group">
+                     <label for="concept">Concepto</label>
+                     <input type="text" class="form-control" id="concept" name="concept">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="amount">Monto</label>
+                     <input type="number" step="0.01" class="form-control" id="amount" name="amount">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="asigned_to">Asignado a: / Recibido de: </label>
+                     <input type="text" class="form-control" id="asigned_to" name="asigned_to">
+                  </div>
+
+                  <div class="form-group">
+                     <input class="form-check-input" type="checkbox" id="recibo" checked>
+                     <label class="form-check-label" for="recibo">Imprimir Recibo</label>
+                  </div>
+
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-primary round" id="btn_add_move">Guardar</button>
+                  <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal">Cerrar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="recolection" tabindex="-1" style="display: none;">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Recoleccion Pendiente</h5>
+               </div>
+               <div class="modal-body">
+
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   var max_amount = Number.parseFloat('<%= sucursal.balance %>');
+   const view_move_controls = () => {
+      document.querySelector('#move_controls').style.display = "flex";
+   }
+
+   const modal_move = new bootstrap.Modal(document.getElementById('add_move'), {});
+   const clean_move_controls = () => {
+      modal_move.toggle();
+      document.querySelector('#amount').value = '';
+      document.querySelector('#concept').value = '';
+      document.querySelector('#asigned_to').value = "";
+      document.querySelector("#btn_add_move").disabled = false;
+   };
+
+   const get_moves = (print = false) => {
+      let init_date = document.querySelector("#init_date").value;
+      let end_date = document.querySelector("#end_date").value;
+
+      if(init_date > end_date || init_date.length < 10 || end_date.length < 10){
+         return errorMessage('Seleccione un rango de fechas Valido');
+      }else{
+         window.location.href = `/financial/pettycash/<%= sucursal.id%>?print=${print}&init=${encodeURI(init_date)}&end=${encodeURI(end_date)}`;
+      }
+
+   }
+   window.addEventListener('DOMContentLoaded', event => {
+
+
+      document.querySelector("#btn_add_move").addEventListener('click', e => {
+         let data = {
+            amount: Number.parseFloat(document.querySelector('#amount').value),
+            concept: document.querySelector('#concept').value,
+            sucursal: '<%= sucursal.id %>',
+            type: document.querySelector('#move_type').value,
+            asigned_to: document.querySelector('#asigned_to').value,
+         }
+
+         //Validar los datos
+         if (data.type == "out" && data.amount > max_amount) {
+            return errorMessage('No hay suficiente efectivo para realizar esta operación');
+         } else if (data.concept.length < 5) {
+            return errorMessage('Proporcione una descripcion para este movimiento en la casilla concepto');
+         } else if (data.asigned_to.length < 5) {
+            return errorMessage('Debe indicar quien recibe o deposita el monto de la transacción');
+         } else if (isNaN(data.amount) || data.amount < 0.01) {
+            return errorMessage('El monto escrito es invalido');
+         }
+
+         e.target.disabled = true;
+         postData('/financial/pettycash/', data).then(data => {
+            if (data.status == 'success') {
+               createToast('rose', 'Guardado');
+               max_amount = data.new_amount;
+               let tr = document.createElement('tr');
+               if (document.querySelector('#move_type').value == 'out') {
+                  tr.classList.add('table-secondary');
+                  tr.innerHTML = `<td>${format_date(data.move.createdAt) }</td><td class="text-left">
+                              ${data.move.concept} <br>
+                              Asignado a ${data.move.asigned_to}<br>
+                              R: ${data.move.createdBy}
+                           </td>
+                           <td></td>
+                           <td class="text-danger">$${money_format(data.move.amount)}</td>
+                           <td><b>$${money_format(data.move.last_amount - data.move.amount)}</b></td>`;
+               } else {
+                  tr.innerHTML = `<td>${format_date(data.move.createdAt) }</td><td class="text-left">
+                              ${data.move.concept} <br>
+                              Asignado a ${data.move.asigned_to}<br>
+                              R: ${data.move.createdBy}
+                           </td>
+                           <td>$${money_format(data.move.amount)}</td>
+                           <td></td>
+                           <td><b>$${money_format(data.move.last_amount + data.move.amount)}</b></td>`;
+               }
+               document.querySelector("#moves").appendChild(tr);
+               //Actualizar el total
+               document.querySelector("#total_amount").innerHTML = `$${money_format(data.new_amount)}`;
+
+               //Si se pide imprimir el voucher, imprimirlo
+               if (document.querySelector('#move_type').value == 'out' && document.querySelector("#recibo").checked) {
+                  console.log('Imprimiendo recibo')
+               }
+
+               clean_move_controls();
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+      });
+   });
+</script>
+
+</html>

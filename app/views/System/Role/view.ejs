@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid ">
+      <div class="page-title text-center">
+        <h4><%= pageTitle %></h4>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+          <table>
+     
+            <tr>
+              <td colspan="2">
+                <button class="btn btn-success btn-round" data-bs-toggle="modal" data-bs-target="#newRolModal" style="cursor:pointer">Agregar</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="newRolModal" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Nuevo Rol</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <div class="form-floating mb-3">
+              <input class="form-control" id="rolName" type="text">
+              <label for="rolName">Nombre del rol</label>
+            </div>
+            <div class="form-floating mb-3">
+              <textarea name="roleDescription" id="roleDescription" class="form-control"></textarea>
+              <label for="roleDescription">Breve descripcion del Rol</label>
+            </div>
+          </div>
+          <div class="modal-footer text-right">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="addRolebutton">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  
+</script>
+
+</html>

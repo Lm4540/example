@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <style>
+      .list-group-item.active {
+         font-weight: bolder;
+         color: #fff !important;
+         background-color: #121520 !important;
+      }
+
+      .btn-sm,
+      .btn-group-sm>.btn {
+         padding: 0.4rem 0.4rem;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid ">
+         <div class="page-title text-center">
+            <h4><%= pageTitle %></h4>
+         </div>
+         <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+               <table class="table table-borderless table-hover">
+                  <% users.forEach(element => { %>
+                  <tr>
+                     <td><%= element.name %></td>
+                     <td>
+                        <div class="btn-group mb-1">
+                           <div class="dropdown">
+                              <button class="btn btn-primary dropdown-toggle mr-1 btn-sm btn-round" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                 Opciones
+                              </button>
+                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 37px, 0px); top: 0px; left: 0px; will-change: transform;">
+                                 <span class="dropdown-item" onclick="viewPermissions('<%= element.id %>')">Ver permisos</span>
+                                 <span class="dropdown-item" onclick="setSpecial('<%= element.id %>')">Establecer Permisos Especiales</span>
+                                 <!--<span class="dropdown-item" onclick="setTemporal('<%= element.id %>')">Establecer Permisos Temporales</span>-->
+                                 <span class="dropdown-item" onclick="resetPassword('<%= element.id %>')">Restablecer Contraseña</span>
+                                 <span class="dropdown-item" onclick="blockUser('<%= element.id %>')">Bloquer/Desbloquear</span>
+                                 <span class="dropdown-item" onclick="editUser('<%= element.id %>')">Editar Usuario</span>
+                              </div>
+                           </div>
+                        </div>
+
+                     </td>
+                  </tr>
+                  <% }) %>
+                  <tr>
+                     <td colspan="2" class="text-center">
+                        <button class="btn btn-success btn-round" data-bs-toggle="modal" data-bs-target="#newUserModal" style="cursor:pointer">Agregar</button>
+                     </td>
+                  </tr>
+               </table>
+            </div>
+         </div>
+      </div>
+
+
+
+      <div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Agregar Usuario</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="form-floating mb-3">
+                     <input class="form-control" id="userName" type="text">
+                     <label for="userName">Nombre del Usuario</label>
+                  </div>
+                  <div class="form-floating mb-3">
+                     <input class="form-control" id="userEmail" type="email">
+                     <label for="userEmail">Correo Electrónico</label>
+                  </div>
+                  <div class="form-floating mb-3">
+                     <select name="userRole" id="userRole" class="form-control">
+                        <% rols.forEach(element => { %>
+                        <option value="<%= element.id %> "><%= element.name %></option>
+                        <% }) %>
+                     </select>
+                     <label for="userRole">Rol Asignado</label>
+                  </div>
+
+               </div>
+               <div class="modal-footer text-right">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button type="button" class="btn btn-primary" id="addUserButton">Guardar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="setpermissions" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Establecer permisos</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+
+                  <div class="form-floating mb-3" id="temporal_div">
+                     <input class="form-control" id="temporalDuration" type="date">
+                     <label for="temporalDuration">Fecha de Caducidad del Permiso</label>
+                  </div>
+
+
+                  <table class="table table-borderless table-hover table-sm">
+                     <thead>
+                        <tr>
+                           <th>Grupo</th>
+                           <th>Permiso</th>
+                           <th>
+                              <i class="fas fa-user-check" style="color: #0ece0e"></i>
+                           </th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <% PermissionList.forEach(permission=> { %>
+                        <tr data-bs-toggle="tooltip" data-bs-placement="bottom" title="<%= permission.explication %>" style="cursor:pointer">
+                           <td onclick="check_input('<%= permission.permission %>')">
+                              <%= permission.group %>
+                           </td>
+                           <td onclick="check_input('<%= permission.permission %>')">
+                              <%= permission.name %>
+
+                           </td>
+                           <td>
+                              <div class="form-check form-switch">
+                                 <input id="per_<%= permission.permission %>" class="form-check-input permission_check" type="checkbox" data-permission="<%= permission.permission %>">
+                              </div>
+                           </td>
+                        </tr>
+                        <% }) %>
+                     </tbody>
+                  </table>
+
+               </div>
+               <div class="modal-footer text-center">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button type="button" class="btn btn-primary" id="setPermissionButton">Guardar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="viewusers" tabindex="-1" aria-labelledby="add a variation pop up modal" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="">Nuevo Rol</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+
+               </div>
+               <div class="modal-footer text-right">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   var users = JSON.parse('<%- JSON.stringify(indexed_users) %>');
+   const permission = JSON.parse('<%- JSON.stringify(indexed_permissions) %>');
+   const modalSetpermissions = new bootstrap.Modal(document.getElementById('setpermissions'), {
+      keyboard: true
+   });
+   var modalUsers = new bootstrap.Modal(document.getElementById('viewusers'), {
+      keyboard: true
+   });
+   var user_updating = null;
+   var permission_updating = null;
+
+   const viewPermissions = (id) => {
+      let user = users[id];
+      if (user !== undefined) {
+         //mostrar la lista de Usuarios en el rol
+         document.querySelector("#viewusers .modal-title").innerHTML = `Permisos de "${user.name}"`;
+         let content = '';
+
+         if (user.permission.length > 0) {
+            content += `<li class="list-group-item active">PERMISOS DEL ROL</li>`;
+            user.permission.forEach(perm => {
+               content += `<li class="list-group-item">${permission[perm]}</li>`;
+            });
+         }
+
+         if (user.specialPermission.length > 0) {
+            content += `<li class="list-group-item active">PERMISOS ESPECIALES</li>`;
+            user.specialPermission.forEach(perm => {
+               content += `<li class="list-group-item">${permission[perm]}</li>`;
+            });
+         }
+
+         if (user.temporalPermission.length > 0) {
+            content += `<li class="list-group-item active">PERMISOS TEMPORALES HASTA: ${format_date(new Date(user.temporalDate))}</li>`;
+            user.temporalPermission.forEach(perm => {
+               content += `<li class="list-group-item">${permission[perm]}</li>`;
+            });
+         }
+         document.querySelector("#viewusers .modal-body").innerHTML = content.length < 1 ? 'Aun no se han establecido Permisos para este Rol' : `<ul class="list-group list-group-flush">${content}</ul>`;
+         modalUsers.toggle();
+      }
+   }
+
+   const setSpecial = (id) => {
+      user_updating = id;
+      permission_updating = 'special';
+      document.getElementById('temporal_div').style.display = 'none';
+      let user = users[id];
+      if (user !== undefined) {
+         document.querySelector("#setpermissions .modal-title").innerHTML = `Establecer Permisos Especiales para "${user.name}"`;
+         //obtener todos los permisos y marcarlos como no checados
+         let chekks = document.querySelectorAll('.permission_check');
+         for (let index = 0; index < chekks.length; index++) {
+            chekks[index].checked = false;
+         }
+         if (user.specialPermission.length > 0) {
+            user.specialPermission.forEach(perm => {
+               document.querySelector(`#per_${perm}`).checked = true;
+            });
+         }
+         modalSetpermissions.toggle();
+         document.querySelector('#setPermissionButton').disabled = false;
+      } else {
+         return errorMessage('Rol no reconocido, recargue la pagina e intente nuevamente.')
+      }
+   }
+
+   const setTemporal = (id) => {
+      user_updating = id;
+      permission_updating = 'temporal';
+      document.getElementById('temporal_div').style.display = 'block';
+      let user = users[id];
+      if (user !== undefined) {
+         document.querySelector("#setpermissions .modal-title").innerHTML = `Establecer Permisos Temporales para "${user.name}"`;
+         //obtener todos los permisos y marcarlos como no checados
+         let chekks = document.querySelectorAll('.permission_check');
+         for (let index = 0; index < chekks.length; index++) {
+            chekks[index].checked = false;
+         }
+         if (user.temporalPermission.length > 0) {
+            user.temporalPermission.forEach(perm => {
+               document.querySelector(`#per_${perm}`).checked = true;
+            });
+         }
+         modalSetpermissions.toggle();
+         document.querySelector('#setPermissionButton').disabled = false;
+      } else {
+         return errorMessage('Rol no reconocido, recargue la pagina e intente nuevamente.')
+      }
+   }
+
+   const resetPassword = (id) => {
+      return update_user_data({
+         option: 'resetpasword',
+         user: id
+      })
+   }
+
+   const blockUser = (id) => {
+      return update_user_data({
+         option: 'block',
+         user: id
+      })
+   }
+
+   const editUser = (id) => {
+
+   }
+
+   const update_user_data = _data => postData('/user/update', _data).then(data => {
+      if (data.status == 'success') {
+         successMessage('usuario Actualizado');
+         /**Redirigir a la pagina del Proveedor*/
+         setTimeout(() => {
+            users[data.data.id] = data.data;
+            return true;
+         }, 1500);
+
+      } else if (data.status == 'errorMessage') {
+         return errorMessage(data.message);
+      } else {
+         return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+
+   });
+   const check_input = (perm) => document.querySelector(`#per_${perm}`).checked = !document.querySelector(`#per_${perm}`).checked;
+
+   document.addEventListener('DOMContentLoaded', (event) => {
+
+      document.querySelector("#setPermissionButton").addEventListener('click', e => {
+         if (user_updating == null || permission_updating == null) {
+            return errorMessage('Utiliza los controles de la interfaz');
+         }
+
+         e.target.disabled = true;
+
+         let elements = document.querySelectorAll('.permission_check:checked');
+         let permissions = [];
+         if (elements.length > 0) {
+            elements.forEach(element => permissions.push(element.dataset.permission));
+         }
+
+         let data = {
+            option: permission_updating,
+            user: user_updating,
+            permission: permissions
+         };
+         if (permission_updating === 'temporal') {
+            data.date = document.querySelector('#temporalDuration').value + 'T00:00:00';
+         }
+         modalSetpermissions.toggle();
+         user_updating = null
+         permission_updating = null;
+         return update_user_data(data)
+      });
+
+      document.querySelector("#addUserButton").addEventListener('click', e => {
+         let data = {
+            name: document.querySelector("#userName").value,
+            email: document.querySelector("#userEmail").value,
+            role: document.querySelector("#userRole").value,
+         }
+
+         console.log(data.email, '\n', isValidEmail(data.email));
+
+         if (data.name.length < 5) {
+            return errorMessage('Coloque el nombre del Usuario');
+         } else if (!isValidEmail(data.email)) {
+            return errorMessage('Coloque un correo Electrónico válido');
+         }
+         postData('/user/create', data).then(data => {
+            if (data.status == 'success') {
+               successMessage('Guardado con Exito');
+               /**Redirigir a la pagina del Proveedor*/
+               setTimeout(() => {
+                  window.location.reload();
+               }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+
+            }
+
+         });
+
+
+      });
+
+   });
+</script>
+
+</html>

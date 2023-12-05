@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <%# custom styles %>
+</head>
+<% options = `<a class="ml-5" href="/hrm">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid text-center">
+         <div class="page-title">
+            <h3><%= pageTitle %></h3>
+         </div>
+         <section class="section text-left">
+            <div class="card" style="max-width: 1000px; margin: auto;">
+               <div class="card-body">
+
+                  <form class="row g-3">
+                     <div class="form-floating mb-3 col-12">
+                        <input class="form-control" id="employeeName" type="text" placeholder="Nombre del Cliente">
+                        <label for="employeeName">Nombre del Empleado</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="employeePhone" type="text" placeholder="Nunmero Telefonico">
+                        <label for="employeePhone">Numero Telefonico</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="employeeMail" type="text" placeholder="SKU">
+                        <label for="employeeMail">E-Mial</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-12">
+                        <input class="form-control" id="employeDirection" type="text" placeholder="SKU">
+                        <label for="employeDirection">Dirección</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <input class="form-control" id="employeDui" type="text" placeholder="SKU">
+                        <label for="employeDui">NIT/DUI</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <select name="isSeller" id="isSeller" class="form-control">
+                           <option value="true">SI</option>
+                           <option value="false">NO</option>
+                        </select>
+                        <label for="isSeller">¿Es Vendedor?</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <select name="user" id="EmployeeUser" class="form-control">
+                           <% if (users.length > 0) { %>
+                            <% users.forEach(us => { %>
+                              <option value="<%= us.id %>"><%= us.name %></option>
+                            <% }) %>
+                           <% } %>
+                           <option value="regiser" selected>Registrar Usuario</option>
+                           <option value="none">Ningun Usuario</option>
+                        </select>
+                        <label for="EmployeeUser">Usuario del Sistema</label>
+                     </div>
+
+                     <div class="form-floating mb-3 col-md-6">
+                        <select name="employeeSucursal" id="employeeSucursal" class="form-control">
+                            <% sucursal.forEach(us => { %>
+                              <option value="<%= us.id %>"><%= us.name %></option>
+                            <% }) %>
+                        </select>
+                        <label for="employeeSucursal">Sucursal asignada</label>
+                     </div>
+                     
+
+                     <div class="col-md-12 row">
+                        <div class="col-md-6">
+                           <div class="col-md-12">
+                              <div class="form-group text-center">
+                                 <label for="fake_image_input" class="subir" style="font-size: 2rem; cursor: pointer;">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <b>Subir</b>
+                                    Imagen
+                                 </label>
+                                 <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                              </div>
+                           </div>
+                           <div class="col-md-12 text-center">Ó</div>
+
+                           <div class="col-md-12 text-center">
+                              <div class="form-group">
+                                 <input type="text" id="add-image-fake_text" class="form-control" placeholder="Pega aqui una imagen">
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-md-6">
+                           <div id="add_image_preview"></div>
+                        </div>
+                        <input type="hidden" id="add_image_real" name="add_image_real">
+                     </div>
+
+
+                  </form>
+               </div>
+               <div class="card-footer text-center">
+                  <button type="button" class="btn btn-secondary" onclick="window.history.back()">Atrás</button>
+                  <button type="button" class="btn btn-primary" id="saveEmployee">Guardar</button>
+               </div>
+            </div>
+
+
+         </section>
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+{# definicion de variables usadas en otros elementos javascript #}
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+
+   //recorte de imagen del pproducto principal
+   var previewimagezone = document.getElementById("add_image_preview");
+   var realImage = document.getElementById("add_image_real");
+   captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, 1 / 1, realImage);
+
+   document.getElementById('fake_image_input').onchange = function(e) {
+      if (addingImageValidateImage(this)) {
+         AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+      } else {
+         previewimagezone.innerHTML = "";
+         realImage.value = "";
+         return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+      }
+   };
+   //document ready
+   document.addEventListener("DOMContentLoaded", (event) => {
+
+      document.getElementById("employeeName").focus();
+      document.getElementById('saveEmployee').addEventListener('click', async (e) => {
+         // e.target.disabled = true;
+         let data = {
+            name: document.getElementById("employeeName").value,
+            phone: document.getElementById("employeePhone").value,
+            email: document.getElementById("employeeMail").value,
+            direction: document.getElementById("employeDirection").value,
+            isSeller: document.getElementById("isSeller").value === 'true',
+            dui: document.getElementById("employeDui").value,
+            user: document.getElementById("EmployeeUser").value,
+            image: document.getElementById("add_image_real").value,
+            sucursal: document.getElementById("employeeSucursal").value,
+         }
+
+         console.log(data);
+
+         if (data.name.length < 2) {
+            e.target.disabled = false;
+            return errorMessage('Por favor, registre el nombre del Empleado');
+         } else if (data.phone.length < 8) {
+            e.target.disabled = false;
+            return errorMessage('Debe proporcionar un numero de contacto para este Empleado');
+         }  else if (!isValidEmail(data.email)) {
+            e.target.disabled = false;
+            return errorMessage('Debe proporcionar un e-mail válido para este empleado');
+         } else {
+            /** Enviar Informacion al Servidor y volver a Validar*/
+            postData('/hrm/createEmployee', data)
+               .then(data => {
+                  if (data.status == 'success') {
+                     successMessage('Guardado con Exito, redirigiendo');
+                     /**Redirigir a la pagina del Proveedor*/
+                     setTimeout(() => {
+                        location.href = `/hrm/employee/${data.data.id}/view`;
+                     }, 1500);
+
+                  } else if (data.status == 'errorMessage') {
+                     e.target.disabled = false;
+                     return errorMessage(data.message);
+                  } else {
+                     return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                  }
+               }).catch(error => console.error(error));
+
+         }
+      });
+
+
+   });
+</script>
+
+</html>
