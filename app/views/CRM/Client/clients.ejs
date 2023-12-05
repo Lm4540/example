@@ -43,7 +43,8 @@
       search: {
          server: {
             url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${keyword}` : prev,
-         }
+         },
+         debounceTimeout : 1500,
       },
       sort: {
          server: {

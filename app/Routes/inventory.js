@@ -70,6 +70,8 @@ router.post('/product/recount', StockController.createNewRecount);
 router.get('/product/recount/:id(\\d+)', StockController.viewRecount);
 router.post('/product/recount/update', StockController.updateRecount);
 
+router.get('/product/stock_report', StockController.general_report);
+
 router.get('/product/archive/:id(\\d+)', ProductController.archive); //pendiente
 
 router.get('/reserveList', StockController.reserveList);

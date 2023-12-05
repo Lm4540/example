@@ -18,6 +18,14 @@ const StockReserve = require('../Models/StockReserve');
 
 const StockController = {
 
+    general_report: async (req, res) => {
+        let products = await Product.findAll({where: {stock: {[Op.gt]: 0}}});
+        return res.render('Inventory/product/stock_report', {
+            pageTitle: 'Inventario general',
+            products,
+        });
+    },
+
     reserveList: async (req, res) => {
         let products = {}, sales = {}, clients = {}, sucursals = {};
 

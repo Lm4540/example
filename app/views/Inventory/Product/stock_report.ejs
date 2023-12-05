@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <%# custom styles %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title">
+            <h3>Reporte General de Inventario <span id="suma"></span></h3>
+         </div>
+
+         <table class="table-bordered table tebale-sm">
+            <thead>
+               <tr>
+                  <th>Producto Nombre</th>
+                  <th>Producto Codigo</th>
+                  <th>Existencias</th>
+                  <th>Costo</th>
+                  <th>Valor Total</th>
+               </tr>
+            </thead>
+
+            <tbody>
+               <% let suma = 0.00 %>
+               <% products.forEach(product => { %>
+
+               <tr>
+                  <td><%= product.name %></td>
+                  <td><%= product.sku %></td>
+                  <td><%= product.stock %></td>
+                  <td>$<%= Helper.money_format(product.cost) %></td>
+                  <td>$<%= Helper.money_format(product.stock *  product.cost) %></td>
+
+                  <% suma += (product.stock *  product.cost)%>
+               </tr>
+               <% }) %>
+            </tbody>
+         </table>
+
+
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+<script>
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.getElementById('suma').innerHTML = '$<%= Helper.money_format(suma) %>';
+   });
+
+</script>
+
+</html>

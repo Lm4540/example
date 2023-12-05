@@ -78,17 +78,36 @@ const Product = sequelize.define('Product', {
         },
     },
     cost: {
-        type: DataTypes.DECIMAL(10, 2)
+        type: DataTypes.DECIMAL(10,2), 
+        defaultValue:0.00, 
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('cost'));
+            return isNaN(_val) ? 0.00 : _val
+        }
     },
     last_cost: {
-        type: DataTypes.DECIMAL(10, 2)
+        type: DataTypes.DECIMAL(10,2), 
+        defaultValue:0.00, 
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('last_cost'));
+            return isNaN(_val) ? 0.00 : _val
+        }
     },
     base_price: {
-        type: DataTypes.DECIMAL(10, 2)
+        type: DataTypes.DECIMAL(10,2), 
+        defaultValue:0.00, 
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('base_price'));
+            return isNaN(_val) ? 0.00 : _val
+        }
     },
     major_price: {
-        type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0,
+        type: DataTypes.DECIMAL(10,2), 
+        defaultValue:0.00, 
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('major_price'));
+            return isNaN(_val) ? 0.00 : _val
+        }
     },
     price: {
         type: DataTypes.VIRTUAL,
