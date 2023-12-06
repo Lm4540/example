@@ -464,7 +464,7 @@
 
                      <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
                      <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
-                     <p>Total: $${money_format(element.sale.balance + element.sale.delivery_amount)}</p>
+                     <p>Total: $${money_format(Number.parseFloat(element.sale.balance) + Number.parseFloat(element.sale.delivery_amount))}</p>
                   </div>`;
 
 
