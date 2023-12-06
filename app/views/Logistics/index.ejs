@@ -463,6 +463,8 @@
                      <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
 
                      <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
+                     <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
+                     <p>Total: $${money_format(element.sale.balance + element.sale.balance)}</p>
                   </div>`;
 
 
