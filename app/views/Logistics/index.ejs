@@ -307,7 +307,7 @@
                content += `<div class="col-12 col-md-6 mb-3" id="reservas_sale_${element.sale.id}">
                      <div class="card card-round">
                         <div class="card-body">
-                           <h5 class="mb-2">${element.client} 
+                           <h5 class="mb-2">${element.client} ($${element.sale.delivery_amount}) 
                               &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${element.sale.id})">Paquete Listo</span>
                               &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
                            </h5>
@@ -320,7 +320,7 @@
                      <div class="d-flex justify-content-start">
                         <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                         <div class="ml-3">
-                           <span>${detail.description}</span>
+                           <span>${detail.description} ($${detail.price})</span>
                            <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades Vendidas' : 'Unidad vendida'}</span>
                            <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} / ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
                         </div>
@@ -408,7 +408,7 @@
                      <div class="d-flex justify-content-start" >
                         <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                         <div class="ml-3">
-                           <span>${detail.description}</span>
+                           <span>${detail.description} ($${detail.price})</span>
                            <br><span>${detail.cant - detail.ready} Unidades por revisar </span>
                            <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
                            <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
