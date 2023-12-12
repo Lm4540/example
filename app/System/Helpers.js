@@ -28,8 +28,8 @@ const Helper = {
         let now = new Date();
         return `${crypto.randomBytes(len).toString('hex')} ${now.getFullYear()}_${(now.getMonth() + 1).toString().padStart(2, '0')}_${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')} ${now.getMinutes().toString().padStart(2, '0')} ${now.getSeconds().toString().padStart(2, '0')}`;
     },
-    money_format: (n) => {
-        return new Intl.NumberFormat('es-SV', { style: "decimal", currency: "USD", minimumFractionDigits: 2 }).format(n);
+    money_format: (n, digits = 2) => {
+        return new Intl.NumberFormat('es-SV', { style: "decimal", currency: "USD", minimumFractionDigits: digits }).format(n);
     },
     format_date: (_date, time = true) => {
         let date = new Date(_date);

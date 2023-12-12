@@ -11,7 +11,7 @@ module.exports = async (io, socket) => {
   let group_identification = 'user__' + socket.request.session.userSession.id;
   socket.join(group_identification);
 
-  _io.to(group_identification).emit("logistics data", await SalesStatusController.get_data());
+  _io.to(group_identification).emit("logistics data", await SalesStatusController.get_data(socket.request.session.userSession));
 
   
 

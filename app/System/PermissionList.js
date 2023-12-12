@@ -207,6 +207,15 @@ module.exports = [
         "group": "Logistica",
         "permission": "reopen_sales"
     },
+
+    {
+        "name": "Quitar Estado Revisado de los detalles",
+        "explication": "Permite reabrir ventas cerradas pero aun no entregadas para realizar modificaciones o agregar productos faltantes",
+        "group": "Logistica",
+        "permission": "reopen_sales_details"
+    },
+
+
     {
         "name": "Registro de Compras",
         "explication": "Permite registrar compras",

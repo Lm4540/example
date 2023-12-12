@@ -301,7 +301,7 @@ socket.on('save_new_transfer_error', data => {
          } else if (selected_sucursal == document.querySelector("#destinoSucursal").value) {
             return errorMessage('La sucursal de origen y destino deben ser diferentes');
          }
-
+         
          let data = {
             requestedBy: document.querySelector("#requestedBy").value,
             trasnportedBy: document.querySelector("#trasnportedBy").value,
@@ -310,13 +310,14 @@ socket.on('save_new_transfer_error', data => {
             details : details,
             _process,
          }
-
+         
          if(data.requestedBy.length < 5){
             return errorMessage('Indique quien ha solicitado el traslado');
          }else if(data.trasnportedBy.length < 5){
             return errorMessage('Indique quien realizara el traslado');
          }
-
+         
+         document.querySelector("#btn_save").disabled = true;
          //enviar los resultados
          socket.emit('save_new_transfer', data);
       });

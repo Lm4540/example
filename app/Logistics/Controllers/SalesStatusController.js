@@ -11,7 +11,11 @@ const StockReserve = require("../../Inventory/Models/StockReserve");
 
 
 const SalesStatusController = {
-    get_data: async () => {
+    get_data: async (session) => {
+        //obtener la sucursal del usuario
+        console.log(session)
+
+        let _sucursal_id = session.employee.sucursal;
         var tmp = await Employee.findAll({ where: { isSeller: 1 }, attributes: ['id', 'name'] }),
             reservas = {},
             mayor = {},
@@ -30,7 +34,7 @@ const SalesStatusController = {
 
         //buscar los clientes
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE _status in('closed','process','prepared', 'transport', 'revoking', 'delivery_failed'))",
+            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status in('closed','process','prepared', 'transport', 'revoking', 'delivery_failed'))",
             { type: QueryTypes.SELECT }
         );
         tmp.forEach(client => { clients[client.id] = client.name });
@@ -45,6 +49,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'closed' },
+                    {sucursal: _sucursal_id}
                 ],
             },
             order: [['id', 'ASC']],
@@ -62,7 +67,7 @@ const SalesStatusController = {
 
         //buscar las ventas que haya que preparar el paquete y las que ya se hayan preparado y no sean mas viejas que un dia
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE _status = 'closed')",
+            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'closed')",
             { type: QueryTypes.SELECT }
         );
 
@@ -74,7 +79,7 @@ const SalesStatusController = {
 
         //buscar las ventas que tengan detalles de mayor que preparar
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale` WHERE _status = 'process' and id in (SELECT sale FROM `crm_sale_detail` WHERE cant > ready)",
+            "SELECT * FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process' and id in (SELECT sale FROM `crm_sale_detail` WHERE cant > ready)",
             { type: QueryTypes.SELECT }
         );
 
@@ -90,7 +95,7 @@ const SalesStatusController = {
 
         //buscar las ventas que haya que preparar el paquete y las que ya se hayan preparado y no sean mas viejas que un dia
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE cant > ready and sale in(SELECT id FROM `crm_sale` WHERE _status = 'process')",
+            "SELECT * FROM `crm_sale_detail` WHERE cant > ready and sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process')",
             { type: QueryTypes.SELECT }
         );
         totals.mayor_details = tmp.length;
@@ -108,6 +113,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'prepared' },
+                    {sucursal : _sucursal_id}
                 ],
             },
             order: [['id', 'ASC']],
@@ -130,6 +136,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'transport' },
+                    {sucursal: _sucursal_id}
                 ],
             },
             order: [['id', 'ASC']],
@@ -149,6 +156,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'delivery_failed' },
+                    {sucursal: _sucursal_id}
                 ],
             },
             order: [['id', 'ASC']],
@@ -162,10 +170,6 @@ const SalesStatusController = {
                 client: clients[sale.client]
             }
         });
-
-
-
-
 
         return {
             reservas, mayor, entregas, sellers, clients, mayor_resolved, reservas_resolved, totals, providers, prepared, transport, delivery_failed
