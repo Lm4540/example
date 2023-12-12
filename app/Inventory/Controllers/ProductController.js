@@ -17,7 +17,7 @@ const fs = require('fs');
 
 
 const ProductController = {
-    corregir_precios: async (req, res) => {
+ /*   corregir_precios: async (req, res) => {
         let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
             {
                 type: QueryTypes.SELECT,
@@ -37,7 +37,7 @@ const ProductController = {
         }
 
         return res.json(data.length)
-    },
+    },*/
 
     getCreationView: async (req, res) => {
         let classification = await ProductClassification.findAll({ attributes: ['id', 'name'] });

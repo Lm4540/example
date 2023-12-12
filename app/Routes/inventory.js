@@ -43,7 +43,7 @@ router.get('/productClassifications/view/:id(\\d+)', CategoriesController.viewCl
 
 /** Products Routes */
 
-router.get('/product/fix_price', ProductController.corregir_precios);
+//router.get('/product/fix_price', ProductController.corregir_precios);
 router.get('/product', ProductController.getProductsView);
 router.get('/product/create', ProductController.getCreationView);
 router.post('/product/create', ProductController.createProduct);
