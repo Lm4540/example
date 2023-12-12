@@ -307,11 +307,11 @@
                content += `<div class="col-12 col-md-6 mb-3" id="reservas_sale_${element.sale.id}">
                      <div class="card card-round">
                         <div class="card-body">
-                           <h5 class="mb-2">${element.client} ($${element.sale.delivery_amount}) 
+                           <h5 class="mb-2">${element.client} <br>(Producto $${money_format(element.sale.balance)} + Envio $${money_format(element.sale.delivery_amount)}) <br>
                               &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${element.sale.id})">Paquete Listo</span>
                               &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
                            </h5>
-                           <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+                           <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}</p>
                            <div class="list-group">`;
                //recorrer los detalles de la venta
                element.details.forEach(detail => {
@@ -320,9 +320,9 @@
                      <div class="d-flex justify-content-start">
                         <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                         <div class="ml-3">
-                           <span>${detail.description} ($${detail.price})</span>
+                           <span>${detail.description} ($${detail.price} c/u)</span>
                            <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades Vendidas' : 'Unidad vendida'}</span>
-                           <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} / ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
+                           <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} <br> ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
                         </div>
    
                      </div>
