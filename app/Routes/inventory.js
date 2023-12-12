@@ -42,6 +42,8 @@ router.post('/productClassifications/update', CategoriesController.updateClassif
 router.get('/productClassifications/view/:id(\\d+)', CategoriesController.viewClassification); /** Pendiente */
 
 /** Products Routes */
+
+router.get('/product/fix_price', ProductController.corregir_precios);
 router.get('/product', ProductController.getProductsView);
 router.get('/product/create', ProductController.getCreationView);
 router.post('/product/create', ProductController.createProduct);

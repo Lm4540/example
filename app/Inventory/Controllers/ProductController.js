@@ -17,6 +17,28 @@ const fs = require('fs');
 
 
 const ProductController = {
+    corregir_precios: async (req, res) => {
+        let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
+            {
+                type: QueryTypes.SELECT,
+                model: Product,
+            });
+
+        let data_len = data.length;
+
+        for (let index = 0; index < data_len; index++) {
+            var product = data[index];
+            if(product.base_price < product.major_price){
+                let base = product.base_price;
+                product.base_price = product.major_price;
+                product.major_price= base;
+                await product.save();
+            }
+        }
+
+        return res.json(data.length)
+    },
+
     getCreationView: async (req, res) => {
         let classification = await ProductClassification.findAll({ attributes: ['id', 'name'] });
         res.render('Inventory/Product/create', { pageTitle: 'Crear nuevo Producto', classification });
@@ -113,7 +135,7 @@ const ProductController = {
                     last_cost: 0.00,
                     base_price: data.price,
                     major_price: data.major,
-                    createdBy: 'user logged',
+                    createdBy: req.session.userSession.shortName,
                     available_for_sale: true,
                     color: data.color
                 };

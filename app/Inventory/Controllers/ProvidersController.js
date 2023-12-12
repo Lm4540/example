@@ -246,7 +246,6 @@ const ProviderController = {
             //Buscar el proveedor
             var provider = await Provider.findByPk(data.id);
             if (provider) {
-                console.log(provider);
                 //validar que el nombre no este registrado
                 let occurency = await Provider.findAll({
                     where: {
@@ -328,8 +327,10 @@ const ProviderController = {
                 } else {
 
                     /**Guardar la imagen si es que ha sido enviada */
-                    let image_name = provider.image;
-                    if (data.image.length > 1) {
+
+                    console.log('Tamaño de la image', data.image.length)
+                    let image_name = provider.img;
+                    if (data.image.length > 0) {
                         image_name = Helper.generateNameForUploadedFile() + '.jpg';
                         let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
                         // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
