@@ -250,7 +250,7 @@
                nota_remision_anterior: document.querySelector("#invoice_nr_anterior").value,
                cuenta_de: document.querySelector("#invoice_cuenta_de").value,
                leyend: document.querySelector("#invoice_leyend").value.trim(),
-               invoice_date: document.querySelector("#invoice_date").value,
+               invoice_date: document.querySelector("#invoice_date").value+'T06:00:00',
             },
             invoice_resume: document.querySelector("#invoice_simplification").value.trim(),
             invoice_retention: document.querySelector("#invoice_iva_retention").checked,

@@ -305,7 +305,15 @@
                               </td>
                               <td>
                                  <% if (order.status == 'closed') { %>
-                                  <span class="badge bg-green"> Paquete preparado</span>
+                                 <span class="badge bg-green"> Paquete preparado</span>
+
+
+                                 <% } %>
+
+                                 <% if (order.invoice_number == null) { %>
+                                 <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
+                                 <% } else { %>
+                                 <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
                                  <% } %>
 
                               </td>
@@ -574,17 +582,255 @@
       </div>
    </div>
 
+   <div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+            <div class="modal-body">
+               <div class="row">
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_type">Tipo de Documento</label>
+                        <select name="invoice_type" id="invoice_type" class="form-control">
+
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_number">Numero del Documento</label>
+                        <input type="number" class="form-control" step="1" id="invoice_number">
+                     </div>
+                  </div>
+               </div>
+
+               <div class="form-group">
+                  <label for="invoice_name">Nombre en la factura</label>
+                  <input type="text" class="form-control" name="invoice_name" id="invoice_name" value="<%= cliente.name %>">
+               </div>
+
+               <div class="form-group">
+                  <label for="invoice_direction">Direccion</label>
+                  <input type="text" class="form-control" name="invoice_direction" id="invoice_direction" value="<%= cliente.direction %>">
+               </div>
+
+               <div class="form-group">
+                  <label for="invoice_giro">Giro</label>
+                  <input type="text" class="form-control" name="invoice_giro" id="invoice_giro" >
+               </div>
+
+               <div class="row">
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_nit">NIT/DUI</label>
+                        <input type="text" class="form-control" name="invoice_nit" id="invoice_nit" value="<%= cliente.NIT %>">
+                     </div>
+                  </div>
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_nrc">NRC</label>
+                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
+                     </div>
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
+                        <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
+                     </div>
+                  </div>
+                  <div class="col">
+                     <div class="form-group">
+                        <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+                        <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
+                     </div>
+                  </div>
+               </div>
+               <div class="form-group">
+                  <label for="invoice_date">Fecha de La Factura</label>
+                  <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
+               </div>
+               <div class="form-group">
+                  <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+                  <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
+               </div>
+
+
+               <div class="form-group">
+                  <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+                  <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
+               </div>
+
+               <div class="form-check form-switch">
+                  <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
+                  <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+               </div>
+
+               <br>
+               <div class="form-check form-switch">
+                  <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
+                  <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
+               </div>
+            </div>
+            <div class="modal-footer" style="display: block;">
+               <div class="text-center">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
 
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
 <script src="assets/libs/grid/gridjs.js"></script>
 <script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   var __order = null,
+      modal_options = {
+         keyboard: true
+      },
+      s_options = {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      },
+      modalInvoice = new bootstrap.Modal(document.getElementById('addInvoiceModal'), modal_options);
+
+   const get_facturation_options = async () => {
+
+      series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+      let k = Object.keys(series);
+      let content = '`<option value="0">Seleccione una opcion</option>`';
+      let df = false;
+      k.forEach(key => {
+         let _serie = series[key];
+         if (df == false) {
+            if ('<%= cliente.classification %>' == 'ninguno' && _serie.type == "fcf") {
+               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+               document.querySelector("#invoice_number").value = _serie.number;
+               df = true;
+
+            } else if ('<%= cliente.classification %>' != 'ninguno' && _serie.type == "ccf") {
+
+               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+               document.querySelector("#invoice_number").value = _serie.number;
+               df = true;
+            } else {
+               content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+            }
+         } else {
+            content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+         }
+
+      });
+
+      document.querySelector("#invoice_type").innerHTML = content;
+   };
+
+
+
+   const create_invoice = async (order_id) => {
+      __order = order_id;
+
+      modalInvoice.toggle();
+      get_facturation_options();
+
+   }
+
+   document.addEventListener('DOMContentLoaded', event => {
+
+
+
+      document.querySelector("#invoice_type").addEventListener('change', e => {
+         if (e.target.value !== "0") {
+            document.querySelector("#invoice_number").value = series[e.target.value].number;
+         } else {
+            createToast('rose', 'Seleccione el tipo de documento', null);
+         }
+
+      });
+
+
+      document.querySelector("#addInvoiceButton").addEventListener('click', e => {
+         let data = {};
+         //obtener los datos de facturacion
+         data.invoice_serie = document.querySelector("#invoice_type").value;
+         data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
+         data.invoice_resume = document.querySelector("#invoice_simplification").value;
+         data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
+         data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
+         data.sale = __order;
+
+         let invoice_data = {
+            name: document.querySelector("#invoice_name").value,
+            direction: document.querySelector("#invoice_direction").value,
+            giro: document.querySelector("#invoice_giro").value,
+            nit: document.querySelector("#invoice_nit").value,
+            nrc: document.querySelector("#invoice_nrc").value,
+            nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
+            cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+            invoice_date: document.querySelector("#invoice_date").value,
+            invoice_leyend: document.querySelector("#invoice_leyend").value,
+
+         }
+
+         if (isNaN(data.invoice_number) || data.invoice_number < 1) {
+            return errorMessage('Coloque el numero de la factura');
+         }
+
+         let _s = series[data.invoice_serie];
+         if (_s.type == "ccf") {
+            if (invoice_data.direction.length < 5) {
+               return errorMessage('Coloque la direccion para el Credito Fiscal');
+            } else if (invoice_data.nrc.length < 3) {
+               return errorMessage('Coloque el Numero de Registro para el Credito Fiscal');
+            }
+         }
+
+         data.invoice_data = invoice_data;
+
+         console.log(data);
+
+         postData('/sales/invoice/create_invoice', data).then(data => {
+
+            console.log(data)
+            if (data.status == 'success') {
+               successMessage('Actualizado');
+               setTimeout(() => {
+                  window.location.href = `/sales/view_invoice/${data.sale}`;
+               }, 1500);
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+
+
+         //enviar la data
+      });
+
+   });
+</script>
 <% if (cliente.type == 'major') { %>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-
-   
    var _process = '<%= Helper.randomString(5) %>';
    var socket = io.connect('<%= baseURL %>/sales');
    //const socket = io('/logistics');
@@ -705,15 +951,14 @@
 
 
 
+
    const locations = JSON.parse('<%- JSON.stringify(locations) %>');
    //recorte de imagen del pproducto principal
    const previewimagezone = document.getElementById("add_image_preview"),
       realImage = document.getElementById("add_image_real"),
       selectProduct = document.querySelector('#productSelect'),
       client_type = '<%= cliente.type %>',
-      modal_options = {
-         keyboard: true
-      },
+
 
       modalQuit = new bootstrap.Modal(document.getElementById('quitDetailModal'), modal_options);
 
@@ -786,6 +1031,10 @@
    });
 
    document.addEventListener('DOMContentLoaded', event => {
+
+
+
+
       clean_detail_inputs();
       document.querySelector("#free_toggle").style.display = "none";
 
@@ -893,7 +1142,7 @@
             _process,
          }
          socket.emit('quit_sale_detail', data);
-         
+
 
       });
 
@@ -933,7 +1182,7 @@
 
                data.cant = document.getElementById('product_cant').value;
                let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
-               if(data.cant > _dist){
+               if (data.cant > _dist) {
                   return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
 
                }

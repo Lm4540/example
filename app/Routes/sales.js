@@ -43,6 +43,8 @@ router.get('/invoice_options', SaleController.invoice_options);
 router.get('/print_invoice/:id(\\d+)', InvoiceController.print_invoice);
 router.get('/view_invoice/:id(\\d+)', InvoiceController.view_invoice);
 router.post('/update_invoice', InvoiceController.update_invoice);
+router.post('/invoice/create_invoice', InvoiceController.create_invoice);
+
 
 
 
