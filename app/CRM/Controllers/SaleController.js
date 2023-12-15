@@ -116,8 +116,8 @@ const SaleController = {
                         }
 
                         client.payments += registered_payment.amount;
-                        await client.save({transaction: t});
-                        
+                        await client.save({ transaction: t });
+
                         return res.json({
                             status: 'success',
                             message: 'pago registrado',
@@ -146,19 +146,7 @@ const SaleController = {
 
 
     relacionar_pago: async (req, res) => {
-        // let tmp = await Sale.findAll();
 
-        // tmp.forEach(e => {
-        //     console.log('Venta id : ', e.id);
-        //     console.log('Arregle de pagos : ', typeof(e.payments) ,e.payments);
-        // });
-
-        // tmp = await SalePayment.findAll();
-        // console.log('Ahora pagos')
-        // tmp.forEach(e => {
-        //     console.log('Pago id : ', e.id);
-        //     console.log('Arregle de ventas : ', typeof(e.sales), e.sales);
-        // });
 
         try {
             //buscar el pago
@@ -198,13 +186,16 @@ const SaleController = {
                             if (sale_value > valor_restante) {
 
                                 sale.collected = (_collected + valor_restante);
-                                
-                                if (sale.payments !== null) {
+
+                                if (sale.payments.length > 0) {
                                     sale.payments.push({ "id": registered_payment.id, "amount": valor_restante })
                                 } else {
                                     sale.payments = [{ "id": registered_payment.id, "amount": valor_restante },];
                                 }
-                                sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+
+                                if (sale.balance + sale.delivery_amount - sale.collected == 0) {
+                                    sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+                                }
 
 
                                 await sale.save({ transaction: t });
@@ -212,18 +203,15 @@ const SaleController = {
                                 valor_restante = 0;
                             } else {
                                 sale.collected = (_collected + sale_value);
-                                if (sale.payments !== null) {
+                                if (sale.payments.length > 0) {
                                     sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
                                 } else {
                                     sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
                                 }
 
-                                if (sale.balance + sale.delivery_amount - sale.collected == 0) {
-                                    sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                                }
+                                sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
 
                                 await sale.save({ transaction: t });
-                                console.log(sale.id);
                                 ids_registro.push({ "id": sale.id, "amount": sale_value });
                                 valor_restante -= sale_value;
                             }
@@ -236,11 +224,19 @@ const SaleController = {
                     registered_payment.sales = ids_registro;
                     registered_payment.asigned_amount = registered_payment.amount - valor_restante;
                     await registered_payment.save({ transaction: t });
+
+
+
+                    return res.json({
+                        status: 'success',
+                        message: 'pago registrado',
+                        data: registered_payment,
+                    });
                 }
 
                 return res.json({
-                    status: 'success',
-                    message: 'pago registrado',
+                    status: 'error',
+                    message: 'No hay Ventas que relacionar',
                     data: registered_payment,
                 });
             });
@@ -1044,7 +1040,7 @@ const SaleController = {
                         existe.cant += data.cant;
                         await existe.save({ transaction: t })
                     } else {
-                        detail.description = product.name;
+                        detail.description = product.name + ' SKU '+product.sku;
                         detail.product = product.id;
                         detail.image = product.raw_image_name;
                     }
@@ -1374,7 +1370,7 @@ const SaleController = {
                         } else {
                             sale = await sale.save({ transaction: t });
                         }
-                        return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id};
+                        return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id };
 
                     });
                 } catch (error) {
@@ -1439,6 +1435,9 @@ const SaleController = {
                     return { status: 'error', message: 'Coloque el Numero de Registro para el Credito Fiscal' }
                 }
 
+
+
+
                 //verificar si los datos del cliente deben ser actualizados
 
                 if (client.NRC == null || client.NRC == "") {
@@ -1447,10 +1446,10 @@ const SaleController = {
                 }
             }
 
+            
 
             try {
                 return await sequelize.transaction(async (t) => {
-
                     let sale = await Sale.create({
                         client: client.id,
                         seller: session.employee.id,
@@ -1465,7 +1464,12 @@ const SaleController = {
                         invoice_type: serie.type,
                         invoice_number: data.invoice_number,
                         invoice_data: data.invoice_data,
+                        invoice_resume : data.invoice_resume.length > 0 ?  data.invoice_resume : null,
+                        invoice_retention : data.invoice_retention == true,
+                        invoice_isr : data.invoice_isr == true,
                     }, { transaction: t });
+
+        
 
                     serie.used++;
                     await serie.save({ transaction: t });
@@ -1523,7 +1527,7 @@ const SaleController = {
                             sale: sale.id,
                             product: dt.product,
                             price: dt.price,
-                            description: product.name,
+                            description: product.name + ' SKU ' + product.sku,
                             image: product.raw_image_name,
                             _order: index + 1,
                             cant: dt.cant,
@@ -1601,7 +1605,7 @@ const SaleController = {
 
                         payments_ids.push({ id: id.id, amount: data.payment.money })
 
-                        sucursal.balance += balance;
+                        sucursal.balance += Number.parseFloat(data.payment.money);
                         await sucursal.save({ transaction: t });
 
                     }
@@ -1657,11 +1661,21 @@ const SaleController = {
                     sale.collected = balance;
                     sale.cost = sale_cost;
                     sale.payments = payments_ids;
+
+                    console.log(data.invoice_data)
+                    // let __data = (sale.invoice_data)
+                    // console.log(__data)
+                    // __data['invoice_date'] = sale.createdAt;
+                    // console.log(__data, sale.createdAt)
+                    // sale.invoice_data = __data;
                     await sale.save({ transaction: t });
 
                     if (update_client == true) {
-                        if (client.sucursal)
-                            await client.save({ transaction: t });
+                        if (client.sucursal) {
+
+                        }
+
+                        await client.save({ transaction: t });
                     }
                     return { status: 'success', message: 'Guardado', sale: sale.id }
                 });

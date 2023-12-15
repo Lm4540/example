@@ -199,7 +199,7 @@
                   <div class="d-flex justify-content-start">
                      <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                      <div class="ml-3">
-                        <span>${detail.description}</span>
+                        <span>${detail.description}   <a href="/inventory/product/view/${detail.product}" class="badge bg-secondary">Ver Producto</a> </span>
                         <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades' : 'Unidad'}</span>
                      </div>
 
@@ -320,7 +320,7 @@
                      <div class="d-flex justify-content-start">
                         <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                         <div class="ml-3">
-                           <span>${detail.description} ($${detail.price} c/u)</span>
+                           <span>${detail.description} ($${detail.price} c/u) <a href="/inventory/product/view/${detail.product}" class="badge bg-secondary">Ver Producto</a></span>
                            <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades Vendidas' : 'Unidad vendida'}</span>
                            <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} <br> ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
                         </div>
@@ -398,6 +398,7 @@
                            <h5 class="mb-2">${element.client} 
                               &nbsp;<span class="badge bg-danger" onclick="all_detail_revised(${element.sale.id})">Todo Revisado y Guardado</span>
                               &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                              <a href="/sales/client/view/${element.sale.client}" class="badge bg-secondary">Ver Cliente</a>
                            </h5>
                            
                            <div class="list-group">`;

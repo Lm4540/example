@@ -329,7 +329,7 @@
 
   document.getElementById('fake_image_input').onchange = function(e) {
     if (addingImageValidateImage(this)) {
-      AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1);
+      AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
     } else {
       document.getElementById("add_image_preview").innerHTML = "";
       realImage.value = "";
@@ -406,8 +406,9 @@
         message = 'Proporcione el numero de contacto o e-mail del proveedor';
       }
 
+      console.log(data)
+
       if (message === null) {
-        /** Enviar Informacion al Servidor y volver a Validar*/
         postData('/inventory/provider/update', data).then(data => {
           if (data.status == 'success') {
             successMessage('Guardado con Exito, redirigiendo');
@@ -424,6 +425,8 @@
         e.target.disabled = false;
         return errorMessage(message);
       }
+
+      
     });
   });
 

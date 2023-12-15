@@ -40,6 +40,10 @@ router.get('/invoice_serie', SaleController.invoice_serie);
 router.post('/invoice_serie', SaleController.save_invoice_serie);
 router.post('/update_invoice_serie', SaleController.update_invoice_serie);
 router.get('/invoice_options', SaleController.invoice_options);
+router.get('/print_invoice/:id(\\d+)', InvoiceController.print_invoice);
+router.get('/view_invoice/:id(\\d+)', InvoiceController.view_invoice);
+router.post('/update_invoice', InvoiceController.update_invoice);
+
 
 
 

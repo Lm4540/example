@@ -102,9 +102,14 @@
                   <div class="form-group">
                      <label for="move_type">Tipo de Movimiento</label>
                      <select name="move_type" id="move_type" class="form-control">
-                        <option value="extra">Ingreso Adicional</option>
-                        <option value="out">Pagos o Gastos</option>
-                        <option value="refill">Reposicion de Saldo</option>
+                        <optgroup label="caja Chica">
+                           <option value="extra">Ingreso Adicional</option>
+                           <option value="out">Pagos o Gastos</option>
+                        </optgroup>
+                        <optgroup label="Caja de Efectivo">
+                           <option value="refill">Reposicion de Saldo</option>
+                           <option value="recolection">Recoleccion de Efectivo</option>
+                        </optgroup>
                      </select>
                   </div>
 
@@ -195,6 +200,12 @@
             asigned_to: document.querySelector('#asigned_to').value,
          }
 
+         if(data.type == 'recolection'){
+            data.concept = 'Recolección de efectivo. '+data.concept;
+            data.type = 'out';
+         }
+
+         
          //Validar los datos
          if (data.type == "out" && data.amount > max_amount) {
             return errorMessage('No hay suficiente efectivo para realizar esta operación');
@@ -206,13 +217,15 @@
             return errorMessage('El monto escrito es invalido');
          }
 
+         console.log(data);
+
          e.target.disabled = true;
          postData('/financial/pettycash/', data).then(data => {
             if (data.status == 'success') {
                createToast('rose', 'Guardado');
                max_amount = data.new_amount;
                let tr = document.createElement('tr');
-               if (document.querySelector('#move_type').value == 'out') {
+               if (document.querySelector('#move_type').value == 'out' || document.querySelector('#move_type').value == 'recolection') {
                   tr.classList.add('table-secondary');
                   tr.innerHTML = `<td>${format_date(data.move.createdAt) }</td><td class="text-left">
                               ${data.move.concept} <br>

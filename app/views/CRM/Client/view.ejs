@@ -289,6 +289,7 @@
                               <th>Estado</th>
                               <th>Fecha</th>
                               <th>Cobro</th>
+                              <th>options</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -301,6 +302,12 @@
                               <td><%= Helper.format_date(order.createdAt) %></td>
                               <td>
                                  $<%= Helper.money_format(order.collected) %>
+                              </td>
+                              <td>
+                                 <% if (order.status == 'closed') { %>
+                                  <span class="badge bg-green"> Paquete preparado</span>
+                                 <% } %>
+
                               </td>
                            </tr>
                            <% }) %>
@@ -530,7 +537,7 @@
                      <label for="payment_amount">Tipo de Transacción</label>
                      <select name="payment_method" id="payment_method" class="form-control">
                         <option value="money">Efectivo</option>
-                        <option value="trasnfer">Transferencia</option>
+                        <option value="transfer">Transferencia</option>
                         <option value="credit_card">Trajeta Credito/Debito y POS Fisico o Virtual</option>
                      </select>
                   </div>
@@ -576,6 +583,8 @@
 <% if (cliente.type == 'major') { %>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+
+   
    var _process = '<%= Helper.randomString(5) %>';
    var socket = io.connect('<%= baseURL %>/sales');
    //const socket = io('/logistics');
@@ -778,6 +787,7 @@
 
    document.addEventListener('DOMContentLoaded', event => {
       clean_detail_inputs();
+      document.querySelector("#free_toggle").style.display = "none";
 
       // Controles para cerrar la Orden:
 
@@ -883,53 +893,7 @@
             _process,
          }
          socket.emit('quit_sale_detail', data);
-         /* postData('/sales/updateDetail', data).then(data => {
-            if (data.status == 'success') {
-               successMessage('Actualizado');
-
-               document.querySelector('#span_sale_balance').innerHTML = `($${money_format(data.balance)})`;
-
-               let detail = data.detail;
-               current_details[detail_to_quit] = detail;
-               let div = document.getElementById(`product_item_${detail_to_quit}`);
-
-               if (detail == null) {
-                  div.parentElement.removeChild(div);
-                  //Emitir evento detalle eliminado
-               } else {
-                  let content = `<div class="card">
-                                 <div class="card-body text-center">
-                                    <img src="${detail.image}" alt="Image" class="product_image" style="width: 150px; "><br>
-                                    <p style="cursor:pointer;">${detail.description}</p>
-                                    <p> <b>${detail.cant}</b> X $${money_format(detail.price)} = $${money_format(detail.cant  * detail.price)}</p>`;
-                  if (detail.product == null) {
-                     content += `<p class="text-danger">Esperando que Ingrese</p><br>
-                                    <button class="btn btn-outline-danger" onclick="quit('${detail.id }')">Quitar</button>`;
-                  } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
-                     content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
-                                    <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no reservados</button>`;
-                  } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
-                     content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                    <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
-                  } else if (detail.cant == detail.ready) {
-                     content += `<p class="text-primary"> Reservado y Revisado<br></p>
-                                    <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;
-                  }
-                  content += `</div> </div>`;
-                  div.innerHTML = content;
-               }
-
-               modalQuit.toggle();
-
-            } else if (data.status == 'errorMessage') {
-               document.querySelector("#quitDetail").disabled = false;
-               return errorMessage(data.message);
-
-            } else {
-               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-            }
-         }); */
-
+         
 
       });
 
@@ -968,6 +932,12 @@
                   (price == 'minor' ? p.price : p.major);
 
                data.cant = document.getElementById('product_cant').value;
+               let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
+               if(data.cant > _dist){
+                  return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
+
+               }
+               console.log(p)
             } else {
                return errorMessage('No ha Seleccionado un producto');
             }
@@ -985,61 +955,6 @@
          socket.emit('add_sale_detail', data);
 
 
-
-         /*
-         postData('/sales/addDetail', data).then(data => {
-            if (data.status == 'success') {
-               successMessage('Guardado');
-               
-               document.getElementById('close_order').style.display = 'block';
-
-               let detail = data.data.detail;
-               let div = null;
-
-               if (current_details[data.data.detail.id] == undefined) {
-                  div = document.createElement('div');
-                  div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
-                  div.id = `product_item_${detail.id}`;
-                  document.querySelector('#div_add_details').appendChild(div);
-               } else {
-                  div = document.getElementById(`product_item_${detail.id}`)
-               }
-               document.querySelector('#span_sale_balance').innerHTML = `($${data.data.balance})`;
-
-               current_details[data.data.detail.id] = detail;
-
-               let content = `<div class="card">
-                              <div class="card-body text-center">
-                                 <img src="${detail.image}" alt="Image" class="product_image" style="width: 150px; "><br>
-                                 <p style="cursor:pointer;">${detail.description}</p>
-                                 <p> <b>${detail.cant}</b> X $${money_format(detail.price)} = $${money_format(detail.cant  * detail.price)}</p>`;
-               if (detail.product == null) {
-                  content += `<p class="text-danger">Esperando que Ingrese</p><br>
-                                 <button class="btn btn-outline-danger" onclick="quit('${detail.id }')">Quitar</button>`;
-               } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
-                  content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
-                                 <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no reservados</button>`;
-               } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
-                  content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                 <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
-               } else if (detail.cant == detail.ready) {
-                  content += `<p class="text-primary"> Reservado y Revisado<br></p>
-                                 <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;
-               }
-               content += `</div> </div>`;
-               div.innerHTML = content;
-
-               clean_detail_inputs();
-            } else if (data.status == 'errorMessage') {
-               e.target.disabled = false;
-               return errorMessage(data.message);
-
-            } else {
-               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-            }
-         });
-
-         */
          clean_detail_inputs();
 
       });
@@ -1239,7 +1154,7 @@
                   postData('/sales/client/re_payment', {
                      id: data.data
                   });
-                  setTimeout(window.location.reload(), 2000);
+                  // setTimeout(window.location.reload(), 2000);
                } else if (data.status == 'errorMessage') {
                   e.target.disabled = false;
                   return errorMessage(data.message);

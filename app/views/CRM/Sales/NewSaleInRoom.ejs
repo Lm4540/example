@@ -259,6 +259,7 @@
                      <label for="invoice_giro">Giro</label>
                      <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
                   </div>
+
                   <div class="row">
                      <div class="col">
                         <div class="form-group">
@@ -287,6 +288,31 @@
                            <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
                         </div>
                      </div>
+                  </div>
+                  <div class="form-group">
+                     <label for="invoice_date">Fecha de La Factura</label>
+                     <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
+                  </div>
+                  <div class="form-group">
+                     <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+                     <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
+                  </div>
+
+
+                  <div class="form-group">
+                     <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+                     <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
+                  </div>
+
+                  <div class="form-check form-switch">
+                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
+                     <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+                  </div>
+
+                  <br>
+                  <div class="form-check form-switch">
+                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
+                     <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
                   </div>
                </div>
                <div class="modal-footer" style="display: block;">
@@ -407,17 +433,15 @@
    var socket = io.connect('<%= baseURL %>/sales');
    //const socket = io('/logistics');
    socket.on('new_sale_in_sucursal_error', data => {
-      console.log(data);
       if (data._process == _process) {
          return errorMessage(data.errorMessage);
       }
    });
 
    socket.on('new_sale_in_sucursal_saved', data => {
-      console.log(data);
       if (data._process == _process) {
          successMessage('Guardado con Exito');
-         window.location.href = `/sales/print_invoice/${data.sale}`;
+         window.location.href = `/sales/view_invoice/${data.sale}`;
       }
    });
 
@@ -527,7 +551,7 @@
    const doSearchProduct = async (val) => {
 
       // Opciones por defecto estan marcadas con un *
-      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val.trim())}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
       //Procesar la respuest para que me guarde los productos en cuestion en una variable
       let res = await response.json();
       product_in_select2 = {};
@@ -551,7 +575,7 @@
 
    /*Busqueda de Clientes*/
    const doSearchClient = async (val) => {
-      const response = await fetch(`/sales/client/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
+      const response = await fetch(`/sales/client/select2?search=${encodeURIComponent(val.trim())}&onlystock=true&sucursal=<%= sucursal.id %>`, s_options);
 
       let res = await response.json();
       clients_in_select_to = {};
@@ -923,7 +947,6 @@
          }
 
          document.querySelector("#payments").innerHTML = content;
-         console.log(payed_amount >= amount, payed_amount, amount);
          if (payed_amount >= amount) {
 
             document.querySelector("#saveReal").disabled = false;
@@ -965,6 +988,9 @@
          //obtener los datos de facturacion
          server_data.invoice_serie = document.querySelector("#invoice_type").value;
          server_data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
+         server_data.invoice_resume = document.querySelector("#invoice_simplification").value;
+         server_data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
+         server_data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
 
          let invoice_data = {
             name: document.querySelector("#invoice_name").value,
@@ -974,6 +1000,9 @@
             nrc: document.querySelector("#invoice_nrc").value,
             nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
             cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+            invoice_date: document.querySelector("#invoice_date").value,
+            invoice_leyend: document.querySelector("#invoice_leyend").value,
+            
          }
 
          if (isNaN(server_data.invoice_number) || server_data.invoice_number < 1) {
@@ -991,7 +1020,7 @@
 
          server_data.invoice_data = invoice_data;
 
-         console.log(server_data)
+
          socket.emit('new_sale_in_sucursal', server_data);
       });
 

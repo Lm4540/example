@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <% total = 0.00%>
+   <style>
+      .invoice table {
+         border-collapse: collapse;
+
+      }
+
+      .invoice td {
+         border: 1px solid black;
+         border-spacing: 0;
+         line-height: .8;
+         color: black !important;
+      }
+
+      .invoice .details td {
+         border-top: 0px solid #fff;
+         border-bottom: 0px solid #fff;
+         border-spacing: 0;
+         color: black !important;
+      }
+
+
+
+      .invoice .hidden_row td {
+         border: 0px solid #fff !important;
+         border-top: 0px solid #fff !important;
+         border-bottom: 0px solid #fff !important;
+         border-left: 0px solid #fff !important;
+         border-right: 0px solid #fff !important;
+      }
+
+      .invoice td.without_left {
+         border-left: 0px solid #fff !important;
+      }
+
+      .invoice td.without_right {
+         border-right: 0px solid #fff !important;
+      }
+
+      .invoice td.without_top {
+         border-top: 0px solid #fff !important;
+      }
+
+      .invoice td.without_bottom {
+         
+         border-bottom: 0px solid #fff !important;
+      }
+
+      .invoice {
+         width: 12cm;
+         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
+         color: black !important;
+         margin: auto;
+      }
+
+      .invoice tbody {
+         width: 100%;
+      }
+
+      .invoice th {
+         font-size: 60%;
+         border: 1px solid black;
+         color: black !important;
+      }
+
+      .invoice .divisor {
+         margin-top: 10px;
+
+      }
+
+      .invoice .text-right {
+         align-items: right;
+         text-align: right;
+      }
+
+      .invoice .text-left {
+         align-items: left;
+         text-align: left;
+      }
+
+      .invoice .text-center {
+         text-align: center;
+         align-items: center;
+      }
+
+      .invoice #first_table {
+         margin-top: 2.5cm;
+         width: 100%;
+      }
+
+      .invoice #last_element {
+         margin-bottom: 0.5cm;
+         margin-top: 0;
+      }
+   </style>
+</head>
+<% options = `
+<li class="dropdown ml-5">
+	<a data-bs-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+	  Opciones
+	</a>
+	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
+      <a class="list-group-item" href="javascript:show_edit_modal()"><i class="fas fa-edit mr-3"></i></i>Editar Detalles</a>
+      <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>
+<a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+</div>
+</li>
+`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-header text-center">
+               <h3><%= sale.invoice_type.toUpperCase() %> <small> (<%= serie.serie %>) </small> N° <%= sale.invoice_number%></h3>
+            </div>
+            <div class="card-body ">
+               <div class="row  justify-content-center">
+                  <div class="col-md-8 col-12 bg-white">
+                     <% if (sale.invoice_type == "fcf") { %>
+                     <%- include('fcf_body.ejs') %>
+                     <% } else { %>
+                     <%- include('ccf_body.ejs') %>
+                     <% } %>
+
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="modal fade" id="EditInvoicedetails" tabindex="-1" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h5 class="modal-title" id="exampleModalCenterTitle">Editar detalles de la factura</h5>
+                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+                  </div>
+                  <div class="modal-body">
+                     <div class="form-group">
+                        <label for="name_in_invoice">Nombre en la Factura</label>
+                        <input type="text" name="name_in_invoice" id="name_in_invoice" class="form-control" value="<%= sale.invoice_data.name %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_direction">Dirección</label>
+                        <input type="text" name="invoice_direction" id="invoice_direction" class="form-control" value="<%= sale.invoice_data.direction %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_giro">Giro</label>
+                        <input type="text" name="invoice_giro" id="invoice_giro" class="form-control" value="<%= sale.invoice_data.giro %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_date">Fecha de la Factura</label>
+                        <input type="date" value="<%= Helper.date_to_input(sale.invoice_data.invoice_date !== undefined && sale.invoice_data.invoice_date !== null ? sale.invoice_data.invoice_date : sale.createdAt) %>" name="invoice_date" id="invoice_date" class="form-control">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_nit">NIT / DUI</label>
+                        <input type="text" name="invoice_nit" id="invoice_nit" class="form-control" value="<%= sale.invoice_data.nit %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_ncr">NRC</label>
+                        <input type="text" name="invoice_ncr" id="invoice_ncr" class="form-control" value="<%= sale.invoice_data.ncr %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+                        <input type="text" name="invoice_cuenta_de" id="invoice_cuenta_de" class="form-control" value="<%= sale.invoice_data.cuenta_de %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="invoice_nr_anterior">Nota remision anterior</label>
+                        <input type="text" name="invoice_nr_anterior" id="invoice_nr_anterior" class="form-control" value="<%= sale.invoice_data.nota_remision_anterior %>">
+                     </div>
+
+
+                     <div class="form-group">
+                        <label for="invoice_leyend">Leyenda <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+                        <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"><%= sale.invoice_data.leyend !== undefined && sale.invoice_data.leyend !== null ? sale.invoice_data.leyend : '' %></textarea>
+                     </div>
+
+
+                     <div class="form-group">
+                        <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+                        <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"><%= sale.invoice_resume %></textarea>
+                     </div>
+
+                     <div class="form-check form-switch">
+                        <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention" <% if (sale.invoice_retention) { %> checked <% } %>>
+                        <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+                     </div>
+
+                     <br>
+                     <div class="form-check form-switch">
+                        <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention" <% if (sale.invoice_isr == true) { %> checked <% } %>>
+                        <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
+                     </div>
+
+                  </div>
+
+                  <div class="modal-footer" style="display: block;">
+                     <div class="text-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="save_invoice_details">Actualizar Datos</button>
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+
+
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   const myModal = new bootstrap.Modal(document.getElementById('EditInvoicedetails'), {})
+   const show_edit_modal = () => {
+      myModal.toggle()
+   }
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#digits").innerHTML = money_to_string(Number.parseFloat("<%= total.toFixed(2) %>")).toUpperCase();
+
+      document.querySelector("#save_invoice_details").addEventListener('click', e => {
+
+         let data = {
+            data: {
+               name: document.querySelector("#name_in_invoice").value,
+               direction: document.querySelector("#invoice_direction").value,
+               giro: document.querySelector("#invoice_giro").value,
+               nit: document.querySelector("#invoice_nit").value,
+               ncr: document.querySelector("#invoice_ncr").value,
+               nota_remision_anterior: document.querySelector("#invoice_nr_anterior").value,
+               cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+               leyend: document.querySelector("#invoice_leyend").value.trim(),
+               invoice_date: document.querySelector("#invoice_date").value,
+            },
+            invoice_resume: document.querySelector("#invoice_simplification").value.trim(),
+            invoice_retention: document.querySelector("#invoice_iva_retention").checked,
+            invoice_isr: document.querySelector("#invoice_isr_retention").checked,
+            sale: '<%= sale.id %>'
+         };
+
+         //desactivar el boton y enviar los datos
+         e.target.disabled = true;
+
+         postData('/sales/update_invoice', data).then(data => {
+            if (data.status == 'success') {
+               successMessage('Actualizado');
+               console.log(data);
+               setTimeout(() => {
+                  location.reload();
+               }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+      });
+
+   });
+</script>
+
+</html>

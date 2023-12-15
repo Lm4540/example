@@ -77,6 +77,11 @@ const SaleDetail = sequelize.define('SaleDetail', {
             this.setDataValue('history', JSON.stringify(param == null ? new Array() : param) );
         }
     },
+    invoice_column: {
+        type: DataTypes.ENUM,
+        values: ['gravado', 'exento', 'no_sujeto'],
+        defaultValue: 'gravado'
+    }
 
 
 }, {

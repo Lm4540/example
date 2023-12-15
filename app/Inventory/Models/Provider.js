@@ -39,6 +39,12 @@ const Provider = sequelize.define('Provider', {
             ? storedValue : `/upload/images/${storedValue}`) : null;
         }
     },
+    img: {
+        type: DataTypes.VIRTUAL,
+        get(){
+            return this.getDataValue('image');
+        }
+    },
     isLocal: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
