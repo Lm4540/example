@@ -399,9 +399,10 @@
                               &nbsp;<span class="badge bg-danger" onclick="all_detail_revised(${element.sale.id})">Todo Revisado y Guardado</span>
                               &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
                               <a href="/sales/client/view/${element.sale.client}" class="badge bg-secondary">Ver Cliente</a>
-                           </h5>
+                           </h5>`;
                            
-                           <div class="list-group">`;
+                           content += element.open == true ?  `<p class="text-success">Pedido Abierto</p>` :  `<p class="text-danger">Abriendo Pedido</p>`;
+                           content += `<div class="list-group">`;
                //recorrer los detalles de la venta
                element.details.forEach(detail => {
 

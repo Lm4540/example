@@ -89,12 +89,15 @@ const SalesStatusController = {
             mayor[sale.id] = {
                 sale: sale,
                 details: [],
-                client: clients[sale.client]
+                client: clients[sale.client],
+                open: false,
             }
         });
 
+
+        //Bloque viejo
         //buscar las ventas que haya que preparar el paquete y las que ya se hayan preparado y no sean mas viejas que un dia
-        tmp = await sequelize.query(
+        /*tmp = await sequelize.query(
             "SELECT * FROM `crm_sale_detail` WHERE cant > ready and sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process')",
             { type: QueryTypes.SELECT }
         );
@@ -104,8 +107,32 @@ const SalesStatusController = {
             // detail.image = (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`);
             detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
             mayor[detail.sale].details.push(detail);
-        });
+        });*/
 
+
+        //bloque nuevo
+
+        tmp = await sequelize.query(
+            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process')",
+            { type: QueryTypes.SELECT }
+        );
+        totals.mayor_details = tmp.length;
+
+        tmp.forEach(detail => {
+
+            if(detail.cant > detail.ready){
+                detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
+                mayor[detail.sale].details.push(detail);
+
+            }else{
+                totals.mayor_details -= 1;
+                if(mayor[detail.sale] !== undefined){
+
+                    mayor[detail.sale].open = true;
+                }
+            }
+            // detail.image = (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`);
+        });
 
 
         //buscar los paquetes listos para ser entregados
