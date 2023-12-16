@@ -939,8 +939,33 @@ const SaleController = {
         return res.render('CRM/Sales/NewSaleInRoom', { pageTitle: 'Venta en Sala', sucursal });
     },
     viewSale: async (req, res) => {
-        let sucursal = await Sucursal.findByPk(req.session.userSession.employee.sucursal);
-        return res.render('CRM/Sales/NewSaleInRoom', { pageTitle: 'Observando una venta', sucursal });
+        //buscar la venta
+        let sale = await Sale.findByPk(req.params.id)
+        if(sale){
+            
+            //buscar el Cliente
+            let cliente = await Client.findByPk(sale.client);
+            
+            if(cliente){
+                //Buscar el empleado
+                let seller = await Employee.findByPk(sale.seller);
+                if(seller){
+                    let sucursal = await Sucursal.findByPk(seller.sucursal);
+                    //buscar los detalles
+                    let details = await SaleDetail.findAll({
+                        where: {
+                            sale: sale.id
+                        }
+                    });
+
+
+                    return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:'+sale.id, sucursal, sale, details, seller, cliente  });
+                }
+                
+            }
+            
+        }
+
     },
 
     socket_add_detail: async (data, session) => {

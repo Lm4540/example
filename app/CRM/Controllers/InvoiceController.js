@@ -101,8 +101,19 @@ const InvoiceController = {
             let details = await SaleDetail.findAll({
                 where: {
                     sale: sale.id,
-                }
+                },
+                raw: true,
             });
+
+            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+                details.push({
+                    price: sale.delivery_amount,
+                    description: 'Envio',
+                    _order: details.length + 1,
+                    cant: 1,
+                    invoice_column: 'gravado',
+                });
+            }
 
             //buscar el cliente
             let cliente = await Client.findByPk(sale.client);
@@ -128,8 +139,18 @@ const InvoiceController = {
             let details = await SaleDetail.findAll({
                 where: {
                     sale: sale.id,
-                }
+                },raw: true,
             });
+            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+                details.push({
+                    price: sale.delivery_amount,
+                    description: 'Envio',
+                    _order: details.length + 1,
+                    cant: 1,
+                    invoice_column: 'gravado',
+                });
+            }
+
 
             //buscar el cliente
             let cliente = await Client.findByPk(sale.client);
