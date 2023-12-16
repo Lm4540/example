@@ -865,6 +865,9 @@
          // verificar el tipo de pago
 
          if (current_payment_form == 'money') {
+            if (val > (amount - payed_amount)) {
+               val = (amount - payed_amount);
+            }
             payments.money += val;
             payed_amount += val;
 
