@@ -71,47 +71,49 @@
       <%- include('../../Layouts/NavBar.ejs') %>
       <div class="main-content container-fluid">
          <h3 class="text-center mb-4">Venta en Sala: <%= sale.id %>
-            <span id="span_amount">(Monto $<%= Helper.money_format(Number.parseFloat(sale.balance) +  sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %>)</span></h3>
+            <span id="span_amount">(Monto $<%= Helper.money_format(Number.parseFloat(sale.balance) +  (sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00)) %>)</span></h3>
          <h3><%= cliente.name %></h3>
-         <div class="row justify-content-center">
+         <div class="row justify-content-center ">
+            <div class="col table-responsive">
 
-            <table class="table table-sm table-bordered table-hover">
-               <thead>
-                  <tr>
-                     <th style="width: 180px;">Item</th>
-                     <th>imagen</th>
-                     <th>cantidad</th>
-                     <th>Precio</th>
-                     <th>Opciones</th>
-                  </tr>
-               </thead>
-               <tbody>
-
-                  <% details.forEach(detail => { %>
-                  <tr>
-                     <td>
-                        <img src="<%= detail.image %>" alt="Imagen del Producto" width="150px">
-                     </td>
-                     <td>
-                        <%= detail.description %><br>
-                        <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span>
-                     </td>
-                     <td class="text-center"><%= detail.cant %></td>
-                     <td class="text-center"><%= Helper.money_format(detail.price) %></td>
-                     <td class="text-center"></td>
-                  </tr>
-                  <% }) %>
-
-                  <tr>
-                    <td> -- </td>
-                    <td>Monto del Envio</td>
-                    <td class="text-center">1</td>
-                    <td class="text-center"><%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
-                    <td class="text-center"></td>
-                  </tr>
-
-               </tbody>
-            </table>
+               <table class="table table-sm table-bordered table-hover">
+                  <thead>
+                     <tr>
+                        <th style="width: 180px;">Item</th>
+                        <th>imagen</th>
+                        <th>cantidad</th>
+                        <th>Precio</th>
+                        <th>Opciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+   
+                     <% details.forEach(detail => { %>
+                     <tr>
+                        <td>
+                           <img src="<%= detail.image %>" alt="Imagen del Producto" width="150px">
+                        </td>
+                        <td>
+                           <%= detail.description %><br>
+                           <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span>
+                        </td>
+                        <td class="text-center"><%= detail.cant %></td>
+                        <td class="text-center"><%= Helper.money_format(detail.price) %></td>
+                        <td class="text-center"></td>
+                     </tr>
+                     <% }) %>
+   
+                     <tr>
+                       <td> -- </td>
+                       <td>Monto del Envio</td>
+                       <td class="text-center">1</td>
+                       <td class="text-center"><%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
+                       <td class="text-center"></td>
+                     </tr>
+   
+                  </tbody>
+               </table>
+            </div>
 
          </div>
          <%- include('../../Layouts/Footer.ejs') %>
