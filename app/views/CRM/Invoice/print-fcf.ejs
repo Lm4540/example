@@ -117,7 +117,7 @@
             <td rowspan="2" class="without_right without_bottom">Cliente: </td>
             <td rowspan="2" class="without_bottom without_left"><%= data.name %></td>
             <td class="without_right without_bottom">Fecha: </td>
-            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(data.invoice_date !== undefined && data.invoice_date !== null ? data.invoice_date : sale.createdAt, false) %></td>
+            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(data.invoice_date !== undefined && data.invoice_date !== null ? data.invoice_date+'T06:00:00' : sale.createdAt, false) %></td>
          </tr>
          <tr>
             <td class="without_right without_bottom without_top">NIT/DUI: </td>
