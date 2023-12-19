@@ -1,10 +1,65 @@
-const Helper = require("../../System/Helpers");
 const Client = require("../Models/Client");
 const InvoiceSeries = require("../Models/InvoiceSerie");
 const Sale = require("../Models/Sale");
 const SaleDetail = require("../Models/SaleDetail");
 
+const { Op, QueryTypes } = require("sequelize");
+const Helper = require("../../System/Helpers");
+
 const InvoiceController = {
+
+
+
+
+
+    invoice_report: async(req, res) => {
+        //buscar las facturas generadas
+        let invoices = await Sale.findAll({
+            where: {
+                invoice_number: {
+                    [Op.not]: null
+                }
+            }
+        });
+
+
+        //buscar las facturas anuladas
+
+
+
+        //buscar las ventas cerradas pendientes de facturar
+
+
+
+    },
+
+
+    corregir_la_fecha: async (req, res) => {
+        let invoices = await Sale.findAll({
+            where: {
+                invoice_number: {
+                    [Op.not]: null
+                }
+            }
+        });
+
+        let len = invoices.length;
+        let salidas = '';
+        for (let index = 0; index < len; index++) {
+            let invoice = invoices[index];
+            let fecha = invoice.invoice_data.invoice_date !== undefined ? invoice.invoice_data.invoice_date : invoice.createdAt;
+            if(typeof fecha == 'string'){
+                fecha = fecha.includes('T') ? fecha : `${fecha}T06:00:00`;
+                fecha = new Date(fecha);
+            }
+            
+            invoice.invoice_date = fecha;
+            await invoice.save();
+        }
+
+
+        return res.send(salidas);
+    },
 
     create_invoice: async (req, res) => {
 
@@ -45,6 +100,7 @@ const InvoiceController = {
             sale.invoce_serie = data.invoice_serie;
             sale.invoice_number = data.invoice_number;
             sale.invoice_type = serie.type;
+            sale.invoice_date = new Date(data.invoice_data.invoice_date+'T06:00:00');
 
             console.log('llega aca')
             await sale.save();
@@ -78,6 +134,7 @@ const InvoiceController = {
             data.data.last_update = req.session.userSession.shortName;
             sale.invoice_resume = data.invoice_resume.length ? data.invoice_resume : null;
             sale.invoice_data = data.data;
+            sale.invoice_date = new Date(data.data.invoice_date);
             sale.invoice_retention = data.invoice_retention == true;
             sale.invoice_isr = data.invoice_isr == true;
 
@@ -90,6 +147,45 @@ const InvoiceController = {
         }
 
         return Helper.notFound(req, res, "Sale not Found or hasn't been invoced");
+    },
+
+    print_invoice_detail: async (req, res) => {
+        //Buscar la venta
+        let sale = await Sale.findByPk(req.params.id);
+
+        if (sale && sale.invoice_number !== null) {
+            //Buscar los detalles
+            let details = await SaleDetail.findAll({
+                where: {
+                    sale: sale.id,
+                },
+                raw: true,
+            });
+
+            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+                details.push({
+                    price: sale.delivery_amount,
+                    description: 'Envio',
+                    _order: details.length + 1,
+                    cant: 1,
+                    invoice_column: 'gravado',
+                });
+            }
+
+            //buscar el cliente
+            let cliente = await Client.findByPk(sale.client);
+
+            //reolver los detalles de la factura
+
+            let serie = await InvoiceSeries.findByPk(sale.invoce_serie);
+            //enviar los datos a la vista
+            let template = sale.invoice_type == "fcf" ? 'CRM/Invoice/print_detail_fcf' : 'CRM/Invoice/print_detail_ccf';
+
+            return res.render(template, { sale, details, cliente, data: sale.invoice_data, serie });
+
+        }
+        return Helper.notFound(req, res,
+            "Invoice not Found or the sale has'nt been invoced ");
     },
 
     print_invoice: async (req, res) => {

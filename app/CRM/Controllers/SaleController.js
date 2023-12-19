@@ -1489,6 +1489,7 @@ const SaleController = {
                         invoice_type: serie.type,
                         invoice_number: data.invoice_number,
                         invoice_data: data.invoice_data,
+                        invoice_date: new Date(data.invoice_data.invoice_date+'T06:00:00'),
                         invoice_resume : data.invoice_resume.length > 0 ?  data.invoice_resume : null,
                         invoice_retention : data.invoice_retention == true,
                         invoice_isr : data.invoice_isr == true,

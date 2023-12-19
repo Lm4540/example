@@ -116,7 +116,7 @@
             <td rowspan="2" class="without_right without_bottom">Cliente: </td>
             <td rowspan="2" class="without_bottom without_left"><%= data.name %></td>
             <td class="without_right without_bottom">Fecha: </td>
-            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(data.invoice_date+'T06:00:00', false) %></td>
+            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(data.invoice_date, false) %></td>
          </tr>
          <tr>
             <td class="without_right without_bottom without_top">NIT/DUI: </td>
@@ -126,7 +126,7 @@
             <td rowspan="2" class="without_right without_bottom without_top">Direccion: </td>
             <td rowspan="2" class="without_left without_bottom without_top"><%= data.direction %></td>
             <td class="without_right without_bottom  without_top">N° Registro: </td>
-            <td colspan="2" class="without_left without_bottom without_top"><%= data.nrc %></td>
+            <td colspan="2" class="without_left without_bottom without_top"><%= data.ncr !== undefined ? data.ncr : (data.nrc != undefined ? data.nrc : '') %></td>
          </tr>
          <tr>
 
@@ -261,7 +261,7 @@
          <tr>
             <td></td>
             <td colspan="2">
-               <% var spacer = 'style="height: ' + (400 - (largo * 15)) +'px"'%>
+               <% var spacer = 'style="height: ' + (350 - (largo * 15)) +'px"'%>
                <div id="espaciador" <%- spacer %>></div>
             </td>
             <td></td>

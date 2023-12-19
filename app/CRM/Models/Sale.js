@@ -117,6 +117,7 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    invoice_date: {type: DataTypes.DATE, }
 }, {
     tableName: 'crm_sale',
 });

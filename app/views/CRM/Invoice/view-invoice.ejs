@@ -108,11 +108,15 @@
 	</a>
 	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
       <a class="list-group-item" href="javascript:show_edit_modal()"><i class="fas fa-edit mr-3"></i></i>Editar Detalles</a>
-      <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>
-<a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+      <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>`;
+
+       if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
+          options += `<a class="list-group-item" href="/sales/print_invoice_detail/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir detalle</a>`;
+
+       }
+       options += `<a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
 </div>
-</li>
-`; %>
+</li> `; %>
 
 <body class="<%= darkMode %>">
    <%- include('../../Layouts/SideBar.ejs') %>
@@ -162,7 +166,7 @@
 
                      <div class="form-group">
                         <label for="invoice_date">Fecha de la Factura</label>
-                        <input type="date" value="<%= Helper.date_to_input(sale.invoice_data.invoice_date !== undefined && sale.invoice_data.invoice_date !== null ? sale.invoice_data.invoice_date : sale.createdAt) %>" name="invoice_date" id="invoice_date" class="form-control">
+                        <input type="date" value="<%= Helper.date_to_input(sale.invoice_date) %>" name="invoice_date" id="invoice_date" class="form-control" data-date="<%= sale.invoice_date %>">
                      </div>
 
                      <div class="form-group">
@@ -172,7 +176,7 @@
 
                      <div class="form-group">
                         <label for="invoice_ncr">NRC</label>
-                        <input type="text" name="invoice_ncr" id="invoice_ncr" class="form-control" value="<%= sale.invoice_data.ncr %>">
+                        <input type="text" name="invoice_ncr" id="invoice_ncr" class="form-control" value="<%= data.ncr !== undefined ? data.ncr : (data.nrc != undefined ? data.nrc : '') %>">
                      </div>
 
                      <div class="form-group">

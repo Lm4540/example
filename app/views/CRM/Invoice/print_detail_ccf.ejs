@@ -4,7 +4,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Print Invoice <%= sale.invoice_type %> <%= sale.invoice_number %></title>
+   <title>Print Invoice CCF <%= sale.invoice_number %></title>
    <base href="<%=baseURL%>/" />
    <style>
       table {
@@ -54,7 +54,7 @@
          width: 12cm;
          font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
          font-size: small;
-         background-image: url("/assets/images/invoice-bg.png") !important;
+         background-image: url("/assets/images/ccf-bg.png") !important;
          background-repeat: no-repeat;
          background-size: 11cm;
       }
@@ -96,7 +96,6 @@
       #last_element {
          margin-bottom: 0.5cm;
          margin-top: 0;
-         font-size: 85%;
       }
    </style>
 </head>
@@ -106,28 +105,31 @@
       <tbody class="head-table">
 
          <tr class="hidden_row">
+            <td style="width: 12%;"></td>
+            <td style="width: 50%;"></td>
             <td style="width: 15%;"></td>
-            <td style="width: 35%;"></td>
+            <td style="width: 8%;"></td>
             <td style="width: 15%;"></td>
-            <td style="width: 10%;"></td>
-            <td style="width: 25%;"></td>
          </tr>
 
          <tr>
             <td rowspan="2" class="without_right without_bottom">Cliente: </td>
             <td rowspan="2" class="without_bottom without_left"><%= data.name %></td>
             <td class="without_right without_bottom">Fecha: </td>
-            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(sale.invoice_date, false) %></td>
+            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(data.invoice_date, false) %></td>
          </tr>
          <tr>
             <td class="without_right without_bottom without_top">NIT/DUI: </td>
             <td colspan="2" class="without_left without_bottom without_top"><%= data.nit %></td>
          </tr>
          <tr>
-            <td class="without_right without_bottom without_top">Direccion: </td>
-            <td class="without_left without_bottom without_top"><%= data.direction %></td>
-            <!-- <td class="without_right without_bottom  without_top">N° Registro: </td>
-               <td colspan="2" class="without_left without_bottom without_top"><%= data.nrc %></td> -->
+            <td rowspan="2" class="without_right without_bottom without_top">Direccion: </td>
+            <td rowspan="2" class="without_left without_bottom without_top"><%= data.direction %></td>
+            <td class="without_right without_bottom  without_top">N° Registro: </td>
+            <td colspan="2" class="without_left without_bottom without_top"><%= data.ncr !== undefined ? data.ncr : (data.nrc != undefined ? data.nrc : '') %></td>
+         </tr>
+         <tr>
+
             <td class="without_right without_bottom without_top" colspan="2">N° NR Anterior: </td>
             <td colspan="2" class="without_left without_bottom without_top"><%= data.nota_remision_anterior %></td>
          </tr>
@@ -173,100 +175,53 @@
 
          <% var exento =  0.00 , no_sujeto = 0.00, gravadas = 0.00, largo = details.length %>
 
-         <% if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
-            largo = 0;
-         details.forEach(detail => { 
-            if(detail.invoice_column == 'gravado'){ 
-               gravadas += detail.price * detail.cant;
-            } else if (detail.invoice_column == 'exento') {
-               exento += detail.price * detail.cant;
-            } else { 
-               no_sujeto += detail.price * detail.cant;
-            } 
-          
-            })
-         %>
-         <% if(gravadas > 0.00){ 
-            largo++;
-         %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2)) %></td>
-      </tr>
-
-      <% } else if (exento > 0.00) {
-         largo++;
-         %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2)) %></td>
-         <td class="text-right"></td>
-      </tr>
-
-      <% } else if (no_sujeto > 0.00) { largo++;
-         %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2), 3) %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2)) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
-      </tr>
-      <% } %>
-       <% } else { %>
 
 
 
-         <% details.forEach(detail => { %>
+         <% details.forEach(detail => { 
+            let price = detail.price / 1.13;
+            %>
          <% if(detail.invoice_column == 'gravado'){ 
-               gravadas += detail.price * detail.cant;
+               gravadas += price * detail.cant;
             %>
          <tr>
             <td class="text-center"><%= detail.cant %></td>
             <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
+            <td class="text-right">$<%= Helper.money_format(price, 3) %></td>
             <td class="text-right"></td>
             <td class="text-right"></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+            <td class="text-right">$<%= Helper.money_format((price * detail.cant).toFixed(2)) %></td>
          </tr>
 
          <% } else if (detail.invoice_column == 'exento') {
-               exento += detail.price * detail.cant; %>
+               exento += price * detail.cant; %>
          <tr>
             <td class="text-center"><%= detail.cant %></td>
             <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
+            <td class="text-right">$<%= Helper.money_format(price, 3) %></td>
             <td class="text-right"></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+            <td class="text-right">$<%= Helper.money_format((price * detail.cant).toFixed(2)) %></td>
             <td class="text-right"></td>
          </tr>
 
-         <% } else { no_sujeto += detail.price * detail.cant;%>
+         <% } else { no_sujeto += price * detail.cant;%>
 
          <tr>
             <td class="text-center"><%= detail.cant %></td>
             <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+            <td class="text-right">$<%= Helper.money_format(price, 3) %></td>
+            <td class="text-right">$<%= Helper.money_format((price * detail.cant).toFixed(2)) %></td>
             <td class="text-right"></td>
             <td class="text-right"></td>
          </tr>
          <% } %>
 
          <% }) %>
-         <% } %>
 
-         <% if (data.leyend !== undefined) { 
-            largo += 2;
-            %>
+         
+
+         <% if (data.leyend !== undefined) {
+            largo = largo + 2 %>
          <tr>
             <td></td>
             <td colspan="2"><br><%= data.leyend %></td>
@@ -276,10 +231,12 @@
             <td></td>
          </tr>
          <% } %>
+
+
          <tr>
             <td></td>
             <td colspan="2">
-               <% var spacer = 'style="height: ' + (350 - (largo * 15)) +'px"'%>
+               <% var spacer = 'style="height: 25px"'%>
                <div id="espaciador" <%- spacer %>></div>
             </td>
             <td></td>
@@ -288,48 +245,53 @@
             <td></td>
          </tr>
       </tbody>
-      <tbody style="font-size: 80%;">
-         <% var iva_retenido = (sale.invoice_retention == true  && gravadas > 100.00) ? (gravadas / 1.13 * 0.01) : 0.00  %>
-         <% var isr_retenido = (sale.invoice_isr == true  && gravadas > 0.00) ? (gravadas / 1.13 * 0.1) : 0.00  %>
+      <tbody style="font-size: 85%;">
+         <% var iva_retenido = (sale.invoice_retention == true  && gravadas > 100) ? (gravadas / 1.13 * 0.01) : 0.00  %>
+         <% var isr_retenido = (sale.invoice_isr == true  && gravadas > 0.00) ? (gravadas  * 0.1) : 0.00  %>
+         <% var iva = (gravadas > 0.00) ? (gravadas * 0.13) : 0.00  %>
          <tr>
-            <td rowspan="2" colspan="3">
+            <td rowspan="3" colspan="3">
                SON: <span id="digits"></span>
             </td>
             <td colspan="2">&nbsp;SUMAS</td>
-            <td class="text-right"><%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %></td>
-            <td class="text-right"><%= gravadas > 0.00 ? `$${Helper.money_format(gravadas.toFixed(2))}` : ''  %></td>
+            <td class="text-right"><%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %>&nbsp;</td>
+            <td class="text-right"><%= gravadas > 0.00 ? `$${Helper.money_format(gravadas.toFixed(2), 2)}` : ''  %>&nbsp;</td>
+         </tr>
+         <tr>
+            <td colspan="3">&nbsp;(+) IVA</td>
+            <td class="text-right"><%= iva > 0.00 ? `$${Helper.money_format(iva.toFixed(2))}` : ''  %>&nbsp;</td>
          </tr>
          <tr>
             <td colspan="3">&nbsp;(-) IVA RETENIDO</td>
-            <td class="text-right"><%= iva_retenido > 0.00 ? `$${Helper.money_format(iva_retenido.toFixed(2))}` : ''  %></td>
+            <td class="text-right"><%= iva_retenido > 0.00 ? `$${Helper.money_format(iva_retenido.toFixed(2))}` : ''  %>&nbsp;</td>
          </tr>
          <tr>
             <td colspan="3" class="text-center">OPERACIONES MAYORES A $200.00</td>
-            <td colspan="3">&nbsp; (-)RETENCION ISR 10%</td>
-            <td class="text-right"><%= isr_retenido > 0.00 ? `$${Helper.money_format(isr_retenido.toFixed(2))}` : ''  %></td>
+            <td colspan="3">&nbsp;(-)RETENCION ISR 10%</td>
+            <td class="text-right"><%= isr_retenido > 0.00 ? `$${Helper.money_format(isr_retenido.toFixed(2))}` : ''  %>&nbsp;</td>
          </tr>
          <tr>
             <td colspan="2" class="without_top without_bottom">Nombre:</td>
             <td class="without_top without_bottom">Nombre:</td>
             <td colspan="3">&nbsp;VENTAS NO SUJETAS</td>
-            <td class="text-right"><%= no_sujeto > 0.00 ? `$${Helper.money_format(no_sujeto.toFixed(2))}` : ''  %></td>
+            <td class="text-right"><%= no_sujeto > 0.00 ? `$${Helper.money_format(no_sujeto.toFixed(2))}` : ''  %>&nbsp;</td>
          </tr>
          <tr>
             <td colspan="2" class="without_top without_bottom">Dui:</td>
             <td class="without_top without_bottom">Dui:</td>
             <td colspan="3">&nbsp;VENTAS EXENTAS</td>
-            <td class="text-right"> <%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %> </td>
+            <td class="text-right"> <%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %> &nbsp;</td>
          </tr>
          <tr>
             <td colspan="2" class="without_top text-center">Firma quien Entrega</td>
-            <td class="without_top text-center">Firma quien recibe</td>
+            <td class="without_top text-center ">Firma quien recibe</td>
             <td colspan="3"><b>&nbsp;VENTA TOTAL</b></td>
-            <% var total = (gravadas + no_sujeto + exento - isr_retenido - iva_retenido) %>
-            <td class="text-right"> <b>$<%= Helper.money_format(total.toFixed(2))  %> </b> </td>
+            <% var total = (gravadas + no_sujeto + exento + iva - isr_retenido - iva_retenido) %>
+            <td class="text-right"> <b>$<%= Helper.money_format(total.toFixed(2))  %> </b> &nbsp; </td>
          </tr>
       </tbody>
    </table>
-   <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b>, Si este numero no coincide con el numero en la parte superior, este documento es anulado automaticamente</p>
+   <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b></p>
 </body>
 <script src="assets/js/main.js"></script>
 <script>
