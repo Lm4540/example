@@ -70,9 +70,12 @@
    <div id="main">
       <%- include('../../Layouts/NavBar.ejs') %>
       <div class="main-content container-fluid">
-         <h3 class="text-center mb-4">Venta en Sala: <%= sale.id %>
-            <span id="span_amount">(Monto $<%= Helper.money_format(Number.parseFloat(sale.balance) +  (sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00)) %>)</span></h3>
-         <h3><%= cliente.name %></h3>
+         <h3 class="text-center">Venta en Sala: ID <%= sale.id %>
+            <span id="span_amount">(Monto $<%= Helper.money_format(Number.parseFloat(sale.balance) +  (sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00)) %>)</span>
+         </h3>
+         <h3 class="text-center"> <a href="/sales/client/view/<%= cliente.id %>" target="_blank"><%= cliente.name %></a></h3>
+         <h3 class="text-center">Vendedor: <%= seller.name %></h3>
+         <h3 class="text-center">Abierto el <%= Helper.format_date(sale.createdAt) %></h3>
          <div class="row justify-content-center ">
             <div class="col table-responsive">
 
@@ -87,7 +90,7 @@
                      </tr>
                   </thead>
                   <tbody>
-   
+
                      <% details.forEach(detail => { %>
                      <tr>
                         <td>
@@ -95,22 +98,23 @@
                         </td>
                         <td>
                            <%= detail.description %><br>
-                           <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span>
+                           <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span><br>
+                           <a class="badge bg-success mt-4" href="/inventory/product/view/<%= detail.product %>" target="_blank">Ir al Producto</a>
                         </td>
                         <td class="text-center"><%= detail.cant %></td>
                         <td class="text-center"><%= Helper.money_format(detail.price) %></td>
                         <td class="text-center"></td>
                      </tr>
                      <% }) %>
-   
+
                      <tr>
-                       <td> -- </td>
-                       <td>Monto del Envio</td>
-                       <td class="text-center">1</td>
-                       <td class="text-center"><%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
-                       <td class="text-center"></td>
+                        <td> -- </td>
+                        <td>Monto del Envio</td>
+                        <td class="text-center">1</td>
+                        <td class="text-center"><%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
+                        <td class="text-center"></td>
                      </tr>
-   
+
                   </tbody>
                </table>
             </div>
@@ -120,19 +124,19 @@
       </div>
 
       <div class="modal fade" id="modalShowData" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
-           <div class="modal-content">
-              <div class="modal-header">
-                 Producto <button class="btn btn-secondary" onclick="javascript: ShowDataModal.toggle();">Cerrar</button>
-              </div>
-              <div class="modal-body" style="width: 100%; height: 100vh;">
-                 <iframe src= "" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
+         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  Producto <button class="btn btn-secondary" onclick="javascript: ShowDataModal.toggle();">Cerrar</button>
+               </div>
+               <div class="modal-body" style="width: 100%; height: 100vh;">
+                  <iframe src="" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
 
 
-              </div>
-           </div>
-        </div>
-     </div>
+               </div>
+            </div>
+         </div>
+      </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>

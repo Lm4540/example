@@ -8,6 +8,8 @@ const { Op, QueryTypes } = require("sequelize");
 const Helper = require('../../System/Helpers');
 const sequelize = require('../../DataBase/DataBase');
 const StockReserve = require("../../Inventory/Models/StockReserve");
+const Stock = require("../../Inventory/Models/Stock");
+const Movement = require("../../Inventory/Models/Movements");
 
 
 const SalesStatusController = {
@@ -280,27 +282,80 @@ const SalesStatusController = {
         
         //buscar los detalles y darles salida
         let details = await SaleDetail.findAll({where: {sale: sale.id}});
-
+        let client = await Client.findByPk(sale.client);
         try {
             return await sequelize.transaction(async (t) => {
 
+                let sale_cost = 0.00;
+
+                var concept = `Egreso por venta id: ${sale.id}, cliente ${client.name}`;
+                let len = details.length;
+
+                for (let index = 0; index < len; index++) {
+                    const dt = details[index];
+                    //buscar las reservas
+                    let tmp = await StockReserve.findAll({where: {saleId: dt.id,}}, { transaction: t });
+                    let product_cost = 0.00;
+                    //recorrer las reservas e ir sacandolas
+                    for (let a = 0; a < tmp.length; a++) {
+                        let reserve = tmp[a];
+                        //buscar el stock
+                        let stock = await Stock.findOne({where: {
+                            sucursal: reserve.sucursal,
+                            product : reserve.product
+                        }});
+                        if(stock){
+                            //buscar el producto
+                            let product = await Product.findByPk(reserve.product);
+                            if(product){
+                                //registrar el movimiento de salida
+                                let movement = await Movement.create({
+                                    product: stock.product,
+                                    sucursal: stock.sucursal,
+                                    cant: reserve.cant,
+                                    last_sucursal_stock: stock.cant,
+                                    last_product_stock: product.stock,
+                                    cost: product.cost,
+                                    last_cost: product.cost,
+                                    sale_detail: dt.id,
+                                    concept: concept,
+                                    in: false,
+                                }, { transaction: t });
+
+                                
+                                stock.reserved -= reserve.cant;
+                                stock.cant -= reserve.cant;
+                                await stock.save({transaction: t});
+                                
+                                product.reserved -= reserve.cant;
+                                product.stock -= reserve.cant;
+                                await product.save({transaction: t});
+                                await reserve.destroy({transaction: t})
+
+                                
+
+                                
+                                //actualizar el detalle
+                                sale_cost += Number.parseFloat(product.cost * reserve.cant);
+                                product_cost += Number.parseFloat(product.cost * reserve.cant);
+                                dt.delivered += reserve.cant;
+                            }else{
+                                return { status: 'errorMessage', message: 'producto id '+reserve.product+' no encontrado' };
+                            }
+                            
+                        }else{
+                            return { status: 'errorMessage', message: 'Stock not found for product id '+reserve.product+' and sucursal '+ reserve.sucursal +'!' };
+                        }
+
+                    }
+                    dt.product_cost = (product_cost / dt.delivered);
+                    await dt.save({transaction: t});
+                }
+
                 sale._status = 'delivered';
                 sale.delivered_by = session.shortName;
+                sale.sale_cost = sale_cost;
                 await sale.save({transaction: t});
-
-                //buscar las reservas y eliminarlas
-                let reserves = {};
-                let tmp = StockReserve.findAll({
-                    where: {
-                        saleId: {
-                            [Op.in]: sequelize.literal(`(SELECT id FROM crm_sale_detail WHERE sale = ${sale.id})`)
-                        }
-                    }
-                });
-                tmp.forEach(e => reserves[e.saleId] = e);
-
-
-
                 return { status: 'success', message: 'Guardado', data: sale };
             });
         } catch (error) {
@@ -312,16 +367,18 @@ const SalesStatusController = {
 
     },
 
-    pakage_trasnport: async (sale, session) => {
+    package_trasnport: async (sale, session) => {
         sale = await Sale.findByPk(sale);
         if (sale == null) {
             return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
         }
 
         try {
+
+            console.log('llega aqui')
             return await sequelize.transaction(async (t) => {
                 sale._status = "transport";
-
+                await sale.save()
                 return { status: 'success', message: 'Guardado', data: sale };
             });
         } catch (error) {

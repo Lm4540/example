@@ -44,6 +44,7 @@ const SalePayment = sequelize.define('SalePayment', {
     },
     bank: DataTypes.STRING,
     reference: DataTypes.STRING,
+    createdBy: DataTypes.STRING
 }, {
     tableName: 'crm_sale_payment',
 });

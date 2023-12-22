@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <%# custom styles %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <% var suma = 0.00 %>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title">
+            <h3>Reporte Detallado de Inventario <span id="suma"></span></h3>
+         </div>
+
+         <% let llaves = Object.keys(sucursals);
+         largo = llaves.length;
+         for (let i = 0; i < largo; i++) {
+          let sucursal = sucursals[llaves[i]]; %>
+         <div class="card">
+            <div class="card-header">
+               <h2><%= sucursal.name %> $(<%= Helper.money_format(sucursal.valor) %>)</h2>
+            </div>
+            <% 
+            suma += sucursal.valor;
+               let keys = Object.keys(sucursal.groups);
+               len = keys.length;
+               for (let a = 0; a < len; a++) {
+                let group = sucursal.groups[keys[a]];
+                
+                %>
+            <div class="card-body">
+               <h4><%= keys[a] %> ($<%= Helper.money_format(group.total) %>)</h4>
+               <table class="table-bordered table tebale-sm">
+                  <thead>
+                     <tr>
+                        <th>id</th>
+                        <th>Nombre</th>
+                        <th>Codigo</th>
+                        <th>Stock</th>
+                        <th>Costo</th>
+                        <th>Valor Total</th>
+                     </tr>
+                  </thead>
+
+                  <tbody>
+                     <% group.details.forEach(product => { %>
+
+                     <tr>
+                        <td><%= product.id %></td>
+                        <td><%= product.name %></td>
+                        <td><%= product.sku %></td>
+                        <td><%= product.cant %></td>
+                        <td>$<%= Helper.money_format(product.cost) %></td>
+                        <td>$<%= Helper.money_format(product.subtotal) %></td>
+                     </tr>
+                     <% }) %>
+                  </tbody>
+               </table>
+
+
+            </div>
+            <% } %>
+         </div>
+
+         <% } %>
+
+
+
+
+
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+<script>
+   document.addEventListener('DOMContentLoaded', event => {
+      document.getElementById('suma').innerHTML = '$<%= Helper.money_format(suma) %>';
+   });
+</script>
+
+</html>

@@ -13,12 +13,12 @@
 	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
 	  <a class="list-group-item" href="/inventory/product/kardex/${product.id}"><i class="fas fa-clipboard-list mr-3"></i>Kardex</a>
 	  <a class="list-group-item" href="/inventory/product/move/${product.id}"><i class="fas fa-list-alt mr-3"></i>Movimientos</a>`; %>
-  <% if (permission.includes('adjust_inventory')) { %>
+<% if (permission.includes('adjust_inventory')) { %>
 
-    <% options += `<a class="list-group-item" href="/inventory/product/in/${product.id}"><i class="fas fa-arrow-alt-from-right mr-3"></i>Ingreso Manual</a>
+<% options += `<a class="list-group-item" href="/inventory/product/in/${product.id}"><i class="fas fa-arrow-alt-from-right mr-3"></i>Ingreso Manual</a>
     <a class="list-group-item" href="/inventory/product/out/${product.id}"><i class="fas fa-arrow-alt-from-left mr-3"></i>Salida Manual</a>`; %>
-  <% } %>
-  <% options += `<div class="dropdown-divider"></div>
+<% } %>
+<% options += `<div class="dropdown-divider"></div>
     <span class="list-group-item" onclick="dar_baja()"><i class="fas fa-long-arrow-down mr-3"></i>Dar de Baja</span>
     <a class="list-group-item" href="/inventory/product/edit/${product.id}"><i class="fas fa-edit mr-3"></i>Editar</a>
     <a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
@@ -55,7 +55,7 @@
                         <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
 
                         <% } else { %>
-                        <p style="font-size: 125%;" class="text-danger">No hay Existencias</p>
+                        <p style="font-size: 125%;" class="text-danger">No hay Existencias disponibles</p>
 
                         <% } %>
                      </b>
@@ -66,11 +66,118 @@
                   </div>
                </div>
             </section>
+
+            <div class="row">
+               <div class="col-12">
+         
+                  <div class="">
+                     <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
+                        <li class="nav-item me-3" role="presentation">
+                           <a class="nav-link text-nowrap active" id="orders-tab" data-bs-toggle="tab" href="#tab-orders" role="tab" aria-controls="tab-orders" aria-selected="true">
+                              <i class="far fa-adjust"></i>Reservas
+                           </a>
+                        </li>
+                        <li class="nav-item me-3" role="presentation">
+                           <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-reviews" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                              <i class="far fa-adjust"></i>Existencias
+                           </a>
+                        </li>
+                        <!-- <li class="nav-item me-3" role="presentation">
+                           <a class="nav-link text-nowrap" id="wishlist-tab" data-bs-toggle="tab" href="#tab-wishlist" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                              <i class="far fa-adjust"></i>Wishlist
+                           </a>
+                        </li>
+                        <li class="nav-item me-3" role="presentation">
+                           <a class="nav-link text-nowrap" id="stores-tab" data-bs-toggle="tab" href="#tab-stores" role="tab" aria-controls="tab-stores" aria-selected="false" tabindex="-1">
+                              <i class="far fa-adjust"></i>Stores
+                           </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                           <a class="nav-link text-nowrap" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="false" tabindex="-1">
+                              <i class="far fa-adjust"></i>Personal info
+                           </a>
+                        </li> -->
+                     </ul>
+         
+                     <div class="tab-content" id="profileTabContent">
+                        <div class="tab-pane fade active show" id="tab-orders" role="tabpanel" aria-labelledby="orders-tab">
+                           <h4 class="text-center mt-5 mb-5">Lista de Reservas de este producto</h4>
+
+                           <div class="table-responsive">
+                              <table class="table table-sm table-hover table borderless">
+                                 <thead>
+                                    <tr>
+                                       <th>Nombre del Cliente</th>
+                                       <th>Estado de preparacion</th>
+                                       <th>Venta</th>
+                                       <th>options</th>
+                                    </tr>
+                                 </thead>
+   
+                                 <tbody>
+                                    <% in_reserve.forEach(ele => { %>
+                                     
+                                       <tr>
+                                          <td>
+                                             <%= ele.client_name %>
+                                          </td>
+                                          <td>
+                                             <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
+                                          </td>
+                                          <td> ID <%= ele.sale_id %></td>
+                                          <td>
+                                             <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
+                                             <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>
+                                          </td>
+                                       </tr>
+                                       <% }) %>
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                           <h4 class="text-center mt-5 mb-5">Detalle de las existencias</h4>
+
+                           <table class="table table-sm table-bordered">
+                              <thead>
+                                 <tr>
+                                    <th>Sucursal</th>
+                                    <th>Existencias</th>
+                                    <th>Reservado</th>
+                                    <th>Disponible</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <% almacen.forEach(element => { %>
+                                 <tr>
+                                    <td><%= element.name %></td>
+                                    <td class="text-center"><%= element.cant %></td>
+                                    <td class="text-center"><%= element.reserved %></td>
+                                    <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
+                                 </tr>
+                                 <% })%>
+                              </tbody>
+                           </table>
+                        </div>
+                        <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
+                          Tercer panel
+                        </div>
+                        <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
+                           Cuarto panel
+                        </div>
+                        <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                          Ultimo Panel
+                        </div>
+                     </div>
+                  </div>
+         
+         
+               </div>
+            </div>
          </div>
       </div>
       <%- include('../../Layouts/Footer.ejs') %>
    </div>
-
 
    <!-- Modal -->
    <div class="modal fade" id="Stock_detail" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">

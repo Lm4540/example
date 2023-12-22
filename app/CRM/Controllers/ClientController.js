@@ -10,6 +10,7 @@ const Helper = require('../../System/Helpers');
 const sequelize = require('../../DataBase/DataBase');
 const Product = require('../../Inventory/Models/Product');
 const Sucursal = require('../../Inventory/Models/Sucursal');
+const SalePayment = require('../Models/SalePayment');
 
 
 const ClientController = {
@@ -363,6 +364,15 @@ const ClientController = {
             });
             let sucursals = await Sucursal.findAll();
 
+
+            let payments = await SalePayment.findAll({
+                where: {
+                    client: cliente.id
+                }, order: [
+                    ['id', 'DESC'],
+                ]
+            });
+
             //buscar las ordenes en proceso
             return res.render('CRM/Client/view', {
                 pageTitle: cliente.name,
@@ -378,7 +388,8 @@ const ClientController = {
                 providers,
                 locations,
                 _status,
-                sucursals
+                sucursals,
+                payments
             });
         }
     },

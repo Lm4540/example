@@ -286,9 +286,9 @@
                            <tr>
                               <th>#</th>
                               <th>Monto</th>
+                              <th>Monto Cobrado</th>
                               <th>Estado</th>
                               <th>Fecha</th>
-                              <th>Cobro</th>
                               <th>options</th>
                            </tr>
                         </thead>
@@ -298,11 +298,11 @@
 
                               <td><%= index +1 %></td>
                               <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
-                              <td><%= _status[order._status] %></td>
-                              <td><%= Helper.format_date(order.createdAt) %></td>
                               <td>
                                  $<%= Helper.money_format(order.collected) %>
                               </td>
+                              <td><%= _status[order._status] %></td>
+                              <td><%= Helper.format_date(order.createdAt) %></td>
                               <td>
                                  <% if (order.status == 'closed') { %>
                                  <span class="badge bg-green"> Paquete preparado</span>
@@ -315,6 +315,8 @@
                                  <% } else { %>
                                  <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
                                  <% } %>
+                                 <br>
+                                 <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
                               </td>
                            </tr>
@@ -323,6 +325,50 @@
                      </table>
                      <% } else { %>
                      <h5 class="text-center text-danger text-800">No Hay ningun pedido en el Historial</h5>
+                     <% } %>
+
+                  </div>
+               </div>
+
+               <div class="card">
+                  <div class="card-header text-center">
+                     <h3>Pagos Registrados</h3>
+                  </div>
+                  <div class="card-body pb-3 table-responsive">
+                     <% if (payments.length > 0) { %>
+                     <table class="table table-sm table-bordered table-hover">
+                        <thead>
+                           <tr>
+                              <th>Monto</th>
+                              <th>Fecha</th>
+                              <th>Referencia</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <% payments.forEach((payment) => { %>
+                           <tr>
+                              <td>
+                                 <% if (payment.type == "money") { %>
+                                 Efectivo
+                                 <% } else { %>
+                                 <%= payment.type == "transfer" ? 'Depósito o transferencia' : "Tarjeta de Crédito" %>
+                                 <br>Banco: <%= payment.bank%><br>Referencia: <%= payment.reference %>
+
+                                 <% } %>
+                              </td>
+                              <td>
+                                 <%= Helper.format_date(payment.createdAt) %>
+                                 <% if (payment.createdBy !== undefined && payment.createdBy !== null) { %>
+                                    <br> Registrado por: payment.createdBy
+                                 <% } %>
+                              </td>
+                              <td class="text-center">$<%= Helper.money_format(payment.amount) %></td>
+                           </tr>
+                           <% }) %>
+                        </tbody>
+                     </table>
+                     <% } else { %>
+                     <h5 class="text-center text-danger text-800">No Hay ningun pago registrado en el Historial</h5>
                      <% } %>
 
                   </div>
@@ -375,6 +421,8 @@
                </div>
             </div>
          </div>
+
+
       </div>
       <%- include('../../Layouts/Footer.ejs') %>
    </div>
@@ -477,7 +525,6 @@
          </div>
       </div>
    </div>
-
 
    <div class="modal fade" id="quitDetailModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
@@ -619,7 +666,7 @@
 
                <div class="form-group">
                   <label for="invoice_giro">Giro</label>
-                  <input type="text" class="form-control" name="invoice_giro" id="invoice_giro" >
+                  <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
                </div>
 
                <div class="row">
@@ -686,7 +733,6 @@
          </div>
       </div>
    </div>
-
 
 </body>
 
@@ -784,7 +830,7 @@
             nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
             cuenta_de: document.querySelector("#invoice_cuenta_de").value,
             invoice_date: document.querySelector("#invoice_date").value,
-            invoice_leyend: document.querySelector("#invoice_leyend").value,
+            leyend: document.querySelector("#invoice_leyend").value,
 
          }
 
@@ -994,7 +1040,7 @@
       document.getElementById('personalizedPrice').style.display = 'none';
       document.getElementById('product__image').style.display = 'none';
       choices_product.removeActiveItems();
-      choices_product.clearChoices();
+      // choices_product.clearChoices();
 
       form_inventory();
    }

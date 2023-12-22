@@ -19,14 +19,18 @@ socket.on('pakage_delivered', async sale => {
   let res = await SalesStatusController.pakage_delivered(sale, socket.request.session.userSession);
   if (res.status == 'success') {
     io.of('/logistics').emit('pakage_delivered_success', res.data);
-  } 
+  }else{
+    console.log('error al procesar el paquete', res);
+  }
 
 });
 
-socket.on('pakage_trasnport', async sale => {
-  let res = await SalesStatusController.pakage_trasnport(sale, socket.request.session.userSession);
+socket.on('package_trasnport', async sale => {
+  let res = await SalesStatusController.package_trasnport(sale, socket.request.session.userSession);
   if (res.status == 'success') {
-    io.of('/logistics').emit('pakage_trasnport_success', res.data);
+    io.of('/logistics').emit('package_trasnport_success', res.data);
+  }else{
+    console.log('error al procesar el paquete', res);
   }
 
 });

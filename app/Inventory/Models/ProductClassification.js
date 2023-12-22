@@ -16,7 +16,7 @@ const ProductClassification = sequelize.define('Clasification', {
     },
     image: {
         type: DataTypes.STRING,
-        get(){
+        get() {
             const storedValue = this.getDataValue('image');
             return storedValue !== null
                 ? storedValue.includes('http')
@@ -24,6 +24,11 @@ const ProductClassification = sequelize.define('Clasification', {
                 : null;
         }
     },
+    _group: {
+        type: DataTypes.ENUM,
+        values: ['Carteras', 'Mochilas', 'Relojes', 'Electrodomesticos', 'Tecnologia', 'Productos para el Hogar', 'Productos y accesorios para niños', 'Accesorios para dama'],
+        defaultValue: 'Carteras'
+    }
 }, {
     tableName: 'inventory_product_classification',
 });

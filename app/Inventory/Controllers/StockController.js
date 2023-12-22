@@ -18,8 +18,113 @@ const StockReserve = require('../Models/StockReserve');
 
 const StockController = {
 
+
+    reporte_detallado: async (req, res) => {
+        let sql  = 'select inventory_product.name, inventory_product.id, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.stock > 0';
+
+        let products = {};
+        let tmp = await sequelize.query(sql,  { type: QueryTypes.SELECT });
+        tmp.forEach(el => products[el.id] = el);
+
+
+        tmp = await Sucursal.findAll();
+        let sucursals = {};
+
+        
+
+        tmp.forEach(element => {
+            sucursals[element.id] = {
+                name: element.name,
+                valor: 0.00,
+                valor_: 0.00,
+                groups: {
+                    'Carteras': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Mochilas': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Relojes': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Electrodomesticos': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Tecnologia': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Productos para el Hogar': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Productos y accesorios para niños': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+                    'Accesorios para dama': {
+                        total: 0.00,
+                        total_:0.00,
+                        details: [],
+                    },
+
+                }
+            }
+        });
+
+
+
+        tmp = await Stock.findAll({
+            where: { cant: { [Op.gt]: 0 } }
+        });
+
+
+        tmp.forEach(stock => {
+            //buscar el producto
+            let product = products[stock.product];
+            let detail = {
+                id: product.id,
+                name: product.name,
+                sku: product.internal_code, 
+                cant: stock.cant,
+                reserved: stock.reserved,
+                cost: product.cost,
+                subtotal: Number.parseFloat(product.cost) * Number.parseInt(stock.cant),
+                subtotal_: Number.parseFloat(product.cost) * Number.parseInt(stock.reserved),
+            }
+
+            //determinar la sucursal
+            ///sucursal 1 grupo accesosrios
+            sucursals[stock.sucursal]['groups'][product._group].total += detail.subtotal;
+            sucursals[stock.sucursal]['groups'][product._group].total_ += detail.subtotal_;
+            sucursals[stock.sucursal]['groups'][product._group]['details'].push(detail);
+            sucursals[stock.sucursal].valor += detail.subtotal;
+            sucursals[stock.sucursal].valor_ += detail.subtotal_;
+
+        });
+
+        return res.render('Inventory/Stock/stock_report_detailed', {
+            pageTitle: 'Inventario general',
+            sucursals,
+        });
+    },
+
+
     general_report: async (req, res) => {
-        let products = await Product.findAll({where: {stock: {[Op.gt]: 0}}});
+        let products = await Product.findAll({ where: { stock: { [Op.gt]: 0 } } });
+
+
         return res.render('Inventory/Product/stock_report', {
             pageTitle: 'Inventario general',
             products,
@@ -61,11 +166,11 @@ const StockController = {
         tmp.forEach(e => sucursals[e.id] = e.name);
 
         //buscar las reservas e indexarlas
-        tmp = await sequelize.query('SELECT crm_sale_detail.sale, inventory_product_stock_reserve.* FROM `crm_sale_detail` inner join inventory_product_stock_reserve on inventory_product_stock_reserve.saleId = crm_sale_detail.id order by crm_sale_detail.sale', {type: QueryTypes.SELECT});
+        tmp = await sequelize.query('SELECT crm_sale_detail.sale, inventory_product_stock_reserve.* FROM `crm_sale_detail` inner join inventory_product_stock_reserve on inventory_product_stock_reserve.saleId = crm_sale_detail.id order by crm_sale_detail.sale', { type: QueryTypes.SELECT });
         tmp.forEach(reserve => {
-            if(sales[reserve.sale] !== undefined){
+            if (sales[reserve.sale] !== undefined) {
                 sales[reserve.sale].details.push(reserve);
-            }else{
+            } else {
                 //enviar una notificacion de que esta reserva no tiene venta relacionada
 
             }

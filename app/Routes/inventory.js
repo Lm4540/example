@@ -73,6 +73,7 @@ router.get('/product/recount/:id(\\d+)', StockController.viewRecount);
 router.post('/product/recount/update', StockController.updateRecount);
 
 router.get('/product/stock_report', StockController.general_report);
+router.get('/product/stock_report/detailed', StockController.reporte_detallado);
 
 router.get('/product/archive/:id(\\d+)', ProductController.archive); //pendiente
 

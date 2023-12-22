@@ -97,6 +97,7 @@ const SaleController = {
                                 type: 'money',
                                 amount: data.amount,
                                 asigned_amount: 0.00,
+                                createdBy: req.session.userSession.shortName,
                             }, { transaction: t });
 
                             sucursal.balance += data.amount;
@@ -110,6 +111,7 @@ const SaleController = {
                                 asigned_amount: 0.00,
                                 bank: data.bank,
                                 reference: data.reference,
+                                createdBy: req.session.userSession.shortName,
                             }, { transaction: t });
 
 
@@ -132,11 +134,6 @@ const SaleController = {
                         message: error.message,
                     });
                 }
-
-
-
-
-
             }
 
         }
@@ -146,8 +143,6 @@ const SaleController = {
 
 
     relacionar_pago: async (req, res) => {
-
-
         try {
             //buscar el pago
             let registered_payment = await SalePayment.findByPk(req.body.id);
@@ -1185,6 +1180,7 @@ const SaleController = {
                         }
                     }
 
+                    //Bloque para reservas multisucursal
                     if (faltante > 0 && false) {
                         for (let index = 0; index < stocks.length; index++) {
                             const stock = stocks[index];
@@ -1616,7 +1612,7 @@ const SaleController = {
                             petty_cash: sucursal.id,
                             type: 'payment',
                             isin: true,
-                            createdBy: session.name,
+                            createdBy: session.shortName,
                             asigned_to: client.name,
                             _number: 0,
                         }, { transaction: t });
@@ -1627,6 +1623,7 @@ const SaleController = {
                             type: 'money',
                             amount: data.payment.money,
                             asigned_amount: data.payment.money,
+                            createdBy: session.shortName,
                         }, { transaction: t });
 
                         payments_ids.push({ id: id.id, amount: data.payment.money })
@@ -1650,7 +1647,8 @@ const SaleController = {
                                 amount: element.amount,
                                 asigned_amount: element.amount,
                                 bank: element.bank,
-                                reference: element.reference
+                                reference: element.reference,
+                                createdBy: session.shortName,
                             }, { transaction: t });
 
 
@@ -1673,7 +1671,8 @@ const SaleController = {
                                 amount: element.amount,
                                 asigned_amount: element.amount,
                                 bank: element.bank,
-                                reference: element.reference
+                                reference: element.reference,
+                                createdBy: session.shortName,
                             }, { transaction: t });
 
 
@@ -1697,10 +1696,6 @@ const SaleController = {
                     await sale.save({ transaction: t });
 
                     if (update_client == true) {
-                        if (client.sucursal) {
-
-                        }
-
                         await client.save({ transaction: t });
                     }
                     return { status: 'success', message: 'Guardado', sale: sale.id }
@@ -1711,11 +1706,6 @@ const SaleController = {
             }
         }
     },
-
-
-
-
-
 
 };
 

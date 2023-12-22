@@ -7,6 +7,8 @@
       .card-round {
          border-radius: 15px !important;
       }
+
+      .badge{cursor:pointer;}
    </style>
 </head>
 
@@ -143,6 +145,7 @@
       sellers = {},
       prepared = {},
       on_screen = null;
+      transport = {};
 
    const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
    const charge_iframe = (url) => {
@@ -186,6 +189,7 @@
       totals = data.totals;
       providers = data.providers;
       prepared = data.prepared;
+      transport = data.transport;
 
       //pintar los totales
       update_totals();
@@ -258,8 +262,6 @@
       }
    });
 
-
-
    socket.on('new_major_detail', data => {
       totals.mayor_details++;
       mayor[data.detail.sale].details.push(data.detail);
@@ -270,7 +272,6 @@
       }
    });
 
-
    socket.on('deleted_major_detail', data => {
       console.log(data);
       let new_details = [];
@@ -280,12 +281,37 @@
          el.id == data.deleted_detail
       });
 
-
       // errorMessage('Detalle de info Eliminado')
    });
 
    socket.on('mayor_detail_revised_error', data => {
       console.log(data);
+   });
+
+   socket.on('package_trasnport_error', data => {
+      console.log(data);
+   });
+
+   socket.on('package_trasnport_success', data => {
+      let div = document.querySelector("#info_sale_"+data.id);
+      div.parentNode.removeChild(div);
+      transport[data.id] = data;
+      totals.transport += 1;
+
+      prepared[data.id] = null;
+      totals.prepared -= 1;
+      update_totals();
+   });
+
+ 
+
+   socket.on('pakage_delivered_success', data => {
+      let div = document.querySelector("#info_sale_"+data.id);
+      div.parentNode.removeChild(div);
+
+      prepared[data.id] = null;
+      totals.prepared -= 1;
+      update_totals();
    });
 
    socket.on('mayor_detail_revised_success', data => {
@@ -307,9 +333,22 @@
 
 
    });
+
+
+   socket.on('new_major_detail', data => {
+      totals.mayor_details++;
+      mayor[data.detail.sale].details.push(data.detail);
+      //agregar el detalle a los totales
+      update_totals();
+      if (on_screen == 'mayor') {
+         show_info();
+      }
+   });
 </script>
 <!-- Manejo de las reservas -->
 <script>
+
+   var delivery_failed_id = null;
    const show_reservas = () => {
       document.querySelector("#div_reservas").style.display = 'flex';
       document.querySelector("#div_info").style.display = 'none';
@@ -393,11 +432,21 @@
       socket.emit('mayor_detail_revised', data);
    }
 
+
+   const delivery_failed_process = (sale_id) => {
+      delivery_failed_id = sale_id;
+
+
+
+      //mostrar el modal
+      
+   }
+
    const package_delivered = (sale) => {
-     // socket.emit('pakage_delivered', sale)
+     socket.emit('pakage_delivered', sale)
    }
    const package_transport = (sale) => {
-      //socket.emit('pakage_trasnport', sale)
+      socket.emit('package_trasnport', sale)
    }
 
 
@@ -503,6 +552,51 @@
          createToast('rose', 'No hay mas tareas por completar');
       }
    }
+
+
+
+   const show_trasnport = () => {
+      document.querySelector("#div_reservas").style.display = 'none';
+      document.querySelector("#div_info").style.display = 'none';
+      document.querySelector("#div_delivery").style.display = 'flex';
+
+      on_screen = 'delivery';
+
+      let keys = Object.keys(transport);
+      if (keys.length > 0) {
+         let content = '';
+         keys.forEach(index => {
+            element = transport[index];
+            if (element !== null) {
+               let badge  = `&nbsp;<span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               badge += `&nbsp;<span class="badge bg-danger" onclick="delivery_failed_process(${element.sale.id})">Entrega fallida</span>`;
+               content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                     <div class="card card-round">
+                        <div class="card-body">
+                           <h5 class="mb-2">${element.client} 
+                              ${badge}
+                              &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                           </h5>`;
+               content += `<div>
+                     <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+
+                     <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
+
+                     <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
+                     <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
+                     <p>Total: $${money_format(Number.parseFloat(element.sale.balance) + Number.parseFloat(element.sale.delivery_amount))}</p>
+                  </div>`;
+               content += `</div>
+                     </div>
+                  </div>`;
+            }
+         });
+         document.querySelector("#div_delivery").innerHTML = content;
+      } else {
+         createToast('rose', 'No hay mas tareas por completar');
+      }
+   }
+
 </script>
 
 </html>
