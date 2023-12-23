@@ -359,7 +359,7 @@
                               <td>
                                  <%= Helper.format_date(payment.createdAt) %>
                                  <% if (payment.createdBy !== undefined && payment.createdBy !== null) { %>
-                                    <br> Registrado por: payment.createdBy
+                                    <br> Registrado por: <%= payment.createdBy %>
                                  <% } %>
                               </td>
                               <td class="text-center">$<%= Helper.money_format(payment.amount) %></td>
