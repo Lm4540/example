@@ -26,7 +26,7 @@ app.post('/login', Auth.Login);
 app.get('/loginValidate', Auth.Authenticated, Auth.setUserSessionRegister);
 app.get('/logout', Auth.LogOut);
 app.get('/', Auth.Authenticated, async (req, res) => {
-    console.log(req.session.id)
+    // console.log(req.session.id)
     try {
         const Sale = require('./app/CRM/Models/Sale');
         const SaleDetail = require('./app/CRM/Models/SaleDetail');

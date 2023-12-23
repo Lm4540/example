@@ -19,9 +19,22 @@ const SalePayment = require("./Models/SalePayment");
 // const fs = require('fs');
 // const { Socket } = require("socket.io");
 
+const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+function generateString(length) {
+    let result = ' ';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+}
+
 module.exports = (io, socket) => {
+    let group_identification = generateString(10);
     try {
-        let group_identification = 'user__' + socket.request.session.userSession.id;
+        group_identification = 'user__' + socket.request.session.userSession.id;
         socket.join(group_identification);
     } catch (error) {
         
