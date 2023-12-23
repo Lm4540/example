@@ -20,8 +20,12 @@ const SalePayment = require("./Models/SalePayment");
 // const { Socket } = require("socket.io");
 
 module.exports = (io, socket) => {
-    let group_identification = 'user__' + socket.request.session.userSession.id;
-    socket.join(group_identification);
+    try {
+        let group_identification = 'user__' + socket.request.session.userSession.id;
+        socket.join(group_identification);
+    } catch (error) {
+        
+    }
 
     _io = io.of('/sales');
 
@@ -77,7 +81,7 @@ module.exports = (io, socket) => {
                         let provider = await Provider.findByPk(data.delivery_provider);
                         if (provider) {
                             let destinos = provider.delivery_locations;
-                            console.log(destinos, provider);
+                            // console.log(destinos, provider);
                             if (!destinos.includes(data.direction)) {
                                 destinos.push(data.direction);
                                 provider.delivery_locations = destinos;
@@ -356,7 +360,7 @@ module.exports = (io, socket) => {
     });
 
     socket.on('quit_sale_detail', async data => {
-        console.log(data);
+        // console.log(data);
         let res = await SaleController.socket_delete_detail(data);
         if (res.status == 'success') {
 
