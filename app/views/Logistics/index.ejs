@@ -519,7 +519,7 @@
          keys.forEach(index => {
             element = prepared[index];
             if (element !== null) {
-               let badge  = `&nbsp;<span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let badge  = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
                if(element.sale.delivery_type == 'delivery'){
                   badge  = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
                }
@@ -568,7 +568,7 @@
          keys.forEach(index => {
             element = transport[index];
             if (element !== null) {
-               let badge  = `&nbsp;<span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let badge  = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
                badge += `&nbsp;<span class="badge bg-danger" onclick="delivery_failed_process(${element.sale.id})">Entrega fallida</span>`;
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">

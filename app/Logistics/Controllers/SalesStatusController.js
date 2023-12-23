@@ -275,6 +275,8 @@ const SalesStatusController = {
     },
 
     pakage_delivered: async (sale, session) => {
+
+        //return { status: 'errorMessage', message: 'Funcion en revision' };
         sale = await Sale.findByPk(sale);
         if (sale == null) {
             return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
@@ -354,7 +356,7 @@ const SalesStatusController = {
 
                 sale._status = 'delivered';
                 sale.delivered_by = session.shortName;
-                sale.sale_cost = sale_cost;
+                sale.cost = sale_cost;
                 await sale.save({transaction: t});
                 return { status: 'success', message: 'Guardado', data: sale };
             });
