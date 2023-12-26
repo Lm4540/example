@@ -49,7 +49,7 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0.00,
         get() {
-            let _val = Number.parseFloat(this.getDataValue('balance'));
+            let _val = Number.parseFloat(this.getDataValue('delivery_amount'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
