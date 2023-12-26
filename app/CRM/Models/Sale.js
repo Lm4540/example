@@ -45,7 +45,14 @@ const Sale = sequelize.define('Sale', {
     delivery_time: {
         type: DataTypes.TIME,
     },
-    delivery_amount: DataTypes.DECIMAL(10, 2),
+    delivery_amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
+            let _val = Number.parseFloat(this.getDataValue('balance'));
+            return isNaN(_val) ? 0.00 : _val
+        }
+    },
     delivery_provider: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,

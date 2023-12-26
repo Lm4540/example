@@ -5,7 +5,7 @@ const Sucursal = require('../Models/Sucursal');
 const Stock = require('../Models/Stock');
 const SaleDetail = require('../../CRM/Models/SaleDetail');
 
-const Movement = require('../Models/Movements');
+const Movement = require('../Models/Movement');
 
 const Helper = require('../../System/Helpers');
 const Money = require('../../System/Money');

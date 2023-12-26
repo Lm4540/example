@@ -15,13 +15,19 @@
 
       <div class="main-content container-fluid">
          <div class="row">
-            <div class="col">
+            <div class="col-6 col-md-4">
+                <div class="form-group">
+                   <label for="selected_date">Desde la Fecha:</label>
+                   <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-01">
+                </div>
+             </div>
+            <div class="col-6 col-md-4">
                <div class="form-group">
                   <label for="selected_date">hasta la Fecha:</label>
-                  <input type="date" class="form-control" id="selected_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-05">
+                  <input type="date" class="form-control" id="end_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-02">
                </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-4">
                <div class="form-group">
                   <label for="selected_sucursal">Sucursal Seleccionada</label>
                   <select name="selected_sucursal" id="selected_sucursal" class="form-control">
@@ -33,20 +39,28 @@
                </div>
 
             </div>
-            <div class="col">
-               <button class="btn btn-success mt-4" onclick="calcular()">Calcular</button>
+            <div class="col-6 col-md-4">
+                <div class="form-group">
+                   <label for="selected_serie">Selecciona la Serie a Consultar</label>
+                   <select name="selected_serie" id="selected_serie" class="form-control">
+                      <% series.forEach(serie => { %>
+                      <option value="<%= serie.id %>"><%= `${types[serie.type]} (${serie.serie})` %></option>
+                      <% }) %>
+                   </select>
+                </div>
+ 
+             </div>
+            <div class="col-6 col-md-4">
+               <button class="btn btn-success mt-4" onclick="search_data()">Buscar</button>
             </div>
          </div>
          <h2 class="page-title text-center mt-5" id="title"></h2>
-         <div id="attaced_content" class="mt-5"></div>
+         <div id="attaced_content" class="mt-5 table-responsive">
 
-        
+            
 
-
-
+         </div>
       </div>
-
-
       <%- include('../../Layouts/Footer.ejs') %>
    </div>
 </body>
@@ -64,16 +78,19 @@
       referrerPolicy: 'no-referrer',
    };
 
-   const calcular = async () => {
+   
+
+   const search_data = async () => {
 
       //mostrar la cuestion de calculando datos
-      let date = document.querySelector('#selected_date').value;
+      let init = document.querySelector('#init_date').value;
+      let end = document.querySelector('#end_date').value;
       let sucursal = Number.parseInt(document.querySelector('#selected_sucursal').value);
+      let serie = Number.parseInt(document.querySelector("#selected_serie").value);
 
-      if (date.length < 10) {
-         return errorMessage('Seleccione una fecha');
+      if (init.length < 10 || end.length < 10 || end < init) {
+         return errorMessage('Seleccione un rango de fechas válido');
       } else if (sucursal < 1) {
-
          return errorMessage('Seleccione una Sucursal');
       } else {
 
@@ -84,21 +101,46 @@
              </div>
              <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
          </div>`;
-         const response = await fetch(`/inventory/product/stock_report/get_details?selected_date=${encodeURIComponent(date)}&sucursal=${sucursal}`, s_options);
-         //Procesar la respuest para que me guarde los productos en cuestion en una variable
+
+
+         const response = await fetch(`/sales/invoices_details?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&sucursal=${sucursal}&serie=${serie}`, s_options);
          let res = await response.json();
-
          console.log(res)
-
-         document.querySelector("#title").innerHTML = `${res.name} hasta el ${format_date(date, false)} tenia un inventario de ($${money_format(res.valor)})`;
+         document.querySelector("#title").innerHTML = ``;
 
          //procesar la informacion: 
 
-         let content =  `<div class="card">
-            <div class="card-header">
-               <h3 class="text-center">Detalle por Categoria</h3>
-            </div>`;
+         let content =  `<table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Numero</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
+                    res.invoices.forEach(invoice => {
+                        content += `
+                        <tr>
+                            <td>${invoice.invoice_data.name}</td>
+                            <td>${invoice.invoice_number}</td>
+                            <td>${format_date(invoice.invoice_date, false)}</td>
+                            <td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
+                            <td>
+                                <a href="/sales/view/${invoice.id}" class="badge bg-warning">Ver Venta</a>
+                                <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
+                            </td>
+                        </tr>`;
+                        
+                    });
+
+                    
+                    content += `</tbody>
+            </table>`;
+/*
          let keys = Object.keys(res.groups);
          len = keys.length;
          for (let a = 0; a < len; a++) {
@@ -133,6 +175,10 @@
             })
             content += `</tbody></table></div>`;
          }
+         
+         */
+
+
          content += `</div>`;
 
          document.querySelector("#attaced_content").innerHTML = content;

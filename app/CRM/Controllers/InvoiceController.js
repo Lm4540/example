@@ -2,34 +2,65 @@ const Client = require("../Models/Client");
 const InvoiceSeries = require("../Models/InvoiceSerie");
 const Sale = require("../Models/Sale");
 const SaleDetail = require("../Models/SaleDetail");
+const Sucursal = require("../../Inventory/Models/Sucursal");
 
 const { Op, QueryTypes } = require("sequelize");
 const Helper = require("../../System/Helpers");
+const types = {
+    'ccf': 'Comporbante de Credito Fiscal', 'fcf': "Factura de Consumidor Final", 'fex': "Factura de Exportacion", 'nr': "Nota de Remisión", 'nc': "Nota de Credito", 'nd': "Nota de Debito"
+};
 
 const InvoiceController = {
 
 
 
+    invoice_report_details: async (req, res) => {
+        //obtener el rango de fechas y la sucursal
+        let init = `${req.query.init} 00:00:00`;
+        let end = `${req.query.end} 23:59:59`;
+        //buscar la sucursal
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+        let serie = req.query.serie;
 
-
-    invoice_report: async(req, res) => {
-        //buscar las facturas generadas
+        //buscar las facturas de esa sucursal, ordenadas por numero de la factura
         let invoices = await Sale.findAll({
             where: {
                 invoice_number: {
                     [Op.not]: null
-                }
+                },
+                invoce_serie: serie,
+                sucursal: sucursal.id,
+                invoice_date: {
+                    [Op.between]: [init, end],
+                },
+            },
+            order: [
+                ['invoice_number', 'asc']
+            ]
+        });
+
+        return res.json({
+            invoices, sucursal
+        })
+    },
+
+    invoice_report: async (req, res) => {
+
+        let sucursals = await Sucursal.findAll();
+        let series = await InvoiceSeries.findAll({
+            where: {
+                active: 1
             }
         });
 
 
-        //buscar las facturas anuladas
 
-
-
-        //buscar las ventas cerradas pendientes de facturar
-
-
+        return res.render('CRM/Invoice/invoiceReport.ejs', {
+            sucursals,
+            pageTitle: 'Reporte de facturas Generadas',
+            series,
+            types
+        });
 
     },
 
@@ -48,11 +79,11 @@ const InvoiceController = {
         for (let index = 0; index < len; index++) {
             let invoice = invoices[index];
             let fecha = invoice.invoice_data.invoice_date !== undefined ? invoice.invoice_data.invoice_date : invoice.createdAt;
-            if(typeof fecha == 'string'){
+            if (typeof fecha == 'string') {
                 fecha = fecha.includes('T') ? fecha : `${fecha}T06:00:00`;
                 fecha = new Date(fecha);
             }
-            
+
             invoice.invoice_date = fecha;
             await invoice.save();
         }
@@ -75,7 +106,7 @@ const InvoiceController = {
 
             //verificar si el numero del documento esta dentro del rango de la serie
             if (serie.init > data.invoice_number || data.invoice_number > serie.end) {
-                return res.json( { status: 'errorMessage', message: `Este numero de Documento esta fuera del rango registrado, coloque un numero entre ${serie.init} y ${serie.end}` });
+                return res.json({ status: 'errorMessage', message: `Este numero de Documento esta fuera del rango registrado, coloque un numero entre ${serie.init} y ${serie.end}` });
             }
 
 
@@ -100,15 +131,15 @@ const InvoiceController = {
             sale.invoce_serie = data.invoice_serie;
             sale.invoice_number = data.invoice_number;
             sale.invoice_type = serie.type;
-            sale.invoice_date = new Date(data.invoice_data.invoice_date+'T06:00:00');
+            sale.invoice_date = new Date(data.invoice_data.invoice_date + 'T06:00:00');
 
             console.log('llega aca')
             await sale.save();
 
 
             //Actualizar la serie
-            serie.used +=1 ;
-            await serie.save(); 
+            serie.used += 1;
+            await serie.save();
 
 
             return res.json({
@@ -162,7 +193,7 @@ const InvoiceController = {
                 raw: true,
             });
 
-            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+            if (sale.delivery_amount !== null && sale.delivery_amount > 0.00) {
                 details.push({
                     price: sale.delivery_amount,
                     description: 'Envio',
@@ -201,7 +232,7 @@ const InvoiceController = {
                 raw: true,
             });
 
-            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+            if (sale.delivery_amount !== null && sale.delivery_amount > 0.00) {
                 details.push({
                     price: sale.delivery_amount,
                     description: 'Envio',
@@ -235,9 +266,9 @@ const InvoiceController = {
             let details = await SaleDetail.findAll({
                 where: {
                     sale: sale.id,
-                },raw: true,
+                }, raw: true,
             });
-            if(sale.delivery_amount !== null && sale.delivery_amount > 0.00){
+            if (sale.delivery_amount !== null && sale.delivery_amount > 0.00) {
                 details.push({
                     price: sale.delivery_amount,
                     description: 'Envio',

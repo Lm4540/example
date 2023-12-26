@@ -1,7 +1,7 @@
 const Product = require('../Models/Product');
 const Sucursal = require('../Models/Sucursal');
 const Stock = require('../Models/Stock');
-const Movement = require('../Models/Movements');
+const Movement = require('../Models/Movement');
 const Recount = require('../Models/Recount');
 const RecountDetail = require('../Models/RecountDetail');
 const Shipment = require('../Models/Shipment');
@@ -18,19 +18,143 @@ const StockReserve = require('../Models/StockReserve');
 
 const StockController = {
 
+    inventory_report_per_dates: async (req, res) => {
+        let sucursals = await Sucursal.findAll();
+        return res.render('Inventory/Stock/stock_report_detailed', {
+            pageTitle: 'Inventario general',
+            sucursals,
+        });
+    },
 
-    reporte_detallado: async (req, res) => {
-        let sql  = 'select inventory_product.name, inventory_product.id, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.stock > 0';
+    inventory_retpor_details: async (req, res) => {
+        //obtengo todos los productos
+        let selected_date = `${req.query.selected_date} 23:59:59`;
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+
+        if (sucursal == null) {
+            return res.json({
+                status: 'error',
+                message: "Sucursal not Found",
+            })
+        }
+
+        let sql = 'select inventory_product.name, inventory_product.id, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.id in(SELECT DISTINCT(product) FROM `inventory_product_movement` WHERE createdAt <= :date and sucursal = :sucursal) order by inventory_product.id ASC';
 
         let products = {};
-        let tmp = await sequelize.query(sql,  { type: QueryTypes.SELECT });
+        let tmp = await sequelize.query(sql, { replacements: { date: selected_date, sucursal: sucursal.id }, type: QueryTypes.SELECT });
+        tmp.forEach(el => {
+            // console.log(el);
+            products[el.id] = el;
+        });
+        console.log(products)
+
+
+        let result = {
+            name: sucursal.name,
+            valor: 0.00,
+            groups: {
+                'Carteras': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Mochilas': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Relojes': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Electrodomesticos': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Tecnologia': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Productos para el Hogar': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Productos y accesorios para niños': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Accesorios para dama': {
+                    total: 0.00,
+                    details: [],
+                },
+
+            }
+        }
+
+        //recorrer los productos, clasificarlos y obtener su movimiento
+
+        let indexes = Object.keys(products);
+        let len = indexes.length;
+
+        for (let index = 0; index < len; index++) {
+            let i = indexes[index];
+            let product = products[i];
+            let move = await Movement.findOne({
+                where: {
+                    product: product.id,
+                    sucursal: sucursal.id,
+                    createdAt: {
+                        [Op.lte]: selected_date,
+                    }
+                },
+                order: [['id', 'DESC']],
+            });
+
+            let cant = 0, cost = 0.00;
+            //determinar la cantidad
+
+            if (move.in == true || move.in == 1) {
+                cant = move.last_sucursal_stock + move.cant;
+                cost = Helper.fix_number(((move.last_sucursal_stock * Helper.fix_number(move.last_cost)) + (move.cant * Helper.fix_number(move.cost))) / (move.last_sucursal_stock + move.cant).toFixed(2));
+            } else {
+                cant = move.last_sucursal_stock - move.cant;
+                cost = move.last_cost;
+            }
+
+
+
+            let detail = {
+                id: product.id,
+                name: product.name,
+                sku: product.internal_code,
+                cant: cant,
+                cost: cost,
+                subtotal: Helper.fix_number((cant * cost)),
+                fecha: move.createdAt
+            }
+
+            result['groups'][product._group].total = Helper.fix_number(result['groups'][product._group].total + detail.subtotal);
+            result['groups'][product._group]['details'].push(detail);
+            result.valor = Helper.fix_number(result.valor + detail.subtotal);
+        }
+
+
+        return res.json(result);
+
+
+    },
+
+
+    reporte_detallado: async (req, res) => {
+        let sql = 'select inventory_product.name, inventory_product.id, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.stock > 0';
+
+        let products = {};
+        let tmp = await sequelize.query(sql, { type: QueryTypes.SELECT });
         tmp.forEach(el => products[el.id] = el);
 
 
         tmp = await Sucursal.findAll();
         let sucursals = {};
 
-        
+
 
         tmp.forEach(element => {
             sucursals[element.id] = {
@@ -40,42 +164,42 @@ const StockController = {
                 groups: {
                     'Carteras': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Mochilas': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Relojes': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Electrodomesticos': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Tecnologia': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Productos para el Hogar': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Productos y accesorios para niños': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
                     'Accesorios para dama': {
                         total: 0.00,
-                        total_:0.00,
+                        total_: 0.00,
                         details: [],
                     },
 
@@ -96,7 +220,7 @@ const StockController = {
             let detail = {
                 id: product.id,
                 name: product.name,
-                sku: product.internal_code, 
+                sku: product.internal_code,
                 cant: stock.cant,
                 reserved: stock.reserved,
                 cost: product.cost,

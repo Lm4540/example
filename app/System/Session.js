@@ -10,7 +10,7 @@ const SessionStoreOptions = {
     database: process.env.DB_NAME,
     charset: process.env.DB_COLLATION,
     clearExpired: true,
-    checkExpirationInterval: 3600000 * 24,
+    checkExpirationInterval: 3600000 * 2,
     schema: {
         tableName: 'system_sessions',
         columnNames: {

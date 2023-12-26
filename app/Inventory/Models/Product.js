@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../../DataBase/DataBase");
 const Stock = require("./Stock");
-const Movements = require("./Movements");
+const Movement = require("./Movement");
 const ProductClassification = require("./ProductClassification");
 const Provider = require("./Provider");
 

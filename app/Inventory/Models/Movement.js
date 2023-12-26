@@ -31,10 +31,18 @@ const Movement = sequelize.define('Movement', {
     cost: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('cost'));
+            return isNaN(_val) ? 0.00 : _val;
+        }
     },
     last_cost: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        get(){
+            let _val = Number.parseFloat(this.getDataValue('last_cost'));
+            return isNaN(_val) ? 0.00 : _val;
+        }
     },
     in: DataTypes.BOOLEAN,
     sale_detail: DataTypes.INTEGER.UNSIGNED,

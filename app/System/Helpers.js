@@ -62,7 +62,7 @@ const Helper = {
     },
     date_to_spanish: (date) => {
         let days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre','Noviembre', 'Diciembre'];
+        let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         date = new Date(date);
 
         return days[date.getDay()] + ' ' + date.getDate() + ' de ' + months[date.getMonth()] + ' de ' + date.getFullYear();
@@ -71,6 +71,13 @@ const Helper = {
         return req.method === "GET" ? res.status(404).render('Common/404', { aditional }) : res.status(404).json({ response: aditional });
     },
     cleanNumber: a => a.replaceAll(' ', '').replaceAll('+', '').replaceAll('-', ''),
+    fix_number: (number, redondeo = 2) => {
+        let decimalNumbers = number.toString();
+        decimalNumbers = decimalNumbers.substr(decimalNumbers.indexOf(".") + 1, decimalNumbers.length - 1);
+        let decimalNumbersLength = decimalNumbers.length;
+        let fixNumber = 10 ** decimalNumbersLength;
+        return Number.parseFloat((Math.round(fixNumber * number) / fixNumber).toFixed(redondeo));
+    }
 
 
 };

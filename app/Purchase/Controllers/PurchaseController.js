@@ -10,7 +10,7 @@ const PurchaseCost = require("../Models/PurchaseCost");
 const PurchaseDetail = require("../Models/PurchaseDetail");
 const Product = require('../../Inventory/Models/Product');
 const Stock = require('../../Inventory/Models/Stock');
-const Movement = require('../../Inventory/Models/Movements');
+const Movement = require('../../Inventory/Models/Movement');
 const invoice_types = { invoice: 'Factura (Importacion)', fc: 'Factura Comercial', ccf: 'Comprabante de Credito Fiscal', fcf: 'Factura de Consumidor Final' };
 const purchase_types = { equipment_purchase: 'Compra de Equipo', sale_expense: 'Gastos sobre Ventas', purchase_expense: 'Gastos sobre Compras', services: 'Serivios (Internet, Corriente Electrica, Agua, etc)' };
 

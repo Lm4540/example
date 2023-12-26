@@ -9,7 +9,7 @@ const Helper = require('../../System/Helpers');
 const sequelize = require('../../DataBase/DataBase');
 const StockReserve = require("../../Inventory/Models/StockReserve");
 const Stock = require("../../Inventory/Models/Stock");
-const Movement = require("../../Inventory/Models/Movements");
+const Movement = require("../../Inventory/Models/Movement");
 
 
 const SalesStatusController = {

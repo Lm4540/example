@@ -46,6 +46,8 @@ router.get('/print_invoice_detail/:id(\\d+)', InvoiceController.print_invoice_de
 router.get('/view_invoice/:id(\\d+)', InvoiceController.view_invoice);
 router.post('/update_invoice', InvoiceController.update_invoice);
 router.post('/invoice/create_invoice', InvoiceController.create_invoice);
+router.get('/invoices', InvoiceController.invoice_report);
+router.get('/invoices_details', InvoiceController.invoice_report_details);
 
 
 router.get('/corregir_fecha', InvoiceController.corregir_la_fecha);
