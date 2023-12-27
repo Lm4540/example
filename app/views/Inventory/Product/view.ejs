@@ -110,6 +110,7 @@
                                        <th>Nombre del Cliente</th>
                                        <th>Estado de preparacion</th>
                                        <th>Venta</th>
+                                       <th>Reservado por</th>
                                        <th>options</th>
                                     </tr>
                                  </thead>
@@ -125,6 +126,8 @@
                                              <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
                                           </td>
                                           <td> ID <%= ele.sale_id %></td>
+                                          <td> ID <%= ele.reserve.createdBy %></td>
+                                          
                                           <td>
                                              <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
                                              <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>

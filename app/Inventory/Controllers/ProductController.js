@@ -339,6 +339,17 @@ const ProductController = {
             type: QueryTypes.SELECT
         });
 
+        let largo = in_reserve.length;
+
+        for (let index = 0; index < largo; index++) {
+            in_reserve[index].reserve = await StockReserve.findOne({
+                where: {
+                    saleId: in_reserve[index].id
+                }
+            })
+            
+        }
+
         res.render('Inventory/Product/view', {
             product,
             pageTitle: product.name,

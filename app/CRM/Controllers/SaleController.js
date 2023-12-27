@@ -880,7 +880,6 @@ const SaleController = {
                                 break;
                         }
 
-                        console.log('sale del switch', '\n');
 
                     });
                 } catch (error) {
@@ -995,7 +994,7 @@ const SaleController = {
                 });
 
 
-                console.log(sale)
+                // console.log(sale)
 
                 // if (data.sale != "" || data.sale != null) {
                 //     sale = await Sale.findByPk(data.sale);
