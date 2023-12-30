@@ -155,7 +155,7 @@ const sale_status_verification = async (seller) => {
     let sales = await Sale.findAll({
         where: {
             _status: 'delivered',
-            cost : 0.00
+            cost: 0.00
         }
     });
 
@@ -172,14 +172,14 @@ const sale_status_verification = async (seller) => {
         for (let b = 0; b < details.length; b++) {
             let detail = details[b];
             let c = 0.00;
-            if(detail.product_cost < 0.01){
+            if (detail.product_cost < 0.01) {
                 //Buscar el costo del product_cost
                 let product = await Product.findByPk(detail.product);
                 detail.product_cost = product.cost;
                 detail.save();
                 c = product.cost;
                 //
-            }else{
+            } else {
                 c = detail.product_cost;
             }
             suma = Helper.fix_number(suma + (c * detail.cant));
@@ -236,6 +236,38 @@ const SaleController = {
     //verificar estado de las ventas
 
 
+    seller_history_details_comisioned: async (req, res) => {
+        let date = req.body.date + ' 23:59:59';
+        let seller = req.body.seller;
+        let sales = await Sale.findAll({
+            where: {
+                seller: seller,
+                in_report: 0,
+                revoked_at: { [Op.is]: null, },
+                createdAt: { [Op.lte]: date },
+                _status: 'collected',
+                id: { [Op.lte]: req.body.sale },
+            }
+        });
+
+        try {
+            return await sequelize.transaction(async (t) => {
+                for (let index = 0; index < sales.length; index++) {
+                    let sale = sales[index];
+                    sale.in_report = true;
+                    await sale.save({ transaction: t });
+
+                }
+                return res.json({ status: 'success', message: "guardado" });
+            });
+
+        } catch (error) {
+            return res.json({
+                status: 'error',
+                message: error.message,
+            });
+        }
+    },
 
     seller_history_details: async (req, res) => {
 
@@ -263,6 +295,7 @@ const SaleController = {
             seller: seller.id,
             in_report: 0,
             revoked_at: { [Op.is]: null, },
+            createdAt: { [Op.lte]: date },
             _status: 'collected',
         } : {
             seller: seller.id,

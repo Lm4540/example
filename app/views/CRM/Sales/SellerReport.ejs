@@ -118,7 +118,7 @@
 
          <div id="attaced_content" class="mt-5 table-responsive">
             
-
+            
          </div>
       </div>
       <%- include('../../Layouts/Footer.ejs') %>
@@ -128,6 +128,7 @@
 
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+   var master_date = null, seller = null;
    const calc_data = async () => {
       document.querySelector("#attaced_content").innerHTML = `<div class="text-center">
                 <div class="spinner-grow text-danger" role="status" style="width: 150px; height: 150px;">
@@ -136,10 +137,10 @@
                 <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
             </div>`;
 
-      let seller = document.querySelector("#seller").value;
+      seller = document.querySelector("#seller").value;
       let opt = document.querySelector("#calc_type").value;
-      let date = document.querySelector("#_date").value;
-      let url = `/sales/seller/history/details?seller=${seller}&opt=${opt}&date=${encodeURIComponent(date)}`;
+      master_date = document.querySelector("#_date").value;
+      let url = `/sales/seller/history/details?seller=${seller}&opt=${opt}&date=${encodeURIComponent(master_date)}`;
 
       console.log(url);
       let data = await fetch(url).then(data => data.json());
@@ -159,7 +160,10 @@
                </thead>
                <tbody>`;
       let delivery = 0.00, balance = 0.00, cost = 0.00;
+      last = 0;
+
       data.sales.forEach(sale => {
+         last = sale.id;
          delivery = fix_number(delivery + sale.delivery_amount);
          balance = fix_number(balance + sale.balance);
          cost = fix_number(cost + sale.cost);
@@ -189,12 +193,30 @@
       content += `</tbody>
                   </table><div class="bg-danger text-white pt-1 pb-2 pl-5 pr-5 round">
                <p class="mt-5">NOTA: El monto del envio se muestra en el cuadro pero no es tomado en cuenta para la determinacion de la ganancia por venta</p>
+            </div><div class="mt-4 text-center">
+               <button class="btn btn-success btn-lg round" onclick="marcar()">Marcar comisionado</button>
             </div>`;
 
       document.querySelector("#attaced_content").innerHTML = content;
       // console.log(data);
 
    }
+
+
+   const marcar = async () => {
+      let url = '/sales/seller/history/details';
+      postData(url, {date: master_date, sale: last, seller: seller})
+               .then(data => {
+                  if (data.status == 'success') {
+                     successMessage('Ventas Marcadas como comisionadas');
+                  } else if (data.status == 'errorMessage') {
+                     e.target.disabled = false;
+                     return errorMessage(data.message);
+                  } else {
+                     return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+                  }
+               });
+   } 
 </script>
 
 </html>

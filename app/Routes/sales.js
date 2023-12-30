@@ -39,6 +39,7 @@ router.get('/inProccess', SaleController.inProccess);
 
 router.get('/seller/history', SaleController.seller_history);
 router.get('/seller/history/details', SaleController.seller_history_details);
+router.post('/seller/history/details', SaleController.seller_history_details_comisioned);
 
 
 router.get('/history', SaleController.history);
