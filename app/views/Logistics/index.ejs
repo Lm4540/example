@@ -8,7 +8,9 @@
          border-radius: 15px !important;
       }
 
-      .badge{cursor:pointer;}
+      .badge {
+         cursor: pointer;
+      }
    </style>
 </head>
 
@@ -99,7 +101,7 @@
       </div>
 
       <!-- modal para mostrar la imagen -->
-      <div class="modal fade" id="showImage" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+      <div class="modal fade" id="showImage" tabindex="-1" style="display: none;" aria-hidden="true">
          <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
             <div class="modal-content">
                <img src="" alt="galery_image" id="galery_image">
@@ -109,20 +111,100 @@
       </div>
 
 
-      <div class="modal fade" id="modalShowData" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+      <div class="modal fade" id="modalShowData" tabindex="-1" style="display: none;" aria-hidden="true">
          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
             <div class="modal-content">
                <div class="modal-header">
                   Producto <button class="btn btn-secondary" onclick="javascript: ShowDataModal.toggle();">Cerrar</button>
                </div>
                <div class="modal-body" style="width: 100%; height: 100vh;">
-                  <iframe src= "" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
+                  <iframe src="" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
 
 
                </div>
             </div>
          </div>
       </div>
+
+      <div class="modal fade" id="modalNotDelivered" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h3>Paquete no entregado
+                     <br>
+                     <span id="notdeliveredTittle"></span>
+                  </h3>
+               </div>
+               <div class="modal-body">
+                  <div class="form-group">
+                     <label for="nd_option">Opcion</label>
+                     <select name="nd_option" id="nd_option" class="form-control">
+                        <option value="revoke">Revocar y reingresar al inventario</option>
+                        <option value="resend">Reenvio</option>
+                     </select>
+                  </div>
+
+                  <div id="nd_div_resend">
+                     <div class="form-group">
+                        <label for="nd_delivery_type">Tipo de Entrega:</label>
+                        <select name="nd_delivery_type" id="nd_delivery_type" class="form-control">
+                           <option value="local" selected>Retiro en Local</option>
+                           <option value="local_delivery">Entrega (Riveras Group)</option>
+                           <option value="delivery">Entrega (Transportista / Encomienda)</option>
+                        </select>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="nd_delivery_provider">Transportista Encomienda:</label>
+                        <select name="nd_delivery_provider" id="nd_delivery_provider" class="form-control">
+
+                        </select>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="nd_delivery_amount">Costo del envio:</label>
+                        <input type="number" step="0.01" min="0" value="0" id="nd_delivery_amount" class="form-control" disabled>
+                     </div>
+                     <div class="form-group">
+                        <label for="nd_direction_">Direccion de Entrega:</label>
+                        <input type="text" name="nd_direction_" id="nd_direction_" class="form-control" list="directions" value="Retiro en Tienda" disabled>
+                     </div>
+
+                     <datalist id="directions">
+                     </datalist>
+
+                     <div class="form-group">
+                        <label for="nd_reference_">Referencia o Instrucciones:</label>
+                        <input type="text" name="nd_reference_" id="nd_reference_" class="form-control">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="nd_phone_">Telefono de Contacto:</label>
+                        <input type="text" name="nd_phone_" id="nd_phone_" class="form-control">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="nd_day_">Dia de Entrega:</label>
+                        <input type="date" id="nd_day_" name="nd_day_" class="form-control" data-min="<%= Helper.date_to_input() %>" min="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+                     </div>
+
+                     <div class="form-group">
+                        <label for="nd_hour_">Hora de Entrega:</label>
+                        <input type="time" id="nd_hour_" name="nd_hour_" class="form-control">
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer">
+                  
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="button" id="save_not_delivered" class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+
 
 
       <%- include('../Layouts/Footer.ejs') %>
@@ -145,7 +227,7 @@
       sellers = {},
       prepared = {},
       on_screen = null;
-      transport = {};
+   transport = {};
 
    const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
    const charge_iframe = (url) => {
@@ -160,6 +242,7 @@
          document.querySelector("#total_trasnport").innerHTML = `${totals.transport} En ruta`;
          document.querySelector("#total_delivery_failed").innerHTML = `${totals.delivery_failed} Entregas Fallidas`;
       },
+
 
       showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {}),
       show_image = src => {
@@ -190,6 +273,17 @@
       providers = data.providers;
       prepared = data.prepared;
       transport = data.transport;
+
+
+      let content = ``;
+
+      let indexes = Object.keys(providers);
+      for (let index = 0; index < indexes.length; index++) {
+         content += `<option value="${indexes[index]}"> ${providers[indexes[index]]}</option>`;
+      }
+      
+      document.querySelector("#nd_delivery_provider").innerHTML = content;
+
 
       //pintar los totales
       update_totals();
@@ -293,7 +387,7 @@
    });
 
    socket.on('package_trasnport_success', data => {
-      let div = document.querySelector("#info_sale_"+data.id);
+      let div = document.querySelector("#info_sale_" + data.id);
       div.parentNode.removeChild(div);
       transport[data.id] = data;
       totals.transport += 1;
@@ -303,10 +397,10 @@
       update_totals();
    });
 
- 
+
 
    socket.on('pakage_delivered_success', data => {
-      let div = document.querySelector("#info_sale_"+data.id);
+      let div = document.querySelector("#info_sale_" + data.id);
       div.parentNode.removeChild(div);
 
       prepared[data.id] = null;
@@ -347,7 +441,6 @@
 </script>
 <!-- Manejo de las reservas -->
 <script>
-
    var delivery_failed_id = null;
    const show_reservas = () => {
       document.querySelector("#div_reservas").style.display = 'flex';
@@ -435,15 +528,24 @@
 
    const delivery_failed_process = (sale_id) => {
       delivery_failed_id = sale_id;
+      console.log(transport[sale_id]);
 
+      let reg = transport[sale_id];
 
+      //Establecer el Header
+      document.querySelector("#notdeliveredTittle").innerHTML = `${reg.client}`;
 
+      let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
+
+      //TOKEN
+
+      modalNotDelivered.toggle();
       //mostrar el modal
-      
+
    }
 
    const package_delivered = (sale) => {
-     socket.emit('pakage_delivered', sale)
+      socket.emit('pakage_delivered', sale)
    }
    const package_transport = (sale) => {
       socket.emit('package_trasnport', sale)
@@ -473,8 +575,8 @@
                               &nbsp;
                               <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
                            </h5>`;
-                           content += element.open == true ?  `<p class="text-success">Pedido Abierto</p>` :  `<p class="text-danger">Abriendo Pedido</p>`;
-                           content += `<div class="list-group">`;
+               content += element.open == true ? `<p class="text-success">Pedido Abierto</p>` : `<p class="text-danger">Abriendo Pedido</p>`;
+               content += `<div class="list-group">`;
                //recorrer los detalles de la venta
                element.details.forEach(detail => {
 
@@ -519,9 +621,9 @@
          keys.forEach(index => {
             element = prepared[index];
             if (element !== null) {
-               let badge  = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
-               if(element.sale.delivery_type == 'delivery'){
-                  badge  = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
+               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               if (element.sale.delivery_type == 'delivery') {
+                  badge = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
                }
 
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
@@ -568,7 +670,7 @@
          keys.forEach(index => {
             element = transport[index];
             if (element !== null) {
-               let badge  = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
                badge += `&nbsp;<span class="badge bg-danger" onclick="delivery_failed_process(${element.sale.id})">Entrega fallida</span>`;
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">
@@ -597,6 +699,82 @@
       }
    }
 
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#nd_div_resend").style.display = "none";
+
+      document.querySelector("#nd_option").addEventListener('change', e => {
+            document.querySelector("#nd_div_resend").style.display = e.target.value === "resend" ? 'block' : "none";
+      });
+
+
+
+      document.querySelector("#nd_delivery_type").addEventListener('change', e => {
+         document.querySelector("#nd_direction_").disabled = false;
+
+         if (e.target.value == 'delivery') {
+            document.querySelector("#nd_delivery_provider").disabled = false;
+            document.querySelector("#nd_delivery_amount").disabled = false;
+            document.querySelector("#nd_delivery_amount").value = 4.55;
+            document.querySelector("#nd_direction_").focus();
+         } else {
+            if (e.target.value == 'local') {
+               document.querySelector("#delivery_amount").disabled = true;
+               document.querySelector("#delivery_amount").value = 0.00;
+               document.querySelector("#nd_direction_").value = 'Retiro en Tienda';
+               document.querySelector("#nd_direction_").disabled = true;
+               document.querySelector("#nd_reference_").focus();
+            } else {
+               document.querySelector("#nd_delivery_amount").disabled = false;
+               document.querySelector("#nd_delivery_amount").value = 3.00;
+               document.querySelector("#nd_direction_").focus();
+            }
+
+            document.querySelector("#nd_delivery_provider").disabled = true;
+         }
+      });
+
+
+
+
+      document.querySelector('#save_not_delivered').addEventListener('click', e => {
+         if(document.querySelector("#nd_option").value == "resend"){
+            e.target.disabled = true;
+            socket.emit('nd_package_resend',delivery_failed_id );
+         }else{
+            let data = {
+               sale: delivery_failed_id,
+               delivery_type: document.querySelector("#nd_delivery_type").value,
+               delivery_provider: null,
+               direction: document.querySelector("#nd_direction_").value,
+               reference: document.querySelector("#nd_reference_").value,
+               phone: document.querySelector("#nd_phone_").value,
+               day: document.querySelector("#nd_day_").value,
+               time: document.querySelector("#nd_hour_").value,
+               delivery_amount: document.querySelector("#nd_delivery_amount").value,
+            }
+   
+            if (data.delivery_type == 'delivery') {
+               data.delivery_provider = document.querySelector("#nd_delivery_provider").value;
+            }
+   
+            if (data.direction.length < 5) {
+               return errorMessage('Coloque una Dirección válida');
+            } else if (data.phone.length < 8) {
+               return errorMessage('Coloque el teléfono de contacto');
+            } else if (data.day.length < 10) {
+               return errorMessage('Seleccione una fecha válida');
+            } else if (data.time.length < 5) {
+               return errorMessage('Seleccione una hora valida');
+            } else if (data.day < document.querySelector("#day_").dataset.min) {
+               return errorMessage('Seleccione una fecha válida');
+            }
+            e.target.disabled = true;
+            socket.emit('nd_package_resend', data);
+         }
+
+      });
+   });
 </script>
 
 </html>

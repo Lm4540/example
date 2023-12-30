@@ -82,9 +82,10 @@
                <table class="table table-sm table-bordered table-hover">
                   <thead>
                      <tr>
-                        <th style="width: 180px;">Item</th>
-                        <th>imagen</th>
-                        <th>cantidad</th>
+                        <th>ID</th>
+                        <th style="width: 180px;">IMG</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
                         <th>Precio</th>
                         <th>Opciones</th>
                      </tr>
@@ -93,6 +94,7 @@
 
                      <% details.forEach(detail => { %>
                      <tr>
+                        <td class="text-center"><%= detail.id %></td>
                         <td>
                            <img src="<%= detail.image %>" alt="Imagen del Producto" width="150px">
                         </td>

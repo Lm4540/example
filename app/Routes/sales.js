@@ -16,6 +16,8 @@ router.get('/clients', ClientController.clientsToDataTable);
 router.get('/client/create', ClientController.getCreationView);
 router.post('/client/create', ClientController.createClient);
 router.post('/client/create_payment', SaleController.createPayment);
+router.post('/client/create_payment2', SaleController.createPayment2);
+
 router.post('/client/re_payment', SaleController.relacionar_pago);
 
 router.post('/client/update', ClientController.updateClient);
@@ -34,6 +36,11 @@ router.post('/updateDetail', SaleController.updateSaleDetail);
 router.get('/sale_in_room', SaleController.saleInRoomView);
 router.get('/view/:id(\\d+)', SaleController.viewSale);
 router.get('/inProccess', SaleController.inProccess);
+
+router.get('/seller/history', SaleController.seller_history);
+router.get('/seller/history/details', SaleController.seller_history_details);
+
+
 router.get('/history', SaleController.history);
 router.get('/history_moves', SaleController.historyData);
 router.get('/invoice_serie', SaleController.invoice_serie);

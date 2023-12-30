@@ -38,12 +38,477 @@ const status = {
     'delivery_failed': "Entrega Fallida",
     'to_resend': "Marcado para reenvio",
     'closed': 'Cerrado'
+};
+
+
+const relacionar_pago2 = async (pago) => {
+    try {
+        //buscar el pago
+        let registered_payment = await SalePayment.findByPk(pago);
+        //buscar el cliente
+        let client = await Client.findByPk(registered_payment.client);
+        // client.payments = (client.payments != null ? client.payments + registered_payment.amount : registered_payment.amount);
+
+        return await sequelize.transaction(async (t) => {
+            // await client.save({ transaction: t });
+
+            let sales = await Sale.findAll({
+                where: {
+                    client: client.id,
+                    _status: {
+                        [Op.notIn]: ['process', 'collected', 'revoked'],
+                    },
+                    collected: sequelize.literal('collected < (balance + delivery_amount)')
+                }
+            });
+            if (sales.length > 0) {
+
+
+                let valor_restante = registered_payment.amount;
+                let ids_registro = [];
+                let len = sales.length;
+
+                for (let index = 0; index < len; index++) {
+                    let sale = sales[index];
+                    if (valor_restante > 0) {
+                        let _collected = Number.parseFloat(sale.collected);
+                        _collected = isNaN(_collected) ? 0.00 : _collected;
+                        let sale_value = (Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
+                        console.log('array de pagos', sale.payments);
+
+
+                        if (sale_value > valor_restante) {
+
+                            sale.collected = (_collected + valor_restante);
+
+                            if (sale.payments.length > 0) {
+                                sale.payments.push({ "id": registered_payment.id, "amount": valor_restante })
+                            } else {
+                                sale.payments = [{ "id": registered_payment.id, "amount": valor_restante },];
+                            }
+
+                            if (sale.balance + sale.delivery_amount - sale.collected == 0) {
+                                sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+                            }
+
+
+                            await sale.save({ transaction: t });
+                            ids_registro.push({ "id": sale.id, "amount": valor_restante });
+                            valor_restante = 0;
+                        } else {
+                            sale.collected = (_collected + sale_value);
+                            if (sale.payments.length > 0) {
+                                sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
+                            } else {
+                                sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
+                            }
+
+                            sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+
+                            await sale.save({ transaction: t });
+                            ids_registro.push({ "id": sale.id, "amount": sale_value });
+                            valor_restante -= sale_value;
+                        }
+                    } else {
+                        break;
+                    }
+
+                }
+
+                registered_payment.sales = ids_registro;
+                registered_payment.asigned_amount = registered_payment.amount - valor_restante;
+                await registered_payment.save({ transaction: t });
+
+
+
+                return true;
+            }
+
+            return false;
+        });
+
+
+
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
+
+const sale_status_verification = async (seller) => {
+    //relacionar los pagos
+
+    let payments = await sequelize.query('SELECT * FROM `crm_sale_payment` WHERE amount > asigned_amount', {
+        type: QueryTypes.SELECT,
+    });
+
+
+    let len = payments.length;
+    for (let index = 0; index < len; index++) {
+        await relacionar_pago2(payments[index].id);
+    }
+
+
+    //verificar las ventas cuyo estado e entregado pero su costo es cero
+
+    let sales = await Sale.findAll({
+        where: {
+            _status: 'delivered',
+            cost : 0.00
+        }
+    });
+
+    for (let index = 0; index < sales.length; index++) {
+        let sale = sales[index];
+        let details = await SaleDetail.findAll({
+            where: {
+                sale: sale.id,
+            }
+        });
+
+
+        let suma = 0.00;
+        for (let b = 0; b < details.length; b++) {
+            let detail = details[b];
+            let c = 0.00;
+            if(detail.product_cost < 0.01){
+                //Buscar el costo del product_cost
+                let product = await Product.findByPk(detail.product);
+                detail.product_cost = product.cost;
+                detail.save();
+                c = product.cost;
+                //
+            }else{
+                c = detail.product_cost;
+            }
+            suma = Helper.fix_number(suma + (c * detail.cant));
+        }
+        sale.cost = suma;
+        sale.save();
+    }
+
+
+    //verificar el estado de las ventas
+    sales = await Sale.findAll({
+        where: {
+            seller: seller,
+            in_report: 0,
+            revoked_at: { [Op.is]: null, },
+            _status: "delivered"
+        }
+    });
+
+    len = sales.length;
+    for (let index = 0; index < len; index++) {
+        if (sales[index]._status !== 'collected') {
+            let saldo = Helper.fix_number(Helper.fix_number(sales[index].balance) + Helper.fix_number(sales[index].delivery_amount));
+            if (saldo == Helper.fix_number(sales[index].collected)) {
+                sales[index]._status = 'collected';
+                await sales[index].save();
+            }
+        }
+
+    }
+
+    return true;
 }
 
 
 
-
 const SaleController = {
+
+    seller_history: async (req, res) => {
+        let sucursals = await Sucursal.findAll({ raw: true });
+
+        for (let index = 0; index < sucursals.length; index++) {
+            sucursals[index].sellers = await Employee.findAll({
+                where: {
+                    isSeller: true,
+                    sucursal: sucursals[index].id
+                }
+            });
+
+        }
+        return res.render('CRM/Sales/SellerReport', { pageTitle: 'Reporte de Ventas por Vendedor', sucursals });
+    },
+
+    //verificar estado de las ventas
+
+
+
+    seller_history_details: async (req, res) => {
+
+        let seller = req.query.seller;
+        let opt = req.query.opt;
+        let date = req.query.date + ' 23:59:59';
+
+        //buscar el vendedor
+        seller = await Employee.findByPk(seller);
+        if (seller == null) {
+            return res.json({
+                status: 'errorMessage', message: "Employee not Found!"
+            });
+        }
+
+        let response = await sale_status_verification(seller.id);
+        // let client = await Client.findAll({
+        //     where: {
+
+        //     }
+        // });
+
+        //buscar los detalles
+        let where = opt == "calculo" ? {
+            seller: seller.id,
+            in_report: 0,
+            revoked_at: { [Op.is]: null, },
+            _status: 'collected',
+        } : {
+            seller: seller.id,
+            createdAt: { [Op.lte]: date },
+            revoked_at: { [Op.is]: null, },
+            _status: 'collected',
+        }
+
+        let sales = await Sale.findAll({
+            where: where
+        });
+
+        let tmp = await Sale.findAll({ where, attributes: ['client'], raw: true });
+        let clients = [];
+
+        tmp.forEach(client => clients.push(client.client));
+        tmp = await Client.findAll({
+            where: {
+                id: {
+                    [Op.in]: clients
+                }
+            }
+        });
+        clients = {};
+        tmp.forEach(client => clients[client.id] = client);
+        return res.json({ sales, clients });
+    },
+
+
+    revoke_invoice_view: async (req, res) => {
+
+    },
+
+    revoke_invoice: async (req, res) => {
+        //Verificar si se sustituira por una nueva o solo se anulara
+
+        //obetenr lña nueva serie
+
+        //obtener el nuevo correlativo
+
+
+        //crear el registro
+
+        //buscar la venta
+
+
+        let sale = await Sale.findByPk(req.body.sale);
+        let tmp = await SaleDetail.findAll({
+            where: {
+                sale: sale.id
+            }
+        });
+
+        let dt = [];
+        let subt = 0.00, exento = 0.00, no_sujeto = 0.00;
+        tmp.forEach(ele => {
+            let price = sale.invoice_type == "fcf" ? ele.price : Helper.fix_number(ele.price / 1.13);
+            let subtt = 0.00;
+            let ext = 0.00;
+            let nosuje = 0.00;
+
+            switch (ele.invoice_column) {
+                case "gravadas":
+                    subtt = Helper.fix_number(ele.cant * price)
+                    break;
+
+                case "gravadas":
+                    ext = Helper.fix_number(ele.cant * price)
+                    break;
+
+                case "gravadas":
+                    nosuje = Helper.fix_number(ele.cant * price)
+                    break;
+
+                default:
+                    break;
+            }
+
+            subt = Helper.fix_number(subt + subtt);
+            exento = Helper.fix_number(exento + ext);
+            no_sujeto = Helper.fix_number(no_sujeto + nosuje);
+
+            dt.push({
+                id: ele.id,
+                cant: ele.cant,
+                price,
+                no_sujetas: nosuje,
+                exentas: ext,
+                gravadas: subtt,
+            });
+        });
+
+        let old_invoice = {
+            invoice_number: sale.invoice_number,
+            invoice_serie: sale.invoce_serie,
+            invoice_date: sale.invoice_date,
+            sale: sale.id,
+            sucursal: sale.sucursal,
+            type: sale.invoice_type,
+            iva: subt * 0.13,
+            subtotal: subt,
+            retention: sale.invoice_retention ? Helper.fix_number(subt * 0.01) : 0.00,
+            perception: 0.00,
+            exento: exento,
+            no_sujeto: no_sujeto,
+            isr: sale.invoice_isr ? Helper.fix_number(subt * 0.1) : 0.00,
+            revoked_at: new Date(),
+            revoked_reason: req.body.reason,
+            version: 1,
+            details: dt,
+            client: sale.client
+        }
+    },
+
+    createPayment2: async (req, res) => {
+        let data = req.body;
+        let client = await Client.findByPk(data.client);
+        if (client) {
+
+            //verificar los datos
+            if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Proporcione el Nombre del Banco y el numero de referencia de la Transacción'
+                });
+            } else if (isNaN(data.amount) || data.amount < 0.01) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Monto no valido'
+                });
+
+            } else {
+                let sucursal = await Sucursal.findByPk(data.sucursal);
+                if (sucursal == null) {
+                    return res.json({
+                        status: 'errorMessage',
+                        message: 'Sucursal no Encontrada'
+                    });
+                }
+
+                try {
+                    return await sequelize.transaction(async (t) => {
+                        let registered_payment = null;
+
+                        data.amount = Number.parseFloat(data.amount);
+                        //token
+                        if (data.method == 'money') {
+                            //generar el Ingreso a la caja Chica
+                            let _move = await PettyCashMoves.create({
+                                amount: data.amount,
+                                last_amount: sucursal.balance,
+                                concept: `Ingreso por Anticipo Cliente ${client.name} `,
+                                petty_cash: sucursal.id,
+                                type: 'payment',
+                                isin: true,
+                                createdBy: req.session.userSession.shortName,
+                                asigned_to: client.name,
+                                _number: 0,
+                            }, { transaction: t });
+
+                            registered_payment = await SalePayment.create({
+                                client: client.id,
+                                sales: [],
+                                type: 'money',
+                                amount: data.amount,
+                                asigned_amount: 0.00,
+                                createdBy: req.session.userSession.shortName,
+                            }, { transaction: t });
+
+                            sucursal.balance += data.amount;
+                            await sucursal.save({ transaction: t });
+                        } else {
+                            registered_payment = await SalePayment.create({
+                                client: client.id,
+                                sales: [],
+                                type: data.method,
+                                amount: data.amount,
+                                asigned_amount: 0.00,
+                                bank: data.bank,
+                                reference: data.reference,
+                                createdBy: req.session.userSession.shortName,
+                            }, { transaction: t });
+
+
+                        }
+
+                        client.payments += registered_payment.amount;
+                        await client.save({ transaction: t });
+
+                        //buscar la venta
+                        let sale = await Sale.findByPk(data.sale);
+                        let _collected = Number.parseFloat(sale.collected);
+                        _collected = isNaN(_collected) ? 0.00 : _collected;
+                        let sale_value = (Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
+                        let ids_registro = [];
+                        if (sale_value > data.amount) {
+
+                            sale.collected = (_collected + data.amount);
+
+                            if (sale.payments.length > 0) {
+                                sale.payments.push({ "id": registered_payment.id, "amount": data.amount })
+                            } else {
+                                sale.payments = [{ "id": registered_payment.id, "amount": data.amount },];
+                            }
+
+                            if (sale.balance + sale.delivery_amount - sale.collected == 0) {
+                                sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+                            }
+                        } else {
+                            sale.collected = (_collected + sale_value);
+                            if (sale.payments.length > 0) {
+                                sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
+                            } else {
+                                sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
+                            }
+
+                            sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+
+                        }
+                        await sale.save({ transaction: t });
+                        ids_registro.push({ "id": sale.id, "amount": data.amount });
+
+                        registered_payment.sales = ids_registro;
+                        registered_payment.asigned_amount = registered_payment.amount;
+                        await registered_payment.save({ transaction: t });
+
+                        return res.json({
+                            status: 'success',
+                            message: 'pago registrado',
+                            data: registered_payment.id,
+                        });
+                    });
+
+                } catch (error) {
+                    console.log(error);
+                    return res.json({
+                        status: 'errorMessage',
+                        message: error.message,
+                    });
+                }
+            }
+
+        }
+
+        return Helper.notFound(req, res, 'Client not Found!')
+    },
 
     createPayment: async (req, res) => {
         let data = req.body;
@@ -413,8 +878,6 @@ const SaleController = {
         let sucursal = req.query.sucursal;
 
         //buscar las compras
-
-
         //
 
 
@@ -935,15 +1398,15 @@ const SaleController = {
     viewSale: async (req, res) => {
         //buscar la venta
         let sale = await Sale.findByPk(req.params.id)
-        if(sale){
-            
+        if (sale) {
+
             //buscar el Cliente
             let cliente = await Client.findByPk(sale.client);
-            
-            if(cliente){
+
+            if (cliente) {
                 //Buscar el empleado
                 let seller = await Employee.findByPk(sale.seller);
-                if(seller){
+                if (seller) {
                     let sucursal = await Sucursal.findByPk(seller.sucursal);
                     //buscar los detalles
                     let details = await SaleDetail.findAll({
@@ -953,11 +1416,11 @@ const SaleController = {
                     });
 
 
-                    return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:'+sale.id, sucursal, sale, details, seller, cliente  });
+                    return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, details, seller, cliente });
                 }
-                
+
             }
-            
+
         }
 
     },
@@ -1059,7 +1522,7 @@ const SaleController = {
                         existe.cant += data.cant;
                         await existe.save({ transaction: t })
                     } else {
-                        detail.description = product.name + ' SKU '+product.sku;
+                        detail.description = product.name + ' SKU ' + product.sku;
                         detail.product = product.id;
                         detail.image = product.raw_image_name;
                     }
@@ -1466,7 +1929,7 @@ const SaleController = {
                 }
             }
 
-            
+
 
             try {
                 return await sequelize.transaction(async (t) => {
@@ -1484,13 +1947,13 @@ const SaleController = {
                         invoice_type: serie.type,
                         invoice_number: data.invoice_number,
                         invoice_data: data.invoice_data,
-                        invoice_date: new Date(data.invoice_data.invoice_date+'T06:00:00'),
-                        invoice_resume : data.invoice_resume.length > 0 ?  data.invoice_resume : null,
-                        invoice_retention : data.invoice_retention == true,
-                        invoice_isr : data.invoice_isr == true,
+                        invoice_date: new Date(data.invoice_data.invoice_date + 'T06:00:00'),
+                        invoice_resume: data.invoice_resume.length > 0 ? data.invoice_resume : null,
+                        invoice_retention: data.invoice_retention == true,
+                        invoice_isr: data.invoice_isr == true,
                     }, { transaction: t });
 
-        
+
 
                     serie.used++;
                     await serie.save({ transaction: t });
@@ -1703,6 +2166,147 @@ const SaleController = {
                 console.error(error);
                 return { status: 'error', message: error.message }
             }
+        }
+    },
+
+    socket_not_delivery: async (data) => {
+        //obtener el detalle
+        let sale = await Sale.findByPk(data.sale).catch(err => next(err));
+
+        let detail = await SaleDetail.findAll({
+            where: {
+                sale: data.sale
+            }
+        });
+        if (detail && sale) {
+            try {
+                let count = await SaleDetail.count({ where: { sale: sale.id } }) - 1;
+
+                return await sequelize.transaction(async (t) => {
+
+                    let old_amount = Number.parseInt(detail.cant) * Number.parseFloat(detail.price);
+
+                    data.price = data.price !== undefined ? Number.parseFloat(data.price) : 0;
+                    data.cant = Number.parseInt(data.cant > detail.cant ? detail.cant : data.cant);
+
+                    if (detail.product == null || detail.reserved == 0) {
+                        if (data.cant == detail.cant) {
+                            //actualizar el monto de la venta
+                            sale.balance = Number.parseFloat(sale.balance) - old_amount;
+                            //detruir el detalle
+                            let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', detail.img);
+                            await detail.destroy({ transaction: t });
+                            detail = null;
+                            //eliminar la imagen temporal
+                            fs.unlink(location, (err) => { if (err) { console.log(err); } else { console.log('image deleted'); } });
+                        } else {
+                            // reducir el detalle
+                            detail.cant -= data.cant;
+                            await detail.save();
+                            sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
+                        }
+                    } else {
+                        //buscar el producto
+
+                        let product = await Product.findByPk(detail.product);
+
+                        //buscar las reservas que esten relacionadas con el stock del producto
+                        let reserves = await StockReserve.findAll({
+                            where: {
+                                [Op.and]: {
+                                    saleId: detail.id,
+                                    product: detail.product
+                                }
+                            },
+                            order: [['id', 'DESC']]
+                            //por la creacion se tiene como prioridad la sucursal del empleado que registra, para la eliminacion se tendra como prioridad las otras sucursales
+                        });
+                        //buscar los stock que esten relacionados con el producto, se puede optimizar
+                        let tmp = await Stock.findAll({ where: { product: detail.product }, order: [['id', 'DESC']] });
+                        let stocks = {};
+                        tmp.forEach(element => stocks[element.sucursal] = element);
+                        //Si hay producto revisado no se puede eliminar por tanto cambiaremos el valor maximo para tomar el valor de lo que no esta revisado
+                        if (detail.ready > 0) {
+                            //significa que hay parte ya revisada, la cual no se puede quitar asi por asi
+                            let revertible = detail.cant - detail.ready;
+                            if (data.cant > revertible) {
+                                let sol = data.cant - revertible;
+                                data.cant = revertible;
+                                //realizar solicitud de reversion si se quiere hacer en automatico
+                            }
+
+                        }
+                        if (data.cant > 0) {
+                            //si la cantidad es igual a la cantidad del detalle vamos a eliminarlo
+                            if (data.cant == detail.cant) {
+                                //buscar las reservas y destruirlas
+                                for (let index = 0; index < reserves.length; index++) {
+                                    let reserve = reserves[index];
+                                    let stock = stocks[reserve.sucursal];
+
+                                    stock.reserved -= reserve.cant;
+                                    await stock.save({ transaction: t });
+                                    await reserve.destroy({ transaction: t });
+                                }
+
+                                await detail.destroy({ transaction: t });
+                                detail = null;
+                                sale.balance = Number.parseFloat(sale.balance) - old_amount;
+                                product.reserved -= data.cant;
+                                await product.save({ transaction: t });
+                            } else {
+
+                                //si no a reducirlo
+                                let faltante = data.cant;
+
+                                for (let index = 0; index < reserves.length; index++) {
+                                    if (faltante > 0) {
+                                        let reserve = reserves[index];
+                                        let stock = stocks[reserve.sucursal];
+
+                                        if (faltante > reserve.cant) {
+                                            //destruir la reserva
+                                            stock.reserved -= reserve.cant;
+                                            await stock.save({ transaction: t });
+                                            await reserve.destroy({ transaction: t });
+                                        } else {
+                                            //reducir la reserva
+                                            reserve.cant -= faltante;
+                                            stock.reserved -= faltante;
+                                            await stock.save({ transaction: t });
+                                            await reserve.save({ transaction: t });
+                                        }
+                                    }
+                                }
+                                detail.cant -= data.cant;
+                                detail.reserved -= data.cant;
+                                product.reserved -= data.cant;
+                                await product.save({ transaction: t });
+                                await detail.save({ transaction: t });
+                                sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
+                            }
+                        }
+                    }
+
+
+                    let _sale_id = sale.id;
+
+                    if (count < 1 && detail == null) {
+                        await sale.destroy({ transaction: t });
+                        sale = null;
+                    } else {
+                        sale = await sale.save({ transaction: t });
+                    }
+                    return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id };
+
+                });
+            } catch (error) {
+                console.error(error);
+                return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
+            }
+
+        } else {
+            return { status: 'errorMessage', message: 'Sale or details not Found' };
         }
     },
 

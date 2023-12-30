@@ -538,6 +538,14 @@ function date_to_spanish(date) {
     return days[date.getDay()] + ' ' + date.getDate() + ' de ' + months[date.getMonth()] + ' de ' + date.getFullYear();
 }
 
+const fix_number = (number, redondeo = 2) => {
+    let decimalNumbers = number.toString();
+    decimalNumbers = decimalNumbers.substr(decimalNumbers.indexOf(".") + 1, decimalNumbers.length - 1);
+    let decimalNumbersLength = decimalNumbers.length;
+    let fixNumber = 10 ** decimalNumbersLength;
+    return Number.parseFloat((Math.round(fixNumber * number) / fixNumber).toFixed(redondeo));
+}
+
 /**
  * Ajuste decimal de un número.
  *

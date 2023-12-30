@@ -2,89 +2,315 @@
 <html lang="en">
 
 <head>
-  <%- include('../Layouts/Head.ejs') %>
-  <style>
-    .icon-card i{
-      font-size: 4rem;
-      padding-top: 20%;
-    }
+   <%- include('../Layouts/Head.ejs') %>
+   <style>
+      .icon-card i {
+         font-size: 4rem;
+         padding-top: 20%;
+      }
 
-    .icon-card p {
-      padding-top: 60%;
-      font-weight: 550;
-      font-size: 1rem;
-      margin-bottom: 15px;;
-    }
-  </style>
+      .icon-card p {
+         padding-top: 60%;
+         font-weight: 550;
+         font-size: 1rem;
+         margin-bottom: 15px;
+         ;
+      }
+   </style>
 </head>
 
 <body class="<%= darkMode %>">
-  <%- include('../Layouts/SideBar.ejs') %>
-  <div id="main">
-    <%- include('../Layouts/NavBar.ejs') %>
-    <div class="main-content container-fluid">
-      <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10 col-12">
-          <h2 class="text-center">Ventas / CRM</h2>
-          
-          <div class="row justify-content-center">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10 col-12">
+               <h2 class="text-center">Ventas / CRM</h2>
 
-            <a class="card icon-card text-center" href="/sales/client">
-                <i class="fas fa-user-friends"></i>
-              <p>Clientes</p>
-            </a>
+               <div class="row justify-content-center">
 
-            <a class="card icon-card text-center" href="/sales/client/create">
-                <i class="fas fa-user-plus"></i>
-              <p>Nuevo Cliente</p>
-            </a>
+                  <a class="card icon-card text-center" href="/sales/client">
+                     <i class="fas fa-user-friends"></i>
+                     <p>Clientes</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/history">
-                <i class="fas fa-calendar-alt"></i>
-              <p>Historial de ventas</p>
-            </a>
+                  <a class="card icon-card text-center" href="/sales/client/create">
+                     <i class="fas fa-user-plus"></i>
+                     <p>Nuevo Cliente</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/inProccess">
-                <i class="far fa-file-check"></i>
-              <p>Ventas en Proceso</p>
-            </a>
+                  <a class="card icon-card text-center" href="/sales/history">
+                     <i class="fas fa-calendar-alt"></i>
+                     <p>Historial de ventas</p>
+                  </a>
 
-            
+                  <a class="card icon-card text-center" href="/sales/seller/history">
+                     <i class="fas fa-calendar-alt"></i>
+                     <p>Reporte de Ventas por Vendedor</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/sellers">
-                <i class="fas fa-users"></i>
-              <p>Vendedores</p>
-            </a>
-
-            <a class="card icon-card text-center" href="/sales/sale_in_room">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <p>Factura Rapida</p>
-            </a>
-
-            <a class="card icon-card text-center" href="/sales/invoices">
-                <i class="fas fa-file-invoice"></i>
-              <p>Facturas Registradas</p>
-            </a>
+                  <a class="card icon-card text-center" href="/sales/inProccess">
+                     <i class="far fa-file-check"></i>
+                     <p>Ventas en Proceso</p>
+                  </a>
 
 
-            <a class="card icon-card text-center" href="/sales/invoice_serie">
-              <i class="fas fa-file-invoice"></i>
-            <p>Numeros de Serie</p>
-          </a>
 
-            <a class="card icon-card text-center" href="/sales/daily_report">
-                <i class="far fa-file-spreadsheet"></i>
-              <p>Reporte Diario de Ventas</p>
-            </a>
+                  <a class="card icon-card text-center" href="/sales/sellers">
+                     <i class="fas fa-users"></i>
+                     <p>Vendedores</p>
+                  </a>
 
-            
-          </div>
-        </div>
+                  <a class="card icon-card text-center" href="/sales/sale_in_room">
+                     <i class="fas fa-file-invoice-dollar"></i>
+                     <p>Factura Rapida</p>
+                  </a>
+
+                  <a class="card icon-card text-center" href="/sales/invoices">
+                     <i class="fas fa-file-invoice"></i>
+                     <p>Facturas Registradas</p>
+                  </a>
+
+
+                  <a class="card icon-card text-center" href="/sales/invoice_serie">
+                     <i class="fas fa-file-invoice"></i>
+                     <p>Numeros de Serie</p>
+                  </a>
+
+                  <!-- <a class="card icon-card text-center" href="/sales/daily_report">
+                     <i class="far fa-file-spreadsheet"></i>
+                     <p>Reporte Diario de Ventas</p>
+                  </a> -->
+
+                  <!-- <a class="card icon-card text-center" href="javascript:void(0)" onclick="revoke_invoice()">
+                     <i class="fas fa-file-excel"></i>
+                     <p>Anular Factura</p>
+                  </a> -->
+
+
+               </div>
+            </div>
+         </div>
       </div>
-    </div>
-    <%- include('../Layouts/Footer.ejs') %>
-  </div>
+
+      <div class="modal fade" id="addInvoice" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_type">Tipo de Documento</label>
+                           <select name="invoice_type" id="invoice_type" class="form-control">
+
+                           </select>
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_number">Numero del Documento</label>
+                           <input type="number" class="form-control" step="1" id="invoice_number">
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_name">Nombre en la factura</label>
+                     <input type="text" class="form-control" name="invoice_name" id="invoice_name">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_direction">Direccion</label>
+                     <input type="text" class="form-control" name="invoice_direction" id="invoice_direction">
+                  </div>
+
+                  <div class="form-group">
+                     <label for="invoice_giro">Giro</label>
+                     <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
+                  </div>
+
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nit">NIT/DUI</label>
+                           <input type="text" class="form-control" name="invoice_nit" id="invoice_nit">
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nrc">NRC</label>
+                           <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
+                           <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+                           <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
+                        </div>
+                     </div>
+                  </div>
+                  <div class="form-group">
+                     <label for="invoice_date">Fecha de La Factura</label>
+                     <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
+                  </div>
+                  <div class="form-group">
+                     <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+                     <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
+                  </div>
+
+
+                  <div class="form-group">
+                     <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+                     <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
+                  </div>
+
+                  <div class="form-check form-switch">
+                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
+                     <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+                  </div>
+
+                  <br>
+                  <div class="form-check form-switch">
+                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
+                     <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
+                  </div>
+               </div>
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      <div class="modal fade" id="revokeInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+               </div>
+               <div class="modal-body">
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="revoke_invoice_type">Tipo de Documento</label>
+                           <select name="revoke_invoice_type" id="revoke_invoice_type" class="form-control">
+
+                           </select>
+                        </div>
+                     </div>
+                     <div class="col">
+                        <div class="form-group">
+                           <label for="revoke_invoice_number">Numero del Documento</label>
+                           <input type="number" class="form-control" step="1" id="revoke_invoice_number">
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="form-group">
+                     <label for="revoke_operation">Operacion a Realizar</label>
+                     <select class="form-control" name="revoke_operation" id="revoke_operation">
+                        <option value="1">Solo Anular</option>
+                        <option value="2">Sustituir por otro correlativo</option>
+                     </select>
+                  </div>
+
+               </div>
+
+               <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button type="button" class="btn btn-primary" id="revokeButton">Procesar</button>
+                  </div>
+               </div>
+
+
+            </div>
+         </div>
+      </div>
+
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
 
 </body><%- include('../Layouts/Scripts.ejs') %>
+<script>
+   const NewInvoiceModal = new bootstrap.Modal(document.getElementById('addInvoice'), {
+         keyboard: true
+      }),
+      RevokeInvoiceModal = new bootstrap.Modal(document.getElementById('revokeInvoiceModal'), {
+         keyboard: true
+      });
+   var series = null, revoke_data = null;
+   const s_options = {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+         'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+   };
+
+   const revoke_invoice = async () => {
+      if(series === null){
+         series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+         let content = '';
+         let llaves = Object.keys(series);
+         for (let index = 0; index < llaves.length; index++) {
+            let _serie = series[llaves[index]];
+            content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+         }
+         document.querySelector("#revoke_invoice_type").innerHTML = content;
+         document.querySelector("#invoice_type").innerHTML = content;
+      }
+
+      RevokeInvoiceModal.toggle();
+   }
+
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#revokeButton").addEventListener('click', e => {
+         revoke_data = {
+            revoke_serie: document.querySelector("#revoke_invoice_type").value,
+            revoke_number: document.querySelector("#revoke_invoice_number").value,
+            option: document.querySelector("#revoke_operation").value,
+         }
+         
+
+         if(revoke_data.option == "2"){
+            NewInvoiceModal.toggle();
+            RevokeInvoiceModal.toggle();
+         }else{
+            //Enviar al Servidor
+         }
+
+
+
+   
+   
+         
+
+      });
+   })
+</script>
 
 </html>

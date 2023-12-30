@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style>
+      .botonF1 {
+         cursor: pointer;
+         z-index: 1050;
+         width: 60px;
+         height: 60px;
+         border-radius: 100%;
+         background: #568add !important;
+         right: 0;
+         bottom: 0;
+         display: scroll;
+         position: fixed;
+         margin-right: 2rem;
+         margin-bottom: 2rem;
+         border: none;
+         outline: none;
+         color: #FFF;
+         font-size: 36px;
+         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
+         transition: .3s
+      }
+
+      .botonF1:disabled,
+      .botonF1[disabled] {
+         border: 1px solid #999999 !important;
+         background-color: #cccccc !important;
+         color: #666666 !important;
+         cursor: not-allowed;
+      }
+
+      .botonF1:hover {
+         transform: scale(1.1)
+      }
+
+      .botonF1 i {
+         padding-left: 4px;
+         font-size: 100%;
+         color: white;
+      }
+
+      .product_item .card,
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item {
+         font-size: 110%;
+         min-height: 150px;
+      }
+
+      .product_item img {
+         border-radius: 1.5em !important;
+      }
+
+      .product_item p {
+         margin-bottom: .2rem;
+      }
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <h3 class="text-center mb-4">Reporte de Ventas por vendedor</h3>
+         <div class="row justify-content-center">
+
+            <div class="col">
+               <div class="form-group">
+                  <label for="seller">Elije un Vendedor</label>
+                  <select name="seller" id="seller" class="form-control">
+                     <% sucursals.forEach(sucursal => { %>
+                     <optgroup label="<%= sucursal.name %>">
+                        <% sucursal.sellers.forEach(seller => { %>
+                        <option value="<%=seller.id%>"><%=seller.name%></option>
+                        <% }) %>
+                     </optgroup>
+                     <% }) %>
+                  </select>
+
+               </div>
+            </div>
+
+            <div class="col">
+               <div class="form-group">
+                  <label for="calc_type">Tipo de calculo</label>
+                  <select name="calc_type" id="calc_type" class="form-control">
+                     <option value="calculo">Calculo del Mes</option>
+                     <option value="history">Datos Historicos</option>
+                  </select>
+
+               </div>
+            </div>
+
+            <div class="col">
+               <div class="form-group">
+                  <label for="seller">Fecha de Consulta</label>
+                  <input type="date" class="form-control" id="_date" value="<%= Helper.date_to_input() %>">
+
+               </div>
+            </div>
+
+            <div class="col">
+               <button class="btn btn-success mt-4" onclick="calc_data()">Buscar</button>
+            </div>
+
+
+
+         </div>
+
+         <div id="attaced_content" class="mt-5 table-responsive">
+            
+
+         </div>
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+   const calc_data = async () => {
+      document.querySelector("#attaced_content").innerHTML = `<div class="text-center">
+                <div class="spinner-grow text-danger" role="status" style="width: 150px; height: 150px;">
+                    <span class="visually-hidden"></span>
+                </div>
+                <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
+            </div>`;
+
+      let seller = document.querySelector("#seller").value;
+      let opt = document.querySelector("#calc_type").value;
+      let date = document.querySelector("#_date").value;
+      let url = `/sales/seller/history/details?seller=${seller}&opt=${opt}&date=${encodeURIComponent(date)}`;
+
+      console.log(url);
+      let data = await fetch(url).then(data => data.json());
+
+      let content = ` <table class="table table-sm table-hover table-bordered">
+               <thead>
+                  <tr>
+                     <th>ID</th>
+                     <th>Cliente</th>
+                     <th>Fecha de apertura</th>
+                     <th>Fecha de Entrega</th>
+                     <th>Monto de Envio</th>
+                     <th>Monto Vendido</th>
+                     <th>Costo de la Venta</th>
+                     <th>Ganancia</th>
+                  </tr>
+               </thead>
+               <tbody>`;
+      let delivery = 0.00, balance = 0.00, cost = 0.00;
+      data.sales.forEach(sale => {
+         delivery = fix_number(delivery + sale.delivery_amount);
+         balance = fix_number(balance + sale.balance);
+         cost = fix_number(cost + sale.cost);
+         content += `<tr>
+                        <td><a href="/sales/view/${sale.id}" target="_blank">${sale.id}</a></td>
+                        <td>${data.clients[sale.client].name}</td>
+                        <td>${format_date(sale.createdAt, false)}</td>
+                        <td>${format_date(sale.delivery_date != null ? sale.delivery_date : sale.createdAt , false)}</td>
+                        <td>$${money_format(sale.delivery_amount)}</td>
+                        <td>$${money_format(sale.balance)}</td>
+                        <td>$${money_format(sale.cost)}</td>
+                        <td>$${money_format(sale.balance - sale.cost)}</td>
+
+                     </tr>`;
+      });
+
+      content += `<tr>
+                        <td class="text-right" colspan="4">TOTALES</td>
+                        <td>$${money_format(delivery)}</td>
+                        <td>$${money_format(balance)}</td>
+                        <td>$${money_format(cost)}</td>
+                        <td>$${money_format(balance - cost)}</td>
+
+                     </tr>`;
+
+
+      content += `</tbody>
+                  </table><div class="bg-danger text-white pt-1 pb-2 pl-5 pr-5 round">
+               <p class="mt-5">NOTA: El monto del envio se muestra en el cuadro pero no es tomado en cuenta para la determinacion de la ganancia por venta</p>
+            </div>`;
+
+      document.querySelector("#attaced_content").innerHTML = content;
+      // console.log(data);
+
+   }
+</script>
+
+</html>
