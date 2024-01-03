@@ -144,6 +144,11 @@
                      </select>
                   </div>
 
+                  <div class="form-group">
+                     <label for="nd_reason">Razon o Justificante</label>
+                     <textarea name="nd_reason" class="form-control" id="nd_reason"></textarea>
+                  </div>
+
                   <div id="nd_div_resend">
                      <div class="form-group">
                         <label for="nd_delivery_type">Tipo de Entrega:</label>
@@ -163,7 +168,8 @@
 
                      <div class="form-group">
                         <label for="nd_delivery_amount">Costo del envio:</label>
-                        <input type="number" step="0.01" min="0" value="0" id="nd_delivery_amount" class="form-control" disabled>
+                        <input type="number" step="0.01" min="0" value="0" id="nd_delivery_amount" class="form-control">
+                        <p class="text-danger">NOTA: Si cobrara extra por el renvio sume las dos cantidades y coloquela aca <br> Si no cobrara por el reenvio, coloque solo en monto de envio original</p>
                      </div>
                      <div class="form-group">
                         <label for="nd_direction_">Direccion de Entrega:</label>
@@ -197,7 +203,7 @@
                <div class="modal-footer">
                   
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="button" id="save_not_delivered" class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
+                  <button type="button" id="save_not_delivered" class="btn btn-primary">Guardar</button>
                </div>
             </div>
          </div>
@@ -408,6 +414,34 @@
       update_totals();
    });
 
+   socket.on('nd_package_revoke_success', data => {
+      let div = document.querySelector("#info_sale_" + data.id);
+      if(div !== undefined){
+         div.parentNode.removeChild(div);
+      }
+
+      transport[data.id] = null;
+      totals.transport -= 1;
+      update_totals();
+   });
+
+   socket.on('nd_package_resend_success', data => {
+      let div = document.querySelector("#info_sale_" + data.id);
+      if(div !== undefined){
+         div.parentNode.removeChild(div);
+      }
+      transport[data.id] = null;
+      totals.transport -= 1;
+
+
+      prepared[data.id] = data;
+      totals.prepared += 1;
+      update_totals();
+   });
+
+   
+   
+
    socket.on('mayor_detail_revised_success', data => {
       //recorrer los detalles
       let restantes = new Array();
@@ -441,6 +475,8 @@
 </script>
 <!-- Manejo de las reservas -->
 <script>
+
+let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
    var delivery_failed_id = null;
    const show_reservas = () => {
       document.querySelector("#div_reservas").style.display = 'flex';
@@ -529,18 +565,9 @@
    const delivery_failed_process = (sale_id) => {
       delivery_failed_id = sale_id;
       console.log(transport[sale_id]);
-
       let reg = transport[sale_id];
-
-      //Establecer el Header
       document.querySelector("#notdeliveredTittle").innerHTML = `${reg.client}`;
-
-      let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
-
-      //TOKEN
-
       modalNotDelivered.toggle();
-      //mostrar el modal
 
    }
 
@@ -622,13 +649,14 @@
             element = prepared[index];
             if (element !== null) {
                let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let _st = element.sale._status == "to_resend" ? `<p class="text-danger" style="font-size: 125%;">Reenvio</p>` : '';
                if (element.sale.delivery_type == 'delivery') {
                   badge = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
                }
 
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">
-                        <div class="card-body">
+                        <div class="card-body">${_st}
                            <h5 class="mb-2">${element.client} 
                               ${badge}
                               &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
@@ -714,7 +742,6 @@
 
          if (e.target.value == 'delivery') {
             document.querySelector("#nd_delivery_provider").disabled = false;
-            document.querySelector("#nd_delivery_amount").disabled = false;
             document.querySelector("#nd_delivery_amount").value = 4.55;
             document.querySelector("#nd_direction_").focus();
          } else {
@@ -725,7 +752,6 @@
                document.querySelector("#nd_direction_").disabled = true;
                document.querySelector("#nd_reference_").focus();
             } else {
-               document.querySelector("#nd_delivery_amount").disabled = false;
                document.querySelector("#nd_delivery_amount").value = 3.00;
                document.querySelector("#nd_direction_").focus();
             }
@@ -738,9 +764,19 @@
 
 
       document.querySelector('#save_not_delivered').addEventListener('click', e => {
-         if(document.querySelector("#nd_option").value == "resend"){
+
+         let reason = document.querySelector("#nd_reason").value;
+
+         if(reason.length < 5){
+            return errorMessage('Por favor escriba una justificacion por la cual el paquete no fue entregado');
+         }
+
+         if(document.querySelector("#nd_option").value != "resend"){
             e.target.disabled = true;
-            socket.emit('nd_package_resend',delivery_failed_id );
+            socket.emit('nd_package_revoke',{
+               sale: delivery_failed_id,
+               reason
+            });
          }else{
             let data = {
                sale: delivery_failed_id,
@@ -752,6 +788,7 @@
                day: document.querySelector("#nd_day_").value,
                time: document.querySelector("#nd_hour_").value,
                delivery_amount: document.querySelector("#nd_delivery_amount").value,
+               reason
             }
    
             if (data.delivery_type == 'delivery') {
@@ -766,12 +803,15 @@
                return errorMessage('Seleccione una fecha válida');
             } else if (data.time.length < 5) {
                return errorMessage('Seleccione una hora valida');
-            } else if (data.day < document.querySelector("#day_").dataset.min) {
+            } else if (data.day < document.querySelector("#nd_day_").dataset.min) {
                return errorMessage('Seleccione una fecha válida');
             }
             e.target.disabled = true;
             socket.emit('nd_package_resend', data);
          }
+
+         document.querySelector('#save_not_delivered').disabled = false;
+         modalNotDelivered.toggle();
 
       });
    });

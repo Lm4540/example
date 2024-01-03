@@ -13,6 +13,7 @@ const Movement = require("../../Inventory/Models/Movement");
 
 
 const SalesStatusController = {
+
     get_data: async (session) => {
         //obtener la sucursal del usuario
         console.log(session)
@@ -141,7 +142,7 @@ const SalesStatusController = {
         tmp = await Sale.findAll({
             where: {
                 [Op.and]: [
-                    { _status: 'prepared' },
+                    { _status: {[Op.in]:['prepared', 'to_resend']} },
                     {sucursal : _sucursal_id}
                 ],
             },
@@ -232,9 +233,7 @@ const SalesStatusController = {
         return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
     },
 
-
     //funciones para los detalles de Mayor
-
     mayor_detail_revised: async (data, session) => {
         let sale = await Sale.findByPk(data.sale);
         if (sale == null) {
@@ -391,6 +390,98 @@ const SalesStatusController = {
 
 
     },
+
+    package_not_delivered: async (data, session) => {
+            try {
+
+                return await sequelize.transaction(async (t) => {
+                    let sale = await Sale.findByPk(data.sale);
+                    if(sale){
+        
+                        let details = await SaleDetail.findAll({
+                            where: {
+                                sale: sale.id
+                            }
+                        }, {transaction: t});
+                        let len = details.length;
+                        for (let index = 0; index < len; index++) {
+                            let detail = details[index];
+                            let reserves = await StockReserve.findAll({
+                                where: {
+                                    saleId: detail.id
+                                }
+                            },{transaction: t});
+        
+                            let largo = reserves.length;
+                            for (let a = 0; a < largo; a++) {
+                                let reserve = reserves[a];
+                                let stock = await Stock.findOne({
+                                    where: {
+                                        sucursal: reserve.sucursal,
+                                        product: reserve.product
+                                    }
+                                }, {transaction: t});
+                                if(stock){
+                                    stock.reserved -= reserve.cant;
+                                    await stock.save({transaction: t});
+                                }
+                                await reserve.destroy({transaction: t});
+                            }
+                            //actualizar el detalle
+
+                            detail.delivered = 0;
+                            detail.reserved = 0;
+                            detail.ready = 0;
+                            await detail.save({transaction: t});
+                        }
+                        sale._status = 'revoked';
+                        sale.revoked_at = new Date();
+                        sale.revoked_reason = data.reason;
+                        await sale.save({transaction: t});
+                        console.log(sale.id)
+                        return { status: 'success', message: 'Guardado', data: sale };
+                    }
+                    return { status: 'errorMessage', message: 'Sale not Found', data:'Venta no encontrada' };
+                });
+            } catch (error) {
+                console.log(error)
+                return { status: 'errorMessage', message: 'Error interno', data: error.message };    
+            }
+    },
+
+
+    package_resend: async (data, session) => {
+        try {
+
+            return await sequelize.transaction(async (t) => {
+                let sale = await Sale.findByPk(data.sale);
+                if(sale){
+
+                    sale._status = 'to_resend';
+                    sale.revoked_reason = data.reason;
+                    sale.delivery_amount = data.delivery_amount;
+                    sale.delivery_provider = data.delivery_provider;
+                    sale.delivery_date = new Date(data.day+'T06:10:10');
+                    sale.delivery_time = data.time;
+                    sale.delivery_type = data.delivery_type;
+                    sale.delivery_direction = data.direction;
+                    sale.delivery_contact = data.phone;
+                    sale.delivery_instructions = data.reference;
+                    await sale.save({transaction: t});
+                    return { status: 'success', message: 'Guardado', data: sale };
+
+                }
+    
+                return { status: 'errorMessage', message: 'Sale not Found', data:'Venta no encontrada' };
+            });
+            
+        } catch (error) {
+            console.log(error)
+            return { status: 'errorMessage', message: 'Error interno', data: error.message };    
+        }
+}
+
+
 }
 
 module.exports = SalesStatusController;

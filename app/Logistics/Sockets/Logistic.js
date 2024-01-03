@@ -55,6 +55,29 @@ socket.on('package_trasnport', async sale => {
 
   });
 
+    //token
+  socket.on('nd_package_revoke', async data => {
+    let res = await SalesStatusController.package_not_delivered(data, socket.request.session.userSession);
+    if (res.status == 'success') {
+      io.of('/logistics').emit('nd_package_revoke_success', res.data);
+    } else {
+      _io.to(group_identification).emit("nd_package_revoke_error", { errorMessage: res.message });
+    }
+
+  });
+
+
+  socket.on('nd_package_resend', async data => {
+    let res = await SalesStatusController.package_resend(data, socket.request.session.userSession);
+    if (res.status == 'success') {
+      io.of('/logistics').emit('nd_package_resend_success', res.data);
+    } else {
+      _io.to(group_identification).emit("nd_package_resend_error", { errorMessage: res.message });
+    }
+
+  });
+  
+
 
 
   socket.on('save_new_transfer', async data => {
