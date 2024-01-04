@@ -52,8 +52,10 @@ router.get('/print_invoice/:id(\\d+)', InvoiceController.print_invoice);
 router.get('/print_invoice_detail/:id(\\d+)', InvoiceController.print_invoice_detail);
 
 router.get('/view_invoice/:id(\\d+)', InvoiceController.view_invoice);
+router.get('/invoice_data/:number(\\d+)/:serie(\\d+)', InvoiceController.invoice_get_data);
 router.post('/update_invoice', InvoiceController.update_invoice);
 router.post('/invoice/create_invoice', InvoiceController.create_invoice);
+router.post('/invoice/revoke_invoice', InvoiceController.revoke_invoice);
 router.get('/invoices', InvoiceController.invoice_report);
 router.get('/invoices_details', InvoiceController.invoice_report_details);
 

@@ -19,14 +19,26 @@ const Movement = sequelize.define('Movement', {
     cant: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
+        get(){
+            let _val = Number.parseInt(this.getDataValue('cant'));
+            return isNaN(_val) ? 0 : _val;
+        }
     },
     last_sucursal_stock: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
+        get(){
+            let _val = Number.parseInt(this.getDataValue('last_sucursal_stock'));
+            return isNaN(_val) ? 0 : _val;
+        }
     },
     last_product_stock: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
+        get(){
+            let _val = Number.parseInt(this.getDataValue('last_product_stock'));
+            return isNaN(_val) ? 0 : _val;
+        }
     },
     cost: {
         type: DataTypes.DECIMAL(10, 2),

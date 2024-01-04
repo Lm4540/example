@@ -319,7 +319,7 @@ const ClientController = {
                         { client: cliente.id },
                     ],
                 },
-                order: [['id', 'DESC']],
+                order: [['createdAt', 'DESC']],
             });
 
             let in_process = await Sale.findOne({

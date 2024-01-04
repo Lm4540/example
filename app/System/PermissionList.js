@@ -182,6 +182,13 @@ module.exports = [
         "permission": "create_invoice_serie"
     },
 
+    {
+        "name": "Anular las facturas",
+        "explication": "Permite la anulacion de facturas ya registradas",
+        "group": "Ventas",
+        "permission": "revoke_invoice_documents"
+    },
+
     
     {
         "name": "marcar Reservas realizadas",

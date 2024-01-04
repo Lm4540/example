@@ -538,6 +538,15 @@ function date_to_spanish(date) {
     return days[date.getDay()] + ' ' + date.getDate() + ' de ' + months[date.getMonth()] + ' de ' + date.getFullYear();
 }
 
+
+const date_to_input = (date = null) => {
+    date = date ? new Date(date) : new Date();
+    let m = date.getMonth() > 8 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;
+    let d = date.getDate();
+    d = d > 9 ? d : `0${d}`;
+    return `${date.getFullYear()}-${m}-${d}`;
+};
+
 const fix_number = (number, redondeo = 2) => {
     let decimalNumbers = number.toString();
     decimalNumbers = decimalNumbers.substr(decimalNumbers.indexOf(".") + 1, decimalNumbers.length - 1);

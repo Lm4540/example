@@ -37,7 +37,7 @@ const SalesStatusController = {
 
         //buscar los clientes
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status in('closed','process','prepared', 'transport', 'revoking', 'delivery_failed'))",
+            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status in('closed','process','prepared', 'transport', 'revoking', 'delivery_failed'))",
             { type: QueryTypes.SELECT }
         );
         tmp.forEach(client => { clients[client.id] = client.name });
@@ -52,7 +52,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'closed' },
-                    {sucursal: _sucursal_id}
+                    { sucursal: _sucursal_id }
                 ],
             },
             order: [['id', 'ASC']],
@@ -70,7 +70,7 @@ const SalesStatusController = {
 
         //buscar las ventas que haya que preparar el paquete y las que ya se hayan preparado y no sean mas viejas que un dia
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'closed')",
+            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'closed')",
             { type: QueryTypes.SELECT }
         );
 
@@ -82,7 +82,7 @@ const SalesStatusController = {
 
         //buscar las ventas que tengan detalles de mayor que preparar
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process' and id in (SELECT sale FROM `crm_sale_detail` WHERE cant > ready)",
+            "SELECT * FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process' and id in (SELECT sale FROM `crm_sale_detail` WHERE cant > ready)",
             { type: QueryTypes.SELECT }
         );
 
@@ -116,20 +116,20 @@ const SalesStatusController = {
         //bloque nuevo
 
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = "+ _sucursal_id +" and _status = 'process')",
+            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process')",
             { type: QueryTypes.SELECT }
         );
         totals.mayor_details = tmp.length;
 
         tmp.forEach(detail => {
 
-            if(detail.cant > detail.ready){
+            if (detail.cant > detail.ready) {
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
                 mayor[detail.sale].details.push(detail);
 
-            }else{
+            } else {
                 totals.mayor_details -= 1;
-                if(mayor[detail.sale] !== undefined){
+                if (mayor[detail.sale] !== undefined) {
 
                     mayor[detail.sale].open = true;
                 }
@@ -142,8 +142,8 @@ const SalesStatusController = {
         tmp = await Sale.findAll({
             where: {
                 [Op.and]: [
-                    { _status: {[Op.in]:['prepared', 'to_resend']} },
-                    {sucursal : _sucursal_id}
+                    { _status: { [Op.in]: ['prepared', 'to_resend'] } },
+                    { sucursal: _sucursal_id }
                 ],
             },
             order: [['id', 'ASC']],
@@ -166,7 +166,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'transport' },
-                    {sucursal: _sucursal_id}
+                    { sucursal: _sucursal_id }
                 ],
             },
             order: [['id', 'ASC']],
@@ -186,7 +186,7 @@ const SalesStatusController = {
             where: {
                 [Op.and]: [
                     { _status: 'delivery_failed' },
-                    {sucursal: _sucursal_id}
+                    { sucursal: _sucursal_id }
                 ],
             },
             order: [['id', 'ASC']],
@@ -280,9 +280,9 @@ const SalesStatusController = {
         if (sale == null) {
             return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
         }
-        
+
         //buscar los detalles y darles salida
-        let details = await SaleDetail.findAll({where: {sale: sale.id}});
+        let details = await SaleDetail.findAll({ where: { sale: sale.id } });
         let client = await Client.findByPk(sale.client);
         try {
             return await sequelize.transaction(async (t) => {
@@ -295,20 +295,22 @@ const SalesStatusController = {
                 for (let index = 0; index < len; index++) {
                     const dt = details[index];
                     //buscar las reservas
-                    let tmp = await StockReserve.findAll({where: {saleId: dt.id,}}, { transaction: t });
+                    let tmp = await StockReserve.findAll({ where: { saleId: dt.id, } }, { transaction: t });
                     let product_cost = 0.00;
                     //recorrer las reservas e ir sacandolas
                     for (let a = 0; a < tmp.length; a++) {
                         let reserve = tmp[a];
                         //buscar el stock
-                        let stock = await Stock.findOne({where: {
-                            sucursal: reserve.sucursal,
-                            product : reserve.product
-                        }});
-                        if(stock){
+                        let stock = await Stock.findOne({
+                            where: {
+                                sucursal: reserve.sucursal,
+                                product: reserve.product
+                            }
+                        });
+                        if (stock) {
                             //buscar el producto
                             let product = await Product.findByPk(reserve.product);
-                            if(product){
+                            if (product) {
                                 //registrar el movimiento de salida
                                 let movement = await Movement.create({
                                     product: stock.product,
@@ -323,40 +325,40 @@ const SalesStatusController = {
                                     in: false,
                                 }, { transaction: t });
 
-                                
+
                                 stock.reserved -= reserve.cant;
                                 stock.cant -= reserve.cant;
-                                await stock.save({transaction: t});
-                                
+                                await stock.save({ transaction: t });
+
                                 product.reserved -= reserve.cant;
                                 product.stock -= reserve.cant;
-                                await product.save({transaction: t});
-                                await reserve.destroy({transaction: t})
+                                await product.save({ transaction: t });
+                                await reserve.destroy({ transaction: t })
 
-                                
 
-                                
+
+
                                 //actualizar el detalle
                                 sale_cost += Number.parseFloat(product.cost * reserve.cant);
                                 product_cost += Number.parseFloat(product.cost * reserve.cant);
                                 dt.delivered += reserve.cant;
-                            }else{
-                                return { status: 'errorMessage', message: 'producto id '+reserve.product+' no encontrado' };
+                            } else {
+                                return { status: 'errorMessage', message: 'producto id ' + reserve.product + ' no encontrado' };
                             }
-                            
-                        }else{
-                            return { status: 'errorMessage', message: 'Stock not found for product id '+reserve.product+' and sucursal '+ reserve.sucursal +'!' };
+
+                        } else {
+                            return { status: 'errorMessage', message: 'Stock not found for product id ' + reserve.product + ' and sucursal ' + reserve.sucursal + '!' };
                         }
 
                     }
                     dt.product_cost = (product_cost / dt.delivered);
-                    await dt.save({transaction: t});
+                    await dt.save({ transaction: t });
                 }
 
                 sale._status = 'delivered';
                 sale.delivered_by = session.shortName;
                 sale.cost = sale_cost;
-                await sale.save({transaction: t});
+                await sale.save({ transaction: t });
                 return { status: 'success', message: 'Guardado', data: sale };
             });
         } catch (error) {
@@ -392,61 +394,61 @@ const SalesStatusController = {
     },
 
     package_not_delivered: async (data, session) => {
-            try {
+        try {
 
-                return await sequelize.transaction(async (t) => {
-                    let sale = await Sale.findByPk(data.sale);
-                    if(sale){
-        
-                        let details = await SaleDetail.findAll({
-                            where: {
-                                sale: sale.id
-                            }
-                        }, {transaction: t});
-                        let len = details.length;
-                        for (let index = 0; index < len; index++) {
-                            let detail = details[index];
-                            let reserves = await StockReserve.findAll({
-                                where: {
-                                    saleId: detail.id
-                                }
-                            },{transaction: t});
-        
-                            let largo = reserves.length;
-                            for (let a = 0; a < largo; a++) {
-                                let reserve = reserves[a];
-                                let stock = await Stock.findOne({
-                                    where: {
-                                        sucursal: reserve.sucursal,
-                                        product: reserve.product
-                                    }
-                                }, {transaction: t});
-                                if(stock){
-                                    stock.reserved -= reserve.cant;
-                                    await stock.save({transaction: t});
-                                }
-                                await reserve.destroy({transaction: t});
-                            }
-                            //actualizar el detalle
+            return await sequelize.transaction(async (t) => {
+                let sale = await Sale.findByPk(data.sale);
+                if (sale) {
 
-                            detail.delivered = 0;
-                            detail.reserved = 0;
-                            detail.ready = 0;
-                            await detail.save({transaction: t});
+                    let details = await SaleDetail.findAll({
+                        where: {
+                            sale: sale.id
                         }
-                        sale._status = 'revoked';
-                        sale.revoked_at = new Date();
-                        sale.revoked_reason = data.reason;
-                        await sale.save({transaction: t});
-                        console.log(sale.id)
-                        return { status: 'success', message: 'Guardado', data: sale };
+                    }, { transaction: t });
+                    let len = details.length;
+                    for (let index = 0; index < len; index++) {
+                        let detail = details[index];
+                        let reserves = await StockReserve.findAll({
+                            where: {
+                                saleId: detail.id
+                            }
+                        }, { transaction: t });
+
+                        let largo = reserves.length;
+                        for (let a = 0; a < largo; a++) {
+                            let reserve = reserves[a];
+                            let stock = await Stock.findOne({
+                                where: {
+                                    sucursal: reserve.sucursal,
+                                    product: reserve.product
+                                }
+                            }, { transaction: t });
+                            if (stock) {
+                                stock.reserved -= reserve.cant;
+                                await stock.save({ transaction: t });
+                            }
+                            await reserve.destroy({ transaction: t });
+                        }
+                        //actualizar el detalle
+
+                        detail.delivered = 0;
+                        detail.reserved = 0;
+                        detail.ready = 0;
+                        await detail.save({ transaction: t });
                     }
-                    return { status: 'errorMessage', message: 'Sale not Found', data:'Venta no encontrada' };
-                });
-            } catch (error) {
-                console.log(error)
-                return { status: 'errorMessage', message: 'Error interno', data: error.message };    
-            }
+                    sale._status = 'revoked';
+                    sale.revoked_at = new Date();
+                    sale.revoked_reason = data.reason;
+                    await sale.save({ transaction: t });
+                    console.log(sale.id)
+                    return { status: 'success', message: 'Guardado', data: sale };
+                }
+                return { status: 'errorMessage', message: 'Sale not Found', data: 'Venta no encontrada' };
+            });
+        } catch (error) {
+            console.log(error)
+            return { status: 'errorMessage', message: 'Error interno', data: error.message };
+        }
     },
 
 
@@ -455,31 +457,31 @@ const SalesStatusController = {
 
             return await sequelize.transaction(async (t) => {
                 let sale = await Sale.findByPk(data.sale);
-                if(sale){
+                if (sale) {
 
                     sale._status = 'to_resend';
                     sale.revoked_reason = data.reason;
                     sale.delivery_amount = data.delivery_amount;
                     sale.delivery_provider = data.delivery_provider;
-                    sale.delivery_date = new Date(data.day+'T06:10:10');
+                    sale.delivery_date = new Date(data.day + 'T06:10:10');
                     sale.delivery_time = data.time;
                     sale.delivery_type = data.delivery_type;
                     sale.delivery_direction = data.direction;
                     sale.delivery_contact = data.phone;
                     sale.delivery_instructions = data.reference;
-                    await sale.save({transaction: t});
+                    await sale.save({ transaction: t });
                     return { status: 'success', message: 'Guardado', data: sale };
 
                 }
-    
-                return { status: 'errorMessage', message: 'Sale not Found', data:'Venta no encontrada' };
+
+                return { status: 'errorMessage', message: 'Sale not Found', data: 'Venta no encontrada' };
             });
-            
+
         } catch (error) {
             console.log(error)
-            return { status: 'errorMessage', message: 'Error interno', data: error.message };    
+            return { status: 'errorMessage', message: 'Error interno', data: error.message };
         }
-}
+    }
 
 
 }

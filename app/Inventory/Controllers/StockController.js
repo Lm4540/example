@@ -46,7 +46,6 @@ const StockController = {
             // console.log(el);
             products[el.id] = el;
         });
-        console.log(products)
 
 
         let result = {
@@ -113,10 +112,10 @@ const StockController = {
 
             if (move.in == true || move.in == 1) {
                 cant = move.last_sucursal_stock + move.cant;
-                cost = Helper.fix_number(((move.last_sucursal_stock * Helper.fix_number(move.last_cost)) + (move.cant * Helper.fix_number(move.cost))) / (move.last_sucursal_stock + move.cant).toFixed(2));
+                cost = ((move.last_sucursal_stock * move.last_cost) + (move.cant * move.cost)) / cant;
             } else {
-                cant = move.last_sucursal_stock - move.cant;
-                cost = move.last_cost;
+                cant = Number.parseInt(move.last_sucursal_stock) - Number.parseInt(move.cant);
+                cost = move.cost;
             }
 
 
@@ -131,9 +130,9 @@ const StockController = {
                 fecha: move.createdAt
             }
 
-            result['groups'][product._group].total = Helper.fix_number(result['groups'][product._group].total + detail.subtotal);
+            result['groups'][product._group].total = Helper.fix_number(result['groups'][product._group].total) + Helper.fix_number(detail.subtotal);
             result['groups'][product._group]['details'].push(detail);
-            result.valor = Helper.fix_number(result.valor + detail.subtotal);
+            result.valor = Helper.fix_number(result.valor) + Helper.fix_number(detail.subtotal);
         }
 
 

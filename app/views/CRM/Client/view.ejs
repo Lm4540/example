@@ -693,13 +693,13 @@
                   <div class="col">
                      <div class="form-group">
                         <label for="invoice_nit">NIT/DUI</label>
-                        <input type="text" class="form-control" name="invoice_nit" id="invoice_nit" value="<%= cliente.NIT %>">
+                        <input type="text" class="form-control" name="invoice_nit" id="invoice_nit" value="<%= cliente.NIT_DUI %>">
                      </div>
                   </div>
                   <div class="col">
                      <div class="form-group">
                         <label for="invoice_nrc">NRC</label>
-                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
+                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc"  value="<%= cliente.NRC !== null ? cliente.NRC : '' %>">
                      </div>
                   </div>
                </div>
