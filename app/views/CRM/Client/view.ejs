@@ -1550,7 +1550,7 @@
                   postData('/sales/client/re_payment', {
                      id: data.data
                   });
-                  setTimeout(window.location.reload(), 2000);
+                  setTimeout(window.location.reload(), 3000);
                } else if (data.status == 'errorMessage') {
                   e.target.disabled = false;
                   return errorMessage(data.message);
@@ -1586,9 +1586,6 @@
             postData('/sales/client/create_payment2', data).then(data => {
                if (data.status == 'success') {
                   successMessage('registrado');
-                  postData('/sales/client/re_payment', {
-                     id: data.data
-                  });
                   setTimeout(window.location.reload(), 2000);
                } else if (data.status == 'errorMessage') {
                   e.target.disabled = false;

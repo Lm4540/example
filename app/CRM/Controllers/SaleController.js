@@ -330,18 +330,6 @@ const SaleController = {
     },
 
     revoke_invoice: async (req, res) => {
-        //Verificar si se sustituira por una nueva o solo se anulara
-
-        //obetenr lña nueva serie
-
-        //obtener el nuevo correlativo
-
-
-        //crear el registro
-
-        //buscar la venta
-
-
         let sale = await Sale.findByPk(req.body.sale);
         let tmp = await SaleDetail.findAll({
             where: {
@@ -436,6 +424,14 @@ const SaleController = {
                     });
                 }
 
+                let sale = await Sale.findByPk(data.sale);
+                if (data.amount > (sale.balance + sale.delivery_amount - sale.collected)) {
+                    return res.json({
+                        status: 'errorMessage',
+                        message: 'Monto Invalido'
+                    });
+                }
+
                 try {
                     return await sequelize.transaction(async (t) => {
                         let registered_payment = null;
@@ -461,11 +457,11 @@ const SaleController = {
                                 sales: [],
                                 type: 'money',
                                 amount: data.amount,
-                                asigned_amount: 0.00,
+                                asigned_amount: data.amount,
                                 createdBy: req.session.userSession.shortName,
                             }, { transaction: t });
 
-                            sucursal.balance += data.amount;
+                            sucursal.balance = Helper.fix_number(sucursal.balance + data.amount);
                             await sucursal.save({ transaction: t });
                         } else {
                             registered_payment = await SalePayment.create({
@@ -473,7 +469,7 @@ const SaleController = {
                                 sales: [],
                                 type: data.method,
                                 amount: data.amount,
-                                asigned_amount: 0.00,
+                                asigned_amount: data.amount,
                                 bank: data.bank,
                                 reference: data.reference,
                                 createdBy: req.session.userSession.shortName,
@@ -482,44 +478,32 @@ const SaleController = {
 
                         }
 
-                        client.payments += registered_payment.amount;
+                        client.payments = Helper.fix_number(client.payments + data.amount);
                         await client.save({ transaction: t });
 
                         //buscar la venta
-                        let sale = await Sale.findByPk(data.sale);
-                        let _collected = Number.parseFloat(sale.collected);
-                        _collected = isNaN(_collected) ? 0.00 : _collected;
-                        let sale_value = (Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
+
+
+
                         let ids_registro = [];
-                        if (sale_value > data.amount) {
 
-                            sale.collected = (_collected + data.amount);
+                        sale.collected = Helper.fix_number(sale.collected + data.amount);
 
-                            if (sale.payments.length > 0) {
-                                sale.payments.push({ "id": registered_payment.id, "amount": data.amount })
-                            } else {
-                                sale.payments = [{ "id": registered_payment.id, "amount": data.amount },];
-                            }
+                        let _pays = sale.payments;
 
-                            if (sale.balance + sale.delivery_amount - sale.collected == 0) {
-                                sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                            }
-                        } else {
-                            sale.collected = (_collected + sale_value);
-                            if (sale.payments.length > 0) {
-                                sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
-                            } else {
-                                sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
-                            }
+                        _pays.push({ "id": registered_payment.id, "amount": data.amount })
+                        sale.payments = _pays;
 
+                        if (sale.balance + sale.delivery_amount - sale.collected == 0) {
                             sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-
                         }
+
                         await sale.save({ transaction: t });
+
                         ids_registro.push({ "id": sale.id, "amount": data.amount });
 
                         registered_payment.sales = ids_registro;
-                        registered_payment.asigned_amount = registered_payment.amount;
+                        registered_payment.asigned_amount = data.amount;
                         await registered_payment.save({ transaction: t });
 
                         return res.json({
@@ -644,6 +628,14 @@ const SaleController = {
         try {
             //buscar el pago
             let registered_payment = await SalePayment.findByPk(req.body.id);
+            if(registered_payment.amount == registered_payment.asigned_amount){
+                return res.json({
+                    status: 'success',
+                    message: 'pago registrado',
+                    data: registered_payment,
+                });
+            }
+
             //buscar el cliente
             let client = await Client.findByPk(registered_payment.client);
             // client.payments = (client.payments != null ? client.payments + registered_payment.amount : registered_payment.amount);
@@ -680,11 +672,10 @@ const SaleController = {
 
                                 sale.collected = (_collected + valor_restante);
 
-                                if (sale.payments.length > 0) {
-                                    sale.payments.push({ "id": registered_payment.id, "amount": valor_restante })
-                                } else {
-                                    sale.payments = [{ "id": registered_payment.id, "amount": valor_restante },];
-                                }
+
+                                let _pays = sale.payments;
+                                _pays.push({ "id": registered_payment.id, "amount": valor_restante });
+                                sale.payments = _pays;
 
                                 if (sale.balance + sale.delivery_amount - sale.collected == 0) {
                                     sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
@@ -696,12 +687,10 @@ const SaleController = {
                                 valor_restante = 0;
                             } else {
                                 sale.collected = (_collected + sale_value);
-                                if (sale.payments.length > 0) {
-                                    sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
-                                } else {
-                                    sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
-                                }
 
+                                let _pays = sale.payments;
+                                _pays.push({ "id": registered_payment.id, "amount": sale_value });
+                                sale.payments = _pays;
                                 sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
 
                                 await sale.save({ transaction: t });
