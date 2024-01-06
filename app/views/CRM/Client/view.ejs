@@ -1547,14 +1547,13 @@
             postData('/sales/client/create_payment', data).then(data => {
                if (data.status == 'success') {
                   successMessage('registrado');
-                  postData('/sales/client/re_payment', {
-                     id: data.data
-                  });
+                  // postData('/sales/client/re_payment', {
+                  //    id: data.data
+                  // });
                   setTimeout(window.location.reload(), 3000);
                } else if (data.status == 'errorMessage') {
-                  e.target.disabled = false;
-                  return errorMessage(data.message);
                   document.getElementById('addPayment').disabled = false;
+                  return errorMessage(data.message);
                } else {
                   return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
                }
@@ -1582,15 +1581,14 @@
 
          } else {
 
-            document.getElementById('addPayment').disabled = true;
+            document.getElementById('addPayment2').disabled = true;
             postData('/sales/client/create_payment2', data).then(data => {
                if (data.status == 'success') {
                   successMessage('registrado');
                   setTimeout(window.location.reload(), 2000);
                } else if (data.status == 'errorMessage') {
-                  e.target.disabled = false;
+                  document.getElementById('addPayment2').disabled = false;
                   return errorMessage(data.message);
-                  document.getElementById('addPayment').disabled = false;
                } else {
                   return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
                }
