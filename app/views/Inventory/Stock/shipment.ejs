@@ -80,7 +80,7 @@
                      <tbody>
                         <% shipment_details.forEach(detail => { %>
                         <tr>
-                           <td><img src="<%= detail.image !== null ?
+                           <td><img width="150px;" src="<%= detail.image !== null ?
                               (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) :
                               '/upload/images/image-not-found.png'; %>" alt="product image" onclick="show_image(this.src)"></td>
                            <td><%= detail.description %></td>
@@ -104,7 +104,7 @@
                      <tbody>
                         <% shipment_details.forEach(detail => { %>
                         <tr>
-                           <td><img src="<%= detail.image !== null ?
+                           <td><img width="150px;" src="<%= detail.image !== null ?
                               (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) :
                               '/upload/images/image-not-found.png'; %>" alt="product image" onclick="show_image(this.src)"></td>
                            <td><%= detail.description %></td>
