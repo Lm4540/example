@@ -374,11 +374,21 @@ const StockController = {
             let shipment_details = await Sucursal.findAll({ attributes: ['id', 'name'] });
             shipment_details.forEach(el => sucursals[el.id] = el.name);
 
-            shipment_details = await ShipmentDetail.findAll({
-                where: {
-                    shipment: shipment.id
+            // shipment_details = await ShipmentDetail.findAll({
+            //     where: {
+            //         shipment: shipment.id
+            //     }
+            // });
+
+
+            shipment_details = await sequelize.query(
+                'SELECT inventory_shipment_detail.*, inventory_product.image FROM `inventory_shipment_detail` INNER join inventory_product on inventory_shipment_detail.product = inventory_product.id where inventory_shipment_detail.shipment = :shipment',
+                {
+                    replacements: { shipment: shipment.id },
+                    type: QueryTypes.SELECT
                 }
-            });
+            );
+
             return res.render('Inventory/Stock/shipment', {
                 pageTitle: 'Envio ' + shipment.id,
                 sucursals,

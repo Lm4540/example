@@ -309,7 +309,9 @@
                                  <td><%= Helper.format_date(order.createdAt) %></td>
                                  <td>
                                     <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
-                                    <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
+                                    <% if (order.invoice_number != null) { %>
+                                       <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
+                                    <% } %>
                                  </td>
                               <% } else { %>
                                  <td><%= order.id %></td>

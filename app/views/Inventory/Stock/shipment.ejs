@@ -70,6 +70,7 @@
                   <table class="table table-hover table-sm table-bordered" id="simple_body">
                      <thead>
                         <tr>
+                           <th>Image</th>
                            <th>Descripcion</th>
                            <th>Cantidad</th>
                            <th>Recibido</th>
@@ -79,6 +80,9 @@
                      <tbody>
                         <% shipment_details.forEach(detail => { %>
                         <tr>
+                           <td><img src="<%= detail.image !== null ?
+                              (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) :
+                              '/upload/images/image-not-found.png'; %>" alt="product image" onclick="show_image(this.src)"></td>
                            <td><%= detail.description %></td>
                            <td><%= detail.cant %></td>
                            <td><%= detail.in %></td>
@@ -90,16 +94,19 @@
                   <table class="table table-hover table-sm table-bordered" id="in_body" style="display:none">
                      <thead>
                         <tr>
+                           <th>Image</th>
                            <th>Descripcion</th>
                            <th>Cantidad</th>
                            <th>Recibido</th>
-
                         </tr>
                      </thead>
 
                      <tbody>
                         <% shipment_details.forEach(detail => { %>
                         <tr>
+                           <td><img src="<%= detail.image !== null ?
+                              (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) :
+                              '/upload/images/image-not-found.png'; %>" alt="product image" onclick="show_image(this.src)"></td>
                            <td><%= detail.description %></td>
                            <td><%= detail.cant %></td>
                            <td>
@@ -128,6 +135,16 @@
          </div>
       </div>
 
+       <!-- modal para mostrar la imagen -->
+       <div class="modal fade" id="showImage" tabindex="-1" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <img src="" alt="galery_image" id="galery_image">
+
+            </div>
+         </div>
+      </div>
+
       <%- include('../../Layouts/Footer.ejs') %>
    </div>
 </body>
@@ -136,6 +153,11 @@
 <script src="assets/libs/choices/choices.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+   showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {}),
+      show_image = src => {
+         document.getElementById('galery_image').src = src;
+         showImageModal.toggle();
+      },
    document.addEventListener('DOMContentLoaded', event => {
 
 
