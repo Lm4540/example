@@ -64,7 +64,7 @@
                <div class="card">
                   <div class="card-header text-center">
                      <% if (in_process !== null) { %>
-                     <h3>Pedido Actual <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
+                     <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
                      <div class="text-center mb-3 mt-3">
                         <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
 
@@ -166,20 +166,20 @@
                            <div class="card">
                               <div class="card-body text-center">
                                  <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                 <p style="cursor:pointer;"><%= detail.description %> </p>
+                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
                                  <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-                                 <% if (detail.product == null) { %>
-                                 <p class="text-danger">Esperando que Ingrese</p><br>
-                                 <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar</button>
-                                 <% } else if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                                 
+                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
                                  <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
                                  <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
                                  <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
                                  <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                 <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
+                                 <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
                                  <% } else if(detail.cant == detail.ready) { %>
                                  <p class="text-primary"> Reservado y Revisado<br></p>
-                                 <button class="btn btn-outline-danger" onclick="release_request('<%= detail.id %>')">Solicitar Liberación</button>
+                                 <% if (permission.includes('revoke_sales_details')) { %>
+                                    <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
+                                 <% } %>
                                  <% } %>
                               </div>
                            </div>
@@ -284,7 +284,7 @@
                      <table class="table table-sm table-bordered table-hover">
                         <thead>
                            <tr>
-                              <th>#</th>
+                              <th>ID</th>
                               <th>Monto</th>
                               <th>Monto Cobrado</th>
                               <th>Estado</th>
@@ -296,7 +296,7 @@
                            <% finalized.forEach((order, index) => { %>
                            <tr>
                               <% if (order._status == 'revoked') { %>
-                                 <td><%= index +1 %></td>
+                                 <td><%= order.id %></td>
                                  <td>$0.00 <small class="text-danger">(Original: $<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %>)</small></td>
                                  <td class="text-center">
                                  --
@@ -308,10 +308,11 @@
                                  </td>
                                  <td><%= Helper.format_date(order.createdAt) %></td>
                                  <td>
-                                    <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
+                                    <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
+                                    <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
                                  </td>
                               <% } else { %>
-                                 <td><%= index +1 %></td>
+                                 <td><%= order.id %></td>
                                  <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
                                  <td>
                                     $<%= Helper.money_format(order.collected) %>
@@ -966,6 +967,7 @@
 <script>
    var _process = '<%= Helper.randomString(5) %>';
    var socket = io.connect('<%= baseURL %>/sales');
+   var quit_case = null;
    //const socket = io('/logistics');
    socket.on('close_sale_error', data => {
       console.log(data);
@@ -1045,6 +1047,7 @@
    });
 
    socket.on('quit_detail_success', data => {
+      document.querySelector("#quitDetail").disabled = false;
       if (data._process == _process) {
          successMessage('Guardado');
          document.querySelector('#span_sale_balance').innerHTML = `($${money_format(data.balance)})`;
@@ -1072,8 +1075,8 @@
                content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
                                     <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
             } else if (detail.cant == detail.ready) {
-               content += `<p class="text-primary"> Reservado y Revisado<br></p>
-                                    <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;
+              /* content += `<p class="text-primary"> Reservado y Revisado<br></p>
+                                    <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;*/
             }
             content += `</div> </div>`;
             div.innerHTML = content;
@@ -1259,6 +1262,7 @@
 
 
       document.querySelector("#quitDetail").addEventListener('click', e => {
+         document.querySelector("#quitDetail").disabled = true;
          if (detail_to_quit == null) {
             return errorMessage('Has abierto el modal de manera Manual, si sigues intentando dañar el sistema seras bloqueado');
          }
@@ -1275,13 +1279,37 @@
             case: 'delete',
             _process,
          }
-         socket.emit('quit_sale_detail', data);
+
+
+         if(quit_case == "reserved"){
+            //token
+
+            postData('/sales/details/quit', data).then(data => {
+               if (data.status == 'success') {
+                  successMessage('Actualizado');
+                  setTimeout(() => {
+                     document.location.reload();
+                  }, 1500);
+               } else if (data.status == 'errorMessage') {
+                  document.querySelector("#quitDetail").disabled = false;
+                  return errorMessage(data.message);
+
+
+               } else {
+                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+               }
+            });
+
+         }else{
+            socket.emit('quit_sale_detail', data);
+         }
 
 
       });
 
       document.getElementById('quitDetailModal').addEventListener('hidden.bs.modal', event => {
          detail_to_quit = null;
+         quit_case = null;
       })
 
       document.querySelector("#save_sale_detail").addEventListener('click', e => {
@@ -1419,13 +1447,24 @@
       document.querySelector('#quit_revocable').innerHTML = `<b>${detail.cant - detail.ready} Unidades</b>`;
       document.querySelector('#quit_input').value = detail.cant - detail.ready;
       document.querySelector('#quit_input').max = detail.cant - detail.ready;
+      document.querySelector('#quit_input').disabled = false;
 
       modalQuit.toggle();
    }
 
    const release_request = _id => {
       let detail = current_details[_id];
-      console.log(detail);
+      detail_to_quit = _id;
+      quit_case = 'reserved';
+
+      document.querySelector('#quit_image').src = detail.image;
+      document.querySelector('#quit_name').innerHTML = detail.description;
+      document.querySelector('#quit_units').innerHTML = `<b>${detail.cant} Unidades</b>`;
+      document.querySelector('#quit_reserved').innerHTML = `<b>${detail.reserved} Unidades</b>`;
+      document.querySelector('#quit_ready').innerHTML = `<b>${detail.ready} Unidades</b>`;
+      document.querySelector('#quit_input').value = detail.ready;
+      document.querySelector('#quit_input').max = detail.ready;
+      document.querySelector('#quit_input').disabled = true;
       modalQuit.toggle();
    }
 </script>

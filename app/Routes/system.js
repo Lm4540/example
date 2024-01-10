@@ -5,5 +5,10 @@ router.get("/icons", function (req, res) {
     res.render("Common/Icons.ejs", {pageTitle: 'Icons Example'});
 });
 
+router.get("/tools", function (req, res) {
+    
+    res.render("Common/Icons.ejs", {pageTitle: 'Icons Example'});
+});
+
 
 module.exports = router;

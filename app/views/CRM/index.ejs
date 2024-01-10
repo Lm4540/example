@@ -340,7 +340,7 @@
          revoke_data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
 
          console.log(revoke_data);
-
+         document.querySelector("#addInvoiceButton").disabled = true;
          postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
             if (data.status == 'success') {
                successMessage('registrado');

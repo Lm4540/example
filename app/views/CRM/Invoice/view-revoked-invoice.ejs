@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <% total = 0.00%>
+   <style>
+      .invoice table {
+         border-collapse: collapse;
+
+      }
+
+      .invoice td {
+         border: 1px solid black;
+         border-spacing: 0;
+         line-height: .8;
+         color: black !important;
+      }
+
+      .invoice .details td {
+         border-top: 0px solid #fff;
+         border-bottom: 0px solid #fff;
+         border-spacing: 0;
+         color: black !important;
+      }
+
+
+
+      .invoice .hidden_row td {
+         border: 0px solid #fff !important;
+         border-top: 0px solid #fff !important;
+         border-bottom: 0px solid #fff !important;
+         border-left: 0px solid #fff !important;
+         border-right: 0px solid #fff !important;
+      }
+
+      .invoice td.without_left {
+         border-left: 0px solid #fff !important;
+      }
+
+      .invoice td.without_right {
+         border-right: 0px solid #fff !important;
+      }
+
+      .invoice td.without_top {
+         border-top: 0px solid #fff !important;
+      }
+
+      .invoice td.without_bottom {
+         
+         border-bottom: 0px solid #fff !important;
+      }
+
+      .invoice {
+         width: 12cm;
+         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
+         color: black !important;
+         margin: auto;
+      }
+
+      .invoice tbody {
+         width: 100%;
+      }
+
+      .invoice th {
+         font-size: 60%;
+         border: 1px solid black;
+         color: black !important;
+      }
+
+      .invoice .divisor {
+         margin-top: 10px;
+
+      }
+
+      .invoice .text-right {
+         align-items: right;
+         text-align: right;
+      }
+
+      .invoice .text-left {
+         align-items: left;
+         text-align: left;
+      }
+
+      .invoice .text-center {
+         text-align: center;
+         align-items: center;
+      }
+
+      .invoice #first_table {
+         margin-top: 2.5cm;
+         width: 100%;
+      }
+
+      .invoice #last_element {
+         margin-bottom: 0.5cm;
+         margin-top: 0;
+      }
+   </style>
+</head>
+<% options = `
+<li class="dropdown ml-5">
+	<a data-bs-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+	  Opciones
+	</a>
+	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
+      <a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+   </div>
+</li> `; %>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-header text-center">
+               <h3><%= sale.invoice_type.toUpperCase() %> <small> (<%= serie.serie %>) </small> N° <%= sale.invoice_number%> <span class="text-danger">ANULADA</span></h3>
+            </div>
+            <div class="card-body ">
+               <div class="row  justify-content-center">
+                  <div class="col-md-8 col-12 bg-white">
+                     <% if (sale.invoice_type == "fcf") { %>
+                     <%- include('fcf_body.ejs') %>
+                     <% } else { %>
+                     <%- include('ccf_body.ejs') %>
+                     <% } %>
+
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         
+
+
+      </div>
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+
+   document.addEventListener('DOMContentLoaded', event => {
+      document.querySelector("#digits").innerHTML = money_to_string(Number.parseFloat("<%= total.toFixed(2) %>")).toUpperCase();
+
+      
+
+   });
+</script>
+
+</html>

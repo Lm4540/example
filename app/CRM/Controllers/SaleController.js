@@ -27,6 +27,7 @@ const InvoiceDetail = require('../Models/InvoiceDetail');
 const Money = require('../../System/Money');
 const { type } = require('os');
 
+
 const status = {
     'process': 'En Proceso',
     'prepared': "paquete preparado",
@@ -152,71 +153,93 @@ const sale_status_verification = async (seller) => {
 
     //verificar las ventas cuyo estado e entregado pero su costo es cero
 
-    let sales = await Sale.findAll({
-        where: {
-            _status: 'delivered',
-            cost: 0.00
-        }
-    });
 
-    for (let index = 0; index < sales.length; index++) {
-        let sale = sales[index];
-        let details = await SaleDetail.findAll({
-            where: {
-                sale: sale.id,
+    try {
+        return await sequelize.transaction(async (t) => {
+            let sales = await Sale.findAll({
+                where: {
+                    _status: 'delivered',
+                    cost: 0.00
+                }
+            }, { transaction: t });
+            for (let index = 0; index < sales.length; index++) {
+                let sale = sales[index];
+                let details = await SaleDetail.findAll({
+                    where: {
+                        sale: sale.id,
+                    }
+                }, { transaction: t });
+
+
+                let suma = 0.00;
+                for (let b = 0; b < details.length; b++) {
+                    let detail = details[b];
+                    let c = 0.00;
+                    if (detail.product_cost < 0.01) {
+                        //Buscar el costo del product_cost
+                        let product = await Product.findByPk(detail.product, { transaction: t });
+                        detail.product_cost = product.cost;
+                        detail.save({ transaction: t });
+                        c = product.cost;
+                        //
+                    } else {
+                        c = detail.product_cost;
+                    }
+                    suma = Helper.fix_number(suma + (c * detail.cant));
+                }
+                sale.cost = suma;
+                sale.save({ transaction: t });
             }
+
+
+            //verificar el estado de las ventas
+            sales = await Sale.findAll({
+                where: {
+                    // seller: seller,
+                    in_report: 0,
+                    revoked_at: { [Op.is]: null, },
+                    _status: "delivered"
+                }
+            });
+
+            len = sales.length;
+            for (let index = 0; index < len; index++) {
+                if (sales[index]._status !== 'collected') {
+                    let saldo = Helper.fix_number(Helper.fix_number(sales[index].balance) + Helper.fix_number(sales[index].delivery_amount));
+                    if (saldo == Helper.fix_number(sales[index].collected)) {
+                        sales[index]._status = 'collected';
+                        await sales[index].save({ transaction: t });
+                    }
+                }
+
+            }
+
+            return true;
+
+
         });
-
-
-        let suma = 0.00;
-        for (let b = 0; b < details.length; b++) {
-            let detail = details[b];
-            let c = 0.00;
-            if (detail.product_cost < 0.01) {
-                //Buscar el costo del product_cost
-                let product = await Product.findByPk(detail.product);
-                detail.product_cost = product.cost;
-                detail.save();
-                c = product.cost;
-                //
-            } else {
-                c = detail.product_cost;
-            }
-            suma = Helper.fix_number(suma + (c * detail.cant));
-        }
-        sale.cost = suma;
-        sale.save();
+    } catch (error) {
+        console.log(error.message);
+        return false;
     }
 
 
-    //verificar el estado de las ventas
-    sales = await Sale.findAll({
-        where: {
-            seller: seller,
-            in_report: 0,
-            revoked_at: { [Op.is]: null, },
-            _status: "delivered"
-        }
-    });
-
-    len = sales.length;
-    for (let index = 0; index < len; index++) {
-        if (sales[index]._status !== 'collected') {
-            let saldo = Helper.fix_number(Helper.fix_number(sales[index].balance) + Helper.fix_number(sales[index].delivery_amount));
-            if (saldo == Helper.fix_number(sales[index].collected)) {
-                sales[index]._status = 'collected';
-                await sales[index].save();
-            }
-        }
-
-    }
-
-    return true;
 }
 
 
 
 const SaleController = {
+
+    sale_status_check: async (req, res) => {
+
+        return res.json(sale_status_verification(1) ? {
+            status: 'success',
+            message: "Completado"
+        } : {
+            status: 'error',
+            message: "Completado con errores"
+        });
+    },
 
     seller_history: async (req, res) => {
         let sucursals = await Sucursal.findAll({ raw: true });
@@ -425,7 +448,7 @@ const SaleController = {
                 }
 
                 let sale = await Sale.findByPk(data.sale);
-                if (data.amount > (sale.balance + sale.delivery_amount - sale.collected)) {
+                if (data.amount > Helper.fix_number(sale.balance + sale.delivery_amount - sale.collected)) {
                     return res.json({
                         status: 'errorMessage',
                         message: 'Monto Invalido'
@@ -437,7 +460,7 @@ const SaleController = {
                         let registered_payment = null;
 
                         data.amount = Number.parseFloat(data.amount);
-                        //token
+                        
                         if (data.method == 'money') {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
@@ -558,7 +581,7 @@ const SaleController = {
                         let registered_payment = null;
 
                         data.amount = Number.parseFloat(data.amount);
-                        //token
+                        
                         if (data.method == 'money') {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
@@ -628,7 +651,7 @@ const SaleController = {
         try {
             //buscar el pago
             let registered_payment = await SalePayment.findByPk(req.body.id);
-            if(registered_payment.amount == registered_payment.asigned_amount){
+            if (registered_payment.amount == registered_payment.asigned_amount) {
                 return res.json({
                     status: 'success',
                     message: 'pago registrado',
@@ -1447,6 +1470,94 @@ const SaleController = {
 
     },
 
+    quit_detail_revised: async (req, res) => {
+
+
+
+        //Buscar el detalle
+        let detail = await SaleDetail.findByPk(req.body.detail_id);
+
+        if (detail) {
+
+            //Buscar la venta
+            let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
+            if (sale) {
+                try {
+                    //contar si la venta tiene mas detalles
+                    let count = await SaleDetail.count({ where: { sale: sale.id } });
+                   
+                    return await sequelize.transaction(async (t) => {
+                        sale.balance -= Helper.fix_number(Number.parseInt(detail.cant) * Number.parseFloat(detail.price))
+
+                        //Buscar el producto, el Stock y la reserva
+                        let product = await Product.findByPk(detail.product);
+                        let reserves = await StockReserve.findAll({
+                            where: {
+                                [Op.and]: {
+                                    saleId: detail.id,
+                                    product: detail.product
+                                }
+                            },
+                            order: [['id', 'DESC']]
+                            //por la creacion se tiene como prioridad la sucursal del empleado que registra, para la eliminacion se tendra como prioridad las otras sucursales
+                        });
+                       
+
+
+                        for (let index = 0; index < reserves.length; index++) {
+                            //Buscar el Stock
+
+                            let stock = await Stock.findOne({where:{
+                                product: reserves[index].product,
+                                sucursal: reserves[index].sucursal,
+                            }});
+
+
+                            stock.reserved -= reserves[index].cant;
+                            product.reserved -= reserves[index].cant;
+
+                            await product.save({transaction: t});
+                            await stock.save({transaction: t});
+                            await reserves[index].destroy({transaction: t});
+                        }
+
+                        await detail.destroy({transaction: t});
+
+
+
+                        
+                        if (count < 2 ) {
+                            await sale.destroy({ transaction: t });
+                        } else {
+                            sale = await sale.save({ transaction: t });
+                        }
+
+                        return res.json({
+                            status: 'success', message: 'Guardado',
+                        });
+                        // return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id };
+
+                    });
+                } catch (error) {
+                    console.error(error);
+                    return res.json({
+                         status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message 
+                    });
+                    
+                }
+            } else {
+                return res.json({
+                    status: 'errorMessage', message: 'Venta o Pedido no encontrado'
+               });
+
+            }
+        } else {
+            return res.json({
+                status: 'errorMessage', message: 'Detalle no encontrado'
+           });
+        }
+    },
+
     socket_add_detail: async (data, session) => {
         if (data.cant < 1) {
             return { status: 'errorMessage', message: 'Agrega una cantidad' };
@@ -2118,7 +2229,7 @@ const SaleController = {
                     }
 
 
-                    //token
+                    
                     if (data.payment.transfer.amount > 0) {
                         //recorrer los detalles y realizar los registros
                         let len = data.payment.transfer.details.length;

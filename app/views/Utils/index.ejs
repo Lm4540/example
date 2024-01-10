@@ -2,83 +2,273 @@
 <html lang="es">
 
 <head>
-  <%- include('../Layouts/Head.ejs') %>
-  <style>
-    .icon-card i{
-      font-size: 4rem;
-      padding-top: 20%;
-    }
+   <%- include('../Layouts/Head.ejs') %>
+   <style>
+      .icon-card i {
+         font-size: 4rem;
+         padding-top: 20%;
+      }
 
-    .icon-card p {
-      padding-top: 60%;
-      font-weight: 550;
-      font-size: 1rem;
-      margin-bottom: 15px;;
-    }
-  </style>
+      .icon-card p {
+         padding-top: 60%;
+         font-weight: 550;
+         font-size: 1rem;
+         margin-bottom: 15px;
+         ;
+      }
+   </style>
 </head>
 
 <body class="<%= darkMode %>">
-  <%- include('../Layouts/SideBar.ejs') %>
-  <div id="main">
-    <%- include('../Layouts/NavBar.ejs') %>
-    <div class="main-content container-fluid">
-      <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10 col-12">
-          <h2 class="text-center">Utilidades</h2>
-          
-          <div class="row justify-content-center">
+   <%- include('../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10 col-12">
+               <h2 class="text-center">Utilidades</h2>
 
-            <a class="card icon-card text-center" href="/sales/client">
-                <i class="fas fa-user-friends"></i>
-              <p>Clientes</p>
-            </a>
+               <div class="row justify-content-center">
 
-            <a class="card icon-card text-center" href="/sales/client/create">
-                <i class="fas fa-user-plus"></i>
-              <p>Nuevo Cliente</p>
-            </a>
+                  <a class="card icon-card text-center" href="javascript:revokeSale()">
+                     <i class="fas fa-times-hexagon"></i>
+                     <p>Anular Pedido</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/history">
-                <i class="fas fa-calendar-alt"></i>
-              <p>Historial de ventas</p>
-            </a>
+                  <a class="card icon-card text-center" href="javascript:reOpenSale()">
+                     <i class="fas fa-box-open"></i>
+                     <p>Reabrir Pedido</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/inProccess">
-                <i class="far fa-file-check"></i>
-              <p>Ventas en Proceso</p>
-            </a>
+                  <a class="card icon-card text-center" href="javascript:revokeSaleDetail()">
+                     <i class="far fa-times-hexagon"></i>
+                     <p>Liberar Detalle</p>
+                  </a>
 
-            
+                  <a class="card icon-card text-center" href="javascript:asignar_pagos()">
+                     <i class="fas fa-box-usd"></i>
+                     <p>Asignar pagos</p>
+                  </a>
+                  <a class="card icon-card text-center" href="/system/icons">
+                     <i class="fas fa-braille"></i>
+                     <p>Lista de iconos</p>
+                  </a>
 
-            <a class="card icon-card text-center" href="/sales/sellers">
-                <i class="fas fa-users"></i>
-              <p>Vendedores</p>
-            </a>
 
-            <a class="card icon-card text-center" href="/sales/sale_in_room">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <p>Factura Rapida</p>
-            </a>
+               </div>
+            </div>
+         </div>
 
-            <a class="card icon-card text-center" href="/sales/invoices">
-                <i class="fas fa-file-invoice"></i>
-              <p>Facturas Registradas</p>
-            </a>
 
-            <a class="card icon-card text-center" href="/sales/daily_report">
-                <i class="far fa-file-spreadsheet"></i>
-              <p>Reporte Diario de Ventas</p>
-            </a>
+         <div class="row justify-content-center">
+            <div class="col-12 col-md-8 mt-5" id="results_or_process">
 
-            
-          </div>
-        </div>
+
+
+            </div>
+         </div>
       </div>
-    </div>
-    <%- include('../Layouts/Footer.ejs') %>
-  </div>
+      <%- include('../Layouts/Footer.ejs') %>
+   </div>
 
 </body><%- include('../Layouts/Scripts.ejs') %>
+<script>
+   const asignar_pagos = () => {
+      document.querySelector("#results_or_process").innerHTML =
+         ` <div class="text-center mt-5">
+            <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+               <span class="visually-hidden"></span>
+             </div>
+             <p style="font-weight: bolder; font-size: 150%;">Procesando...</p>
+         </div>`;
+      fetch('/sales/asignar_pagos').then(data => data.json()).then(data => {
+
+         console.log(data);
+
+         if (data.status == "success") {
+            document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-check-circle" style="font-size:500%; color:green"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">Hecho</p>
+            </div>`;
+
+         } else {
+            document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-times-octagon" style="font-size:500%; color:red"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">Finalizado con errores, consulte el Log de errores</p>
+            </div>`;
+         }
+
+
+      });
+   }
+
+   const revokeSale = () => {
+      document.querySelector("#results_or_process").innerHTML = ` <div class="card">
+                <div class="card-header">
+                  <h3 class="text-center">Proceso de Anulación y liberación de un pedido COMPLETO</h3>
+                </div>
+
+                <div class="card-body">
+                  <h4 class="text-center">Restricciones y Anotaciones:</h4>
+                  <ol>
+                    <li>Solo se puede anular un pedido cuyo estado sea abierto, cerrado o preparado, no se puede anular un pedido si su esta en Ruta o ya ha sido entregado</li>
+                    <li>No se pueden anular pedidos con factura realizada, para ello utilize las opciones de anulacion de factura</li>
+                    <li>No se puede anular un pedido con pago completado, para ello consulte con el administrador</li>
+                  </ol>
+                </div>
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="order_number">Numero de Orden</label>
+                    <input type="number" name="order_number" id="order_number" step="1" class="form-control">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="order_reason">Justificación</label>
+                    <textarea id="order_reason" class="form-control"></textarea>
+                  </div>
+
+
+                  <div class="text-center mt-2">
+                    <button class="btn btn-danger round" onclick="revokeSaleProcces()">Anular y Liberar</button>
+                  </div>
+                </div>
+              </div>`;
+
+
+   };
+
+
+   const revokeSaleProcces = () => {
+      let sale = Number.parseInt(document.querySelector("#order_number").value);
+      if (isNaN(sale) || sale < 1) {
+         return errorMessage("Ingrese un numero valido");
+      }
+      let reason = document.querySelector("#order_reason").value;
+      if (reason.length < 5) {
+         return errorMessage("proporcione una Justificación");
+      }
+
+      
+
+      document.querySelector("#results_or_process").innerHTML =
+         ` <div class="text-center mt-5">
+            <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+               <span class="visually-hidden"></span>
+             </div>
+             <p style="font-weight: bolder; font-size: 150%;">Procesando...</p>
+         </div>`;
+
+
+         postData('/utils/revoke_order', {sale, reason})
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Pedido Anulado');
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-check-circle" style="font-size:500%; color:green"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">Hecho</p>
+            </div>`;
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/sales/client/view/${data.invoice.client}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-times-octagon" style="font-size:500%; color:red"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">${data.message}</p>
+            </div>`;
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+
+
+      //enviar el dato
+
+   };
+
+
+   const reOpenSale = () => {
+
+      document.querySelector("#results_or_process").innerHTML = ` <div class="card">
+                <div class="card-header">
+                  <h3 class="text-center">Reabrir un pedido cerrado</h3>
+                </div>
+
+                <div class="card-body">
+                  <h4 class="text-center">Restricciones y Anotaciones:</h4>
+                  <ol>
+                    <li>Solo se puede reabrir un pedido cuyo estado sea cerrado o preparado, no se puede reabrir un pedido si su esta en Ruta o ya ha sido entregado</li>
+                    <li>No se pueden reabrir pedidos con factura realizada, para ello utilize las opciones de anulación de factura</li>
+                    <li>No se puede reabrir un pedido con pago completado, para ello consulte con el administrador</li>
+                  </ol>
+                </div>
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="order_number">Numero de Orden</label>
+                    <input type="number" name="order_number" id="order_number" step="1" class="form-control">
+                  </div>
+                  <div class="text-center mt-2">
+                    <button class="btn btn-warning round" onclick="reOpenSaleProcces()">Reabrir</button>
+                  </div>
+                </div>
+              </div>`;
+
+   };
+
+   const reOpenSaleProcces = () => {
+
+      let order = Number.parseInt(document.querySelector("#order_number").value);
+      if (isNaN(order) || order < 1) {
+         return errorMessage("Ingrese un numero valido");
+      }
+
+      document.querySelector("#results_or_process").innerHTML =
+         ` <div class="text-center mt-5">
+            <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+               <span class="visually-hidden"></span>
+             </div>
+             <p style="font-weight: bolder; font-size: 150%;">Procesando...</p>
+         </div>`;
+
+
+      //enviar el dato
+
+      postData('/utils/open_order', {order})
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Pedido Anulado');
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-check-circle" style="font-size:500%; color:green"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">Hecho</p>
+            </div>`;
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/sales/client/view/${data.invoice.client}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-times-octagon" style="font-size:500%; color:red"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">${data.message}</p>
+            </div>`;
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+
+   };
+
+
+   const revokeSaleDetail = () => {
+
+   };
+</script>
 
 </html>

@@ -76,6 +76,10 @@
          <h3 class="text-center"> <a href="/sales/client/view/<%= cliente.id %>" target="_blank"><%= cliente.name %></a></h3>
          <h3 class="text-center">Vendedor: <%= seller.name %></h3>
          <h3 class="text-center">Abierto el <%= Helper.format_date(sale.createdAt) %></h3>
+         <% if (sale.revoked_at !== null) { %>
+            <h3 class="text-center text-danger">Orden/Venta Anulad@</h3>
+          
+         <% } %>
          <div class="row justify-content-center ">
             <div class="col table-responsive">
 

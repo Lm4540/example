@@ -2,6 +2,7 @@ const router = require("express").Router();
 const ClientController = require('../CRM/Controllers/ClientController');
 const SaleController = require('../CRM/Controllers/SaleController');
 const InvoiceController = require('../CRM/Controllers/InvoiceController');
+const Auth = require("../System/Middleware/Auth");
 
 // Home page route.
 router.get("/", function (req, res) {
@@ -59,8 +60,11 @@ router.post('/invoice/revoke_invoice', InvoiceController.revoke_invoice);
 router.get('/invoices', InvoiceController.invoice_report);
 router.get('/invoices_details', InvoiceController.invoice_report_details);
 
+router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, next, ['revoke_sales_details']), SaleController.quit_detail_revised);
 
-router.get('/corregir_fecha', InvoiceController.corregir_la_fecha);
+
+//router.get('/corregir_fecha', InvoiceController.corregir_la_fecha);
+router.get('/asignar_pagos', SaleController.sale_status_check);
 
 
 

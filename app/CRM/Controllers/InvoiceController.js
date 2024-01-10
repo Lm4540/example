@@ -151,6 +151,14 @@ const InvoiceController = {
                                         stock.reserved -= reserve.cant;
                                         await stock.save({ transaction: t });
                                     }
+
+                                    let product = await Product.findByPk(reserve.product);
+                                    if (product) {
+                                        product.reserved -= reserve.cant;
+                                        await product.save({ transaction: t });
+                                    }
+
+
                                     await reserve.destroy({ transaction: t });
                                 }
                                 //actualizar el detalle
@@ -175,7 +183,7 @@ const InvoiceController = {
                                 }
                             });
 
-                            if(existe){
+                            if (existe) {
                                 return res.json({
                                     status: 'errorMessage', message: "Ya hay una factura registrada con este Numero para la serie seleccionada"
                                 });
@@ -491,7 +499,13 @@ const InvoiceController = {
         //Buscar la venta
         let sale = await Sale.findByPk(req.params.id);
 
+        
+
         if (sale && sale.invoice_number !== null) {
+            if(sale._status == "revoked"){
+                ref = `/sales/view_invoice/${sale.id}`;
+                res.redirect(301, ref);
+            }
             //Buscar los detalles
             let details = await SaleDetail.findAll({
                 where: {
@@ -555,7 +569,10 @@ const InvoiceController = {
             let serie = await InvoiceSeries.findByPk(sale.invoce_serie);
             //enviar los datos a la vista
 
-            return res.render('CRM/Invoice/view-invoice', { pageTitle: `Ver Factura ${sale.invoice_type} N° ${sale.invoice_number}`, sale, details, cliente, data: sale.invoice_data, serie });
+
+            let view = sale._status == "revoked" ? 'CRM/Invoice/view-revoked-invoice' : 'CRM/Invoice/view-invoice';
+
+            return res.render(view, { pageTitle: `Ver Factura ${sale.invoice_type} N° ${sale.invoice_number}`, sale, details, cliente, data: sale.invoice_data, serie });
 
         }
         return Helper.notFound(req, res,

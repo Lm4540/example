@@ -214,12 +214,18 @@ module.exports = [
         "group": "Logistica",
         "permission": "reopen_sales"
     },
+    {
+        "name": "Anular y Liberar Pedidos",
+        "explication": "Anular y Liberar Ventas / Pedidos",
+        "group": "Logistica",
+        "permission": "revoke_sales"
+    },
 
     {
-        "name": "Quitar Estado Revisado de los detalles",
-        "explication": "Permite reabrir ventas cerradas pero aun no entregadas para realizar modificaciones o agregar productos faltantes",
+        "name": "Quitar detalles ya revisados y apartados en las ventas",
+        "explication": "Permite quitar detalles ya revisados en las ventas",
         "group": "Logistica",
-        "permission": "reopen_sales_details"
+        "permission": "revoke_sales_details"
     },
 
 
