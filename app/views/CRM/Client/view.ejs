@@ -84,8 +84,8 @@
                   <div class="card-body">
                      <div id="form_adding" style="display:none; margin-bottom: 20px;">
                         <div class="text-center">
-                           <span id="free_toggle" class="badge bg-success" style="cursor:pointer" onclick="free_detail()">Desde el Inventario</span>
-                           <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;" onclick="form_inventory()">Cuando Venga del Proveedor</span>
+                           <span id="free_toggle" class="badge bg-success" style="cursor:pointer">Desde el Inventario</span>
+                           <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;" >Cuando Venga del Proveedor</span>
                         </div>
 
                         <div id="free_detail" class="row mt-4" style="display:none;">
@@ -337,7 +337,7 @@
                                     <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
                                     <% if ((order.balance + order.delivery_amount)> order.collected) { %>
-                                       <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= order.balance + order.delivery_amount - order.collected %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
+                                       <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
                                     <% } %>
 
                                  </td>
