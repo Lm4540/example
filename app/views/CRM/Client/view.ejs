@@ -336,7 +336,7 @@
                                     <br>
                                     <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
-                                    <% if (order.collected < (order.balance + order.delivery_amount)) { %>
+                                    <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
                                        <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
                                     <% } %>
 
