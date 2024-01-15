@@ -556,59 +556,62 @@ const StockController = {
                 const result = await sequelize.transaction(async (t) => {
                     let faltan = false;
                     for (let index = 0; index < len; index++) {
-
                         let detail = details[index];
-                        let product = products[detail.product];
                         let _cant = Number.parseInt(data.details[detail.id]);
-                        let stock = stocks[detail.product];
+                        if (_cant > 0) {
+                            let product = products[detail.product];
+                            let stock = stocks[detail.product];
 
-                        //Si el stock existe, aumentamos la cantidad existente
-                        let last_sucursal_stock = 0;
-                        if (stock === undefined || stock == null) {
-                            //Si no existe lo creamos con la cantidad inicial del ingreso
-                            stock = await Stock.create({
-                                'product': product.id,
-                                'sucursal': shipment.destinoSucursal,
-                                'cant': _cant,
-                                'reserved': 0,
-                            }, { 'transaction': t });
+                            //Si el stock existe, aumentamos la cantidad existente
+                            let last_sucursal_stock = 0;
+                            if (stock === undefined || stock == null) {
+                                //Si no existe lo creamos con la cantidad inicial del ingreso
+                                stock = await Stock.create({
+                                    'product': product.id,
+                                    'sucursal': shipment.destinoSucursal,
+                                    'cant': _cant,
+                                    'reserved': 0,
+                                }, { 'transaction': t });
 
-                        } else {
-                            last_sucursal_stock = stock.cant;
-                            stock.cant += _cant;
-                            await stock.save({ 'transaction': t });
+                            } else {
+                                last_sucursal_stock = stock.cant;
+                                stock.cant += _cant;
+                                await stock.save({ 'transaction': t });
 
-                        }
+                            }
 
-                        //calcular el costo promedio y actualizar el registro del producto
-                        let last_cost = product.cost;
-                        let last_stock = product.stock;
+                            //calcular el costo promedio y actualizar el registro del producto
+                            let last_cost = product.cost;
+                            let last_stock = product.stock;
 
-                        product.cost = ((last_cost * last_stock) + (detail.cost * _cant)) / (_cant + last_stock);
-                        product.stock += _cant;
-                        product.last_cost = last_cost;
+                            product.cost = ((last_cost * last_stock) + (detail.cost * _cant)) / (_cant + last_stock);
+                            product.stock += _cant;
+                            product.last_cost = last_cost;
 
-                        //Actualizar cantidad y costo del producto
-                        await product.save({ transaction: t });
+                            //Actualizar cantidad y costo del producto
+                            await product.save({ transaction: t });
 
-                        //registrar el movimiento
-                        let move = await Movement.create({
-                            last_sucursal_stock: last_sucursal_stock,
-                            last_product_stock: last_stock,
-                            cant: _cant,
-                            cost: detail.cost,
-                            last_cost: last_cost,
-                            in: true,
-                            product: product.id,
-                            concept: concept,
-                            sucursal: stock.sucursal,
-                            createdBy: req.session.userSession.shortName,
-                        }, { transaction: t });
+                            //registrar el movimiento
+                            let move = await Movement.create({
+                                last_sucursal_stock: last_sucursal_stock,
+                                last_product_stock: last_stock,
+                                cant: _cant,
+                                cost: detail.cost,
+                                last_cost: last_cost,
+                                in: true,
+                                product: product.id,
+                                concept: concept,
+                                sucursal: stock.sucursal,
+                                createdBy: req.session.userSession.shortName,
+                            }, { transaction: t });
 
-                        detail.in += _cant;
-                        await detail.save({ transaction: t });
+                            detail.in += _cant;
+                            await detail.save({ transaction: t });
 
-                        if (detail.in < detail.cant) {
+                            if (detail.in < detail.cant) {
+                                faltan = true;
+                            }
+                        }else{
                             faltan = true;
                         }
                     }

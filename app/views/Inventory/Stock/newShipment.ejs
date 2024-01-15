@@ -43,7 +43,7 @@
          font-size: 100%;
          color: white;
       }
-      </style>
+   </style>
 </head>
 
 <body class="<%= darkMode %>">
@@ -83,7 +83,7 @@
                   <div class="col-12 col-md-6">
                      <div class="form-group">
                         <label for="originSucursal">Sucursal de Origen</label>
-                        <select name="originSucursal" id="originSucursal" class="form-control" disabled>
+                        <select name="originSucursal" id="originSucursal" class="form-control">
                            <% sucursals.forEach(el => { %>
                            <% if (user.sucursal == el.id) { %>
                            <option value="<%= el.id %>" selected><%= el.name %></option>
@@ -169,7 +169,7 @@
 
 
 
-socket.on('save_new_transfer_error', data => {
+   socket.on('save_new_transfer_error', data => {
       console.log(data);
       if (data._process == _process) {
          return errorMessage(data.errorMessage);
@@ -188,9 +188,8 @@ socket.on('save_new_transfer_error', data => {
       selected_sucursal = document.querySelector("#originSucursal").value,
       selectProduct = document.querySelector('#productSelect'),
       product_last_val = '',
-      detail_number = 0,
       added = [],
-      details = [],
+      details = {},
       tbody = document.querySelector('#_tr_details'),
       s_options = {
          mode: 'cors',
@@ -212,11 +211,8 @@ socket.on('save_new_transfer_error', data => {
 
 
    const deleteDetail = (index) => {
-      added = added.filter(element => element != details[index].product);
-      delete details[index];
+      details[index] = 0;
       tbody.removeChild(document.querySelector(`#detail_${index}`));
-      detail_number--;
-      document.querySelector("#btn_save").disabled = detail_number < 1;
    };
 
    const clean_detail_inputs = () => {
@@ -253,9 +249,8 @@ socket.on('save_new_transfer_error', data => {
    document.addEventListener('DOMContentLoaded', event => {
       document.querySelector("#originSucursal").addEventListener('change', (e) => {
          selected_sucursal = document.querySelector("#originSucursal").value;
-         detail_number = 0;
          added = [];
-         details = [];
+         details = {};
          tbody.innerHTML = "";
       });
 
@@ -272,53 +267,79 @@ socket.on('save_new_transfer_error', data => {
          }
          let prod = product_in_select2[selectProduct.value];
 
-         if (added.includes(selectProduct.value)) {
-            return errorMessage('Este producto ya ha sido agregadoa a la lista');
-         } else if (prod.stock - prod.reserved < dt.cant) {
-            return errorMessage(`la cantidad maxima es ${prod.stock - prod.reserved} para este producto`);
 
-         }
+         if (details[dt.product] !== null && details[dt.product] !== undefined) {
+            //verificar la cantidad maxima de stock
+            let suma = details[dt.product] + dt.cant;
+            if (prod.stock - prod.reserved < suma) {
+               return errorMessage(`la cantidad maxima es ${prod.stock - prod.reserved} para este producto`);
+            }
+            details[dt.product] = suma;
+            let tr = document.querySelector('#detail_' + dt.product).innerHTML = `
+         <td><img src="${prod.image}" alt="product" style="max-width: 100px;"></td>
+         <td>${prod.name} SKU: ${prod.sku}</td>
+         <td>${suma}</td>
+         <td><span class="badge round bg-danger" onclick="deleteDetail(${dt.product})">Quitar</span></td>`;
 
-         added.push(selectProduct.value);
-         details.push(dt);
+            clean_detail_inputs();
 
-         let tr = document.createElement('tr');
-         tr.id = 'detail_' + detail_number;
-         tr.innerHTML = `
+         } else {
+            if (prod.stock - prod.reserved < dt.cant) {
+               return errorMessage(`la cantidad maxima es ${prod.stock - prod.reserved} para este producto`);
+
+            }
+            details[dt.product] = dt.cant;
+            let tr = document.createElement('tr');
+            tr.id = 'detail_' + dt.product;
+            tr.innerHTML = `
          <td><img src="${prod.image}" alt="product" style="max-width: 100px;"></td>
          <td>${prod.name} SKU: ${prod.sku}</td>
          <td>${dt.cant}</td>
-         <td><span class="badge round bg-danger" onclick="deleteDetail(${detail_number})">Quitar</span></td>`;
-         tbody.appendChild(tr);
-         detail_number++;
-
-         clean_detail_inputs();
+         <td><span class="badge round bg-danger" onclick="deleteDetail(${dt.product})">Quitar</span></td>`;
+            tbody.appendChild(tr);
+            clean_detail_inputs();
+         }
       });
 
       document.querySelector("#btn_save").addEventListener('click', e => {
-         if (detail_number < 1) {
+         let dts = [];
+         let keys = Object.keys(details);
+
+         for (let index = 0; index < keys.length; index++) {
+            let cant = Number.parseInt(details[keys[index]]);
+            if(cant > 0){
+               dts.push({
+                  product: keys[index],
+                  cant,
+               });
+            }
+
+         }
+         
+
+         if (dts.length < 1) {
             return errorMessage('Agregue los ítems que va a trasladar');
          } else if (selected_sucursal == document.querySelector("#destinoSucursal").value) {
             return errorMessage('La sucursal de origen y destino deben ser diferentes');
          }
-         
+
          let data = {
             requestedBy: document.querySelector("#requestedBy").value,
             trasnportedBy: document.querySelector("#trasnportedBy").value,
             sucursal: selected_sucursal,
             destino: document.querySelector("#destinoSucursal").value,
-            details : details,
+            details: dts,
             _process,
          }
-         
-         if(data.requestedBy.length < 5){
+
+         if (data.requestedBy.length < 5) {
             return errorMessage('Indique quien ha solicitado el traslado');
-         }else if(data.trasnportedBy.length < 5){
+         } else if (data.trasnportedBy.length < 5) {
             return errorMessage('Indique quien realizara el traslado');
          }
-         
+
          document.querySelector("#btn_save").disabled = true;
-         //enviar los resultados
+         // enviar los resultados
          socket.emit('save_new_transfer', data);
       });
    });

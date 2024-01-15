@@ -184,7 +184,7 @@
             console.log(data);
             if (data.status == 'success') {
                successMessage('Guardado con exito');
-               // setTimeout(window.location.reload(), 1500);
+               setTimeout(window.location.reload(), 1500);
             } else if (data.status == 'errorMessage') {
                return errorMessage(data.message);
             } else {
