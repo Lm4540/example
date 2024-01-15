@@ -286,22 +286,40 @@
    };
 
 
-   const quit_cost = index => {
-      delete costs[index];
-      document.querySelector(`#expenses`).removeChild(document.querySelector(`#_cost_${index}`));
+   const quit_cost = a => {
+      
+      let old_cost = costs;
+      costs = [];
+      document.querySelector("#expenses").innerHTML = "";
 
+      for (let index = 0; index < old_cost.length; index++) {
+         if(a != index){
+            
+            //piuntar el costo
+            let div = document.createElement('div');
+            div.id = `_cost_${costs.length}`;
+            div.classList.add('row', 'mt-2');
+            div.innerHTML = `<div class="col-md-6">${old_cost[index].description}</div>
+            <div class="col-md-6">$${money_format(old_cost[index].cost)} <span onclick="quit_cost(${costs.length})" class="badge bg-secondary ml-3">Quitar</span></div>`;
+            document.querySelector("#expenses").appendChild(div);
+            costs.push(old_cost[index]);
+         }
+      }
+
+      console.log(costs);
    }
 
    const quit_identify = index => {
+      //token
       let dt = details[current_detail].identification[index];
-
       console.log(dt);
       current_cant += dt.cant;
       document.querySelector('#resume_cant').value = current_cant;
+      details[current_detail].identified -= dt.cant;
+
       let tr = document.querySelector(`#_tr_tr_identificaion_${index}`);
       document.querySelector(`#identify_tbody`).removeChild(tr);
       delete details[current_detail].identification[index];
-
    }
 
    const choices_product = new Choices(selectProduct, {
@@ -370,6 +388,8 @@
          var faltan = false;
          post_data.sucursal = document.querySelector("#in_sucursal").value;
          post_data.observation = document.querySelector("#in_comments").value;
+
+         
          post_data.costs = costs;
          
 
@@ -461,25 +481,48 @@
          } else {
             details[current_detail].identified += _cant;
          }
-         details[current_detail].identification[p.id] = {
-            product: p.id,
-            image: p.image,
-            name: p.name,
-            cant: _cant
-         };
-         current_cant -= _cant;
 
-         //pintar el seleccionado
+         //_tr_tr_identificaion_560
+         if(details[current_detail].identification[p.id] !== null && details[current_detail].identification[p.id] !== undefined){
+            details[current_detail].identification[p.id].cant += _cant;
 
-         let tr = document.createElement('tr');
-         tr.id = `_tr_tr_identificaion_${p.id}`;
-         tr.innerHTML = `<td>
+            //Actualizar el detalle visual
+
+
+            let tr = document.querySelector(`#_tr_tr_identificaion_${p.id}`).innerHTML = `<td>
                <img src="${p.image}" alt="product image" style="width: 100px;">
                <br>
                <p>${p.name} SKU# ${p.sku}</p>
-            </td><td>${_cant} Un.</td>
+            </td><td>${details[current_detail].identification[p.id].cant} Un.</td>
             <td><span class="badge bg-secondary" onclick="quit_identify(${p.id})">Quit</span></td>`;
-         document.querySelector('#identify_tbody').appendChild(tr);
+
+
+
+         }else{
+            details[current_detail].identification[p.id] = {
+               product: p.id,
+               image: p.image,
+               name: p.name,
+               cant: _cant
+            };
+
+            //pintar el seleccionado
+   
+            let tr = document.createElement('tr');
+            tr.id = `_tr_tr_identificaion_${p.id}`;
+   
+   
+            tr.innerHTML = `<td>
+                  <img src="${p.image}" alt="product image" style="width: 100px;">
+                  <br>
+                  <p>${p.name} SKU# ${p.sku}</p>
+               </td><td>${_cant} Un.</td>
+               <td><span class="badge bg-secondary" onclick="quit_identify(${p.id})">Quit</span></td>`;
+            document.querySelector('#identify_tbody').appendChild(tr);
+         }
+
+         current_cant -= _cant;
+
 
          document.querySelector('#resume_cant').value = current_cant;
          choices_product.removeActiveItems();
