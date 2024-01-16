@@ -21,6 +21,7 @@
                <thead>
                   <tr>
                      <th>Cliente</th>
+                     <th>Fecha de Apertura</th>
                      <th>Monto</th>
                      <th>Vendedor</th>
                      <th>Estado</th>
@@ -32,6 +33,9 @@
                      <tr class="text-center">
                         <td>
                            <%= clients[sale.client] %>
+                        </td>
+                        <td>
+                           <%= Helper.date_to_spanish(sale.createdAt) %>
                         </td>
                         <td>$<%= Helper.money_format(sale.balance) %></td>
                         <td><%= sellers[sale.seller] %></td>
