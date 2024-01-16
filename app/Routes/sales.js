@@ -36,6 +36,7 @@ router.post('/updateDetail', SaleController.updateSaleDetail);
 
 router.get('/sale_in_room', SaleController.saleInRoomView);
 router.get('/view/:id(\\d+)', SaleController.viewSale);
+router.get('/view_cost/:id(\\d+)', SaleController.viewSaleCost);
 router.get('/inProccess', SaleController.inProccess);
 
 router.get('/seller/history', SaleController.seller_history);
@@ -58,6 +59,7 @@ router.post('/update_invoice', InvoiceController.update_invoice);
 router.post('/invoice/create_invoice', InvoiceController.create_invoice);
 router.post('/invoice/revoke_invoice', InvoiceController.revoke_invoice);
 router.get('/invoices', InvoiceController.invoice_report);
+router.get('/invoices_with_costs',  (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), InvoiceController.invoice_report2);
 router.get('/invoices_details', InvoiceController.invoice_report_details);
 
 router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, next, ['revoke_sales_details']), SaleController.quit_detail_revised);

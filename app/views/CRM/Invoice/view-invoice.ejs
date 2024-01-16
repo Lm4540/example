@@ -99,6 +99,17 @@
          margin-bottom: 0.5cm;
          margin-top: 0;
       }
+
+
+      #invoice--body *{
+         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif!important;
+         font-size: small!important;
+      }
+
+      #invoice--body th {
+         font-size: 65%!important;
+         border: 1px solid black;
+      }
    </style>
 </head>
 <% options = `
@@ -108,6 +119,7 @@
 	</a>
 	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
       <a class="list-group-item" href="javascript:show_edit_modal()"><i class="fas fa-edit mr-3"></i></i>Editar Detalles</a>
+      <a class="list-group-item" href="/sales/view/${sale.id}"><i class="fas fa-align-center mr-3"></i>Ir a la Venta</a>
       <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>`;
 
        if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
@@ -129,7 +141,7 @@
             </div>
             <div class="card-body ">
                <div class="row  justify-content-center">
-                  <div class="col-md-8 col-12 bg-white">
+                  <div class="col-md-8 col-12 bg-white" id="invoice--body">
                      <% if (sale.invoice_type == "fcf") { %>
                      <%- include('fcf_body.ejs') %>
                      <% } else { %>

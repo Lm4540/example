@@ -6,62 +6,8 @@
    <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
    <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
    <style>
-      .botonF1 {
-         cursor: pointer;
-         z-index: 1050;
-         width: 60px;
-         height: 60px;
-         border-radius: 100%;
-         background: #568add !important;
-         right: 0;
-         bottom: 0;
-         display: scroll;
-         position: fixed;
-         margin-right: 2rem;
-         margin-bottom: 2rem;
-         border: none;
-         outline: none;
-         color: #FFF;
-         font-size: 36px;
-         box-shadow: 10px 10px 22px -2px rgba(0, 0, 0, .61) !important;
-         transition: .3s
-      }
+     
 
-      .botonF1:disabled,
-      .botonF1[disabled] {
-         border: 1px solid #999999 !important;
-         background-color: #cccccc !important;
-         color: #666666 !important;
-         cursor: not-allowed;
-      }
-
-      .botonF1:hover {
-         transform: scale(1.1)
-      }
-
-      .botonF1 i {
-         padding-left: 4px;
-         font-size: 100%;
-         color: white;
-      }
-
-      .product_item .card,
-      .product_item img {
-         border-radius: 1.5em !important;
-      }
-
-      .product_item {
-         font-size: 110%;
-         min-height: 150px;
-      }
-
-      .product_item img {
-         border-radius: 1.5em !important;
-      }
-
-      .product_item p {
-         margin-bottom: .2rem;
-      }
    </style>
 </head>
 
@@ -88,12 +34,14 @@
                <table class="table table-sm table-bordered table-hover">
                   <thead>
                      <tr>
-                        <th>ID</th>
-                        <th style="width: 180px;">IMG</th>
+                        <th>id</th>
+                        <th style="width: 180px;">Product Img</th>
                         <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>Opciones</th>
+                        <th>Cantidad Vendida</th>
+                        <th>Precio de Venta <br> (Con IVA)</th>
+                        <th>Subtotal</th>
+                        <th>Costo</th>
+                        <th>Subtotal (Costo)</th>
                      </tr>
                   </thead>
                   <tbody>
@@ -110,8 +58,10 @@
                            <a class="badge bg-success mt-4" href="/inventory/product/view/<%= detail.product %>" target="_blank">Ir al Producto</a>
                         </td>
                         <td class="text-center"><%= detail.cant %></td>
-                        <td class="text-center"><%= Helper.money_format(detail.price) %></td>
-                        <td class="text-center"></td>
+                        <td class="text-center">$<%= Helper.money_format(detail.price) %></td>
+                        <td class="text-center">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+                        <td class="text-center">$<%= Helper.money_format(detail.product_cost) %></td>
+                        <td class="text-center">$<%= Helper.money_format(detail.product_cost * detail.cant) %></td>
                      </tr>
                      <% }) %>
 

@@ -1440,6 +1440,35 @@ const SaleController = {
         let sucursal = await Sucursal.findByPk(req.session.userSession.employee.sucursal);
         return res.render('CRM/Sales/NewSaleInRoom', { pageTitle: 'Venta en Sala', sucursal });
     },
+
+    viewSaleCost : async (req, res) => {
+        //buscar la venta
+        let sale = await Sale.findByPk(req.params.id)
+        if (sale) {
+
+            //buscar el Cliente
+            let cliente = await Client.findByPk(sale.client);
+
+            if (cliente) {
+                //Buscar el empleado
+                let seller = await Employee.findByPk(sale.seller);
+                if (seller) {
+                    let sucursal = await Sucursal.findByPk(seller.sucursal);
+                    //buscar los detalles
+                    let details = await SaleDetail.findAll({
+                        where: {
+                            sale: sale.id
+                        }
+                    });
+
+                    return res.render('CRM/Sales/view_sale_cost_details', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, details, seller, cliente, status });
+                }
+
+            }
+
+        }
+
+    },
     viewSale: async (req, res) => {
         //buscar la venta
         let sale = await Sale.findByPk(req.params.id)
@@ -1461,7 +1490,7 @@ const SaleController = {
                     });
 
 
-                    return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, details, seller, cliente });
+                    return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, details, seller, cliente, status });
                 }
 
             }

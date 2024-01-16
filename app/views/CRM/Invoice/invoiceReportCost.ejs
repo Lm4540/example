@@ -33,13 +33,13 @@
                    <label for="selected_serie">Selecciona la Serie a Consultar</label>
                    <select name="selected_serie" id="selected_serie" class="form-control">
                       <% series.forEach(serie => { %>
-                        <option value="<%= serie.id %>" data-sucursal="<%= serie.sucursal %>"><%= `${types[serie.type]} (${serie.serie})` %></option>
+                      <option value="<%= serie.id %>" data-sucursal="<%= serie.sucursal %>"><%= `${types[serie.type]} (${serie.serie})` %></option>
                       <% }) %>
                    </select>
                 </div>
  
              </div>
-            <div class="col-12 text-center">
+             <div class="col-12 text-center">
                <button class="btn btn-success mt-4" onclick="search_data()">Buscar</button>
             </div>
          </div>
@@ -51,6 +51,21 @@
          </div>
       </div>
       <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+
+   <div class="modal fade" id="modalShowData" tabindex="-1" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
+         <div class="modal-content">
+            <div class="modal-header row">
+               <div class="col text-center"><button class="btn btn-secondary" onclick="javascript: ShowDataModal.toggle();">Close</button></div>
+            </div>
+            <div class="modal-body" style="width: 100%; height: 100vh;">
+               <iframe src="" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
+
+
+            </div>
+         </div>
+      </div>
    </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
@@ -74,8 +89,10 @@
       //mostrar la cuestion de calculando datos
       let init = document.querySelector('#init_date').value;
       let end = document.querySelector('#end_date').value;
-      // let sucursal = Number.parseInt(document.querySelector('#selected_sucursal').value);
+
       let sucursal = document.querySelector("#selected_serie").options[document.querySelector("#selected_serie").selectedIndex].dataset.sucursal;
+
+      // let sucursal = Number.parseInt(document.querySelector('#selected_sucursal').dataset.sucursal);
       let serie = Number.parseInt(document.querySelector("#selected_serie").value);
 
       if (init.length < 10 || end.length < 10 || end < init) {
@@ -95,6 +112,7 @@
 
          const response = await fetch(`/sales/invoices_details?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&sucursal=${sucursal}&serie=${serie}`, s_options);
          let res = await response.json();
+         console.log(res)
          document.querySelector("#title").innerHTML = ``;
 
          //procesar la informacion: 
@@ -106,6 +124,7 @@
                         <th>Numero</th>
                         <th>Fecha</th>
                         <th>Total</th>
+                        <th>Costo de Venta </th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
@@ -116,10 +135,19 @@
                         <tr>
                             <td>${invoice.invoice_data.name}</td>
                             <td>${invoice.invoice_number}</td>
-                            <td>${format_date(invoice.invoice_date, false)}</td>
-                            <td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
-                            <td>
-                                <a href="/sales/view/${invoice.id}" class="badge bg-warning">Ver Venta</a>
+                            <td>${format_date(invoice.invoice_date, false)}</td>`;
+                        if(invoice.revoked_at == null){
+                           content += `<td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
+                           <td>${invoice.cost > 0.00 || invoice.delivered_by != null ? ("$"+money_format(invoice.cost)) : '<span class="text-danger">No determinado / En Proceso</span>'}</td>`;
+                           
+                        }else{
+                           content += `<td><span class="text-danger"> ANULADO </span></td>
+                           <td><span class="text-danger"> -- </span></td>`;
+
+                        }
+
+                            content += `<td>
+                                <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning">Ver detalle</span>
                                 <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
                             </td>
                         </tr>`;
@@ -178,6 +206,13 @@
 
 
    document.addEventListener('DOMContentLoaded', event => {});
+
+   const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
+   const ver_detalle = (url) => {
+      document.querySelector("#iframe_data").src = url;
+      ShowDataModal.toggle();
+   }
+
 </script>
 
 </html>

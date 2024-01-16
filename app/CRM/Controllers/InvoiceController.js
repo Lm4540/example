@@ -340,6 +340,23 @@ const InvoiceController = {
 
     },
 
+    invoice_report2: async (req, res) => {
+
+        let sucursals = await Sucursal.findAll();
+        let series = await InvoiceSeries.findAll({
+            where: {
+                active: 1
+            }
+        });
+        return res.render('CRM/Invoice/invoiceReportCost.ejs', {
+            sucursals,
+            pageTitle: 'Reporte de facturas Generadas',
+            series,
+            types
+        });
+
+    },
+
 
     corregir_la_fecha: async (req, res) => {
         let invoices = await Sale.findAll({

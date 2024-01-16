@@ -189,6 +189,15 @@ module.exports = [
         "permission": "revoke_invoice_documents"
     },
 
+    {
+        "name": "Ver reporte de ventas con costos",
+        "explication": "Permite Ver reporte de ventas con costos",
+        "group": "Ventas",
+        "permission": "view_invoice_report_with_cost"
+    },
+
+    
+
     
     {
         "name": "marcar Reservas realizadas",
