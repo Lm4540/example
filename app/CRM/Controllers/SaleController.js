@@ -1468,6 +1468,8 @@ const SaleController = {
 
         }
 
+        return Helper.notFound(req. res, 'Invoice or Sale not Found!');
+
     },
     viewSale: async (req, res) => {
         //buscar la venta

@@ -138,7 +138,7 @@
                             <td>${format_date(invoice.invoice_date, false)}</td>`;
                         if(invoice.revoked_at == null){
                            content += `<td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
-                           <td>${invoice.cost > 0.00 || invoice.delivered_by != null ? ("$"+money_format(invoice.cost)) : '<span class="text-danger">No determinado / En Proceso</span>'}</td>`;
+                           <td>${invoice.cost > 0.00 || invoice.delivered_by != null ? ("$"+money_format(invoice.cost + invoice.delivery_amount)) : '<span class="text-danger">No determinado / En Proceso</span>'}</td>`;
                            
                         }else{
                            content += `<td><span class="text-danger"> ANULADO </span></td>

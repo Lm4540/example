@@ -188,6 +188,76 @@ const UtilsController = {
         });
     },
 
+    recalcular_costo: async (req, res) => {
+        let sale = await Sale.findByPk(req.body.sale_id);
+
+
+        if (sale) {
+            //buscar los movimientos e indexarlos
+            let tmp = await sequelize.query(
+                'SELECT * FROM `inventory_product_movement` WHERE sale_detail in (select id from crm_sale_detail where sale = :sale_id)',
+                {
+                    replacements: { sale_id: sale.id },
+                    type: QueryTypes.SELECT,
+                }
+            );
+            let moves = {};
+
+            tmp.forEach(element => moves[element.sale_detail] = element.cost);
+            //buscar los detalles
+            let details = await SaleDetail.findAll({
+                where: {
+                    sale: sale.id
+                }
+            });
+
+            try {
+                return await sequelize.transaction(async (t) => {
+                    let suma = 0.00;
+                    for (let index = 0; index < details.length; index++) {
+                        let dt = details[index];
+                        let _cost = 0.00;
+                        if (moves[dt.id] !== null && moves[dt.id]) {
+                            _cost = moves[dt.id]
+                        } else {
+                            //buscar el costo del producto
+                            console.log("Costo no encontrado en los movimientos para el detalle ", dt.id);
+                            let product = await Product.findByPk(dt.product);
+                            if (product) {
+                                _cost = product.cost;
+                            } else {
+                                throw new Error(`Ningun costo encontrado! producto ${dt.product} detalle ${dt.id}`);
+                            }
+                        }
+                        if (_cost > 0.00) {
+                            dt.product_cost = _cost;
+                            await dt.save({ transaction: t });
+                            suma = Helper.fix_number(suma + (_cost * dt.cant));
+                        } else {
+                            console.log("Costo cero en el detalle ", dt.id);
+                        }
+
+                    }
+
+                    sale.cost = suma;
+                    await sale.save({ transaction: t });
+
+                    return res.json({ status: 'success', message: 'Costo de Venta Actualizado!', sale });
+                });
+            } catch (error) {
+                console.error(error);
+                return res.json({ status: 'errorMessage', message: error.message, data: error });
+            }
+        }
+
+        return res.json({
+            status: 'error',
+            message: 'Sale not Found',
+        });
+
+
+    },
+
 
     getImageFromUrl: async (req, res) => {
         try {

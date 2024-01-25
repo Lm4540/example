@@ -49,6 +49,13 @@
                      <i class="fas fa-box-usd"></i>
                      <p>Asignar pagos</p>
                   </a>
+
+                  <a class="card icon-card text-center" href="javascript:calcular_costo()">
+                     <i class="far fa-balance-scale-right"></i>
+                     <p>Re-Calcular Costo de Venta</p>
+                  </a>
+
+
                   <a class="card icon-card text-center" href="/system/icons">
                      <i class="fas fa-braille"></i>
                      <p>Lista de iconos</p>
@@ -73,6 +80,30 @@
 
 </body><%- include('../Layouts/Scripts.ejs') %>
 <script>
+
+
+
+const calcular_costo = () => {
+      document.querySelector("#results_or_process").innerHTML = ` <div class="card">
+                <div class="card-header">
+                  <h3 class="text-center">Recalcular Costo de Venta</h3>
+                </div>
+
+                
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="order_number">Numero de Orden/Venta</label>
+                    <input type="number" name="order_number" id="order_number" step="1" class="form-control">
+                  </div>
+
+                  <div class="text-center mt-2">
+                    <button class="btn btn-primary round" onclick="recalcular()">Recalcular</button>
+                  </div>
+                </div>
+              </div>`;
+
+
+   };
    const asignar_pagos = () => {
       document.querySelector("#results_or_process").innerHTML =
          ` <div class="text-center mt-5">
@@ -269,6 +300,53 @@
    const revokeSaleDetail = () => {
 
    };
+
+
+   const recalcular = () => {
+      let sale_id = Number.parseInt(document.querySelector("#order_number").value);
+      if(isNaN(sale_id) || sale_id < 1 ){
+         return errorMessage('Ingrese un numero');
+      }else{
+         document.querySelector("#results_or_process").innerHTML =
+         ` <div class="text-center mt-5">
+            <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+               <span class="visually-hidden"></span>
+             </div>
+             <p style="font-weight: bolder; font-size: 150%;">Procesando...</p>
+         </div>`;
+
+
+      //enviar el dato
+
+      postData('/utils/recalculate_cost_of_sale', {sale_id})
+          .then(data => {
+            if (data.status == 'success') {
+              successMessage('Costo de Venta recalculado');
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-check-circle" style="font-size:500%; color:green"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">Hecho</p>
+            </div>`;
+              /**Redirigir a la pagina del Proveedor*/
+              setTimeout(() => {
+                location.href = `/sales/client/view/${data.invoice.client}`;
+              }, 1500);
+
+            } else if (data.status == 'errorMessage') {
+              document.querySelector("#results_or_process").innerHTML =
+               ` <div class="text-center mt-5">
+              <i class="fas fa-times-octagon" style="font-size:500%; color:red"></i>
+                <p style="font-weight: bolder; font-size: 150%;" class="mt-4">${data.message}</p>
+            </div>`;
+            } else {
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+          });
+      }
+   }
+
+   
+
 </script>
 
 </html>

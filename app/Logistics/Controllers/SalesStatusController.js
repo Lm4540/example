@@ -14,6 +14,8 @@ const Movement = require("../../Inventory/Models/Movement");
 
 const SalesStatusController = {
 
+    
+
     get_data: async (session) => {
         //obtener la sucursal del usuario
         console.log(session)
@@ -339,19 +341,20 @@ const SalesStatusController = {
 
 
                                 //actualizar el detalle
-                                sale_cost += Number.parseFloat(product.cost * reserve.cant);
-                                product_cost += Number.parseFloat(product.cost * reserve.cant);
+                                sale_cost += Helper.fix_number(product.cost * reserve.cant);
+                                product_cost += Helper.fix_number(product.cost * reserve.cant);
                                 dt.delivered += reserve.cant;
+                                dt.product_cost = product.cost;
                             } else {
                                 return { status: 'errorMessage', message: 'producto id ' + reserve.product + ' no encontrado' };
                             }
-
+                            //TOEKN REVISAR ESTA MIERDA
                         } else {
                             return { status: 'errorMessage', message: 'Stock not found for product id ' + reserve.product + ' and sucursal ' + reserve.sucursal + '!' };
                         }
 
                     }
-                    dt.product_cost = (product_cost / dt.delivered);
+                    // dt.product_cost = (product_cost / dt.delivered);
                     await dt.save({ transaction: t });
                 }
 
