@@ -33,7 +33,7 @@ const status = {
     'prepared': "paquete preparado",
     'transport': "En Ruta",
     'delivered': 'Entregado',
-    'collected': "En espera de Remuneración",
+    'collected': "Pago Recibido",
     'revoking': "Revocando / Liberando",
     'revoked': "Revocado",
     'delivery_failed': "Entrega Fallida",
@@ -929,6 +929,9 @@ const SaleController = {
     },
 
     inProccess: async (req, res) => {
+
+        let limit_date = new Date();
+        limit_date.setDate(limit_date.getDate() - 7);
         //Buscar las ventas que no esten finalizadas
         let sales = await Sale.findAll({
             where: {
@@ -966,7 +969,7 @@ const SaleController = {
         tmp.forEach(el => sucursals[el.id] = el.name);
 
         //pasar los datos
-        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status });
+        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date });
 
 
     },

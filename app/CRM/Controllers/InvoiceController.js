@@ -246,6 +246,20 @@ const InvoiceController = {
                             invoice.invoice_date = new Date(data.invoice_date);
                             await invoice.save({ transaction: t });
 
+                            //Enviar una transaccion para actualizar el numero de serie
+
+                            
+                            await sequelize.query(
+                                `UPDATE crm_invoice_serie SET used= used + 1 WHERE  id = :_serie_id`,
+                                {
+                                    replacements: {
+                                        _serie_id: data.invoice_serie,
+                                    },
+                                    type: QueryTypes.UPDATE,
+                                    transaction: t
+                                }
+                            );
+
                             return res.json({
                                 status: 'success', invoice: invoice,
                             });

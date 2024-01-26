@@ -39,9 +39,9 @@
 
             <div class="col-lg-8 col-md-10 col-12 text-center">
                <button class="btn btn-warning round mt-1" data-bs-toggle="modal" data-bs-target="#add_move">Registrar Movimiento</button>
-               <button class="btn btn-primary round mt-1">Recoleccion Pendiente</button>
+               <!-- <button class="btn btn-primary round mt-1">Recoleccion Pendiente</button> -->
                <button class="btn btn-success round mt-1" onclick="view_move_controls()">Consultar movimientos</button>
-               <button class="btn btn-danger round mt-1">Cierre Diario</button>
+               <!-- <button class="btn btn-danger round mt-1">Cierre Diario</button> -->
 
 
                <div class="row justify-content-center mt-5 table-responsive">
@@ -63,7 +63,7 @@
                            <td class="text-left">
                               <%= move.concept %> <br>
                               Asignado a <%= move.asigned_to %><br>
-                              R: <%= move.createdBy %> 
+                              R: <%= move.createdBy %>
                            </td>
                            <td>$<%= Helper.money_format(move.amount) %></td>
                            <td></td>
@@ -158,11 +158,33 @@
          </div>
       </div>
 
+
+
+      <div class="modal fade" id="modalShowData" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  Vale de caja <button class="btn btn-danger" onclick="javascript: ShowDataModal.toggle();">X</button>
+               </div>
+               <div class="modal-body" style="width: 100%; height: 100vh;">
+                  <iframe src="" width="100%" height="100%" id="iframe_data">"No es posible visualizar el contenido"</iframe>
+
+
+               </div>
+            </div>
+         </div>
+      </div>
+
       <%- include('../../Layouts/Footer.ejs') %>
    </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+   const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
+   const charge_iframe = (url) => {
+      document.querySelector("#iframe_data").src = url;
+      ShowDataModal.toggle();
+   }
    var max_amount = Number.parseFloat('<%= sucursal.balance %>');
    const view_move_controls = () => {
       document.querySelector('#move_controls').style.display = "flex";
@@ -181,9 +203,9 @@
       let init_date = document.querySelector("#init_date").value;
       let end_date = document.querySelector("#end_date").value;
 
-      if(init_date > end_date || init_date.length < 10 || end_date.length < 10){
+      if (init_date > end_date || init_date.length < 10 || end_date.length < 10) {
          return errorMessage('Seleccione un rango de fechas Valido');
-      }else{
+      } else {
          window.location.href = `/financial/pettycash/<%= sucursal.id%>?print=${print}&init=${encodeURI(init_date)}&end=${encodeURI(end_date)}`;
       }
 
@@ -200,12 +222,12 @@
             asigned_to: document.querySelector('#asigned_to').value,
          }
 
-         if(data.type == 'recolection'){
-            data.concept = 'Recolección de efectivo. '+data.concept;
+         if (data.type == 'recolection') {
+            data.concept = 'Recolección de efectivo. ' + data.concept;
             data.type = 'out';
          }
 
-         
+
          //Validar los datos
          if (data.type == "out" && data.amount > max_amount) {
             return errorMessage('No hay suficiente efectivo para realizar esta operación');
@@ -217,7 +239,6 @@
             return errorMessage('El monto escrito es invalido');
          }
 
-         console.log(data);
 
          e.target.disabled = true;
          postData('/financial/pettycash/', data).then(data => {
@@ -226,6 +247,9 @@
                max_amount = data.new_amount;
                let tr = document.createElement('tr');
                if (document.querySelector('#move_type').value == 'out' || document.querySelector('#move_type').value == 'recolection') {
+                  if (document.querySelector("#recibo").checked) {
+                     charge_iframe(`/financial/pettycash/printVoucher/${data.move.id}`);
+                  }
                   tr.classList.add('table-secondary');
                   tr.innerHTML = `<td>${format_date(data.move.createdAt) }</td><td class="text-left">
                               ${data.move.concept} <br>

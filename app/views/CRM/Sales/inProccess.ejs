@@ -30,22 +30,30 @@
                </thead>
                <tbody>
                   <% sales.forEach(sale => { %>
-                     <tr class="text-center">
-                        <td>
-                           <%= clients[sale.client] %>
-                        </td>
-                        <td>
+                  <tr class="text-center">
+                     <td>
+                        <%= clients[sale.client] %>
+                     </td>
+                     <td>
+                        <% if (limit_date > sale.createdAt) { %>
+                        <span class="text-danger">
                            <%= Helper.date_to_spanish(sale.createdAt) %>
-                        </td>
-                        <td>$<%= Helper.money_format(sale.balance) %></td>
-                        <td><%= sellers[sale.seller] %></td>
-                        <td>
-                           <%= status[sale._status] %>
-                        </td>
-                        <td>
-                           <a href="/sale/view/<%= sale.id %>" class="badge bg-red">Ver</a>
-                        </td>
-                     </tr>
+
+                        </span>
+                        <% } else { %>
+                        <%= Helper.date_to_spanish(sale.createdAt) %>
+
+                        <% } %>
+                     </td>
+                     <td>$<%= Helper.money_format(sale.balance) %></td>
+                     <td><%= sellers[sale.seller] %></td>
+                     <td>
+                        <%= status[sale._status] %>
+                     </td>
+                     <td>
+                        <a href="/sales/view/<%= sale.id %>" class="badge bg-red">Ver</a>
+                     </td>
+                  </tr>
                   <% }) %>
                </tbody>
             </table>

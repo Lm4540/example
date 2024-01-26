@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Print Voucher id <%= move._number%></title>
+   <base href="<%=baseURL%>/" />
+   <link rel="stylesheet" href="assets/css/bootstrap.css">
+   <link rel="shortcut" href="assets/images/favicon.svg" type="image/x-icon">
+   <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+   <style>
+      body {
+         background: transparent !important;
+         font-size: 95%;
+      }
+
+      @media print {
+         #print {
+            display: none
+         }
+
+         body {
+            font-size: 80%;
+         }
+      }
+   </style>
+</head>
+
+<body>
+   <div class="row" style="margin:15px">
+      <div class="col text-center"><button class="btn btn-primary" id="print" onclick="window.print()">Imprimir</button></div>
+   </div>
+   <div class="container-fluid" style="border-radius: 1em; border: solid #0A1B80 1px; color:#0A1B80;">
+      <div class="row">
+        <div class="col">
+            <img src="/assets/images/docs-logo.png" width="300px">
+         </div>
+         <div class="col text-right" style=" margin:15px;">
+            <div style="padding-top: 15px; padding-bottom: 15px; font-size:200%"><b>VALE DE CAJA CHICA <br><span class="text-danger">N° <%= move._number %></span></b></div>
+         </div>
+         
+      </div>
+      <div class="row mt-4">
+         <div class="col"></div>
+         <div class="col">
+            <div class="row">
+               <div class="col text-right" style="padding:5px;">POR:</div>
+               <div class="col text-center" style="border-radius: 5px; border: solid #0A1B80 1px; padding:5px; margin-right:25px; font-size: 125%;"><b>$<%= Helper.money_format(move.amount) %></b></div>
+            </div>
+         </div>
+      </div>
+
+      <div class="row" style="margin-left: 15px; margin-right:25px;">
+         <div class="col-3">
+            <p>A favor de:</p>
+         </div>
+         <div class="col-9">
+            <p style="border-bottom: 1px solid #0A1B80"><b><%= move._number %></b></p>
+         </div>
+      </div>
+
+      <div class="row" style="margin-left: 15px; margin-right:25px;">
+         <div class="col-3">
+            <p>La suma de: </p>
+         </div>
+         <div class="col-9">
+            <p style="border-bottom: 1px solid #0A1B80"><b id="string_money"></b></p>
+         </div>
+      </div>
+
+      <div class="row" style="margin-left: 15px; margin-right:25px;">
+         <div class="col-3">
+            <p>Fecha:</p>
+         </div>
+         <div class="col-9">
+            <p style="border-bottom: 1px solid #0A1B80"><b><%= Helper.date_to_spanish(move.createdAt) %></b></p>
+         </div>
+      </div>
+
+      <div class="row" style="margin-left: 15px; margin-right:25px;">
+         <div class="col-3">
+            <p>Descripcion:</p>
+         </div>
+         <div class="col-9">
+            <p><strong><%= move.concept %></strong></p>
+         </div>
+      </div>
+
+      <div class="row">
+         <div class="col text-center" style="padding:5px; margin:15px;">
+            <div style="margin-top:20px; border-top:1px solid #0A1B80; width: 90%; padding-left: 15px;">Recibe: <%= move.asigned_to %></div>
+         </div>
+         <div class="col text-center" style="padding:5px; margin:15px;">
+            <div style="margin-top:20px; border-top:1px solid #0A1B80; width: 90%; padding-left: 15px;">Entrega: <%= move.createdBy %></div>
+         </div>
+      </div>
+   </div>
+
+</body>
+<script src="assets/js/main.js"></script>
+<script>
+   document.addEventListener('DOMContentLoaded', e => {
+      document.querySelector('#string_money').innerHTML = money_to_string(Number.parseFloat('<%= move.amount %>'));
+
+      setTimeout(() => {
+        window.print();
+      }, 2000);
+   });
+</script>
+
+</html>

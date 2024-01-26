@@ -2,8 +2,20 @@ const { Op, QueryTypes } = require('sequelize');
 const sequelize = require('../../DataBase/DataBase');
 const Sucursal = require('../../Inventory/Models/Sucursal');
 const PettyCashMoves = require('../Models/PettyCashMoves');
+const Helper = require('../../System/Helpers');
 
 const FinancialController = {
+
+    printVoucher: async (req, res) => {
+        let move = await PettyCashMoves.findByPk(req.params.id);
+        if(move && (move.isin === false || move.isin === 0)){
+            //buscar la sucursal a la que pertenece
+            let sucursal = await Sucursal.findByPk(move.petty_cash);
+            return res.render('Financial/PettyCash/printVoucher', { pageTitle: 'Imprimir Vale', sucursal, move });
+        }
+        return Helper.notFound(req, res, "Vale de caja no emitido o no encontrado")
+
+    },
     pettycash: async (req, res) => {
         //Si tiene Permiso para manejar todas las cajas mostrar la lista de sucursales 
         if (req.session.userSession.permission.includes('admin_all_petty_cash')) {

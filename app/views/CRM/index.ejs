@@ -341,7 +341,6 @@
             return errorMessage("para Credito Fiscal proporcione el numero de Registro");
          } else if (revoke_data.invoice_date.length < 10) {
             return errorMessage("Fecha invalida");
-
          }
 
          revoke_data.invoice_resume = document.querySelector("#invoice_simplification").value.trim();
@@ -353,7 +352,7 @@
          postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
             if (data.status == 'success') {
                successMessage('registrado');
-               // setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
+               setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
             } else if (data.status == 'errorMessage') {
                document.querySelector("#revokeButton").innerHTML = ` Guardar`;
                document.querySelector("#revokeButton").disabled = false;
@@ -388,13 +387,10 @@
 
             let data = await fetch(`/sales/invoice_data/${revoke_data.number}/${revoke_data.serie}`).then(data => data.json());
 
-
-            console.log(data);
-
             if (data.status == "success") {
 
                let _data = JSON.parse(data.invoice.invoice_data);
-               console.log(_data);
+               console.log(_data, _data.ncr);
                //cargar los controles de la nueva factura
                document.querySelector("#invoice_name").value = _data.name;
                document.querySelector("#invoice_direction").value = _data.direction;
