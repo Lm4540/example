@@ -14,7 +14,7 @@ const Movement = require("../../Inventory/Models/Movement");
 
 const SalesStatusController = {
 
-    
+
 
     get_data: async (session) => {
         //obtener la sucursal del usuario
@@ -294,6 +294,142 @@ const SalesStatusController = {
                 var concept = `Egreso por venta id: ${sale.id}, cliente ${client.name}`;
                 let len = details.length;
 
+                var stock_to_dicount = {};
+                var product_to_discount = {};
+
+                for (let index = 0; index < len; index++) {
+                    const dt = details[index];
+                    //buscar las reservas
+                    let tmp = await StockReserve.findAll({ where: { saleId: dt.id, } }, { transaction: t });
+                    let product_cost = 0.00;
+                    //recorrer las reservas e ir sacandolas
+                    for (let a = 0; a < tmp.length; a++) {
+                        let reserve = tmp[a];
+                        //buscar el stock
+                        let stock = await Stock.findOne({
+                            where: {
+                                sucursal: reserve.sucursal,
+                                product: reserve.product
+                            }
+                        });
+                        if (stock) {
+                            //buscar el producto
+                            let product = await Product.findByPk(reserve.product);
+                            if (product) {
+                                //registrar el movimiento de salida
+                                let movement = await Movement.create({
+                                    product: stock.product,
+                                    sucursal: stock.sucursal,
+                                    cant: reserve.cant,
+                                    last_sucursal_stock: stock_to_dicount[stock.id] != undefined ? (stock.cant - stock_to_dicount[stock.id]) : stock.cant,
+                                    last_product_stock: product_to_discount[product.id] != undefined ? (product.stock - product_to_discount[product.id]) : product.stock,
+                                    cost: product.cost,
+                                    last_cost: product.cost,
+                                    sale_detail: dt.id,
+                                    concept: concept,
+                                    in: false,
+                                }, { transaction: t });
+
+
+                                stock_to_dicount[stock.id] = stock_to_dicount[stock.id] !== undefined ? stock_to_dicount[stock.id] + reserve.cant : reserve.cant;
+                                product_to_discount[product.id] = product_to_discount[product.id] !== undefined ? product_to_discount[product.id] + reserve.cant : reserve.cant;
+
+                                await reserve.destroy({ transaction: t })
+
+                                //actualizar el detalle
+                                sale_cost += Helper.fix_number(product.cost * reserve.cant);
+                                product_cost += Helper.fix_number(product.cost * reserve.cant);
+                                dt.delivered += reserve.cant;
+                                dt.product_cost = product.cost;
+                            } else {
+                                return { status: 'errorMessage', message: 'producto id ' + reserve.product + ' no encontrado' };
+                            }
+                            //TOEKN REVISAR ESTA MIERDA
+                        } else {
+                            return { status: 'errorMessage', message: 'Stock not found for product id ' + reserve.product + ' and sucursal ' + reserve.sucursal + '!' };
+                        }
+
+                    }
+                    // dt.product_cost = (product_cost / dt.delivered);
+                    await dt.save({ transaction: t });
+                }
+
+                let keys = Object.keys(stock_to_dicount);
+
+                for (let index = 0; index < keys.length; index++) {
+                    let _stock_id = keys[index];
+                    await sequelize.query(
+                        'update `inventory_product_stock` set cant = cant - :_cant, reserved = reserved - :_reserved  WHERE id = :_stock_id',
+                        {
+                            replacements: {
+                                _cant: stock_to_dicount[_stock_id],
+                                _reserved: stock_to_dicount[_stock_id],
+                                _stock_id: _stock_id
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        }
+                    );
+
+                }
+
+
+                keys = Object.keys(product_to_discount);
+
+                for (let index = 0; index < keys.length; index++) {
+                    let _stock_id = keys[index];
+                    await sequelize.query(
+                        'update `inventory_product` set stock = stock - :_cant, reserved = reserved - :_reserved  WHERE id = :_stock_id',
+                        {
+                            replacements: {
+                                _cant: product_to_discount[_stock_id],
+                                _reserved: product_to_discount[_stock_id],
+                                _stock_id: _stock_id
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        }
+                    );
+
+                }
+
+                sale._status = 'delivered';
+                sale.delivered_by = session.shortName;
+                sale.cost = sale_cost;
+                await sale.save({ transaction: t });
+                return { status: 'success', message: 'Guardado', data: sale };
+            });
+        } catch (error) {
+            console.error(error);
+            return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
+        }
+
+
+
+    },
+
+    pakage_delivered_old: async (sale, session) => {
+
+        //return { status: 'errorMessage', message: 'Funcion en revision' };
+        sale = await Sale.findByPk(sale);
+        if (sale == null) {
+            return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
+        }
+
+        //buscar los detalles y darles salida
+        let details = await SaleDetail.findAll({ where: { sale: sale.id } });
+        let client = await Client.findByPk(sale.client);
+        try {
+            return await sequelize.transaction(async (t) => {
+
+                let sale_cost = 0.00;
+
+                var concept = `Egreso por venta id: ${sale.id}, cliente ${client.name}`;
+                let len = details.length;
+
+                var stock_to_dicount = {};
+                var product_to_discount = {};
+
                 for (let index = 0; index < len; index++) {
                     const dt = details[index];
                     //buscar las reservas
@@ -327,14 +463,45 @@ const SalesStatusController = {
                                     in: false,
                                 }, { transaction: t });
 
-
                                 stock.reserved -= reserve.cant;
                                 stock.cant -= reserve.cant;
                                 await stock.save({ transaction: t });
 
+
+
+                                //agregar el item a 
+
+                                // await sequelize.query(
+                                //     'update `inventory_product_stock` set cant = cant - :_cant, reserved = :_reserved  WHERE id = :_stock_id',
+                                //     {
+                                //         replacements: {
+                                //             _cant: reserve.cant,
+                                //             _reserved : reserve.cant,
+                                //             _stock_id : stock.id
+                                //         },
+                                //         type: QueryTypes.UPDATE,
+                                //         transaction: t
+                                //     }
+                                // );
+
                                 product.reserved -= reserve.cant;
                                 product.stock -= reserve.cant;
                                 await product.save({ transaction: t });
+
+                                // await sequelize.query(
+                                //     'update `inventory_product` set stock = stock - :_cant, reserved = reserved - :_reserved  WHERE id = :_stock_id',
+                                //     {
+                                //         replacements: {
+                                //             _cant: reserve.cant,
+                                //             _reserved : reserve.cant,
+                                //             _stock_id : product.id
+                                //         },
+                                //         type: QueryTypes.UPDATE,
+                                //         transaction: t
+                                //     }
+                                // );
+
+
                                 await reserve.destroy({ transaction: t })
 
 
