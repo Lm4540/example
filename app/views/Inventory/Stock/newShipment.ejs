@@ -268,7 +268,7 @@
          let prod = product_in_select2[selectProduct.value];
 
 
-         if (details[dt.product] !== null && details[dt.product] !== undefined) {
+         if (details[dt.product] !== null && details[dt.product] !== undefined && details[dt.product] !== 0) {
             //verificar la cantidad maxima de stock
             let suma = details[dt.product] + dt.cant;
             if (prod.stock - prod.reserved < suma) {
@@ -307,7 +307,7 @@
 
          for (let index = 0; index < keys.length; index++) {
             let cant = Number.parseInt(details[keys[index]]);
-            if(cant > 0){
+            if (cant > 0) {
                dts.push({
                   product: keys[index],
                   cant,
@@ -315,7 +315,7 @@
             }
 
          }
-         
+
 
          if (dts.length < 1) {
             return errorMessage('Agregue los ítems que va a trasladar');
