@@ -196,6 +196,13 @@ module.exports = [
         "permission": "view_invoice_report_with_cost"
     },
 
+    {
+        "name": "Ver reporte de ventas para Comisiones",
+        "explication": "Permite Ver reporte de ventas para comissiones",
+        "group": "Ventas",
+        "permission": "view_commission_report"
+    },
+
     
 
     

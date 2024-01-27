@@ -39,16 +39,17 @@
                      <i class="fas fa-user-plus"></i>
                      <p>Nuevo Cliente</p>
                   </a>
-
+<!-- 
                   <a class="card icon-card text-center" href="/sales/history">
                      <i class="fas fa-calendar-alt"></i>
                      <p>Historial de ventas</p>
-                  </a>
-
-                  <!-- <a class="card icon-card text-center" href="/sales/seller/history">
-                     <i class="fas fa-calendar-alt"></i>
-                     <p>Reporte de Ventas por Vendedor</p>
                   </a> -->
+                  <% if (permission.includes('view_commission_report')) { %>
+                     <a class="card icon-card text-center" href="/sales/seller/history">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>Reporte de Ventas por Vendedor</p>
+                     </a>
+                  <% } %>
 
                   <a class="card icon-card text-center" href="/sales/inProccess">
                      <i class="far fa-file-check"></i>
