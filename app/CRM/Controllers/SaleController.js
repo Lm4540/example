@@ -466,7 +466,7 @@ const SaleController = {
                             let _move = await PettyCashMoves.create({
                                 amount: data.amount,
                                 last_amount: sucursal.balance,
-                                concept: `Ingreso por Anticipo Cliente ${client.name} `,
+                                concept: `Pago Recibido ${client.name} ID(${client.id}) ${sale.invoice_number !== "" &&  sale.invoice_number!== null ? sale.invoice_type.toUpperCase() + ' N° ' + sale.invoice_number : ''}`,
                                 petty_cash: sucursal.id,
                                 type: 'payment',
                                 isin: true,
@@ -587,7 +587,7 @@ const SaleController = {
                             let _move = await PettyCashMoves.create({
                                 amount: data.amount,
                                 last_amount: sucursal.balance,
-                                concept: `Ingreso por Anticipo Cliente ${client.name} `,
+                                concept: `Pago Recibido Cliente ${client.name} `,
                                 petty_cash: sucursal.id,
                                 type: 'payment',
                                 isin: true,
