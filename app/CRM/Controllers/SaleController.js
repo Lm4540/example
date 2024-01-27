@@ -305,7 +305,7 @@ const SaleController = {
             where = {
                 sucursal: seller,
                 revoked_at: { [Op.is]: null, },
-                endAt: { [Op.lte]: date },
+                endAt: { [Op.between]: [init, date], },
                 _status: 'collected',
             }
         }else{
@@ -317,8 +317,7 @@ const SaleController = {
                 });
             }
     
-            let response = await sale_status_verification(seller.id);
-                
+            await sale_status_verification(seller.id);
     
             where = opt == "calculo" ? {
                 seller: seller.id,
