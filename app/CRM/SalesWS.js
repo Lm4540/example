@@ -253,7 +253,7 @@ module.exports = (io, socket) => {
                                 sale.delivery_direction = data.direction;
                                 sale.delivery_contact = data.phone;
                                 sale.delivery_instructions = data.reference;
-                                sale.delivery_date = data.day;
+                                sale.delivery_date = new Date(data.day);
                                 sale.delivery_time = data.time;
                                 sale.delivery_amount = data.delivery_amount;
 

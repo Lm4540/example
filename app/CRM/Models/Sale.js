@@ -27,6 +27,12 @@ const Sale = sequelize.define('Sale', {
     _status: {
         type: DataTypes.ENUM('process', 'prepared', 'transport', 'delivered', 'collected', 'revoking', 'revoked', 'delivery_failed', 'to_resend', 'closed'),
         defaultValue: 'process',
+        set(param) {
+            this.setDataValue('_status', param);
+            if(param == 'collected'){
+                this.setDataValue('endAt', new Date());
+            }
+        },
     },
     type: {
         type: DataTypes.ENUM('minor', 'major'),
@@ -41,6 +47,11 @@ const Sale = sequelize.define('Sale', {
     delivery_instructions: DataTypes.STRING(500),
     delivery_date: {
         type: DataTypes.DATE,
+        get(){
+            let date = new Date(this.getDataValue('delivery_date'));
+            date = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${this.getDataValue('delivery_time')}`;
+            return new Date(date);
+        },
     },
     delivery_time: {
         type: DataTypes.TIME,
@@ -128,7 +139,8 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    invoice_date: {type: DataTypes.DATE, }
+    invoice_date: {type: DataTypes.DATE, },
+    endAt: {type: DataTypes.DATE,}
 }, {
     tableName: 'crm_sale',
 });

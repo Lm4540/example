@@ -267,7 +267,7 @@ const SaleController = {
                 seller: seller,
                 in_report: 0,
                 revoked_at: { [Op.is]: null, },
-                createdAt: { [Op.lte]: date },
+                endAt: { [Op.lte]: date },
                 _status: 'collected',
                 id: { [Op.lte]: req.body.sale },
             }
@@ -297,35 +297,44 @@ const SaleController = {
         let seller = req.query.seller;
         let opt = req.query.opt;
         let date = req.query.date + ' 23:59:59';
+        let init = req.query.init + ' 00:00:00';
 
-        //buscar el vendedor
-        seller = await Employee.findByPk(seller);
-        if (seller == null) {
-            return res.json({
-                status: 'errorMessage', message: "Employee not Found!"
-            });
+        let where = {};
+
+        if(opt == "sucursal"){
+            where = {
+                sucursal: seller,
+                revoked_at: { [Op.is]: null, },
+                endAt: { [Op.lte]: date },
+                _status: 'collected',
+            }
+        }else{
+            //buscar el vendedor
+            seller = await Employee.findByPk(seller);
+            if (seller == null) {
+                return res.json({
+                    status: 'errorMessage', message: "Employee not Found!"
+                });
+            }
+    
+            let response = await sale_status_verification(seller.id);
+                
+    
+            where = opt == "calculo" ? {
+                seller: seller.id,
+                in_report: 0,
+                revoked_at: { [Op.is]: null, },
+                endAt: { [Op.lte]: date },
+                _status: 'collected',
+            } : {
+                seller: seller.id,
+                endAt: { [Op.between]: [init, date], },
+                revoked_at: { [Op.is]: null, },
+                _status: 'collected',
+            }
+
         }
 
-        let response = await sale_status_verification(seller.id);
-        // let client = await Client.findAll({
-        //     where: {
-
-        //     }
-        // });
-
-        //buscar los detalles
-        let where = opt == "calculo" ? {
-            seller: seller.id,
-            in_report: 0,
-            revoked_at: { [Op.is]: null, },
-            createdAt: { [Op.lte]: date },
-            _status: 'collected',
-        } : {
-            seller: seller.id,
-            createdAt: { [Op.lte]: date },
-            revoked_at: { [Op.is]: null, },
-            _status: 'collected',
-        }
 
         let sales = await Sale.findAll({
             where: where

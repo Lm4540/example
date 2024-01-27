@@ -53,12 +53,12 @@ const Helper = {
 
     },
 
-    date_to_input: (date = null) => {
+    date_to_input: (date = null, init = null) => {
         date = date ? new Date(date) : new Date();
         let m = date.getMonth() > 8 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;
         let d = date.getDate();
         d = d > 9 ? d : `0${d}`;
-        return `${date.getFullYear()}-${m}-${d}`;
+        return init ?  `${date.getFullYear()}-${m}-01` : `${date.getFullYear()}-${m}-${d}`;
     },
     date_to_spanish: (date) => {
         let days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
