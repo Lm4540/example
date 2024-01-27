@@ -168,7 +168,10 @@
       console.log(url)
       let data = await fetch(url).then(data => data.json());
 
-      let content = ` <table class="table table-sm table-hover table-bordered">
+      let content = opt != "calculo" ? `<div class="bg-warning mb-3 text-white pt-1 pb-2 pl-5 pr-5 round">
+               <p class="mt-5">NOTA: Estas Consultando Datos Historicos, estos no necesariamente son Comision pendiente de pago!</p>
+            </div>` : '';
+            content += `<table class="table table-sm table-hover table-bordered">
                <thead>
                   <tr>
                      <th>ID</th>
@@ -216,12 +219,12 @@
 
 
       content += `</tbody>
-                  </table><div class="bg-danger text-white pt-1 pb-2 pl-5 pr-5 round">
-               <p class="mt-5">NOTA: El monto del envio se muestra en el cuadro pero no es tomado en cuenta para la determinacion de la ganancia por venta</p>
-            </div>`;
+                  </table>`;
 
       if(opt == "calculo"){
-         content += `<div class="mt-4 text-center">
+         content += `<div class="bg-danger text-white pt-1 pb-2 pl-5 pr-5 round">
+               <p class="mt-5">NOTA: El monto del envio se muestra en el cuadro pero no es tomado en cuenta para la determinacion de la ganancia por venta</p>
+            </div><div class="mt-4 text-center">
                <button class="btn btn-success btn-lg round" onclick="marcar()">Marcar comisionado</button>
             </div>`
       }
