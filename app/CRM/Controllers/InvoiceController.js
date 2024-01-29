@@ -337,11 +337,7 @@ const InvoiceController = {
     invoice_report: async (req, res) => {
 
         let sucursals = await Sucursal.findAll();
-        let series = await InvoiceSeries.findAll({
-            where: {
-                active: 1
-            }
-        });
+        let series = await InvoiceSeries.findAll();
 
 
 
@@ -357,11 +353,7 @@ const InvoiceController = {
     invoice_report2: async (req, res) => {
 
         let sucursals = await Sucursal.findAll();
-        let series = await InvoiceSeries.findAll({
-            where: {
-                active: 1
-            }
-        });
+        let series = await InvoiceSeries.findAll();
         return res.render('CRM/Invoice/invoiceReportCost.ejs', {
             sucursals,
             pageTitle: 'Reporte de facturas Generadas',

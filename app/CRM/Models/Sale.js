@@ -140,9 +140,25 @@ const Sale = sequelize.define('Sale', {
         defaultValue: false,
     },
     invoice_date: {type: DataTypes.DATE, },
-    endAt: {type: DataTypes.DATE,}
+    endAt: {type: DataTypes.DATE,},
+    locked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 }, {
     tableName: 'crm_sale',
+    hooks : {
+        beforeSave : (record, options) => {
+            if(record.dataValues.locked == true || record.dataValues.locked == 1){
+                return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
+            }
+        },
+        beforeUpdate : (record, options) => {
+            if(record.dataValues.locked == true || record.dataValues.locked == 1){
+                return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
+            }
+        }
+    }
 });
 
 Sale.hasMany(SaleDetail, {
