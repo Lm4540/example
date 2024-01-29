@@ -319,7 +319,7 @@ const InvoiceController = {
                     [Op.not]: null
                 },
                 invoce_serie: serie,
-                sucursal: sucursal.id,
+                // sucursal: sucursal.id,
                 invoice_date: {
                     [Op.between]: [init, end],
                 },
