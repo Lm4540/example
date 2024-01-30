@@ -104,7 +104,7 @@ const calcular_costo = () => {
 
 
    };
-   const asignar_pagos = () => {
+   const asignar_pagos = async () => {
       document.querySelector("#results_or_process").innerHTML =
          ` <div class="text-center mt-5">
             <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
@@ -112,6 +112,7 @@ const calcular_costo = () => {
              </div>
              <p style="font-weight: bolder; font-size: 150%;">Procesando...</p>
          </div>`;
+      await fetch('/sales/test_taxes');
       fetch('/sales/asignar_pagos').then(data => data.json()).then(data => {
 
          console.log(data);

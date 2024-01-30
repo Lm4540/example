@@ -68,6 +68,9 @@ router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, ne
 //router.get('/corregir_fecha', InvoiceController.corregir_la_fecha);
 router.get('/asignar_pagos', SaleController.sale_status_check);
 
+router.get('/test_taxes', InvoiceController.add_taxes);
+
+
 
 
 

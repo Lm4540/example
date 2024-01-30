@@ -19,7 +19,64 @@ const types = {
     'nd': "Nota de Debito",
 };
 
+
+
 const InvoiceController = {
+
+
+
+    add_taxes: async (req, res) => {
+
+        let sales = await Sale.findAll({
+            where: {
+                taxes: {
+                    [Op.is]: null
+                }
+            },
+            limit: 1000
+        });
+
+        try {
+            return await sequelize.transaction(async (t) => {
+                for (let aa = 0; aa < sales.length; aa++) {
+                    let invoice = sales[aa];
+
+                    let sin_iva = Helper.fix_number(invoice.balance / 1.13);
+                    invoice.taxes = {
+                        iva: Helper.fix_number(invoice.balance - sin_iva),
+                        retention: invoice.invoice_retention &&  sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                        perception: 0.00,
+                        isr: invoice.invoice_retention ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
+                    }
+
+                    await invoice.save({ transaccion: t });
+
+                    let old_date = new Date(invoice.invoice_date);
+                    let now = new Date();
+
+                    if (invoice.invoice_number !== null && invoice._status == "collected" && invoice.in_report == true && old_date.getMonth() < now.getMonth()) {
+                        await sequelize.query('update crm_sale set locked = 1 where id = :_id', {
+                            replacements: {
+                                _id: invoice.id,
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        });
+                    }
+                }
+                return res.json({
+                    status: 'success',
+                    message: 'Chingadera ha funcionado con exito',
+                })
+            });
+        } catch (error) {
+            console.log(error.message);
+            return res.json({
+                status: "error", errorMessage: error.message,
+            })
+        }
+
+    },
 
     revoke_invoice: async (req, res) => {
         let data = req.body;
@@ -233,8 +290,9 @@ const InvoiceController = {
                             new_model.payments = null;
                             new_model.in_report = false;
                             new_model.invoice_data = invoice.invoice_data;
+                            new_model.taxes = invoice.taxes;
                             await new_model.save({ transaction: t });
-
+                            
                             invoice.invoce_serie = data.invoice_serie;
                             invoice.invoice_type = data.invoice_type;
                             invoice.invoice_number = data.invoice_number;
@@ -244,11 +302,23 @@ const InvoiceController = {
                             invoice.invoice_retention = data.invoice_retention;
                             invoice.invoice_isr = data.invoice_isr;
                             invoice.invoice_date = new Date(data.invoice_date);
+                            
+                            
+                            //Actualizar los taxes segun las opciones seleccionadas
+                            
+                            let sin_iva = Helper.fix_number(invoice.balance / 1.13);
+                            invoice.taxes = {
+                                iva: Helper.fix_number(invoice.balance - sin_iva),
+                                retention: invoice.invoice_retention &&  sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                                perception: 0.00,
+                                isr: invoice.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
+                            }
+                            
+                            
                             await invoice.save({ transaction: t });
-
                             //Enviar una transaccion para actualizar el numero de serie
 
-                            
+
                             await sequelize.query(
                                 `UPDATE crm_invoice_serie SET used= used + 1 WHERE  id = :_serie_id`,
                                 {
@@ -430,29 +500,57 @@ const InvoiceController = {
             sale.invoce_serie = data.invoice_serie;
             sale.invoice_number = data.invoice_number;
             sale.invoice_type = serie.type;
-            sale.invoice_date = new Date(data.invoice_data.invoice_date + 'T06:00:00');
+            sale.invoice_date = new Date(data.invoice_data.invoice_date);
 
-            console.log('llega aca')
-            await sale.save();
+            //Token poner aca los taxes
+
+            let sin_iva = Helper.fix_number(sale.balance / 1.13);
+            sale.taxes = {
+                iva: Helper.fix_number(sale.balance - sin_iva),
+                retention: sale.invoice_retention && sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                perception: 0.00,
+                isr: sale.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
+            }
 
 
-            //Actualizar la serie
-            serie.used += 1;
-            await serie.save();
+            try {
+                return sequelize.transaction(async (t) => {
+                    await sale.save({ transaccion: t });
+
+                    let old_date = new Date(sale.invoice_date);
+                    let now = new Date();
+                    if (sale.invoice_number !== null && sale._status == "collected" && sale.in_report == true && old_date.getMonth() < now.getMonth()) {
+                        await sequelize.query('update crm_sale set locked = 1 where id = :_id', {
+                            replacements: {
+                                _id: sale.id,
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        });
+                    }
+
+                    //Actualizar la serie
+                    serie.used += 1;
+                    await serie.save({ transaccion: t });
 
 
-            return res.json({
-                status: 'success',
-                message: "Actualizado con Exito",
-                sale: sale.id,
-            });
 
+                    return res.json({
+                        status: 'success',
+                        message: "Actualizado con Exito",
+                        sale: sale.id,
+                    });
+                });
+            } catch (error) {
+                return res.json({
+                    status: 'error',
+                    message: error.message,
+                });
+            }
 
 
         }
-
         return Helper.notFound(req, res, "Sale not Found or hasn't been invoced");
-
     },
 
     update_invoice: async (req, res) => {
@@ -461,18 +559,52 @@ const InvoiceController = {
         console.log(data);
         let sale = await Sale.findByPk(data.sale);
         if (sale) {
-            data.data.last_update = req.session.userSession.shortName;
-            sale.invoice_resume = data.invoice_resume.length ? data.invoice_resume : null;
-            sale.invoice_data = data.data;
-            sale.invoice_date = new Date(data.data.invoice_date);
-            sale.invoice_retention = data.invoice_retention == true;
-            sale.invoice_isr = data.invoice_isr == true;
 
-            await sale.save();
-            return res.json({
-                status: 'success',
-                message: "Actualizado con Exito"
-            });
+            try {
+                return sequelize.transaction(async t => {
+                    data.data.last_update = req.session.userSession.shortName;
+                    sale.invoice_resume = data.invoice_resume.length ? data.invoice_resume : null;
+                    sale.invoice_data = data.data;
+                    sale.invoice_date = new Date(data.data.invoice_date);
+                    sale.invoice_retention = data.invoice_retention == true;
+                    sale.invoice_isr = data.invoice_isr == true;
+
+                    //poner aca los taxes
+
+                    let sin_iva = Helper.fix_number(sale.balance / 1.13);
+                    sale.taxes = {
+                        iva: Helper.fix_number(sale.balance - sin_iva),
+                        retention: sale.invoice_retention && sin_iva > 100 ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                        perception: 0.00,
+                        isr: sale.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
+                    }
+
+                    await sale.save({ transaccion: t });
+
+                    let old_date = new Date(sale.invoice_date);
+                    let now = new Date();
+                    if (sale.invoice_number !== null && sale._status == "collected" && sale.in_report == true && old_date.getMonth() < now.getMonth()) {
+                        await sequelize.query('update crm_sale set locked = 1 where id = :_id', {
+                            replacements: {
+                                _id: sale.id,
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        });
+                    }
+
+                    return res.json({
+                        status: 'success',
+                        message: "Actualizado con Exito"
+                    });
+                });
+            } catch (error) {
+                return res.json({
+                    status: 'error',
+                    message: error.message,
+                });
+            }
+
 
         }
 
@@ -522,10 +654,10 @@ const InvoiceController = {
         //Buscar la venta
         let sale = await Sale.findByPk(req.params.id);
 
-        
+
 
         if (sale && sale.invoice_number !== null) {
-            if(sale._status == "revoked"){
+            if (sale._status == "revoked") {
                 ref = `/sales/view_invoice/${sale.id}`;
                 res.redirect(301, ref);
             }

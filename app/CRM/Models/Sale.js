@@ -145,16 +145,28 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    taxes: {
+        type: DataTypes.TEXT,
+        get() {
+            let prefe = this.getDataValue('taxes');
+            return (prefe !== null && prefe !== undefined) ? JSON.parse(prefe) : [];
+        },
+        set(param) {
+            this.setDataValue('taxes', JSON.stringify(param == null ? [] : param));
+        }
+    },
 }, {
     tableName: 'crm_sale',
     hooks : {
         beforeSave : (record, options) => {
             if(record.dataValues.locked == true || record.dataValues.locked == 1){
+                console.log('registro bloaqueado')
                 return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
             }
         },
         beforeUpdate : (record, options) => {
             if(record.dataValues.locked == true || record.dataValues.locked == 1){
+                console.log('registro bloaqueado')
                 return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
             }
         }

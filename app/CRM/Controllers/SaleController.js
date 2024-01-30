@@ -2224,18 +2224,7 @@ const SaleController = {
                         await stock.save({ transaction: t });
 
                     }
-                    //ver los tipos de pago y registrarlos
-                    // payments = {
-                    //     money: 0.00,
-                    //     credit_card: {
-                    //        amount: 0.00,
-                    //        details: [],
-                    //     },
-                    //     transfer: {
-                    //        amount: 0.00,
-                    //        details: [],
-                    //     }
-                    //  };
+
 
                     let payments_ids = [];
 
@@ -2245,7 +2234,8 @@ const SaleController = {
                         let _move = await PettyCashMoves.create({
                             amount: data.payment.money,
                             last_amount: sucursal.balance,
-                            concept: `Ingreso por Venta en Sala, cliente ${client.name} venta ID: ${sale.id}`,
+                            concept: `Ingreso por Venta en Sala, cliente ${client.name} venta ID: ${sale.id} (${sale.invoice_type} N°
+                                ${sale.invoice_number})`,
                             petty_cash: sucursal.id,
                             type: 'payment',
                             isin: true,
@@ -2324,12 +2314,17 @@ const SaleController = {
                     sale.cost = sale_cost;
                     sale.payments = payments_ids;
 
-                    console.log(data.invoice_data)
-                    // let __data = (sale.invoice_data)
-                    // console.log(__data)
-                    // __data['invoice_date'] = sale.createdAt;
-                    // console.log(__data, sale.createdAt)
-                    // sale.invoice_data = __data;
+
+                    //poner aca los taxes
+
+                    let sin_iva = Helper.fix_number(sale.balance / 1.13);
+                    sale.taxes = {
+                        iva: Helper.fix_number(sale.balance - sin_iva),
+                        retention: sale.invoice_retention && sin_iva > 100 ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                        perception: 0.00,
+                        isr: sale.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
+                    }
+
                     await sale.save({ transaction: t });
 
                     if (update_client == true) {

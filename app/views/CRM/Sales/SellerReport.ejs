@@ -171,15 +171,17 @@
       let content = opt != "calculo" ? `<div class="bg-warning mb-3 text-white pt-1 pb-2 pl-5 pr-5 round">
                <p class="mt-5">NOTA: Estas Consultando Datos Historicos, estos no necesariamente son Comision pendiente de pago!</p>
             </div>` : '';
-            content += `<table class="table table-sm table-hover table-bordered">
+      content += `<table class="table table-sm table-hover table-bordered">
                <thead>
                   <tr>
                      <th>ID</th>
+                     <th> seller </td>
                      <th>Cliente</th>
                      <th>Fecha de apertura</th>
                      <th>Fin del Proceso</th>
                      <th>Monto de Envio</th>
                      <th>Monto Vendido</th>
+                     <th> IVA CF </td>
                      <th>Costo de la Venta</th>
                      <th>Ganancia</th>
                   </tr>
@@ -187,33 +189,38 @@
                <tbody>`;
       let delivery = 0.00,
          balance = 0.00,
-         cost = 0.00;
-      last = 0;
+         cost = 0.00,
+         last = 0,
+         iva = 0.0;
 
       data.sales.forEach(sale => {
          last = sale.id;
          delivery = fix_number(delivery + sale.delivery_amount);
          balance = fix_number(balance + sale.balance);
          cost = fix_number(cost + sale.cost);
+         iva = fix_number(iva + sale.taxes.iva);
          content += `<tr>
                         <td><a href="/sales/view/${sale.id}" target="_blank">${sale.id}</a></td>
+                        <td>${sale.seller}</td>
                         <td>${data.clients[sale.client].name}</td>
                         <td class="text-center">${format_date(sale.createdAt, false)}</td>
                         <td class="text-center">${format_date(sale.endAt , false)}</td>
                         <td class="text-center">$${money_format(sale.delivery_amount)}</td>
                         <td class="text-center">$${money_format(sale.balance)}</td>
+                        <td class="text-center">$${money_format(sale.taxes.iva)}</td>
                         <td class="text-center">$${money_format(sale.cost)}</td>
-                        <td class="text-center">$${money_format(sale.balance - sale.cost)}</td>
+                        <td class="text-center">$${money_format(sale.balance - sale.cost - sale.taxes.iva)}</td>
 
                      </tr>`;
       });
 
       content += `<tr>
-                        <td class="text-right" colspan="4">TOTALES</td>
-                        <td>$${money_format(delivery)}</td>
-                        <td>$${money_format(balance)}</td>
-                        <td>$${money_format(cost)}</td>
-                        <td>$${money_format(balance - cost)}</td>
+                        <td class="text-right" colspan="5">TOTALES</td>
+                        <td class="text-center">$${money_format(delivery)}</td>
+                        <td class="text-center">$${money_format(balance)}</td>
+                        <td class="text-center">$${money_format(iva)}</td>
+                        <td class="text-center">$${money_format(cost)}</td>
+                        <td class="text-center">$${money_format(balance - cost - iva)}</td>
 
                      </tr>`;
 
@@ -221,7 +228,7 @@
       content += `</tbody>
                   </table>`;
 
-      if(opt == "calculo"){
+      if (opt == "calculo") {
          content += `<div class="bg-danger text-white pt-1 pb-2 pl-5 pr-5 round">
                <p class="mt-5">NOTA: El monto del envio se muestra en el cuadro pero no es tomado en cuenta para la determinacion de la ganancia por venta</p>
             </div><div class="mt-4 text-center">

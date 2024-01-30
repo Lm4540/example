@@ -49,7 +49,7 @@
       }
 
       .invoice td.without_bottom {
-         
+
          border-bottom: 0px solid #fff !important;
       }
 
@@ -101,18 +101,20 @@
       }
 
 
-      #invoice--body *{
-         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif!important;
-         font-size: small!important;
+      #invoice--body * {
+         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif !important;
+         font-size: small !important;
       }
 
       #invoice--body th {
-         font-size: 65%!important;
+         font-size: 65% !important;
          border: 1px solid black;
       }
    </style>
 </head>
-<% options = `
+
+<% if (sale.locked == false || sale.locked == 0) { 
+   options =  `
 <li class="dropdown ml-5">
 	<a data-bs-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
 	  Opciones
@@ -128,7 +130,24 @@
        }
        options += `<a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
 </div>
-</li> `; %>
+</li> `; 
+} else { 
+   options =  `
+   <li class="dropdown ml-5">
+      <a data-bs-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+        Opciones
+      </a>
+      <div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
+         <a class="list-group-item" href="/sales/view/${sale.id}"><i class="fas fa-align-center mr-3"></i>Ir a la Venta</a>`;
+   
+          if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
+             options += `<a class="list-group-item" href="/sales/print_invoice_detail/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir detalle</a>`;
+   
+          }
+          options += `<a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+   </div>
+   </li> `;
+ } %>
 
 <body class="<%= darkMode %>">
    <%- include('../../Layouts/SideBar.ejs') %>
@@ -266,7 +285,7 @@
                nota_remision_anterior: document.querySelector("#invoice_nr_anterior").value,
                cuenta_de: document.querySelector("#invoice_cuenta_de").value,
                leyend: document.querySelector("#invoice_leyend").value.trim(),
-               invoice_date: document.querySelector("#invoice_date").value+'T06:00:00',
+               invoice_date: document.querySelector("#invoice_date").value + 'T06:00:00',
             },
             invoice_resume: document.querySelector("#invoice_simplification").value.trim(),
             invoice_retention: document.querySelector("#invoice_iva_retention").checked,
