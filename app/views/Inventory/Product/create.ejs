@@ -421,6 +421,7 @@
                   e.target.disabled = false;
                   return errorMessage(data.message);
                } else {
+                  errorMessage(data.message);
                   return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
                }
             });
