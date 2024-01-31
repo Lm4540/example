@@ -372,12 +372,14 @@
             variations: []
          }
 
+         data.description = data.description.replace('"', '').replace("'", "");
+
          if (data.name.length < 2) {
             message = 'Por favor, proporcione el nombre de este producto';
          } else if (data.SKU.length < 2) {
             message = 'Debe proporcionar un numero unico para ';
-         } else if (data.description.length < 10) {
-            message = 'Proporcione una descripción';
+         } else if (data.description.length < 10 || data.description.length > 255) {
+            message = 'Proporcione una descripcion de entre 10 y 255 caracteres';
          } else if (data.classification == "") {
             message = 'Seleccione una clasificación';
          } else if (data.color.length < 4) {
