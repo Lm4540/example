@@ -509,8 +509,12 @@ const money_format = (n) => {
 
 
 
-const format_date = (date, time = true) => {
+const format_date = (date, time = true, sumar = 0) => {
     date = new Date(date);
+    if (sumar > 0) {
+        date.setHours(date.getHours() + sumar);
+    }
+
     let day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
     let month = date.getMonth() + 1;
     month = month < 10 ? `0${month}` : month;

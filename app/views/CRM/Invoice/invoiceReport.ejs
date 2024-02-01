@@ -112,6 +112,20 @@
                 <tbody>`;
 
                     res.invoices.forEach(invoice => {
+                     if(invoice._status == "revoked"){
+
+                        content += `
+                        <tr>
+                            <td>${invoice.invoice_data.name}</td>
+                            <td>${invoice.invoice_number}</td>
+                            <td>${format_date(invoice.invoice_date, false)}</td>
+                            <td><span class="text-danger">FACTURA ANULADA</span></td>
+                            <td>
+                                <a href="/sales/view/${invoice.id}" class="badge bg-warning">Ver Venta</a>
+                                <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
+                            </td>
+                        </tr>`;
+                     }else{
                         content += `
                         <tr>
                             <td>${invoice.invoice_data.name}</td>
@@ -123,6 +137,9 @@
                                 <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
                             </td>
                         </tr>`;
+
+                     }
+
                         
                     });
 

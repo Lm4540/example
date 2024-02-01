@@ -16,37 +16,39 @@
       <div class="main-content container-fluid">
          <div class="row">
             <div class="col-6 col-md-4">
-                <div class="form-group">
-                   <label for="selected_date">Desde la Fecha:</label>
-                   <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-01">
-                </div>
-             </div>
+               <div class="form-group">
+                  <label for="selected_date">Desde la Fecha:</label>
+                  <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-01">
+               </div>
+            </div>
             <div class="col-6 col-md-4">
                <div class="form-group">
                   <label for="selected_date">hasta la Fecha:</label>
                   <input type="date" class="form-control" id="end_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-02">
                </div>
             </div>
-            
+
             <div class="col-6 col-md-4">
-                <div class="form-group">
-                   <label for="selected_serie">Selecciona la Serie a Consultar</label>
-                   <select name="selected_serie" id="selected_serie" class="form-control">
-                      <% series.forEach(serie => { %>
-                      <option value="<%= serie.id %>" data-sucursal="<%= serie.sucursal %>"><%= `${types[serie.type]} (${serie.serie})` %></option>
-                      <% }) %>
-                   </select>
-                </div>
- 
-             </div>
-             <div class="col-12 text-center">
+               <div class="form-group">
+                  <label for="selected_serie">Selecciona la Serie a Consultar</label>
+                  <select name="selected_serie" id="selected_serie" class="form-control">
+                     <% series.forEach(serie => { %>
+                     <option value="<%= serie.id %>" data-sucursal="<%= serie.sucursal %>"><%= `${types[serie.type]} (${serie.serie})` %></option>
+                     <% }) %>
+                  </select>
+               </div>
+
+            </div>
+            <div class="col-12 text-center">
                <button class="btn btn-success mt-4" onclick="search_data()">Buscar</button>
+               <button class="btn btn-primary mt-4 ml-2" onclick="search_data2()">Detallado</button>
+               <button class="btn btn-danger mt-4 ml-2" onclick="search_data2('clasificado')">Detallado (Resumido)</button>
             </div>
          </div>
          <h2 class="page-title text-center mt-5" id="title"></h2>
          <div id="attaced_content" class="mt-5 table-responsive">
 
-            
+
 
          </div>
       </div>
@@ -82,7 +84,6 @@
       referrerPolicy: 'no-referrer',
    };
 
-   
 
    const search_data = async () => {
 
@@ -101,13 +102,13 @@
          return errorMessage('Seleccione una Sucursal');
       } else {
 
-         document.querySelector("#attaced_content").innerHTML = 
-         ` <div class="text-center">
-            <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
-               <span class="visually-hidden"></span>
-             </div>
-             <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
-         </div>`;
+         document.querySelector("#attaced_content").innerHTML =
+            ` <div class="text-center">
+      <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+         <span class="visually-hidden"></span>
+       </div>
+       <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
+   </div>`;
 
 
          const response = await fetch(`/sales/invoices_details?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&sucursal=${sucursal}&serie=${serie}`, s_options);
@@ -117,83 +118,47 @@
 
          //procesar la informacion: 
 
-         let content =  `<table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Numero</th>
-                        <th>Fecha</th>
-                        <th>Total</th>
-                        <th>Costo de Venta </th>
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+         let content = `<table class="table table-sm table-hover">
+          <thead>
+              <tr>
+                  <th>Nombre</th>
+                  <th>Numero</th>
+                  <th>Fecha</th>
+                  <th>Total</th>
+                  <th>Costo de Venta </th>
+                  <th>Opciones</th>
+              </tr>
+          </thead>
+          <tbody>`;
 
-                    res.invoices.forEach(invoice => {
-                        content += `
-                        <tr>
-                            <td>${invoice.invoice_data.name}</td>
-                            <td>${invoice.invoice_number}</td>
-                            <td>${format_date(invoice.invoice_date, false)}</td>`;
-                        if(invoice.revoked_at == null){
-                           content += `<td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
-                           <td>${invoice.cost > 0.00 || invoice.delivered_by != null ? ("$"+money_format(invoice.cost + invoice.delivery_amount)) : '<span class="text-danger">No determinado / En Proceso</span>'}</td>`;
-                           
-                        }else{
-                           content += `<td><span class="text-danger"> ANULADO </span></td>
-                           <td><span class="text-danger"> -- </span></td>`;
+         res.invoices.forEach(invoice => {
+            content += `
+                  <tr>
+                      <td>${invoice.invoice_data.name}</td>
+                      <td>${invoice.invoice_number}</td>
+                      <td>${format_date(invoice.invoice_date, false)}</td>`;
+            if (invoice.revoked_at == null) {
+               content += `<td>$${money_format(invoice.delivery_amount + invoice.balance)}</td>
+                     <td>${invoice.cost > 0.00 || invoice.delivered_by != null ? ("$"+money_format(invoice.cost + invoice.delivery_amount)) : '<span class="text-danger">No determinado / En Proceso</span>'}</td>`;
 
-                        }
+            } else {
+               content += `<td><span class="text-danger"> ANULADO </span></td>
+                     <td><span class="text-danger"> -- </span></td>`;
 
-                            content += `<td>
-                                <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning">Ver detalle</span>
-                                <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
-                            </td>
-                        </tr>`;
-                        
-                    });
+            }
 
-                    
-                    content += `</tbody>
-            </table>`;
-/*
-         let keys = Object.keys(res.groups);
-         len = keys.length;
-         for (let a = 0; a < len; a++) {
-            let group = res.groups[keys[a]];
+            content += `<td>
+                          <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning">Ver detalle</span>
+                          <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
+                      </td>
+                  </tr>`;
+
+         });
 
 
-            content += `<div class="card-body table-responsive">
-               <h4 class="text-center mt-3">${keys[a]} $${money_format(group.total)}</h4>
-               <table class="table-bordered table tebale-sm">
-                  <thead>
-                     <tr>
-                        <th>id</th>
-                        <th>Nombre</th>
-                        <th>Codigo</th>
-                        <th>Stock</th>
-                        <th>Costo</th>
-                        <th>Valor Total</th>
-                        <th>Ultimo movimiento</th>
-                     </tr>
-                  </thead>
-                  <tbody>`;
-            group.details.forEach(product => {
-               content += `<tr>
-                        <td>${product.id}</td>
-                        <td>${product.name}</td>
-                        <td>${product.sku}</td>
-                        <td>${product.cant}</td>
-                        <td>$${money_format(product.cost)}</td>
-                        <td>$${money_format(product.subtotal)}</td>
-                        <td>${format_date(product.fecha)}</td>
-                     </tr>`;
-            })
-            content += `</tbody></table></div>`;
-         }
-         
-         */
+         content += `</tbody>
+      </table>`;
+
 
 
          content += `</div>`;
@@ -205,6 +170,246 @@
    }
 
 
+   const search_data2 = async (option) => {
+
+      //mostrar la cuestion de calculando datos
+      let init = document.querySelector('#init_date').value;
+      let end = document.querySelector('#end_date').value;
+      let sucursal = document.querySelector("#selected_serie").options[document.querySelector("#selected_serie").selectedIndex].dataset.sucursal;
+      let serie = Number.parseInt(document.querySelector("#selected_serie").value);
+
+      if (init.length < 10 || end.length < 10 || end < init) {
+         return errorMessage('Seleccione un rango de fechas válido');
+      } else if (sucursal < 1) {
+         return errorMessage('Seleccione una Sucursal');
+      } else {
+
+         document.querySelector("#attaced_content").innerHTML =
+            ` <div class="text-center">
+      <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+         <span class="visually-hidden"></span>
+       </div>
+       <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
+   </div>`;
+
+
+         const response = await fetch(`/sales/invoices_details2?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&sucursal=${sucursal}&serie=${serie}`, s_options);
+         let res = await response.json();
+         console.log(res)
+         document.querySelector("#title").innerHTML = ``;
+
+         //procesar la informacion: 
+         let content = "";
+         let invoices = res.invoices;
+         let details = res.details;
+
+         if (option != null && option !== undefined) {
+
+            content = `<table class="table table-sm table-hover table-bordered">
+               <thead>
+                  <tr>
+                        <th>Nombre</th>
+                        <th>Numero</th>
+                        <th>Fecha</th>
+                        <th>Clasificacion del Producto</th>
+                        <th>Monto Vendido</th>
+                        <th>Costo de Venta </th>
+                        <th>Opciones</th>
+                  </tr>
+               </thead>
+               <tbody>`;
+
+            invoices.forEach(invoice => {
+               if (invoice.cost > 0.00 && invoice.delivered_by != null) {
+                  //recorrer los detalles
+
+                  let dts = details[invoice.id];
+                  let sumas = {};
+
+
+
+                  dts.forEach(detail => {
+                     if(sumas[detail.product._group] == undefined || sumas[detail.product._group] == null){
+                        sumas[detail.product._group] = {venta : 0.00, costo: 0.00};
+                     }
+                     sumas[detail.product._group].venta = fix_number(sumas[detail.product._group].venta + (detail.cant * detail.price));
+                     sumas[detail.product._group].costo = fix_number(sumas[detail.product._group].costo + (detail.cant * detail.product_cost));
+                  });
+
+
+                  let llaves = Object.keys(sumas);
+
+                  llaves.forEach(llave => {
+
+                     let cls = sumas[llave];
+
+                     content += `
+                     <tr>
+                         <td>${invoice.invoice_data.name}</td>
+                         <td>${invoice.invoice_number}</td>
+                         <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>${llave}</td>
+                         <td>$${money_format(cls.venta)}</td>
+                         <td>$${money_format(cls.costo)}</td>
+                         <td class="text-center">
+                             <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                             <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                         </td>
+                     </tr>`;
+                  });
+
+
+                  if (invoice.delivery_amount > 0) {
+                     content += `
+                     <tr>
+                         <td>${invoice.invoice_data.name}</td>
+                         <td>${invoice.invoice_number}</td>
+                         <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>COSTO DE ENVIO</td>
+                         <td>$${money_format(invoice.delivery_amount)}</td>
+                         <td>$${money_format(invoice.delivery_amount)}</td>
+                         <td class="text-center">
+                             <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                             <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                         </td>
+                     </tr>`;
+                  }
+
+
+
+               }else if(invoice._status == 'revoked' ){
+                  content += `
+                  <tr>
+                      <td>${invoice.invoice_data.name}</td>
+                      <td>${invoice.invoice_number}</td>
+                      <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                      <td colspan="3" class="text-center"><span class="text-danger">FACTURA ANULADA</span></td>
+                      
+                      <td class="text-center">
+                          <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                          <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                      </td>
+                  </tr>`;
+
+               } else {
+
+                  content += `
+                  <tr>
+                      <td>${invoice.invoice_data.name}</td>
+                      <td>${invoice.invoice_number}</td>
+                      <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                      <td colspan="3" class="text-center"><span class="text-danger">No determinado / En Proceso</span></td>
+                      
+                      <td class="text-center">
+                          <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                          <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                      </td>
+                  </tr>`;
+
+               }
+
+            });
+            content += `</tbody></table></div>`;
+
+         } else {
+
+            content = `<table class="table table-sm table-hover table-bordered">
+       <thead>
+           <tr>
+               <th>Nombre</th>
+               <th>Numero</th>
+               <th>Fecha</th>
+               <th>Producto</th>
+               <th>Clasificacion del Producto</th>
+               <th>Subtotal</th>
+               <th>Costo de Venta </th>
+               <th>Opciones</th>
+           </tr>
+       </thead>
+       <tbody>`;
+
+            invoices.forEach(invoice => {
+               if (invoice.cost > 0.00 && invoice.delivered_by != null) {
+                  //recorrer los detalles
+
+                  let dts = details[invoice.id];
+                  dts.forEach(detail => {
+                     content += `
+                     <tr>
+                         <td>${invoice.invoice_data.name}</td>
+                         <td>${invoice.invoice_number}</td>
+                         <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>${detail.product.name} (${detail.cant} Unidades a $${detail.price})</td>
+                         <td>${detail.product._group}</td>
+                         <td>$${money_format(fix_number(detail.cant * detail.price))}</td>
+                         <td>$${money_format(fix_number(detail.cant * detail.product_cost))}</td>
+                         <td class="text-center">
+                             <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                             <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                         </td>
+                     </tr>`;
+                  });
+
+
+                  if (invoice.delivery_amount > 0) {
+                     content += `
+                     <tr>
+                         <td>${invoice.invoice_data.name}</td>
+                         <td>${invoice.invoice_number}</td>
+                         <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>COSTO DE ENVIO</td>
+                         <td>--</td>
+                         <td>$${money_format(invoice.delivery_amount)}</td>
+                         <td>$${money_format(invoice.delivery_amount)}</td>
+                         <td class="text-center">
+                             <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                             <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                         </td>
+                     </tr>`;
+                  }
+
+               }else if(invoice._status == 'revoked' ){
+                  content += `
+                  <tr>
+                      <td>${invoice.invoice_data.name}</td>
+                      <td>${invoice.invoice_number}</td>
+                      <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                      <td colspan="4" class="text-center"><span class="text-danger">FACTURA ANULADA</span></td>
+                      
+                      <td class="text-center">
+                          <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                          <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                      </td>
+                  </tr>`;
+
+               } else {
+
+                  content += `
+                  <tr>
+                      <td>${invoice.invoice_data.name}</td>
+                      <td>${invoice.invoice_number}</td>
+                      <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                      <td colspan="4" class="text-center"><span class="text-danger">No determinado / En Proceso</span></td>
+                      
+                      <td class="text-center">
+                          <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
+                          <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
+                      </td>
+                  </tr>`;
+
+               }
+
+            });
+            content += `</tbody></table></div>`;
+
+         }
+
+         document.querySelector("#attaced_content").innerHTML = content;
+
+      }
+
+   }
+
    document.addEventListener('DOMContentLoaded', event => {});
 
    const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
@@ -212,7 +417,6 @@
       document.querySelector("#iframe_data").src = url;
       ShowDataModal.toggle();
    }
-
 </script>
 
 </html>

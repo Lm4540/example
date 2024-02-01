@@ -44,7 +44,7 @@ const InvoiceController = {
                     let sin_iva = Helper.fix_number(invoice.balance / 1.13);
                     invoice.taxes = {
                         iva: Helper.fix_number(invoice.balance - sin_iva),
-                        retention: invoice.invoice_retention &&  sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                        retention: invoice.invoice_retention && sin_iva > 100 ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
                         perception: 0.00,
                         isr: invoice.invoice_retention ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
                     }
@@ -292,7 +292,7 @@ const InvoiceController = {
                             new_model.invoice_data = invoice.invoice_data;
                             new_model.taxes = invoice.taxes;
                             await new_model.save({ transaction: t });
-                            
+
                             invoice.invoce_serie = data.invoice_serie;
                             invoice.invoice_type = data.invoice_type;
                             invoice.invoice_number = data.invoice_number;
@@ -302,19 +302,19 @@ const InvoiceController = {
                             invoice.invoice_retention = data.invoice_retention;
                             invoice.invoice_isr = data.invoice_isr;
                             invoice.invoice_date = new Date(data.invoice_date);
-                            
-                            
+
+
                             //Actualizar los taxes segun las opciones seleccionadas
-                            
+
                             let sin_iva = Helper.fix_number(invoice.balance / 1.13);
                             invoice.taxes = {
                                 iva: Helper.fix_number(invoice.balance - sin_iva),
-                                retention: invoice.invoice_retention &&  sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                                retention: invoice.invoice_retention && sin_iva > 100 ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
                                 perception: 0.00,
                                 isr: invoice.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
                             }
-                            
-                            
+
+
                             await invoice.save({ transaction: t });
                             //Enviar una transaccion para actualizar el numero de serie
 
@@ -383,7 +383,7 @@ const InvoiceController = {
         let serie = req.query.serie;
 
         //buscar las facturas de esa sucursal, ordenadas por numero de la factura
-        let invoices = await Sale.findAll({
+        /*let invoices = await Sale.findAll({
             where: {
                 invoice_number: {
                     [Op.not]: null
@@ -399,38 +399,107 @@ const InvoiceController = {
             ]
         });
 
+        */
+
+
+        let sql = "SELECT * FROM `crm_sale` WHERE invoice_number is not null and invoce_serie =  :_serie and invoice_date BETWEEN :init and :end order by invoice_number ASC";
+        let invoices = await sequelize.query(sql, {
+            replacements: {
+                _serie: serie,
+                init: init,
+                end: end,
+            },
+            type: QueryTypes.SELECT,
+            model: Sale,
+        });
+
         return res.json({
             invoices, sucursal
         })
     },
 
+    invoice_report_details2: async (req, res) => {
+        //obtener el rango de fechas y la sucursal
+        let init = `${req.query.init} 00:00:00`;
+        let end = `${req.query.end} 23:59:59`;
+        //buscar la sucursal
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+        let serie = req.query.serie;
+
+        let sql = "SELECT * FROM `crm_sale` WHERE invoice_number is not null and invoce_serie =  :_serie and invoice_date BETWEEN :init and :end order by invoice_number ASC";
+
+        invoices = await sequelize.query(sql, {
+            replacements: {
+                _serie: serie,
+                init: init,
+                end: end,
+            },
+            type: QueryTypes.SELECT,
+            model: Sale
+        });
+
+        
+        sql = "select inventory_product.id, inventory_product.image, inventory_product.name, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.id in (select product from crm_sale_detail where sale in(SELECT id FROM `crm_sale` WHERE invoice_number is not null and invoce_serie =  :_serie and invoice_date BETWEEN :init and :end))";
+        
+        let tmp = await sequelize.query(sql, {
+            replacements: {
+                _serie: serie,
+                init: init,
+                end: end,
+            },
+            type: QueryTypes.SELECT,
+        });
+        
+        
+        let products = {};
+        tmp.forEach(element => products[element.id] = element);
+        
+        //buscar los detalles
+        sql = 'select * from crm_sale_detail where sale in(SELECT id FROM `crm_sale` WHERE invoice_number is not null and invoce_serie =  :_serie and invoice_date BETWEEN :init and :end)'
+        
+        tmp = await sequelize.query(sql, {
+            replacements: {
+                _serie: serie,
+                init: init,
+                end: end,
+            },
+            type: QueryTypes.SELECT,
+        });
+        
+        let details = {};
+        tmp.forEach(element => {
+            element.product = products[element.product];
+            if(details[element.sale] == undefined || details[element.sale] == null){
+                details[element.sale] = []
+            }
+            details[element.sale].push(element);
+        });
+
+        return res.json({
+            invoices, sucursal, details
+        })
+    },
+
     invoice_report: async (req, res) => {
-
         let sucursals = await Sucursal.findAll();
-        let series = await InvoiceSeries.findAll();
-
-
-
+        let series = await InvoiceSeries.findAll({order:[['id', 'DESC'],]});
         return res.render('CRM/Invoice/invoiceReport.ejs', {
             sucursals,
             pageTitle: 'Reporte de facturas Generadas',
             series,
             types
         });
-
     },
 
     invoice_report2: async (req, res) => {
-
         let sucursals = await Sucursal.findAll();
-        let series = await InvoiceSeries.findAll();
+        let series = await InvoiceSeries.findAll({order:[['id', 'DESC'],]});
         return res.render('CRM/Invoice/invoiceReportCost.ejs', {
             sucursals,
             pageTitle: 'Reporte de facturas Generadas',
             series,
             types
         });
-
     },
 
 
@@ -507,7 +576,7 @@ const InvoiceController = {
             let sin_iva = Helper.fix_number(sale.balance / 1.13);
             sale.taxes = {
                 iva: Helper.fix_number(sale.balance - sin_iva),
-                retention: sale.invoice_retention && sin_iva > 100  ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
+                retention: sale.invoice_retention && sin_iva > 100 ? Helper.fix_number(sin_iva * process.env.RETENTION) : 0.00,
                 perception: 0.00,
                 isr: sale.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
             }

@@ -174,14 +174,11 @@ const ProductController = {
 
                                 //actualizar la info de producto
 
-                                console.log(product_data);
-                                console.log('guardando la data', ' \n');
                                 product_data.image = _image_name;
                                 product_data.color = _var.color;
                                 product_data.internal_code = _var.code;
                                 product_data.name = data.name + ' ' + _var.color;
                                 let _product = await Product.create(product_data);
-                                console.log('producto creado con id: ' + _product.id, ' \n');
                                 _image_name = null;
                             }
                         }
