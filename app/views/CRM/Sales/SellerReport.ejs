@@ -191,9 +191,8 @@
       let delivery = 0.00,
          balance = 0.00,
          cost = 0.00,
-         last = 0,
          iva = 0.0;
-
+      last = 0;
       data.sales.forEach(sale => {
          last = sale.id;
          delivery = fix_number(delivery + sale.delivery_amount);
