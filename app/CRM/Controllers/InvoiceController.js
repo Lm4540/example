@@ -569,7 +569,7 @@ const InvoiceController = {
             sale.invoce_serie = data.invoice_serie;
             sale.invoice_number = data.invoice_number;
             sale.invoice_type = serie.type;
-            sale.invoice_date = new Date(data.invoice_data.invoice_date);
+            sale.invoice_date = new Date(data.invoice_data.invoice_date+"T06:00:00");
 
             //Token poner aca los taxes
 

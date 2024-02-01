@@ -67,7 +67,7 @@
                         <td>$<%= Helper.money_format(detail.price) %></td>
                         <td>$<%= Helper.money_format(detail.cant *  detail.price) %></td>
                         <% costs.forEach(cost => { %>
-                           <td>$<%= Helper.money_format(cost.price * percent) %></td>
+                           <td>$<%= Helper.money_format(cost.price * percent) %><br> <%= percent.toFixed(4) %>%</td>
                         <% }) %>
                         <td>$<%= Helper.money_format(detail.cost * detail.cant) %></td>
                         <td>$<%= Helper.money_format(detail.cost) %></td>
@@ -81,7 +81,8 @@
                         <% costs.forEach(cost => { %>
                            <td>$<%= Helper.money_format(cost.price ) %></td>
                         <% }) %>
-                        <td>$<%= Helper.money_format(total_cost + Number.parseFloat(purchase.subtotal)) %></td>
+                        <td>$<%= Helper.money_format(Number.parseFloat(total_cost)+Number.parseFloat(purchase.subtotal)) %>
+                        </td>
                         <td>--</td>
                      </tr>
                   </tbody>
