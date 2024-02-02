@@ -64,10 +64,10 @@
                      <tr>
                         <td><%= detail.description %> (<%= detail.code !== null && detail.code !== "" ? detail.code : 'Sin Codigo' %>)</td>
                         <td><%= detail.cant %></td>
-                        <td>$<%= Helper.money_format(detail.price) %></td>
-                        <td>$<%= Helper.money_format(detail.cant *  detail.price) %></td>
+                        <td>$<%= Helper.money_format(detail.price, 4) %></td>
+                        <td>$<%= Helper.money_format(Helper.fix_number(detail.cant *  detail.price), 2) %></td>
                         <% costs.forEach(cost => { %>
-                           <td>$<%= Helper.money_format(cost.price * percent) %><br> <%= percent.toFixed(4) %>%</td>
+                           <td>$<%= Helper.money_format(Helper.fix_number(cost.price * percent), 2) %></td>
                         <% }) %>
                         <td>$<%= Helper.money_format(detail.cost * detail.cant) %></td>
                         <td>$<%= Helper.money_format(detail.cost) %></td>
@@ -81,7 +81,7 @@
                         <% costs.forEach(cost => { %>
                            <td>$<%= Helper.money_format(cost.price ) %></td>
                         <% }) %>
-                        <td>$<%= Helper.money_format(Number.parseFloat(total_cost)+Number.parseFloat(purchase.subtotal)) %>
+                        <td>$<%= Helper.money_format(Number.parseFloat(total_cost) + parseFloat(purchase.subtotal)) %>
                         </td>
                         <td>--</td>
                      </tr>

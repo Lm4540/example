@@ -78,7 +78,7 @@
                      <tr>
                         <td><%= detail.description %></td>
                         <td><%= detail.cant %></td>
-                        <td>$<%= Helper.money_format(detail.price) %></td>
+                        <td>$<%= Helper.money_format(detail.price, 4) %></td>
                         <td>$<%= Helper.money_format(detail.cant *  detail.price) %></td>
                         <td><%= detail.code %></td>
                         <td><%= detail.color %></td>
