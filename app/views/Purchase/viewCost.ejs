@@ -41,6 +41,7 @@
                   </li>
                  
                </ul>
+               <% var total_cost = 0.00 %>
                <table class="table table-sm table-bordered table-hover text-center mt-5">
                   <thead>
                      <tr>
@@ -48,9 +49,8 @@
                         <th style="width: 7%; max-width: 7%;">Cantidad</th>
                         <th style="width: 10%; max-width: 10%;">Precio<br>Unitario</th>
                         <th style="width: 10%; max-width: 10%;">Valor del <br>Equipo</th>
-                        <% let total_cost = 0.00 %>
                         <% costs.forEach(cost => { 
-                           total_cost += cost.price %>
+                           total_cost = Helper.fix_number(total_cost + Number.parseFloat(cost.price)) %>
                            <th style="width: 10%; max-width: 10%;"><%= cost.description %></th>
                         <% }) %>
                         <th>Costo total del <br> Equipo</th>
