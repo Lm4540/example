@@ -15,7 +15,7 @@ const PurchaseDetail = sequelize.define('PurchaseDetail', {
     description: DataTypes.STRING,
     code: DataTypes.STRING,
     color: DataTypes.STRING,
-    price:DataTypes.DECIMAL(10,2),
+    price:DataTypes.DECIMAL(10,4),
     cost:DataTypes.DECIMAL(10,2),
     in: DataTypes.INTEGER.UNSIGNED,
     identified: DataTypes.INTEGER,
