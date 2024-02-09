@@ -19,27 +19,27 @@ const Sale = require('../../CRM/Models/Sale');
 
 
 const ProductController = {
- /*   corregir_precios: async (req, res) => {
-        let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
-            {
-                type: QueryTypes.SELECT,
-                model: Product,
-            });
-
-        let data_len = data.length;
-
-        for (let index = 0; index < data_len; index++) {
-            var product = data[index];
-            if(product.base_price < product.major_price){
-                let base = product.base_price;
-                product.base_price = product.major_price;
-                product.major_price= base;
-                await product.save();
-            }
-        }
-
-        return res.json(data.length)
-    },*/
+    /*   corregir_precios: async (req, res) => {
+           let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
+               {
+                   type: QueryTypes.SELECT,
+                   model: Product,
+               });
+   
+           let data_len = data.length;
+   
+           for (let index = 0; index < data_len; index++) {
+               var product = data[index];
+               if(product.base_price < product.major_price){
+                   let base = product.base_price;
+                   product.base_price = product.major_price;
+                   product.major_price= base;
+                   await product.save();
+               }
+           }
+   
+           return res.json(data.length)
+       },*/
 
     getCreationView: async (req, res) => {
         let classification = await ProductClassification.findAll({ attributes: ['id', 'name'] });
@@ -48,6 +48,15 @@ const ProductController = {
     createProduct: async (req, res) => {
         let data = req.body;
         let message = null;
+
+        let regex = /"|'|`/g;
+
+        data.name = data.name.replace(regex, '');
+        data.code = data.code.replace(regex, '');
+        data.SKU = data.SKU.replace(regex, '');
+        data.description = data.description.replace(regex, '');
+        data.color = data.color.replace(regex, '');
+        
 
         if (data.name.length < 2) {
             message = 'Por favor, proporcione el nombre de este producto';
@@ -344,7 +353,7 @@ const ProductController = {
                     saleId: in_reserve[index].id
                 }
             })
-            
+
         }
 
         res.render('Inventory/Product/view', {
@@ -509,9 +518,9 @@ const ProductController = {
                     let indexed_stocks = {};
                     stock.forEach(st => {
                         let stock = Number.parseInt(st.cant),
-                        reserved = Number.parseInt(st.reserved);
+                            reserved = Number.parseInt(st.reserved);
 
-                        indexed_stocks[st.product] = {stock,reserved};
+                        indexed_stocks[st.product] = { stock, reserved };
                     });
 
                     return res.json(products.map(el => {
