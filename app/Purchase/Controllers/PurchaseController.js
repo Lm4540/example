@@ -121,13 +121,16 @@ const PurchaseController = {
                     let to_inventory = false;
                     // / recorrer y registrar los detalles
                     for (let index = 0; index < len; index++) {
+
+                        let regex = /"|'|`/g;
+
                         let dt = data.details[index];
                         subtotal += (Number.parseFloat(dt.price) * Number.parseInt(dt.cant));
                         let l = await PurchaseDetail.create({
                             purchase: purchase.id,
                             cant: dt.cant,
                             price: dt.price,
-                            description: dt.description,
+                            description: dt.description.replace(regex, ''),
                             code: dt.code,
                             color: dt.color,
                             in: 0,
@@ -135,7 +138,7 @@ const PurchaseController = {
                             detail_type: dt.type,
                         }, { transaction: t });
                         console.log(to_inventory == false && dt.type == 'product')
-                        if(to_inventory == false && dt.type == 'product'){
+                        if (to_inventory == false && dt.type == 'product') {
                             to_inventory = true;
                         }
                     }
@@ -150,7 +153,7 @@ const PurchaseController = {
                         }
                     }
                     console.log(purchase.purchase_type == 'product' && to_inventory == false)
-                    if(purchase.purchase_type == 'product' && to_inventory == false){
+                    if (purchase.purchase_type == 'product' && to_inventory == false) {
                         purchase.purchase_type = "services";
                     }
                     await purchase.save({ transaction: t });
@@ -162,10 +165,6 @@ const PurchaseController = {
                 console.log(error);
                 return res.json({ status: 'errorMessage', message: error.message });
             }
-
-
-
-
         }
 
         //validar lso datos
@@ -277,12 +276,12 @@ const PurchaseController = {
         //buscar la compra
         let purchase = await Purchase.findByPk(req.params.id);
         if (purchase) {
-            if(purchase.purchase_type != 'product' ){
-                return res.redirect('/purchase/view/'+purchase.id);
-            }else if(purchase.isIn){
-                return res.redirect('/purchase/cost/'+purchase.id);
+            if (purchase.purchase_type != 'product') {
+                return res.redirect('/purchase/view/' + purchase.id);
+            } else if (purchase.isIn) {
+                return res.redirect('/purchase/cost/' + purchase.id);
             }
-            
+
             let details = await PurchaseDetail.findAll({
                 where: {
                     purchase: purchase.id
@@ -350,6 +349,8 @@ const PurchaseController = {
 
 
                         len = details.length;
+
+                        let products_to_update = {};
                         if (total_cost > 0) {
                             for (let index = 0; index < len; index++) {
                                 let detail = details[index];
@@ -375,6 +376,10 @@ const PurchaseController = {
 
                                     //buscar el Stock
                                     //Compriobar si hay stocks creados en esa sucursal
+                                    // if(stocks[product.id] !== null && stocks[product.id] !== undefined){
+
+                                    // }
+
                                     let stock = await Stock.findOne({
                                         where: {
                                             [Op.and]: [
@@ -382,7 +387,7 @@ const PurchaseController = {
                                                 { 'sucursal': data.sucursal }
                                             ],
                                         }
-                                    });
+                                    }, { 'transaction': t });
                                     //Si el stock existe, aumentamos la cantidad existente
                                     let last_sucursal_stock = 0;
                                     if (stock === null) {
@@ -504,6 +509,288 @@ const PurchaseController = {
                         }
 
                         //Actualizar el registro de la compra
+
+                        purchase.isIn = true;
+                        purchase.inComments = data.observation;
+                        await purchase.save({ transaction: t });
+
+                        return { status: 'success', message: 'Compra Ingresada al Inventario correctamente', purchase }
+
+
+                    }));
+                } catch (error) {
+                    console.log(error);
+                    return res.json({ status: 'errorMessage', message: error.message });
+                }
+            }
+        }
+        return res.json({ status: 'errorMessage', message: 'La compra no ha sido encontrada o ya fue ingresada al Inventario' });
+
+    },
+
+    in_purchase_to_inventory2: async (req, res) => {
+        //buscar la compra
+        let data = req.body;
+        let purchase = await Purchase.findByPk(data.purchase);
+
+        if (purchase) {
+            if (purchase.purchase_type == "product" && purchase.isIn == 0) {
+
+                let details = await PurchaseDetail.findAll({
+                    where: { purchase: purchase.id }
+                });
+
+                let provider = await Provider.findByPk(purchase.provider);
+
+                try {
+                    return res.json(await sequelize.transaction(async (t) => {
+                        //registrar los costos
+                        let len = data.costs.length;
+                        let total_cost = 0.00;
+                        let generla_concept = `Ingreso de ${purchase.invoice_type} N° ${purchase.invoice_number} del proveedor ${provider.name}`;
+                        if (len > 0) {
+                            for (let index = 0; index < len; index++) {
+                                let cost = data.costs[index];
+                                total_cost += Number.parseFloat(cost.cost);
+
+                                //registrar el costo
+                                cost = await PurchaseCost.create({
+                                    purchase: purchase.id,
+                                    description: cost.description,
+                                    price: cost.cost
+                                }, { transaction: t });
+                            }
+                        }
+
+
+                        len = details.length;
+
+                        let products_to_update = {};
+                        let products_in_list = {};
+                        let stock_in_list = {};
+
+                        if (total_cost > 0) {
+                            for (let index = 0; index < len; index++) {
+                                let detail = details[index];
+                                detail.in = detail.cant - data.details[detail.id].faltante;
+                                detail.identified = detail.in;
+                                detail.identification = data.details[detail.id].products;
+
+                                //determinar el costo del Item
+                                let percent = (detail.cant * detail.price) / purchase.subtotal;
+                                let dt_cost = (percent * total_cost);
+
+                                let cost = Helper.fix_number(Number.parseFloat(detail.price) + Number.parseFloat((dt_cost / detail.in).toFixed(2)));
+
+                                detail.cost = cost;
+                                await detail.save({ transaction: t });
+
+                                //recorrer los productos para darle ingreso al inventario
+                                let contador = data.details[detail.id].products.length;
+                                for (let indice = 0; indice < contador; indice++) {
+
+                                    let cantidad_selecciona = Number.parseInt(data.details[detail.id].products[indice].cant);
+                                    //Buscar el Producto
+                                    let product_id = data.details[detail.id].products[indice].product;
+                                    let product_last_stock = 0;
+                                    let last_sucursal_stock = 0;
+                                    let last_cost = 0.00;
+
+
+                                    if (products_to_update[product_id] !== null && products_to_update[product_id] !== undefined) {
+                                        //Agregar la cantidad
+                                        product_last_stock = Number.parseInt(products_in_list[product_id].stock + products_to_update[product_id].cant);
+                                        last_sucursal_stock = Number.parseInt(stock_in_list[product_id].cant + products_to_update[product_id].cant);
+                                        last_cost = products_to_update[product_id].cost;
+                                        //determinar el costo
+                                        let obj = {
+                                            cant: Number.parseInt(products_to_update[product_id].cant + cantidad_selecciona),
+                                            cost: Helper.fix_number(((cantidad_selecciona * cost) + (product_last_stock * last_cost)) / (product_last_stock + cantidad_selecciona)),
+
+                                        }
+                                        products_to_update[product_id] = obj;
+
+                                    } else {
+                                        let product = await Product.findByPk(product_id);
+                                        products_in_list[product_id] = product;
+                                        product_last_stock = product.stock;
+                                        products_to_update[product_id] = {
+                                            cant: cantidad_selecciona,
+                                            cost: Helper.fix_number(((cantidad_selecciona * cost) + (product.stock * product.cost)) / (product.stock + cantidad_selecciona)),
+                                        };
+
+                                        last_cost = product.cost;
+
+                                        let stock = await Stock.findOne({
+                                            where: {
+                                                [Op.and]: [
+                                                    { 'product': product_id },
+                                                    { 'sucursal': data.sucursal }
+                                                ],
+                                            }
+                                        }, { 'transaction': t });
+
+                                        if (stock === null) {
+                                            //Si no existe lo creamos con la cantidad inicial del ingreso
+                                            stock = await Stock.create({
+                                                'product': product_id,
+                                                'sucursal': data.sucursal,
+                                                'cant': 0,
+                                                'reserved': 0,
+                                            }, { 'transaction': t });
+                                            stock_in_list[product_id] = stock;
+
+                                        } else {
+                                            last_sucursal_stock = stock.cant;
+                                            stock_in_list[product_id] = stock;
+                                        }
+
+                                    }
+
+
+                                    //registrar el movimiento
+                                    let move = await Movement.create({
+                                        last_sucursal_stock: last_sucursal_stock,
+                                        last_product_stock: product_last_stock,
+                                        cant: cantidad_selecciona,
+                                        cost: cost,
+                                        last_cost: last_cost,
+                                        in: true,
+                                        product: product_id,
+                                        concept: generla_concept,
+                                        sucursal: data.sucursal,
+                                    }, { transaction: t });
+                                }
+                            }
+
+
+                        } else {
+                            for (let index = 0; index < len; index++) {
+                                let detail = details[index];
+                                detail.in = detail.cant - data.details[detail.id].faltante;
+                                detail.identified = detail.in;
+                                detail.identification = data.details[detail.id].products;
+
+                                //determinar el costo del Item
+                                let cost = Number.parseFloat((detail.cant * detail.price) / (detail.in));
+
+                                detail.cost = cost;
+                                await detail.save({ transaction: t });
+                                //recorrer los productos para darle ingreso al inventario
+                                let contador = data.details[detail.id].products.length;
+                                for (let indice = 0; indice < contador; indice++) {
+
+                                    let cantidad_selecciona = Number.parseInt(data.details[detail.id].products[indice].cant);
+                                    //Buscar el Producto
+                                    let product_id = data.details[detail.id].products[indice].product;
+                                    let product_last_stock = 0;
+                                    let last_sucursal_stock = 0;
+                                    let last_cost = 0.00;
+
+
+                                    if (products_to_update[product_id] !== null && products_to_update[product_id] !== undefined) {
+                                        //Agregar la cantidad
+                                        product_last_stock = Number.parseInt(products_in_list[product_id].stock + products_to_update[product_id].cant);
+                                        last_sucursal_stock = Number.parseInt(stock_in_list[product_id].cant + products_to_update[product_id].cant);
+                                        last_cost = products_to_update[product_id].cost;
+                                        //determinar el costo
+                                        let obj = {
+                                            cant: Number.parseInt(products_to_update[product_id].cant + cantidad_selecciona),
+                                            cost: Helper.fix_number(((cantidad_selecciona * cost) + (product_last_stock * last_cost)) / (product_last_stock + cantidad_selecciona)),
+
+                                        }
+                                        products_to_update[product_id] = obj;
+
+                                    } else {
+                                        let product = await Product.findByPk(product_id);
+                                        products_in_list[product_id] = product;
+                                        product_last_stock = product.stock;
+                                        products_to_update[product_id] = {
+                                            cant: cantidad_selecciona,
+                                            cost: Helper.fix_number(((cantidad_selecciona * cost) + (product.stock * product.cost)) / (product.stock + cantidad_selecciona)),
+                                        };
+
+                                        last_cost = product.cost;
+
+                                        let stock = await Stock.findOne({
+                                            where: {
+                                                [Op.and]: [
+                                                    { 'product': product_id },
+                                                    { 'sucursal': data.sucursal }
+                                                ],
+                                            }
+                                        }, { 'transaction': t });
+
+                                        if (stock === null) {
+                                            //Si no existe lo creamos con la cantidad inicial del ingreso
+                                            stock = await Stock.create({
+                                                'product': product_id,
+                                                'sucursal': data.sucursal,
+                                                'cant': 0,
+                                                'reserved': 0,
+                                            }, { 'transaction': t });
+                                            stock_in_list[product_id] = stock;
+
+                                        } else {
+                                            last_sucursal_stock = stock.cant;
+                                            stock_in_list[product_id] = stock;
+                                        }
+
+                                    }
+
+
+                                    //registrar el movimiento
+                                    let move = await Movement.create({
+                                        last_sucursal_stock: last_sucursal_stock,
+                                        last_product_stock: product_last_stock,
+                                        cant: cantidad_selecciona,
+                                        cost: cost,
+                                        last_cost: last_cost,
+                                        in: true,
+                                        product: product_id,
+                                        concept: generla_concept,
+                                        sucursal: data.sucursal,
+                                    }, { transaction: t });
+                                }
+                            }
+                        }
+
+                        //Mandar las sql para actualizar los costos y las cantidades de los productos y stocks
+                        let keys = Object.keys(products_to_update);
+                        let length_ = keys.length;
+
+                        console.log(products_to_update);
+
+                        for (let index = 0; index < length_; index++) {
+                            let product_id = keys[index];
+
+                            let sql = "UPDATE `inventory_product` SET `stock` = stock + :cant, `cost` = :cost WHERE `inventory_product`.`id` = :product_id";
+                            await sequelize.query(
+                                sql,
+                                {
+                                    replacements: {
+                                        cant: products_to_update[product_id].cant, cost: products_to_update[product_id].cost, product_id
+                                    },
+                                    type: QueryTypes.UPDATE,
+                                    transaction: t
+                                }
+                            );
+
+                            sql = "UPDATE `inventory_product_stock` SET `cant` = cant + :cant WHERE product = :product_id and sucursal = :sucursal";
+
+                            await sequelize.query(
+                                sql,
+                                {
+                                    replacements: {
+                                        cant: products_to_update[product_id].cant, product_id, sucursal: data.sucursal
+                                    },
+                                    type: QueryTypes.UPDATE,
+                                    transaction: t
+                                }
+                            );
+                        }
+
+
 
                         purchase.isIn = true;
                         purchase.inComments = data.observation;
