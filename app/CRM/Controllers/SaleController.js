@@ -938,9 +938,18 @@ const SaleController = {
 
     inProccess: async (req, res) => {
 
+        let _options = [
+            { id: 'process', name: 'En Proceso' },
+            { id: 'prepared', name: "paquete preparado" },
+            { id: 'transport', name: "En Ruta" },
+            { id: 'delivered', name: 'Entregado' },
+            { id: 'to_resend', name: "Marcado para reenvio" },
+            { id: 'closed', name: 'Cerrado' },
+        ];
+        let seller = req.query.seller !== undefined && req.query.seller !== "all" ? req.query.seller : null;
+        let _status = req.query._status !== undefined && req.query._status !== "all" ? req.query._status : null;
 
-        let seller = req.query.seller;
-        let _status = req.query._status;
+
         let where = {
             _status: {
                 [Op.notIn]: ['collected', 'revoked'],
@@ -1001,7 +1010,7 @@ const SaleController = {
         tmp.forEach(el => sucursals[el.id] = el.name);
 
         //pasar los datos
-        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date,employees });
+        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, employees, _options });
 
 
     },

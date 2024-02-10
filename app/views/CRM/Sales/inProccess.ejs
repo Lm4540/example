@@ -23,6 +23,9 @@
                   <label for="status">Status</label>
                   <select name="status_select" id="status_select" class="form-control">
                      <option value="all">Todos</option>
+                     <% _options.forEach(el => { %>
+                        <option value="<%= el.id %>"><%= el.name %></option>
+                       <% }) %>
                   </select>
                </div>
             </div>
