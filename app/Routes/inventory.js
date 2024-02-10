@@ -8,7 +8,7 @@ const Auth = require('../System/Middleware/Auth');
 
 
 // Home page route.
-router.get("/", (req, res, next) => Auth.Authorized(req, res, next, 'admin_users'), function (req, res) {
+router.get("/", function (req, res) {
     res.render('Inventory/index.ejs', { pageTitle: 'Modulo de Inventarios' });
 });
 
