@@ -357,7 +357,6 @@ module.exports = (io, socket) => {
     });
 
     socket.on('add_sale_detail', async data => {
-        console.log(data);
 
         let res = await SaleController.socket_add_detail(data, socket.request.session.userSession);
         if (res.status == 'success') {
@@ -366,6 +365,7 @@ module.exports = (io, socket) => {
             io.of('/logistics').emit('new_major_detail', d);
             _io.to(group_identification).emit("add_detail_success", d);
         } else {
+            console.log(res)
             _io.to(group_identification).emit("add_detail_error", { errorMessage: res.message, _process: data._process });
 
         }

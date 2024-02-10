@@ -138,6 +138,15 @@ module.exports = [
         "group": "Ventas",
         "permission": "create_client"
     },
+
+    {
+        "name": "Actualizar Clientes",
+        "explication": "habilita las opciones de edicion de clientes",
+        "group": "Ventas",
+        "permission": "update_client"
+    },
+
+
     {
         "name": "Regitro de Ventas",
         "explication": "Permite iniciar nuevos procesos de ventas",

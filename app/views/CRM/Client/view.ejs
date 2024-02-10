@@ -66,17 +66,22 @@
                      <% if (in_process !== null) { %>
                      <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
                      <div class="text-center mb-3 mt-3">
+                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
                         <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
 
                         <span class="badge bg-success" style="cursor:pointer" id="close_order">Cerrar Pedido</span>
+
+                        <% } %>
                      </div>
 
                      <% } else { %>
                      <h3>Pedido Actual <span id="span_sale_balance"></span></h3>
 
                      <div class="text-center mb-3 mt-3">
+                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
                         <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
                         <span class="badge bg-success" style="cursor:pointer; display: none;" id="close_order">Cerrar Pedido</span>
+                        <% } %>
                      </div>
                      <% } %>
                   </div>
@@ -85,7 +90,7 @@
                      <div id="form_adding" style="display:none; margin-bottom: 20px;">
                         <div class="text-center">
                            <span id="free_toggle" class="badge bg-success" style="cursor:pointer">Desde el Inventario</span>
-                           <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;" >Cuando Venga del Proveedor</span>
+                           <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;">Cuando Venga del Proveedor</span>
                         </div>
 
                         <div id="free_detail" class="row mt-4" style="display:none;">
@@ -160,31 +165,56 @@
                         </h5>
                         <% } else { %>
 
-                        <% in_process_details.forEach(detail => { %>
+                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
+                           <% in_process_details.forEach(detail => { %>
 
-                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
-                           <div class="card">
-                              <div class="card-body text-center">
-                                 <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
-                                 <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-                                 
-                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                                 <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                                 <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
-                                 <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
-                                 <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                 <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
-                                 <% } else if(detail.cant == detail.ready) { %>
-                                 <p class="text-primary"> Reservado y Revisado<br></p>
-                                 <% if (permission.includes('revoke_sales_details')) { %>
-                                    <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
-                                 <% } %>
-                                 <% } %>
+                              <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                                 <div class="card">
+                                    <div class="card-body text-center">
+                                       <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                                       <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                                       <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+      
+                                       <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                                       <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                                       <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
+                                       <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                                       <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                                       <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
+                                       <% } else if(detail.cant == detail.ready) { %>
+                                       <p class="text-primary"> Reservado y Revisado<br></p>
+                                       <% if (permission.includes('revoke_sales_details')) { %>
+                                       <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
+                                       <% } %>
+                                       <% } %>
+                                    </div>
+                                 </div>
                               </div>
-                           </div>
-                        </div>
-                        <% }) %>
+                              <% }) %>
+                        <% } else { %>
+                           <% in_process_details.forEach(detail => { %>
+
+                              <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                                 <div class="card">
+                                    <div class="card-body text-center">
+                                       <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                                       <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                                       <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+      
+                                       <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                                       <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                                       <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                                       <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                                       <% } else if(detail.cant == detail.ready) { %>
+                                       <p class="text-primary"> Reservado y Revisado<br></p>
+                                       <% } %>
+                                    </div>
+                                 </div>
+                              </div>
+                              <% }) %>
+                        <% }  %>
+
+                        
 
 
 
@@ -296,51 +326,51 @@
                            <% finalized.forEach((order, index) => { %>
                            <tr>
                               <% if (order._status == 'revoked') { %>
-                                 <td><%= order.id %></td>
-                                 <td>$0.00 <small class="text-danger">(Original: $<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %>)</small></td>
-                                 <td class="text-center">
+                              <td><%= order.id %></td>
+                              <td>$0.00 <small class="text-danger">(Original: $<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %>)</small></td>
+                              <td class="text-center">
                                  --
-                                 </td>
-                                 <td>Pedido Cancelado/Revocado
-                                    <br>
-                                    <%= order.revoked_reason %>
+                              </td>
+                              <td>Pedido Cancelado/Revocado
+                                 <br>
+                                 <%= order.revoked_reason %>
 
-                                 </td>
-                                 <td><%= Helper.format_date(order.createdAt) %></td>
-                                 <td>
-                                    <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
-                                    <% if (order.invoice_number != null) { %>
-                                       <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
-                                    <% } %>
-                                 </td>
+                              </td>
+                              <td><%= Helper.format_date(order.createdAt) %></td>
+                              <td>
+                                 <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
+                                 <% if (order.invoice_number != null) { %>
+                                 <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
+                                 <% } %>
+                              </td>
                               <% } else { %>
-                                 <td><%= order.id %></td>
-                                 <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
-                                 <td>
-                                    $<%= Helper.money_format(order.collected) %>
-                                 </td>
-                                 <td><%= _status[order._status] %></td>
-                                 <td><%= Helper.format_date(order.createdAt) %></td>
-                                 <td>
-                                    <% if (order.status == 'closed') { %>
-                                    <span class="badge bg-green"> Paquete preparado</span>
+                              <td><%= order.id %></td>
+                              <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
+                              <td>
+                                 $<%= Helper.money_format(order.collected) %>
+                              </td>
+                              <td><%= _status[order._status] %></td>
+                              <td><%= Helper.format_date(order.createdAt) %></td>
+                              <td>
+                                 <% if (order.status == 'closed') { %>
+                                 <span class="badge bg-green"> Paquete preparado</span>
 
 
-                                    <% } %>
+                                 <% } %>
 
-                                    <% if (order.invoice_number == null) { %>
-                                    <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
-                                    <% } else { %>
-                                    <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
-                                    <% } %>
-                                    <br>
-                                    <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
+                                 <% if (order.invoice_number == null) { %>
+                                 <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
+                                 <% } else { %>
+                                 <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
+                                 <% } %>
+                                 <br>
+                                 <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
-                                    <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
-                                       <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
-                                    <% } %>
+                                 <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
+                                 <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
+                                 <% } %>
 
-                                 </td>
+                              </td>
                               <% } %>
                            </tr>
                            <% }) %>
@@ -403,7 +433,7 @@
                   <div class="card-body pb-3">
                      <div class="d-flex align-items-center mb-3">
                         <h3 class="me-1"><%= cliente.name %></h3>
-                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient">Editar</button>
+                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') ? '' : 'disabled' %> >Editar</button>
                      </div>
                      <h5 class="text-800">Vendedor Asignado</h5>
                      <p class="text-800"><%= seller.name %></p>
@@ -596,6 +626,12 @@
                <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
                <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
             </div>
+
+            <div class="modal-body">
+               <p class="bg-danger text-white pt-5 pb-5 pl-4 pr-4" style="border-radius: 1em;">
+                  NOTA: Revise los datos antes de guardarlos, en caso contrario se iran sumando sus errores y al llegar a diez, se le hara escribir toda la información dos veces, como forma de confirmación, y no se permitira copiar ni pegar.
+               </p>
+            </div>
             <div class="modal-body">
 
 
@@ -702,7 +738,7 @@
                   <div class="col">
                      <div class="form-group">
                         <label for="invoice_nrc">NRC</label>
-                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc"  value="<%= cliente.NRC !== null ? cliente.NRC : '' %>">
+                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc" value="<%= cliente.NRC !== null ? cliente.NRC : '' %>">
                      </div>
                   </div>
                </div>
@@ -764,6 +800,12 @@
             <div class="modal-header">
                <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
                <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+
+            <div class="modal-body">
+               <p class="bg-danger text-white pt-5 pb-5 pl-4 pr-4" style="border-radius: 1em;">
+                  NOTA: Revise los datos antes de guardarlos, en caso contrario se iran sumando sus errores y al llegar a diez, se le hara escribir toda la información dos veces, como forma de confirmación, y no se permitira copiar ni pegar.
+               </p>
             </div>
             <div class="modal-body">
 
@@ -964,7 +1006,9 @@
 
    });
 </script>
-<% if (cliente.type == 'major') { %>
+
+<% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) {
+if (cliente.type == 'major') { %>
 <script src="/socket.io/socket.io.js"></script>
 <script>
    var _process = '<%= Helper.randomString(5) %>';
@@ -990,7 +1034,7 @@
    socket.on('add_detail_error', data => {
       if (data._process == _process) {
          document.querySelector("#save_sale_detail").disabled = false;
-         return errorMessage(data.message);
+         return errorMessage(data.errorMessage);
       }
    });
 
@@ -1077,8 +1121,8 @@
                content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
                                     <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
             } else if (detail.cant == detail.ready) {
-              /* content += `<p class="text-primary"> Reservado y Revisado<br></p>
-                                    <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;*/
+               /* content += `<p class="text-primary"> Reservado y Revisado<br></p>
+                                     <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;*/
             }
             content += `</div> </div>`;
             div.innerHTML = content;
@@ -1283,7 +1327,7 @@
          }
 
 
-         if(quit_case == "reserved"){
+         if (quit_case == "reserved") {
             //token
 
             postData('/sales/details/quit', data).then(data => {
@@ -1302,7 +1346,7 @@
                }
             });
 
-         }else{
+         } else {
             socket.emit('quit_sale_detail', data);
          }
 
@@ -1476,7 +1520,7 @@
       window.location.href = `/sales/create/<%= cliente.id %>`
    };
 </script>
-<% } %>
+<% }} %>
 <script>
    var registrando_pago_en = null,
       registrando_pago_monto = 0.00;
@@ -1612,7 +1656,7 @@
             client: '<%= cliente.id %>',
             sucursal: document.querySelector('#payment_sucursal2').value,
             sale: registrando_pago_en,
-            max: Number.parseFloat( registrando_pago_monto),
+            max: Number.parseFloat(registrando_pago_monto),
          }
 
          if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {

@@ -301,14 +301,14 @@ const SaleController = {
 
         let where = {};
 
-        if(opt == "sucursal"){
+        if (opt == "sucursal") {
             where = {
                 sucursal: seller,
                 revoked_at: { [Op.is]: null, },
                 endAt: { [Op.between]: [init, date], },
                 _status: 'collected',
             }
-        }else{
+        } else {
             //buscar el vendedor
             seller = await Employee.findByPk(seller);
             if (seller == null) {
@@ -316,9 +316,9 @@ const SaleController = {
                     status: 'errorMessage', message: "Employee not Found!"
                 });
             }
-    
+
             await sale_status_verification(seller.id);
-    
+
             where = opt == "calculo" ? {
                 seller: seller.id,
                 in_report: 0,
@@ -468,13 +468,13 @@ const SaleController = {
                         let registered_payment = null;
 
                         data.amount = Number.parseFloat(data.amount);
-                        
+
                         if (data.method == 'money') {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
                                 amount: data.amount,
                                 last_amount: sucursal.balance,
-                                concept: `Pago Recibido ${client.name} ID(${client.id}) ${sale.invoice_number !== "" &&  sale.invoice_number!== null ? sale.invoice_type.toUpperCase() + ' N° ' + sale.invoice_number : ''}`,
+                                concept: `Pago Recibido ${client.name} ID(${client.id}) ${sale.invoice_number !== "" && sale.invoice_number !== null ? sale.invoice_type.toUpperCase() + ' N° ' + sale.invoice_number : ''}`,
                                 petty_cash: sucursal.id,
                                 type: 'payment',
                                 isin: true,
@@ -589,7 +589,7 @@ const SaleController = {
                         let registered_payment = null;
 
                         data.amount = Number.parseFloat(data.amount);
-                        
+
                         if (data.method == 'money') {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
@@ -1452,7 +1452,7 @@ const SaleController = {
         return res.render('CRM/Sales/NewSaleInRoom', { pageTitle: 'Venta en Sala', sucursal });
     },
 
-    viewSaleCost : async (req, res) => {
+    viewSaleCost: async (req, res) => {
         //buscar la venta
         let sale = await Sale.findByPk(req.params.id)
         if (sale) {
@@ -1479,7 +1479,7 @@ const SaleController = {
 
         }
 
-        return Helper.notFound(req. res, 'Invoice or Sale not Found!');
+        return Helper.notFound(req.res, 'Invoice or Sale not Found!');
 
     },
     viewSale: async (req, res) => {
@@ -1501,20 +1501,13 @@ const SaleController = {
                             sale: sale.id
                         }
                     });
-
-
                     return res.render('CRM/Sales/view_sale', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, details, seller, cliente, status });
                 }
-
             }
-
         }
-
     },
 
     quit_detail_revised: async (req, res) => {
-
-
 
         //Buscar el detalle
         let detail = await SaleDetail.findByPk(req.body.detail_id);
@@ -1527,7 +1520,7 @@ const SaleController = {
                 try {
                     //contar si la venta tiene mas detalles
                     let count = await SaleDetail.count({ where: { sale: sale.id } });
-                   
+
                     return await sequelize.transaction(async (t) => {
                         sale.balance -= Helper.fix_number(Number.parseInt(detail.cant) * Number.parseFloat(detail.price))
 
@@ -1543,32 +1536,34 @@ const SaleController = {
                             order: [['id', 'DESC']]
                             //por la creacion se tiene como prioridad la sucursal del empleado que registra, para la eliminacion se tendra como prioridad las otras sucursales
                         });
-                       
+
 
 
                         for (let index = 0; index < reserves.length; index++) {
                             //Buscar el Stock
 
-                            let stock = await Stock.findOne({where:{
-                                product: reserves[index].product,
-                                sucursal: reserves[index].sucursal,
-                            }});
+                            let stock = await Stock.findOne({
+                                where: {
+                                    product: reserves[index].product,
+                                    sucursal: reserves[index].sucursal,
+                                }
+                            });
 
 
                             stock.reserved -= reserves[index].cant;
                             product.reserved -= reserves[index].cant;
 
-                            await product.save({transaction: t});
-                            await stock.save({transaction: t});
-                            await reserves[index].destroy({transaction: t});
+                            await product.save({ transaction: t });
+                            await stock.save({ transaction: t });
+                            await reserves[index].destroy({ transaction: t });
                         }
 
-                        await detail.destroy({transaction: t});
+                        await detail.destroy({ transaction: t });
 
 
 
-                        
-                        if (count < 2 ) {
+
+                        if (count < 2) {
                             await sale.destroy({ transaction: t });
                         } else {
                             sale = await sale.save({ transaction: t });
@@ -1583,24 +1578,201 @@ const SaleController = {
                 } catch (error) {
                     console.error(error);
                     return res.json({
-                         status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message 
+                        status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message
                     });
-                    
+
                 }
             } else {
                 return res.json({
                     status: 'errorMessage', message: 'Venta o Pedido no encontrado'
-               });
+                });
 
             }
         } else {
             return res.json({
                 status: 'errorMessage', message: 'Detalle no encontrado'
-           });
+            });
         }
     },
 
     socket_add_detail: async (data, session) => {
+        if (data.cant < 1) {
+            return { status: 'errorMessage', message: 'Agrega una cantidad' };
+        } else if (data.price < 0 || data.price == "") {
+            return { status: 'errorMessage', message: 'El precio no es valido' };
+        } else if (data.client < 1 || data.client == "") {
+            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
+        }
+
+        //buscar el cliente
+        let client = await Client.findByPk(data.client).catch(err => {
+            console.log(err)
+            next(err);
+        });
+
+        if (client == null) {
+            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
+        }
+
+        if (client.seller !== session.employee.id && !session.permission.includes('update_sales_of_another_user')) {
+
+            console.log('No hay permiso');
+            return { status: 'errorMessage', message: 'No tienes permiso para agregar productos a este cliente' };
+        }
+
+        console.log("llega aca");
+        try {
+            data.cant = Number.parseInt(data.cant);
+            data.price = Number.parseFloat(data.price);
+
+            let sale = await Sale.findOne({
+                where: {
+                    [Op.and]: {
+                        client: data.client,
+                        _status: 'process'
+                    }
+                }
+            });
+
+
+            let detail_count = 0;
+            let detail = null;
+            if (sale !== null && sale !== undefined) {
+                if (sale.sucursal !== session.employee.sucursal) {
+                    throw 'No puedes agregar productos a una venta de otra sucursal';
+                }
+                detail_count = await SaleDetail.count({ where: { sale: sale.id } });
+            }
+
+            let product = await Product.findByPk(data.product);
+            if (product == null) {
+                throw 'Producto no encontrado';
+            }
+
+            //buscar el stock que pertenece a la sucursal seleccionada
+
+
+            let stock = await Stock.findOne({
+                where: {
+                    product: data.product,
+                    sucursal: session.employee.sucursal
+                }
+            });
+
+
+            if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) {
+
+                throw 'No hay suficientes ecistencias en tu sucursal asignada para poder agregar este producto';
+            }
+
+            //buscar a ver si ya hay un detalle existente
+            if (detail_count > 0) {
+                detail = await SaleDetail.findOne({
+                    where: {
+                        [Op.and]: {
+                            sale: sale.id,
+                            product: data.product,
+                            price: data.price
+                        }
+                    }
+                });
+            }
+
+            return await sequelize.transaction(async (t) => {
+
+                if (sale == null) {
+                    sale = await Sale.create({
+                        client: client.id,
+                        seller: session.employee.id,
+                        sucursal: session.employee.sucursal,
+                        credit_conditions: 0,
+                        _status: 'process',
+                        type: client.type,
+                        balance: 0.00
+                    }, { transaction: t });
+                }
+
+                sale.balance = Helper.fix_number(sale.balance + (data.cant * data.price));
+                await sale.save({ transaction: t });
+
+                if (detail !== null) {
+                    detail.cant += data.cant;
+                    await detail.save({ transaction: t });
+                    //buscar la reserva y actualizarla
+                    let reserve = await StockReserve.findOne({
+                        where: {
+                            product: data.product,
+                            saleId: detail.id,
+                        }
+                    });
+                    reserve.cant = (reserve.cant + data.cant);
+                    await reserve.save({ transaction: t });
+                } else {
+                    detail = await SaleDetail.create({
+                        sale: sale.id,
+                        product: product.id,
+                        price: data.price,
+                        description: product.name + ' SKU ' + product.sku,
+                        image: product.raw_image_name,
+                        _order: detail_count,
+                        cant: data.cant,
+                        ready: 0,
+                        delivered: 0,
+                        reserved: data.cant
+                    }, { transaction: t });
+
+                    //crear la reserva
+
+                    let reserve = await StockReserve.create({
+                        cant: data.cant,
+                        createdBy: session.shortName,
+                        concept: 'reserva por venta',
+                        type: 'sale',
+                        saleId: detail.id,
+                        product: stock.product,
+                        sucursal: stock.sucursal,
+                    }, { transaction: t });
+
+                }
+
+
+
+                await sequelize.query(
+                    "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
+                    {
+                        replacements: {
+                            cant: data.cant, stock_id: stock.id
+                        },
+                        type: QueryTypes.UPDATE,
+                        transaction: t
+                    }
+                );
+
+
+                await sequelize.query(
+                    "UPDATE `inventory_product` SET `reserved` = reserved + :cant WHERE id = :product_id",
+                    {
+                        replacements: {
+                            cant: data.cant, product_id: product.id
+                        },
+                        type: QueryTypes.UPDATE,
+                        transaction: t
+                    }
+                );
+
+                return { status: 'success', message: 'Guardado', data: { detail, balance: sale.balance } };
+            });
+
+        } catch (error) {
+            console.error(error);
+            message = error.message !== undefined ? error.message : error;
+            return { status: 'errorMessage', message: message, data: error };
+        }
+
+    },
+
+
+    socket_add_detail_old: async (data, session) => {
         if (data.cant < 1) {
             return { status: 'errorMessage', message: 'Agrega una cantidad' };
         } else if (data.price < 0 || data.price == "") {
@@ -2261,7 +2433,7 @@ const SaleController = {
                     }
 
 
-                    
+
                     if (data.payment.transfer.amount > 0) {
                         //recorrer los detalles y realizar los registros
                         let len = data.payment.transfer.details.length;

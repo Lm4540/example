@@ -1,10 +1,8 @@
 const router = require('express').Router();
 const UserController = require('../System/Controllers/UserController');
+const Auth = require("../System/Middleware/Auth");
 
-router.use(function timeLog(req, res, next) {
-    console.log('Time: ', Date.now());
-    next();
-});
+router.use((req, res, next) => Auth.HasPermission(req, res, next, ['admin_users']));
 
 //rutas de los usuario
 router.get('/', UserController.viewUsers);
