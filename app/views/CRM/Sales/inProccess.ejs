@@ -16,6 +16,33 @@
       <%- include('../../Layouts/NavBar.ejs') %>
       <div class="main-content container-fluid">
          <h3 class="text-center mb-4">Ventas en Proceso</h3>
+
+         <div class="row mt-4 mb-5">
+            <div class="col">
+               <div class="form-group">
+                  <label for="status">Status</label>
+                  <select name="status_select" id="status_select" class="form-control">
+                     <option value="all">Todos</option>
+                  </select>
+               </div>
+            </div>
+            <div class="col">
+               <div class="form-group">
+                  <label for="seller_select">Status</label>
+                  <select name="seller_select" id="seller_select" class="form-control">
+                     <option value="all">Todos</option>
+                     <% employees.forEach(el => { %>
+                      <option value="<%= el.id %>"><%= el.name %></option>
+                     <% }) %>
+                  </select>
+               </div>
+            </div>
+            <div class="col">
+               <button class="btn round btn-warning mt-4" onclick="filtrar()">Filtrar</button>
+            </div>
+         </div>
+
+
          <div class="table-responsive">
             <table class="table table-sm table-hover table-bordered">
                <thead>
@@ -65,6 +92,12 @@
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+
+   const filtrar = () => {
+      let seller = document.querySelector("#seller_select").value;
+      let status = document.querySelector("#status_select").value;
+      window.location.href= `/sales/inProccess?_status=${status}&seller=${seller}`;
+   }
 </script>
 
 </html>

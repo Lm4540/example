@@ -66,7 +66,7 @@
                      <% if (in_process !== null) { %>
                      <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
                      <div class="text-center mb-3 mt-3">
-                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
+                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
                         <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
 
                         <span class="badge bg-success" style="cursor:pointer" id="close_order">Cerrar Pedido</span>
@@ -78,7 +78,7 @@
                      <h3>Pedido Actual <span id="span_sale_balance"></span></h3>
 
                      <div class="text-center mb-3 mt-3">
-                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
+                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
                         <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
                         <span class="badge bg-success" style="cursor:pointer; display: none;" id="close_order">Cerrar Pedido</span>
                         <% } %>
@@ -165,7 +165,7 @@
                         </h5>
                         <% } else { %>
 
-                        <% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) { %>
+                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
                            <% in_process_details.forEach(detail => { %>
 
                               <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
@@ -1007,7 +1007,7 @@
    });
 </script>
 
-<% if (cliente.seller == user.id || permission.includes('update_sales_of_another_user')) {
+<% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) {
 if (cliente.type == 'major') { %>
 <script src="/socket.io/socket.io.js"></script>
 <script>

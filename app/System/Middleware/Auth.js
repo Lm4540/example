@@ -15,6 +15,7 @@ const Auth = {
                 name: req.session.userSession.shortName,
                 preferences: req.session.userSession.preferences,
                 sucursal:  req.session.userSession.employee.sucursal,
+                employee:  req.session.userSession.employee.id,
             }
             res.locals.darkMode = req.session.userSession.preferences.darkmode != undefined ? req.session.userSession.preferences.darkmode : '';
             res.locals.permission = req.session.userSession.permission;

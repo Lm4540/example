@@ -938,20 +938,43 @@ const SaleController = {
 
     inProccess: async (req, res) => {
 
+
+        let seller = req.query.seller;
+        let _status = req.query._status;
+        let where = {
+            _status: {
+                [Op.notIn]: ['collected', 'revoked'],
+            }
+        };
+
+        if (_status) {
+            if (seller) {
+                where = {
+                    _status: _status,
+                    seller: seller
+                };
+            } else {
+                where = {
+                    _status: _status,
+                };
+            }
+        } else if (seller) {
+            where = {
+                seller: seller,
+                _status: {
+                    [Op.notIn]: ['collected', 'revoked'],
+                }
+            };
+        }
+
+
+
         let limit_date = new Date();
         limit_date.setDate(limit_date.getDate() - 7);
         //Buscar las ventas que no esten finalizadas
         let sales = await Sale.findAll({
-            where: {
-                _status: {
-                    [Op.notIn]: ['collected', 'revoked'],
-                }
-            }
+            where: where
         });
-
-
-        //estados de las ventas
-
 
 
         //buscar los clientes
@@ -964,20 +987,21 @@ const SaleController = {
         tmp.forEach(e => clients[e.id] = e.name);
         //los vendedores
 
-        tmp = await Employee.findAll({
-            where: {
-                id: { [Op.in]: sequelize.literal('(SELECT seller FROM `crm_sale` WHERE _status not in ("revoked", "collected"))') }
-            }
+        let employees = await Employee.findAll({
+            where: { isSeller: true },
+            order: [
+                ['name', 'ASC'],
+            ]
         });
         let sellers = {};
-        tmp.forEach(e => sellers[e.id] = e.name);
+        employees.forEach(e => sellers[e.id] = e.name);
 
         tmp = await Sucursal.findAll();
         let sucursals = {};
         tmp.forEach(el => sucursals[el.id] = el.name);
 
         //pasar los datos
-        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date });
+        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date,employees });
 
 
     },
