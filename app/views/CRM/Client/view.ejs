@@ -433,7 +433,7 @@
                   <div class="card-body pb-3">
                      <div class="d-flex align-items-center mb-3">
                         <h3 class="me-1"><%= cliente.name %></h3>
-                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') ? '' : 'disabled' %> >Editar</button>
+                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %> >Editar</button>
                      </div>
                      <h5 class="text-800">Vendedor Asignado</h5>
                      <p class="text-800"><%= seller.name %></p>
