@@ -1730,6 +1730,7 @@ const SaleController = {
 
                 if (detail !== null) {
                     detail.cant += data.cant;
+                    detail.reserved += data.cant;
                     await detail.save({ transaction: t });
                     //buscar la reserva y actualizarla
                     let reserve = await StockReserve.findOne({
