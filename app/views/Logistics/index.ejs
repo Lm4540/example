@@ -571,7 +571,8 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
 
    }
 
-   const package_delivered = (sale) => {
+   const package_delivered = (sale, element ) => {
+      element.parentNode.removeChild(element);
       socket.emit('pakage_delivered', sale)
    }
    const package_transport = (sale) => {
@@ -648,7 +649,7 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
          keys.forEach(index => {
             element = prepared[index];
             if (element !== null) {
-               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id}, this)">Marcar Entregado</span>`;
                let _st = element.sale._status == "to_resend" ? `<p class="text-danger" style="font-size: 125%;">Reenvio</p>` : '';
                if (element.sale.delivery_type == 'delivery') {
                   badge = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
@@ -698,7 +699,7 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
          keys.forEach(index => {
             element = transport[index];
             if (element !== null) {
-               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id})">Marcar Entregado</span>`;
+               let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id}, this)">Marcar Entregado</span>`;
                badge += `&nbsp;<span class="badge bg-danger" onclick="delivery_failed_process(${element.sale.id})">Entrega fallida</span>`;
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">

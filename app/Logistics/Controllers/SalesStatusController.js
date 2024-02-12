@@ -279,8 +279,8 @@ const SalesStatusController = {
 
         //return { status: 'errorMessage', message: 'Funcion en revision' };
         sale = await Sale.findByPk(sale);
-        if (sale == null) {
-            return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
+        if (sale == null || sale.delivered_by !== null ) {
+            return { status: 'errorMessage', message: 'Sale not found or sale was already delivered' };
         }
 
         //buscar los detalles y darles salida
