@@ -19,6 +19,42 @@ const Sale = require('../../CRM/Models/Sale');
 
 
 const ProductController = {
+    testTest: async (req, res) => {
+        let products = {}
+        let tmp = await sequelize.query('select * from inventory_product where id in(select DISTINCT(product) from inventory_product_stock_reserve)', {
+            type: QueryTypes.SELECT,
+            model: Product,
+        });
+        tmp.forEach(el => products[el.id] = el);
+        let sql = "select sum(cant) as suma, product from inventory_product_stock_reserve  group by product order by product";
+        tmp = await sequelize.query(sql, {
+            type: QueryTypes.SELECT,
+        });
+
+        let response = [];
+        let segundo = [];
+        tmp.forEach(el => {
+            if (products[el.product] ) {
+                if (el.suma > products[el.product].reserved || el.suma < products[el.product].reserved) {
+                    response.push(`${products[el.product].name} id (${products[el.product].id}) tiene diferencias en las reservas (${products[el.product].stock} existencias, ${products[el.product].reserved} en reserva, ${el.suma} suma de reservas, )`)
+                } else { segundo.push(`${products[el.product].name} Sin Problemas (${products[el.product].reserved}, ${el.suma}, ${products[el.product].stock})`) }
+
+                if (el.suma > products[el.product].stock) {
+                    response.push(`${products[el.product].name} id (${products[el.product].id}) tiene diferencias en las Stock (${products[el.product].reserved}, ${el.suma}, ${products[el.product].stock})`)
+                } else { segundo.push(`${products[el.product].name} Sin Problemas (${products[el.product].reserved}, ${el.suma}, ${products[el.product].stock})`) }
+            } else {
+                response.push(`no se encontro el ${el.product}<br>`);
+            }
+        });
+
+        return res.json({response, segundo});
+
+
+
+
+    },
+
+
     /*   corregir_precios: async (req, res) => {
            let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
                {
@@ -56,7 +92,7 @@ const ProductController = {
         data.SKU = data.SKU.replace(regex, '');
         data.description = data.description.replace(regex, '');
         data.color = data.color.replace(regex, '');
-        
+
 
         if (data.name.length < 2) {
             message = 'Por favor, proporcione el nombre de este producto';

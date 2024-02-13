@@ -102,7 +102,7 @@ router.get('/product/test', (req, res) => {
     console.log(palabraSecretaValida);*/
 }); //pendiente
 
-
+router.get('/test/test', ProductController.testTest);
 /** Stock & Movements Routes */
 
 /** Reports Routes */
