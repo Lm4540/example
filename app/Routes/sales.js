@@ -70,8 +70,8 @@ router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, ne
 router.get('/asignar_pagos', SaleController.sale_status_check);
 
 router.get('/test_taxes', InvoiceController.add_taxes);
-router.get('/update_prices', (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), SaleController.update_prices);
-router.post('/update_price', (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), SaleController.update_price);
+router.get('/update_prices', (req, res, next) => Auth.HasPermission(req, res, next, ['update_price_list']), SaleController.update_prices);
+router.post('/update_price', (req, res, next) => Auth.HasPermission(req, res, next, ['update_price_list']), SaleController.update_price);
 
 
 

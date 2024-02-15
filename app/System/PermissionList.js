@@ -131,6 +131,12 @@ module.exports = [
         "group": "Inventario",
         "permission": "view_reserve_list"
     },
+    {
+        "name": "Actualizar precios de los productos",
+        "explication": "Permite Actualizar los precios de los productos desde la vista simpleficada",
+        "group": "Inventario/Ventas",
+        "permission": "update_price_list"
+    },
     
     {
         "name": "Registro de Clientes",
