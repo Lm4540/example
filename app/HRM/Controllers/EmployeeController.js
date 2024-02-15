@@ -2,7 +2,6 @@ const Employee = require('../Models/Employee');
 const User = require('../../System/Models/User');
 const EmployeeRecord = require('../Models/EmployeeRecord');
 const Sucursal = require('../../Inventory/Models/Sucursal');
-
 const Helper = require('../../System/Helpers');
 const Money = require('../../System/Money');
 const sequelize = require("../../DataBase/DataBase");
@@ -56,22 +55,22 @@ const EmployeeController = {
                         : 'Ya hay un Empleado registrado con este email')
             });
         }
-        /**Guardar la imagen si es que ha sido enviada */
-        let image_name = null;
-        if (data.image.length > 1) {
-            image_name = 'employe_' + Helper.generateNameForUploadedFile() + '.jpg';
-            let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
-            // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
-            let image_data = data.image.slice(23);
-            //Almacenar la imagen
-            fs.writeFile(location, image_data, 'base64', (err) =>{
-                if(err){
-                    console.log(err)
-                }
-            });
-        }
-
+        
         try {
+            /**Guardar la imagen si es que ha sido enviada */
+            let image_name = null;
+            if (data.image.length > 1) {
+                image_name = 'employe_' + Helper.generateNameForUploadedFile() + '.jpg';
+                let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
+                // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
+                let image_data = data.image.slice(23);
+                //Almacenar la imagen
+                fs.writeFile(location, image_data, 'base64', (err) =>{
+                    if(err){
+                        console.log(err)
+                    }
+                });
+            }
             const result = await sequelize.transaction(async (t) => {
                 let user_id = null;
 
@@ -119,9 +118,18 @@ const EmployeeController = {
 
     },
     getEmployeeView: async (req, res, next) => {
-        let data = await Employee.findAll({ attributes: ['id', 'name', '_user', 'email'] }).catch(err => next(err));
+        let data = await Employee.findAll({
+            order: [['name', 'ASC'],]
+        }).catch(err => next(err));
         return res.render('HRM/Employee/index', { pageTitle: 'Empleados', employees: data });
     },
+
+    viewEmployee: async (req, res) => {
+        let emp = await Employee.findByPk(req.params.id).catch(err => next(err));
+        return res.render('HRM/Employee/view', { pageTitle: 'Expediente: '+emp.name, emp });
+    },
+
+    
     /*searchEmployee: async (req, res) => {
         let params = req.query;
         var query_options = {};

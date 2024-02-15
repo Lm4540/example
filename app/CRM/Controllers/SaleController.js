@@ -230,6 +230,57 @@ const sale_status_verification = async (seller) => {
 
 const SaleController = {
 
+    update_prices: async (req, res) => {
+        // let products = await Product.findAll({
+        //     where: {
+        //         stock: {
+        //             [Op.gt]: 0,
+        //         }
+        //     },
+        //     order: [
+        //         ['UpdatedAt', 'ASC'],
+        //         ['name', 'asc']
+        //     ]
+        // });
+        return res.render('CRM/Products/UpdatePrices', { pageTitle: 'Reporte de Ventas por Vendedor', limit: 10 });
+    },
+
+    update_price: async (req, res) => {
+        let data = req.body;
+        let product = await Product.findByPk(data.id);
+        if (product) {
+            let major = Helper.fix_number(data.major);
+            let detail = Helper.fix_number(data.detail);
+            if (isNaN(detail) || isNaN(major)) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Escriba valores numéricos válidos'
+                });
+            } else if (major > detail) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'El precio de detalle no puede ser más bajo que el precio de mayor'
+                });
+            } else {
+
+                product.base_price = detail;
+                product.major_price = major;
+
+                await product.save();
+
+                return res.json({
+                    status: 'success', message: 'Producto Actualizado'
+                });
+
+            }
+        }
+
+        return res.json({
+            status: 'errorMessage',
+            message: 'Product Not Found!'
+        });
+    },
+
     sale_status_check: async (req, res) => {
 
         return res.json(sale_status_verification(1) ? {

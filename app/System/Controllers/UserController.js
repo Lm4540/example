@@ -21,7 +21,7 @@ const UserController = {
     },
 
     viewUsers: async (req, res) => {
-        let users = await User.findAll({ order: [['name', 'asc']] });
+        let users = await User.findAll({ order: [['_status', "ASC"], ['id', 'ASC'],['name', 'asc']] });
         let rols = await Role.findAll({ order: [['name', 'asc']], attributes: ['id', 'name', 'permission'] });
         let indexed_rols = {}
         let indexed_users = {}
@@ -39,6 +39,9 @@ const UserController = {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                attempts: user.attempts,
+                _status: user._status,
+                preferences: user.preferences,
                 permission: indexed_rols[user.role].permission,
                 specialPermission: user.specialPermission,
                 temporalPermission: user.temporalPermission,
@@ -48,7 +51,7 @@ const UserController = {
 
         let indexed_permissions = {};
         PermissionList.forEach(per => { indexed_permissions[per.permission] = per.name; });
-        return res.render('System/User/view', { pageTitle: 'Usuarios Registrados', users, rols, PermissionList, indexed_users, indexed_permissions });
+        return res.render('System/User/view', { pageTitle: 'Usuarios Registrados', users, rols, PermissionList, indexed_users, indexed_permissions,indexed_rols });
     },
     createUser: async (req, res) => {
 

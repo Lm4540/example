@@ -7,6 +7,7 @@ router.get("/", function (req, res) {res.render('HRM/index.ejs', {pageTitle: 'Hu
 
 /**Providers Routes */
 router.get('/employee', EmployeeController.getEmployeeView);
+router.get('/employee/:id(\\d+)', EmployeeController.viewEmployee);
 router.get('/employee/create', EmployeeController.getCreationView);
 router.post('/createEmployee', EmployeeController.createEmployee);
 // router.get('/employee/:id(\\d+)', EmployeeController.EmployeeView);
