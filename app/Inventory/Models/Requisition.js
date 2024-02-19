@@ -19,6 +19,7 @@ const Requisition = sequelize.define('Requisition', {
         defaultValue: 'open',
     },
     createdBy: DataTypes.STRING,
+    commentary: DataTypes.TEXT,
 }, {
     tableName: 'inventory_requisition',
 });

@@ -405,6 +405,23 @@ const StockController = {
                     return { status: 'error', message: error.message }
                 }
                 break;
+            case 'commentary':
+                try {
+                    //buscar la requisition
+                    let requisition = await Requisition.findByPk(data.requisition);
+                    if (requisition && requisition._status == 'open') {
+                        requisition.commentary = data.commentary;
+                        await requisition.save();
+                        return res.json({ status: 'success', message: '¡Actualizado!', data: requisition.id });
+
+                    }
+                    return Helper.notFound(req, res, 'Requisition not Found');
+                } catch (error) {
+                    console.error(error);
+                    return { status: 'error', message: error.message }
+                }
+
+                break;
             default:
                 break;
         }

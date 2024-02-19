@@ -120,6 +120,18 @@ module.exports = [
         "permission": "trasnfer_between_all_warehouses"
     },
     {
+        "name": "Cerrar Solicitudes de Trasalado",
+        "explication": "Permite Cerrar Solicitudes de Trasalado del almacen asignado al usuario",
+        "group": "Inventario",
+        "permission": "close_requisitions"
+    },
+    {
+        "name": "Cerrar cualquier Solicitud de Trasalado",
+        "explication": "Permite Cerrar Solicitudes de Trasalado",
+        "group": "Inventario",
+        "permission": "close_all_requisitions"
+    },
+    {
         "name": "Ingresar productos trasladados entre almacenes",
         "explication": "Permite Ingresar los productos trasladados al almacen de destino",
         "group": "Inventario",
