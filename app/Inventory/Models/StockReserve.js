@@ -27,7 +27,7 @@ const StockReserve = sequelize.define('StockReserve', {
         type: DataTypes.STRING(400),
     },
     type: {
-        type: DataTypes.ENUM('sale', 'production', 'manual')
+        type: DataTypes.ENUM('sale', 'production', 'manual', 'requisition')
     },
     saleId: {
         type: DataTypes.INTEGER.UNSIGNED,

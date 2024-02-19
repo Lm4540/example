@@ -34,7 +34,7 @@ const ProductController = {
         let response = [];
         let segundo = [];
         tmp.forEach(el => {
-            if (products[el.product] ) {
+            if (products[el.product]) {
                 if (el.suma > products[el.product].reserved || el.suma < products[el.product].reserved) {
                     response.push(`${products[el.product].name} id (${products[el.product].id}) tiene diferencias en las reservas (${products[el.product].stock} existencias, ${products[el.product].reserved} en reserva, ${el.suma} suma de reservas, )`)
                 } else { segundo.push(`${products[el.product].name} Sin Problemas (${products[el.product].reserved}, ${el.suma}, ${products[el.product].stock})`) }
@@ -47,7 +47,7 @@ const ProductController = {
             }
         });
 
-        return res.json({response, segundo});
+        return res.json({ response, segundo });
 
 
 
@@ -392,11 +392,16 @@ const ProductController = {
 
         }
 
+        let transfers = await sequelize.query('SELECT inventory_product_stock_reserve.*,  inventory_requisition_detail.requisition, inventory_requisition_detail.createdBy FROM `inventory_product_stock_reserve` inner join inventory_requisition_detail on inventory_requisition_detail.id = inventory_product_stock_reserve.orderId WHERE inventory_product_stock_reserve.product = :product and inventory_product_stock_reserve.orderId is not null;', {
+            replacements: { product: product.id },
+            type: QueryTypes.SELECT
+        });
+
         res.render('Inventory/Product/view', {
             product,
             pageTitle: product.name,
             stock, almacen, classification,
-            in_reserve
+            in_reserve, transfers
         });
 
     },

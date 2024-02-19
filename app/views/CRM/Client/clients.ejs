@@ -42,7 +42,7 @@
       }, ],
       search: {
          server: {
-            url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${keyword}` : prev,
+            url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${keyword.trim()}` : prev,
          },
          debounceTimeout : 1500,
       },

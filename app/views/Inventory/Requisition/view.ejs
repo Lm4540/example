@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <style></style>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="card">
+            <div class="card-header">
+               <h2 class="card-title text-center">
+                  Solicitud de traslado de <%= indexed_sucursals[requisition.origin] %> hacia <%= indexed_sucursals[requisition.destino] %> #<%= requisition.id %><br><span class="badge bg-purple mt-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Agregar Producto</span>
+                  <span class="badge bg-danger mt-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#finishModal">Elaborar Envio</span>
+               </h2>
+            </div>
+
+            <div class="card-header">
+
+            </div>
+
+
+            <div class="card-body table-responsive">
+               <table class="table table-sm table-bordered table-hover table-stripped">
+                  <thead>
+                     <tr>
+                        <th>ID REF:</th>
+                        <th>image</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Opciones</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <% details.forEach(dt => { %>
+                     <tr>
+                        <td class="text-center"><%= dt.id %></td>
+                        <td class="text-center">
+                           <img src="<%= products[dt.product].image %>" class="round" alt="products[dt.product].name" width="150px">
+                        </td>
+                        <td class="text-center">
+                           Nombre:<%= products[dt.product].name %> <a href="/inventory/product/view/<%= dt.product %>" class="badge bg-secondary round"> Ver Producto</a><br>
+                           SKU: <%= products[dt.product].sku %><br>
+                           Codigo: <%= products[dt.product].provider_code %><br>
+                           Agregado por: <%= dt.createdBy %>
+                        </td>
+                        <td class="text-center"><%= dt.cant %></td>
+                        <td class="text-center">
+                           <span class="badge bg-orange" data-bs-target="#quitDetailModal" data-bs-toggle="modal" onclick="quit_detail('<%= dt.id %>', '<%= dt.cant %>')"> Quit</span>
+                        </td>
+                     </tr>
+
+                     <% }) %>
+                  </tbody>
+               </table>
+
+
+            </div>
+         </div>
+
+
+         <div class="modal fade" id="newRequisitionDetail" tabindex="-1" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h3 class="text-center">Agregar Item</h3>
+                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+                  </div>
+
+                  <div class="modal-body">
+                     <div class="form-group">
+                        <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                        <select name="productSelect" id="productSelect" class="form-control"></select>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="product_cant">Cantidad</label>
+                        <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
+                        <small class="text-danger" id="max_cant_small"></small>
+                     </div>
+
+
+                  </div>
+
+
+
+                  <div class="modal-footer" style="display: block;">
+                     <div class="text-center">
+                        <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                        <button class="btn round btn-sm btn-warning" id="add_detail">Agregar</button>
+
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+
+         <div class="modal fade" id="quitDetailModal" tabindex="-1" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h3 class="text-center">Quitar Item</h3>
+                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+                  </div>
+
+                  <div class="modal-body">
+                     <div class="form-group">
+                        <label for="quit_product_cant">Cantidad a Quitar</label>
+                        <input type="number" name="quit_product_cant" step="1" id="quit_product_cant" class="form-control">
+
+                     </div>
+                  </div>
+                  <div class="modal-footer" style="display: block;">
+                     <div class="text-center">
+                        <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                        <button class="btn round btn-sm btn-danger" id="quit_Detail">Quitar</button>
+
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="modal fade" id="finishModal" tabindex="-1" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h3 class="text-center">Procesar Orden</h3>
+                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+                  </div>
+
+                  <div class="modal-body">
+                     <div class="form-group">
+                        <label for="shiptment_transport">Transporta</label>
+                        <input type="text" name="shiptment_transport" step="1" id="shiptment_transport" class="form-control">
+
+                     </div>
+                  </div>
+
+                  <div class="modal-footer text-center" style="display: block;">
+                     <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                     <button class="btn round btn-sm btn-success" id="proccessRequisition">Elaborar Envio</button>
+
+                  </div>
+               </div>
+            </div>
+         </div>
+
+
+      </div>
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   var product_in_select2 = {},
+      selected_sucursal = '<%= requisition.origin %>>',
+      selectProduct = document.querySelector('#productSelect'),
+      product_last_val = '',
+      tbody = document.querySelector('#_tr_details'),
+      quitando_detalle = null,
+      quitando_max_cant = 0,
+      s_options = {
+         mode: 'cors',
+         cache: 'no-cache',
+         credentials: 'same-origin',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         redirect: 'follow',
+         referrerPolicy: 'no-referrer',
+      };
+
+
+
+
+   const quit_detail = (id, cant) => {
+      quitando_detalle = id;
+      quitando_max_cant = cant;
+      document.querySelector("#quit_product_cant").value = cant;
+   }
+
+
+   const choices_product = new Choices(selectProduct, {
+      'searchResultLimit': 15,
+      'searchChoices': false,
+      'searchFloor': 2,
+   });
+
+   const doSearchProduct = async (val) => {
+
+      // Opciones por defecto estan marcadas con un *
+      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=${selected_sucursal}`, s_options);
+      //Procesar la respuest para que me guarde los productos en cuestion en una variable
+      let res = await response.json();
+      product_in_select2 = {};
+      res.forEach(element => product_in_select2[element.id] = element);
+      return res;
+   }
+
+   var timer_product;
+   selectProduct.addEventListener('search', async (e) => {
+      let valor_actual = e.detail.value.trim();
+      if (product_last_val !== valor_actual) {
+         product_last_val = valor_actual;
+         clearTimeout(timer_product);
+         timer_product = setTimeout(async () => {
+            let data = await doSearchProduct(e.detail.value.trim());
+            choices_product.setChoices(data, 'value', 'label', true);
+         }, 500);
+      }
+   });
+
+   document.addEventListener('DOMContentLoaded', event => {
+
+      selectProduct.addEventListener('change', e => {
+         let max = product_in_select2[e.target.value].stock - product_in_select2[e.target.value].reserved;
+         document.querySelector("#max_cant_small").innerHTML = `${max} unidades Maximo`;
+         document.querySelector("#product_cant").max = max;
+      });
+
+
+
+      document.querySelector("#quit_Detail").addEventListener('click', e => {
+         //aqui va la magia de agregar el detalle
+         let data = {
+            requisition: '<%= requisition.id %>',
+            detail: quitando_detalle,
+            cant: Number.parseInt(document.querySelector("#quit_product_cant").value),
+            case: 'quitDetail'
+         }
+
+
+         if (isNaN(data.cant) || data.cant < 1 || data.cant > quitando_max_cant) {
+            return errorMessage('Ingrese una cantidad valida');
+         }
+
+         document.querySelector("#quit_Detail").disabled = true;
+
+         postData('/inventory/requisition', data).then(data => {
+            if (data.status == 'success') {
+               successMessage(data.message);
+               setTimeout(() => window.location.reload(), 1000);
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+      });
+
+      document.querySelector("#add_detail").addEventListener('click', e => {
+         //aqui va la magia de agregar el detalle
+         let data = {
+            requisition: '<%= requisition.id %>',
+            product: Number.parseInt(selectProduct.value),
+            cant: Number.parseInt(document.querySelector("#product_cant").value),
+            case: 'addDetail'
+         }
+
+
+         if (isNaN(data.cant) || data.cant < 1) {
+            return errorMessage('Ingrese una cantidad valida');
+         } else if (isNaN(data.product) || data.product < 1) {
+            return errorMessage('Ingrese una cantidad valida');
+         }
+
+         document.querySelector("#add_detail").disabled = true;
+
+         console.log(data);
+         postData('/inventory/requisition', data).then(data => {
+            if (data.status == 'success') {
+               successMessage(data.message);
+               setTimeout(() => window.location.reload(), 1000);
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+      });
+
+
+      document.querySelector("#proccessRequisition").addEventListener('click', e => {
+         //aqui va la magia de agregar el detalle
+         let data = {
+            requisition: '<%= requisition.id %>',
+            transporta: document.querySelector("#shiptment_transport").value,
+         }
+
+
+         if (data.transporta.length < 3) {
+            return errorMessage('Especifique quien transporta el producto');
+         }
+
+         document.querySelector("#proccessRequisition").disabled = true;
+
+         console.log(data);
+         postData('/inventory/requisition/proccess', data).then(data => {
+            if (data.status == 'success') {
+               successMessage(data.message);
+               setTimeout(() => window.location.href = `/inventory/shipment/print/${data.shipment.id}`, 1000);
+
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         }).catch(error => {console.log(error)});
+      });
+
+
+
+
+   });
+</script>
+
+</html>

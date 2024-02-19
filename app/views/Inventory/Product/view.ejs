@@ -69,7 +69,7 @@
 
             <div class="row">
                <div class="col-12">
-         
+
                   <div class="">
                      <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
                         <li class="nav-item me-3" role="presentation">
@@ -98,7 +98,7 @@
                            </a>
                         </li> -->
                      </ul>
-         
+
                      <div class="tab-content" id="profileTabContent">
                         <div class="tab-pane fade active show" id="tab-orders" role="tabpanel" aria-labelledby="orders-tab">
                            <h4 class="text-center mt-5 mb-5">Lista de Reservas de este producto</h4>
@@ -107,33 +107,51 @@
                               <table class="table table-sm table-hover table borderless">
                                  <thead>
                                     <tr>
-                                       <th>Nombre del Cliente</th>
-                                       <th>Estado de preparacion</th>
-                                       <th>Venta</th>
+                                       <th>Nombre del Cliente/Objetivo de la reserva</th>
+                                       <th>Estado de preparacion/Unidades</th>
+                                       <th>Venta/Requisición</th>
                                        <th>Reservado por</th>
                                        <th>options</th>
                                     </tr>
                                  </thead>
-   
+
                                  <tbody>
                                     <% in_reserve.forEach(ele => { %>
-                                     
-                                       <tr>
-                                          <td>
-                                             <%= ele.client_name %>
-                                          </td>
-                                          <td>
-                                             <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
-                                          </td>
-                                          <td> ID <%= ele.sale_id %></td>
-                                          <td> ID <%= ele.reserve.createdBy %></td>
-                                          
-                                          <td>
-                                             <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
-                                             <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>
-                                          </td>
-                                       </tr>
-                                       <% }) %>
+
+                                    <tr>
+                                       <td>
+                                          <%= ele.client_name %>
+                                       </td>
+                                       <td>
+                                          <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
+                                       </td>
+                                       <td> ID <%= ele.sale_id %></td>
+                                       <td> ID <%= ele.reserve.createdBy %></td>
+
+                                       <td>
+                                          <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
+                                          <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>
+                                       </td>
+                                    </tr>
+                                    <% }) %>
+
+
+                                    <% transfers.forEach(ele => { %>
+
+                                    <tr>
+                                       <td>
+                                          Solicitud de Transferencia entre Sucursales
+                                       </td>
+                                       <td>
+                                          <%= ele.cant %> Unidades Solicitadas
+                                       </td>
+                                       <td> Solicitud ID <%= ele.requisition %></td>
+                                       <td> ID <%= ele.createdBy %></td>
+                                       <td>
+                                          <a href="/inventory/requisition/<%= ele.requisition %>" class="badge bg-purple">=> Solicitud</a>
+                                       </td>
+                                    </tr>
+                                    <% }) %>
                                  </tbody>
                               </table>
                            </div>
@@ -163,18 +181,18 @@
                            </table>
                         </div>
                         <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
-                          Tercer panel
+                           Tercer panel
                         </div>
                         <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
                            Cuarto panel
                         </div>
                         <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
-                          Ultimo Panel
+                           Ultimo Panel
                         </div>
                      </div>
                   </div>
-         
-         
+
+
                </div>
             </div>
          </div>

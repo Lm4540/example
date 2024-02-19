@@ -51,7 +51,7 @@
     }],
     search: {
       server: {
-        url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${encodeURIComponent(keyword)}` : prev
+        url: (prev, keyword) => keyword.length > 0 ? `${prev}&search=${encodeURIComponent(keyword.trim())}` : prev
       },
       debounceTimeout : 2000,
     },

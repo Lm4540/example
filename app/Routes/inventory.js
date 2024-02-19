@@ -80,6 +80,13 @@ router.get('/product/stock_report/get_details', StockController.inventory_retpor
 router.get('/product/archive/:id(\\d+)', ProductController.archive); //pendiente
 
 router.get('/reserveList', StockController.reserveList);
+
+router.get('/requisition', StockController.viewRequisitions);
+router.get('/requisition/:id(\\d+)', StockController.viewRequisition);
+router.post('/requisition', StockController.updateRequisition);
+router.post('/requisition/proccess', StockController.proccessRequisition);
+
+
 router.get('/shipment', StockController.viewShipments);
 router.get('/shipment/:id(\\d+)', StockController.viewShipment);
 router.get('/shipment/print/:id(\\d+)', StockController.printShipment);
