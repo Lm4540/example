@@ -45,6 +45,7 @@
                         <th>Origen</th>
                         <th>Destino</th>
                         <th>Solicitud</th>
+                        <th>Estado</th>
                         <th>Opciones</th>
                      </tr>
                   </thead>
@@ -55,6 +56,7 @@
                         <td class="text-center"><%= indexed_sucursals[requisition.origin] %></td>
                         <td class="text-center"><%= indexed_sucursals[requisition.destino] %></td>
                         <td class="text-center"><%= requisition.createdBy %></td>
+                        <td class="text-center"><%= requisition._status %></td>
                         <td class="text-center">
                            <a class="badge bg-orange" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
                         </td>
