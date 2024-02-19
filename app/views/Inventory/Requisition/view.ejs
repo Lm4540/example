@@ -15,8 +15,14 @@
          <div class="card">
             <div class="card-header">
                <h2 class="card-title text-center">
-                  Solicitud de traslado de <%= indexed_sucursals[requisition.origin] %> hacia <%= indexed_sucursals[requisition.destino] %> #<%= requisition.id %><br><span class="badge bg-purple mt-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Agregar Producto</span>
+                  Solicitud de traslado de <%= indexed_sucursals[requisition.origin] %> hacia <%= indexed_sucursals[requisition.destino] %> #<%= requisition.id %>
+                  <% if ((permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) || permission.includes('trasnfer_between_all_warehouses')) { %>
+                  <br><span class="badge bg-purple mt-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Agregar Producto</span>
+                  <% } %>
+                  <% if ((permission.includes('close_requisitions') && requisition.origin == user.sucursal) || permission.includes('close_all_requisitions')) { %>
+
                   <span class="badge bg-danger mt-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#finishModal">Elaborar Envio</span>
+                  <% } %>
                </h2>
             </div>
 
@@ -51,12 +57,27 @@
                         </td>
                         <td class="text-center"><%= dt.cant %></td>
                         <td class="text-center">
+                           <% if ((permission.includes('close_requisitions') && user.sucursal == requisition.origin) || permission.includes('trasnfer_between_all_warehouses') || (permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) ) { %>
                            <span class="badge bg-orange" data-bs-target="#quitDetailModal" data-bs-toggle="modal" onclick="quit_detail('<%= dt.id %>', '<%= dt.cant %>')"> Quit</span>
+                           <% } %>
                         </td>
                      </tr>
 
                      <% }) %>
                   </tbody>
+
+
+                  <tfoot>
+                     <tr>
+                        <td>Comentario:</td>
+                        <td colspan="4">
+                           <% if ((permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) || permission.includes('trasnfer_between_all_warehouses')) { %>
+                           <textarea name="commentary" id="commentary" class="form-control"><%= requisition.commentary %></textarea>
+
+                           <%}%>
+                        </td>
+                     </tr>
+                  </tfoot>
                </table>
 
 
@@ -156,7 +177,7 @@
       </div>
 
       <%- include('../../Layouts/Footer.ejs') %>
-   </div>
+            </div>
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
@@ -221,6 +242,27 @@
    });
 
    document.addEventListener('DOMContentLoaded', event => {
+
+
+
+      document.querySelector("#commentary").addEventListener('change', e => {
+         let value = e.target.value;
+
+         postData('/inventory/requisition', {
+            requisition: '<%= requisition.id %>',
+            commentary: e.target.value,
+            case: 'commentary'
+         }).then(data => {
+            if (data.status == 'success') {
+               successMessage(data.message);
+            } else if (data.status == 'errorMessage') {
+               e.target.disabled = false;
+               return errorMessage(data.message);
+            } else {
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
+      });
 
       selectProduct.addEventListener('change', e => {
          let max = product_in_select2[e.target.value].stock - product_in_select2[e.target.value].reserved;
@@ -320,7 +362,9 @@
             } else {
                return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
             }
-         }).catch(error => {console.log(error)});
+         }).catch(error => {
+            console.log(error)
+         });
       });
 
 

@@ -15,7 +15,10 @@
          <div class="card">
             <div class="card-header">
                <h2 class="card-title text-center">
-                  Solicitudes de Traslado <span class="badge bg-purple" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Nuevo</span>
+                  Solicitudes de Traslado
+                  <% if (permission.includes('trasnfer_between_warehouses') || permission.includes('trasnfer_between_all_warehouses')) { %>
+                  <span class="badge bg-purple" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Nuevo</span>
+                  <%}%>
                </h2>
             </div>
 
@@ -24,160 +27,160 @@
                   <div class="col form-group">
                      <label for="init_date">Desde la Fecha</label>
                      <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(init) %>">
-                  </div>
-                  <div class="col form-group">
-                     <label for="end_date">Hasta la Fecha</label>
-                     <input type="date" class="form-control" id="end_date" value="<%= Helper.date_to_input(end) %>">
-                  </div>
-                  <div class="col">
-                     <button class="btn btn-primary mt-3" id="search_details">Buscar Envios</button>
-
-                  </div>
-               </div>
             </div>
-
-
-            <div class="card-body table-responsive">
-               <table class="table table-sm table-bordered table-hover table-stripped">
-                  <thead>
-                     <tr>
-                        <th>#</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Solicitud</th>
-                        <th>Estado</th>
-                        <th>Opciones</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     <% requisitions.forEach(requisition => { %>
-                     <tr>
-                        <td class="text-center"><%= requisition.id %></td>
-                        <td class="text-center"><%= indexed_sucursals[requisition.origin] %></td>
-                        <td class="text-center"><%= indexed_sucursals[requisition.destino] %></td>
-                        <td class="text-center"><%= requisition.createdBy %></td>
-                        <td class="text-center"><%= requisition._status %></td>
-                        <td class="text-center">
-                           <a class="badge bg-orange" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
-                        </td>
-                     </tr>
-
-                     <% }) %>
-                  </tbody>
-               </table>
-
+            <div class="col form-group">
+               <label for="end_date">Hasta la Fecha</label>
+               <input type="date" class="form-control" id="end_date" value="<%= Helper.date_to_input(end) %>">
+            </div>
+            <div class="col">
+               <button class="btn btn-primary mt-3" id="search_details">Buscar Envios</button>
 
             </div>
          </div>
+      </div>
 
 
-         <div class="modal fade" id="newRequisitionDetail" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
-               <div class="modal-content">
-                  <div class="modal-header">
-                     <h3 class="text-center">Nueva Solicitud de Traslado</h3>
-                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-                  </div>
+      <div class="card-body table-responsive">
+         <table class="table table-sm table-bordered table-hover table-stripped">
+            <thead>
+               <tr>
+                  <th>#</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
+                  <th>Solicitud</th>
+                  <th>Estado</th>
+                  <th>Opciones</th>
+               </tr>
+            </thead>
+            <tbody>
+               <% requisitions.forEach(requisition => { %>
+               <tr>
+                  <td class="text-center"><%= requisition.id %></td>
+                  <td class="text-center"><%= indexed_sucursals[requisition.origin] %></td>
+                  <td class="text-center"><%= indexed_sucursals[requisition.destino] %></td>
+                  <td class="text-center"><%= requisition.createdBy %></td>
+                  <td class="text-center"><%= requisition._status == 'open' ? 'EN CUSRO' : 'CERRADO'  %></td>
+                  <td class="text-center">
+                     <a class="badge bg-orange" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
+                  </td>
+               </tr>
 
-                  <div class="modal-body">
-                     <div class="row">
-                        <% if (permission.includes('trasnfer_between_all_warehouses')) { %>
-                        <div class="col-12 col-md-6">
-                           <div class="form-group">
-                              <label for="originSucursal">Sucursal de Origen</label>
-                              <select name="originSucursal" id="originSucursal" class="form-control">
-                                 <% sucursals.forEach(el => { %>
-                                 <option value="<%= el.id %>" <% if (user.sucursal == el.id) { %>selected<% } %>><%= el.name %></option>
-                                 <% }) %>
-                              </select>
-                           </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                           <div class="form-group">
-                              <label for="destinoSucursal">Sucursal de Destino</label>
-                              <select name="destinoSucursal" id="destinoSucursal" class="form-control">
-                                 <% sucursals.forEach(el => { %>
-                                 <option value="<%= el.id %>"><%= el.name %></option>
-                                 <% }) %>
-                              </select>
-                           </div>
-                        </div>
-
-                        <% } else { %>
-                        <div class="col-12 col-md-6">
-                           <div class="form-group">
-                              <label for="originSucursal">Sucursal de Origen</label>
-                              <select name="originSucursal" id="originSucursal" class="form-control">
-                                 <% sucursals.forEach(el => { %>
-                                 <% if (user.sucursal == el.id) { %>
-                                 <option value="<%= el.id %>" selected><%= el.name %></option>
-                                 <% } %>
-
-                                 <% }) %>
-                              </select>
-                           </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                           <div class="form-group">
-                              <label for="destinoSucursal">Sucursal de Destino</label>
-                              <select name="destinoSucursal" id="destinoSucursal" class="form-control">
-                                 <% sucursals.forEach(el => { %>
-                                 <% if (user.sucursal != el.id) { %>
-                                 <option value="<%= el.id %>"><%= el.name %></option>
-                                 <% } %>
-
-                                 <% }) %>
-                              </select>
-                           </div>
-                        </div>
-                        <% } %>
-
-
-                     </div>
-                  </div>
-
-                  <div class="modal-body">
-                     <h4 class="text-center">Detalles</h4>
-                     <div class="table-responsive">
-                        <table class="table table-sm table-hover table-bordered">
-                           <tbody id="_tr_details"></tbody>
-                        </table>
-                     </div>
-
-                  </div>
-                  <div class="modal-body">
-                     <div class="form-group">
-                        <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
-                        <select name="productSelect" id="productSelect" class="form-control"></select>
-                     </div>
-                     <div class="form-group">
-                        <label for="product_cant">Cantidad</label>
-                        <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
-                        <small class="text-danger" id="max_cant_small"></small>
-                     </div>
-
-                     <div class="text-center">
-
-                        <button class="btn round btn-sm btn-warning mt-4" id="add_detail">Agregar</button>
-                     </div>
-                  </div>
-
-
-
-                  <div class="modal-footer" style="display: block;">
-                     <div class="text-center">
-                        <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                        <button class=" ml-2 btn btn-success round" id="btn_save"><i class="fas fa-save mr-2" style="font-size: 125%;"></i> Guardar</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+               <% }) %>
+            </tbody>
+         </table>
 
 
       </div>
+   </div>
 
-      <%- include('../../Layouts/Footer.ejs') %>
+
+   <div class="modal fade" id="newRequisitionDetail" tabindex="-1" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h3 class="text-center">Nueva Solicitud de Traslado</h3>
+               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+
+            <div class="modal-body">
+               <div class="row">
+                  <% if (permission.includes('trasnfer_between_all_warehouses')) { %>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="originSucursal">Sucursal de Origen</label>
+                        <select name="originSucursal" id="originSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>" <% if (user.sucursal == el.id) { %>selected<% } %>><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="destinoSucursal">Sucursal de Destino</label>
+                        <select name="destinoSucursal" id="destinoSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+
+                  <% } else { %>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="originSucursal">Sucursal de Origen</label>
+                        <select name="originSucursal" id="originSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <% if (user.sucursal == el.id) { %>
+                           <option value="<%= el.id %>" selected><%= el.name %></option>
+                           <% } %>
+
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                     <div class="form-group">
+                        <label for="destinoSucursal">Sucursal de Destino</label>
+                        <select name="destinoSucursal" id="destinoSucursal" class="form-control">
+                           <% sucursals.forEach(el => { %>
+                           <% if (user.sucursal != el.id) { %>
+                           <option value="<%= el.id %>"><%= el.name %></option>
+                           <% } %>
+
+                           <% }) %>
+                        </select>
+                     </div>
+                  </div>
+                  <% } %>
+
+
+               </div>
+            </div>
+
+            <div class="modal-body">
+               <h4 class="text-center">Detalles</h4>
+               <div class="table-responsive">
+                  <table class="table table-sm table-hover table-bordered">
+                     <tbody id="_tr_details"></tbody>
+                  </table>
+               </div>
+
+            </div>
+            <div class="modal-body">
+               <div class="form-group">
+                  <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                  <select name="productSelect" id="productSelect" class="form-control"></select>
+               </div>
+               <div class="form-group">
+                  <label for="product_cant">Cantidad</label>
+                  <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
+                  <small class="text-danger" id="max_cant_small"></small>
+               </div>
+
+               <div class="text-center">
+
+                  <button class="btn round btn-sm btn-warning mt-4" id="add_detail">Agregar</button>
+               </div>
+            </div>
+
+
+
+            <div class="modal-footer" style="display: block;">
+               <div class="text-center">
+                  <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button class=" ml-2 btn btn-success round" id="btn_save"><i class="fas fa-save mr-2" style="font-size: 125%;"></i> Guardar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+
+   </div>
+
+   <%- include('../../Layouts/Footer.ejs') %>
    </div>
 </body>
 
