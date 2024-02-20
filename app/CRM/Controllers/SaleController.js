@@ -231,17 +231,6 @@ const sale_status_verification = async (seller) => {
 const SaleController = {
 
     update_prices: async (req, res) => {
-        // let products = await Product.findAll({
-        //     where: {
-        //         stock: {
-        //             [Op.gt]: 0,
-        //         }
-        //     },
-        //     order: [
-        //         ['UpdatedAt', 'ASC'],
-        //         ['name', 'asc']
-        //     ]
-        // });
         return res.render('CRM/Products/UpdatePrices', { pageTitle: 'Reporte de Ventas por Vendedor', limit: 10 });
     },
 

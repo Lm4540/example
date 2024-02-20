@@ -11,7 +11,7 @@ router.get("/", function (req, res) {
 router.get("/pettycash",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
     Controller.pettycash);
-    
+
 router.post("/pettycash",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'admin_all_petty_cash']),
     Controller.addMove);
@@ -20,11 +20,11 @@ router.get("/pettycash/:id(\\d+)",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
     Controller.viewPettyCash);
 
-    router.get("/pettycash/printVoucher/:id(\\d+)",
+router.get("/pettycash/printVoucher/:id(\\d+)",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
     Controller.printVoucher);
 
 
-    
+
 
 module.exports = router;
