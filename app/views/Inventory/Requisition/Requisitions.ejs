@@ -17,7 +17,7 @@
                <h2 class="card-title text-center">
                   Solicitudes de Traslado
                   <% if (permission.includes('trasnfer_between_warehouses') || permission.includes('trasnfer_between_all_warehouses')) { %>
-                  <span class="badge bg-purple" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Nuevo</span>
+                  <span class="badge bg-primary" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#newRequisitionDetail">Nuevo</span>
                   <%}%>
                </h2>
             </div>
@@ -59,10 +59,18 @@
                   <td class="text-center"><%= indexed_sucursals[requisition.origin] %></td>
                   <td class="text-center"><%= indexed_sucursals[requisition.destino] %></td>
                   <td class="text-center"><%= requisition.createdBy %></td>
-                  <td class="text-center"><%= requisition._status == 'open' ? 'EN CUSRO' : 'CERRADO'  %></td>
-                  <td class="text-center">
-                     <a class="badge bg-orange" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
-                  </td>
+                  <% if (requisition._status == 'open') { %>
+                     <td class="text-center">EN PROCESO</td>
+                     <td class="text-center">
+                        <a class="badge bg-purple" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
+                     </td>
+                  <% } else { %>
+                     <td class="text-center">CERRADO</td>
+                     <td class="text-center">
+                        <a class="badge bg-orange" href="/inventory/requisition/<%= requisition.id %>"> Abrir</a>
+                     </td>
+                   
+                  <% } %>
                </tr>
 
                <% }) %>
