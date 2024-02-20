@@ -112,7 +112,7 @@
                         <label for="originSucursal">Sucursal de Origen</label>
                         <select name="originSucursal" id="originSucursal" class="form-control">
                            <% sucursals.forEach(el => { %>
-                           <% if (user.sucursal == el.id) { %>
+                           <% if (user.sucursal != el.id) { %>
                            <option value="<%= el.id %>" selected><%= el.name %></option>
                            <% } %>
 
@@ -125,7 +125,7 @@
                         <label for="destinoSucursal">Sucursal de Destino</label>
                         <select name="destinoSucursal" id="destinoSucursal" class="form-control">
                            <% sucursals.forEach(el => { %>
-                           <% if (user.sucursal != el.id) { %>
+                           <% if (user.sucursal == el.id) { %>
                            <option value="<%= el.id %>"><%= el.name %></option>
                            <% } %>
 
