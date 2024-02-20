@@ -39,7 +39,7 @@ const StockController = {
             where: {
                 createdAt: { [Op.between]: [init, end], }
             },
-            order: [['_status', 'DESC'], ['id', 'DESC']],
+            order: [['_status', 'ASC'], ['id', 'DESC']],
         });
 
         let indexed_sucursals = {};
