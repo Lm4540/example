@@ -54,6 +54,7 @@
                      <th>Fecha de Apertura</th>
                      <th>Monto</th>
                      <th>Vendedor</th>
+                     <th>Sucursal</th>
                      <th>Estado</th>
                      <th>opt</th>
                   </tr>
@@ -66,17 +67,19 @@
                      </td>
                      <td>
                         <% if (limit_date > sale.createdAt) { %>
-                        <span class="text-danger">
+                        <span class="<%= sale._status == "transport" || sale._status == "closed" ? 'text-success' :  'text-danger'  %>">
                            <%= Helper.date_to_spanish(sale.createdAt) %>
-
                         </span>
                         <% } else { %>
-                        <%= Helper.date_to_spanish(sale.createdAt) %>
+                           <span class="<%= sale._status == "transport" || sale._status == "closed" ? 'text-success' :  ''  %>">
+                              <%= Helper.date_to_spanish(sale.createdAt) %>
+                           </span>
 
                         <% } %>
                      </td>
                      <td>$<%= Helper.money_format(sale.balance) %></td>
                      <td><%= sellers[sale.seller] %></td>
+                     <td><%= sucursals[sale.sucursal] %></td>
                      <td>
                         <%= status[sale._status] %>
                      </td>

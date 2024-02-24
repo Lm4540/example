@@ -989,7 +989,6 @@ const SaleController = {
         let seller = req.query.seller !== undefined && req.query.seller !== "all" ? req.query.seller : null;
         let _status = req.query._status !== undefined && req.query._status !== "all" ? req.query._status : null;
 
-
         let where = {
             _status: {
                 [Op.notIn]: ['collected', 'revoked'],
