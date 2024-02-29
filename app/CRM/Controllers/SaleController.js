@@ -1554,6 +1554,72 @@ const SaleController = {
         return Helper.notFound(req.res, 'Invoice or Sale not Found!');
 
     },
+
+    viewPayments: async (req, res) => {
+        //buscar la venta
+        let sale = await Sale.findByPk(req.params.id)
+        if (sale) {
+
+            //buscar el Cliente
+            let cliente = await Client.findByPk(sale.client);
+
+            if (cliente) {
+                //Buscar el empleado
+                let seller = await Employee.findByPk(sale.seller);
+                if (seller) {
+                    let sucursal = await Sucursal.findByPk(seller.sucursal);
+                    //buscar los pagos
+
+                    let pays = [];
+                    let ids = []
+                    sale.payments.forEach(p => {
+                        pays[p.id] = p.amount;
+                        ids.push(p.id);
+                    });
+
+
+                    ids = await SalePayment.findAll({where: {
+                        id: {
+                            [Op.in]: ids
+                        }
+                    }});
+
+                    let payments = [];
+
+                    ids.forEach(id => {
+
+                        payments.push({
+                            amount: pays[id.id],
+                            type : id.type,
+                            total_amount : id.amount,
+                            bank : id.bank,
+                            reference : id.reference,
+                            createdAt : id.createdAt,
+                            createdBy : id.createdBy,
+                        });
+                    });
+
+
+
+                    let serie = null;
+
+                    if(sale.invoice_number != null && sale.invoice_number != '' && sale.invoice_number > 0){
+                        serie = await InvoiceSeries.findByPk(sale.invoce_serie);
+                    }
+
+
+
+                    //buscar los detalles
+                    return res.render('CRM/Sales/viewPayments', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, seller, cliente, status, payments, serie });
+                }
+
+            }
+
+        }
+
+        return Helper.notFound(req.res, 'Invoice or Sale not Found!');
+
+    },
     viewSale: async (req, res) => {
         //buscar la venta
         let sale = await Sale.findByPk(req.params.id)

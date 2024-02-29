@@ -89,7 +89,7 @@
                   <div class="card-body">
                      <div id="form_adding" style="display:none; margin-bottom: 20px;">
                         <div class="text-center">
-                           <span id="free_toggle" class="badge bg-success" style="cursor:pointer">Desde el Inventario</span>
+                           <span id="free_toggle" class="badge bg-success" style="cursor:pointer; display: none;">Desde el Inventario</span>
                            <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;">Cuando Venga del Proveedor</span>
                         </div>
 
@@ -288,7 +288,7 @@
 
                            <div class="form-group">
                               <label for="hour_">Hora de Entrega:</label>
-                              <input type="time" id="hour_" name="hour_" class="form-control">
+                              <input type="time" id="hour_" name="hour_" class="form-control" value="<%= Helper.hour_to_input()%>">
                            </div>
 
 
@@ -368,6 +368,8 @@
 
                                  <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
                                  <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
+                                 <% } else { %>
+                                    <a href="/sales/view_pays/<%= order.id %>" class="badge bg-purple mr-1 mb-1" target="_blank">Ver Pagos</a>
                                  <% } %>
 
                               </td>

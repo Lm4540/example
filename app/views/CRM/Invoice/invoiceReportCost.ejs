@@ -18,7 +18,7 @@
             <div class="col-6 col-md-4">
                <div class="form-group">
                   <label for="selected_date">Desde la Fecha:</label>
-                  <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(new Date())%>" min="2023-12-01">
+                  <input type="date" class="form-control" id="init_date" value="<%= Helper.date_to_input(new Date(), true)%>" min="2023-12-01">
                </div>
             </div>
             <div class="col-6 col-md-4">
@@ -56,7 +56,7 @@
    </div>
 
    <div class="modal fade" id="modalShowData" tabindex="-1" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-centered" role="document">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-centered" role="document">
          <div class="modal-content">
             <div class="modal-header row">
                <div class="col text-center"><button class="btn btn-secondary" onclick="javascript: ShowDataModal.toggle();">Close</button></div>
@@ -148,6 +148,7 @@
             }
 
             content += `<td>
+                           <span onclick="ver_detalle('/sales/view_pays/${invoice.id}')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
                           <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning">Ver detalle</span>
                           <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary">Ver factura</a>
                       </td>
@@ -252,6 +253,7 @@
                          <td>$${money_format(cls.venta)}</td>
                          <td>$${money_format(cls.costo)}</td>
                          <td class="text-center">
+                              <span onclick="ver_detalle('/sales/view_pays/${invoice.id}')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
                              <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
                              <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
                          </td>
@@ -301,6 +303,7 @@
                       <td colspan="3" class="text-center"><span class="text-danger">No determinado / En Proceso</span></td>
                       
                       <td class="text-center">
+                        <span onclick="ver_detalle('/sales/view_pays/${invoice.id}')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
                           <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
                           <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
                       </td>
@@ -344,6 +347,7 @@
                          <td>$${money_format(fix_number(detail.cant * detail.price))}</td>
                          <td>$${money_format(fix_number(detail.cant * detail.product_cost))}</td>
                          <td class="text-center">
+                           <span onclick="ver_detalle('/sales/view_pays/${invoice.id}')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
                              <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
                              <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
                          </td>
@@ -392,6 +396,7 @@
                       <td colspan="4" class="text-center"><span class="text-danger">No determinado / En Proceso</span></td>
                       
                       <td class="text-center">
+                        <span onclick="ver_detalle('/sales/view_pays/${invoice.id}')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
                           <span onclick="ver_detalle('/sales/view_cost/${invoice.id}')" class="badge bg-warning mr-1 mb-1">Ver detalle</span>
                           <a href="/sales/view_invoice/${invoice.id}" class="badge bg-primary mb-1">Ver factura</a>
                       </td>

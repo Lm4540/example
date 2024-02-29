@@ -60,6 +60,13 @@ const Helper = {
         d = d > 9 ? d : `0${d}`;
         return init ?  `${date.getFullYear()}-${m}-01` : `${date.getFullYear()}-${m}-${d}`;
     },
+
+    hour_to_input: (date = null) => {
+        date = date ? new Date(date) : new Date();
+        return `${date.getHours()}:${date.getMinutes()}`;
+    },
+
+
     date_to_spanish: (date) => {
         let days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         let months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];

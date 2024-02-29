@@ -37,6 +37,8 @@ router.post('/updateDetail', SaleController.updateSaleDetail);
 router.get('/sale_in_room', SaleController.saleInRoomView);
 router.get('/view/:id(\\d+)', SaleController.viewSale);
 router.get('/view_cost/:id(\\d+)', SaleController.viewSaleCost);
+router.get('/view_pays/:id(\\d+)', SaleController.viewPayments);
+
 router.get('/inProccess', SaleController.inProccess);
 
 router.get('/seller/history', SaleController.seller_history);
