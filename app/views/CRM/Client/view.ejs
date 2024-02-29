@@ -626,17 +626,30 @@
                <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
                <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
             </div>
-
             <div class="modal-body">
-               <p class="bg-danger text-white pt-5 pb-5 pl-4 pr-4" style="border-radius: 1em;">
-                  NOTA: Revise los datos antes de guardarlos, en caso contrario se iran sumando sus errores y al llegar a diez, se le hara escribir toda la información dos veces, como forma de confirmación, y no se permitira copiar ni pegar.
-               </p>
-            </div>
-            <div class="modal-body">
-
-
-
                <div class="row g-3" id="add_payment_div">
+                  <div class="form-group mb-3 col-12">
+                     <label for="payment_amount">Tipo de Transacción</label>
+                     <select name="payment_method" id="payment_method" class="form-control">
+                        <option value="transfer">Transferencias y Depósitos</option>
+                        <option value="money">Efectivo</option>
+                        <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
+                     </select>
+                  </div>
+                  <div class="form-group mb-3 col-12">
+                     <label for="payment_amount">Monto Recibido</label>
+                     <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
+                  </div>
+                  <div id="other_pays">
+                     <div class="form-group mb-3 col-12">
+                        <label for="payment_bank">Banco (RG)</label>
+                        <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
+                     </div>
+                     <div class="form-group mb-3 col-12">
+                        <label for="payment_reference">Numero de Referencia / Numero de Voucher </label>
+                        <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
+                     </div>
+                  </div>
                   <div class="form-group">
                      <label for="payment_sucursal">Sucursal que recibe el pago</label>
                      <select name="payment_sucursal" id="payment_sucursal" class="form-control">
@@ -645,34 +658,6 @@
                            <%= sucursal.name %></option>
                         <% }) %>
                      </select>
-                  </div>
-
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount">Tipo de Transacción</label>
-                     <select name="payment_method" id="payment_method" class="form-control">
-                        <option value="money">Efectivo</option>
-                        <option value="transfer">Transferencia</option>
-                        <option value="credit_card">Trajeta Credito/Debito y POS Fisico o Virtual</option>
-                     </select>
-                  </div>
-
-
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount">Monto Recibido</label>
-                     <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
-
-                  </div>
-                  <div id="other_pays">
-
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_bank">Banco</label>
-                        <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
-                     </div>
-
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_reference">Numero de Referencia / Numero de Voucher </label>
-                        <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
-                     </div>
                   </div>
                </div>
             </div>
@@ -801,17 +786,30 @@
                <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
                <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
             </div>
-
             <div class="modal-body">
-               <p class="bg-danger text-white pt-5 pb-5 pl-4 pr-4" style="border-radius: 1em;">
-                  NOTA: Revise los datos antes de guardarlos, en caso contrario se iran sumando sus errores y al llegar a diez, se le hara escribir toda la información dos veces, como forma de confirmación, y no se permitira copiar ni pegar.
-               </p>
-            </div>
-            <div class="modal-body">
-
-
-
                <div class="row g-3" id="add_payment_div">
+                  <div class="form-group mb-3 col-12">
+                     <label for="payment_method2">Tipo de Transacción</label>
+                     <select name="payment_method2" id="payment_method2" class="form-control">
+                        <option value="transfer">Transferencias y Depósitos</option>
+                        <option value="money">Efectivo</option>
+                        <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
+                     </select>
+                  </div>
+                  <div class="form-group mb-3 col-12">
+                     <label for="payment_amount2">Monto Recibido</label>
+                     <input class="form-control" id="payment_amount2" type="text" name="payment_amount" placeholder="0.00">
+                  </div>
+                  <div id="other_pays_2">
+                     <div class="form-group mb-3 col-12">
+                        <label for="payment_bank2">Banco (RG)</label>
+                        <input class="form-control" id="payment_bank2" type="text" name="payment_bank2" placeholder="Banco">
+                     </div>
+                     <div class="form-group mb-3 col-12">
+                        <label for="payment_reference2">Numero de Referencia / Numero de Voucher </label>
+                        <input class="form-control" id="payment_reference2" type="text" placeholder="1525-8">
+                     </div>
+                  </div>
                   <div class="form-group">
                      <label for="payment_sucursal2">Sucursal que recibe el pago</label>
                      <select name="payment_sucursal2" id="payment_sucursal2" class="form-control">
@@ -821,37 +819,8 @@
                         <% }) %>
                      </select>
                   </div>
-
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_method2">Tipo de Transacción</label>
-                     <select name="payment_method2" id="payment_method2" class="form-control">
-                        <option value="money">Efectivo</option>
-                        <option value="transfer">Transferencia</option>
-                        <option value="credit_card">Trajeta Credito/Debito y POS Fisico o Virtual</option>
-                     </select>
-                  </div>
-
-
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount2">Monto Recibido</label>
-                     <input class="form-control" id="payment_amount2" type="text" name="payment_amount" placeholder="0.00">
-
-                  </div>
-                  <div id="other_pays">
-
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_bank2">Banco</label>
-                        <input class="form-control" id="payment_bank2" type="text" name="payment_bank2" placeholder="Banco">
-                     </div>
-
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_reference2">Numero de Referencia / Numero de Voucher </label>
-                        <input class="form-control" id="payment_reference2" type="text" placeholder="1525-8">
-                     </div>
-                  </div>
                </div>
             </div>
-
             <div class="modal-footer" style="display: block;">
                <div class="text-center">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
@@ -1681,8 +1650,16 @@ if (cliente.type == 'major') { %>
          }
       });
 
+      
+      document.getElementById('payment_method2').addEventListener('change', async (e) => {
+         document.getElementById('other_pays_2').style.display = document.getElementById('payment_method2').value == 'money' ? 'none' : 'block';
+         document.querySelector("#payment_amount2").focus();
+      });
 
-
+      document.getElementById('payment_method').addEventListener('change', async (e) => {
+         document.getElementById('other_pays').style.display = document.getElementById('payment_method').value == 'money' ? 'none' : 'block';
+         document.querySelector("#payment_amount").focus();
+      });
 
    });
 
