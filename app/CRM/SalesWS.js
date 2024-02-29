@@ -273,63 +273,63 @@ module.exports = (io, socket) => {
                                 }
 
 
-                                let payments = await SalePayment.findAll({
-                                    where: {
-                                        client: cliente.id,
-                                        asigned_amount: sequelize.literal('asigned_amount < amount')
-                                    }
-                                });
+                                // let payments = await SalePayment.findAll({
+                                //     where: {
+                                //         client: cliente.id,
+                                //         asigned_amount: sequelize.literal('asigned_amount < amount')
+                                //     }
+                                // });
 
 
-                                if (payments.length > 0) {
-                                    let sale_value = (sale.balance + sale.delivery_amount - sale.collected);
-                                    for (let index = 0; index < payments.length; index++) {
-                                        if (sale_value > 0) {
-                                            let payment = payments[index];
+                                // if (payments.length > 0) {
+                                //     let sale_value = (sale.balance + sale.delivery_amount - sale.collected);
+                                //     for (let index = 0; index < payments.length; index++) {
+                                //         if (sale_value > 0) {
+                                //             let payment = payments[index];
 
-                                            let max_payment_amount = (payment.amount - payment.asigned_amount);
+                                //             let max_payment_amount = (payment.amount - payment.asigned_amount);
 
-                                            if (max_payment_amount > sale_value) {
-                                                sale.collected += sale_value;
-                                                if (sale.payments !== null) {
-                                                    sale.payments.push({ "id": payment.id, "amount": sale_value })
-                                                } else {
-                                                    sale.payments = [{ "id": payment.id, "amount": sale_value }];
-                                                }
-                                                // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                                                payment.asigned_amount != null ? payment.asigned_amount += sale_value : payment.asigned_amount = sale_value;
-                                                if (payment.sales !== null) {
-                                                    payment.sales.push({ "id": sale.id, "amount": sale_value });
-                                                } else {
-                                                    payment.sales = [{ "id": sale.id, "amount": sale_value }]
-                                                }
-                                                await payment.save({ transaction: t });
-                                                sale_value = 0;
-                                            } else {
+                                //             if (max_payment_amount > sale_value) {
+                                //                 sale.collected += sale_value;
+                                //                 if (sale.payments !== null) {
+                                //                     sale.payments.push({ "id": payment.id, "amount": sale_value })
+                                //                 } else {
+                                //                     sale.payments = [{ "id": payment.id, "amount": sale_value }];
+                                //                 }
+                                //                 // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+                                //                 payment.asigned_amount != null ? payment.asigned_amount += sale_value : payment.asigned_amount = sale_value;
+                                //                 if (payment.sales !== null) {
+                                //                     payment.sales.push({ "id": sale.id, "amount": sale_value });
+                                //                 } else {
+                                //                     payment.sales = [{ "id": sale.id, "amount": sale_value }]
+                                //                 }
+                                //                 await payment.save({ transaction: t });
+                                //                 sale_value = 0;
+                                //             } else {
 
-                                                sale.collected += max_payment_amount;
-                                                if (sale.payments !== null) {
-                                                    sale.payments.push({ "id": payment.id, "amount": max_payment_amount })
-                                                } else {
-                                                    sale.payments = [{ "id": payment.id, "amount": max_payment_amount }];
-                                                }
-                                                // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                                                payment.asigned_amount != null ? payment.asigned_amount += max_payment_amount : payment.asigned_amount = max_payment_amount;
-                                                if (payment.sales !== null) {
-                                                    payment.sales.push({ "id": sale.id, "amount": max_payment_amount });
+                                //                 sale.collected += max_payment_amount;
+                                //                 if (sale.payments !== null) {
+                                //                     sale.payments.push({ "id": payment.id, "amount": max_payment_amount })
+                                //                 } else {
+                                //                     sale.payments = [{ "id": payment.id, "amount": max_payment_amount }];
+                                //                 }
+                                //                 // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
+                                //                 payment.asigned_amount != null ? payment.asigned_amount += max_payment_amount : payment.asigned_amount = max_payment_amount;
+                                //                 if (payment.sales !== null) {
+                                //                     payment.sales.push({ "id": sale.id, "amount": max_payment_amount });
 
-                                                } else {
-                                                    payment.sales = [{ "id": sale.id, "amount": max_payment_amount }];
-                                                }
+                                //                 } else {
+                                //                     payment.sales = [{ "id": sale.id, "amount": max_payment_amount }];
+                                //                 }
 
-                                                await payment.save({ transaction: t });
-                                                sale_value -= max_payment_amount;
-                                            }
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                }
+                                //                 await payment.save({ transaction: t });
+                                //                 sale_value -= max_payment_amount;
+                                //             }
+                                //         } else {
+                                //             break;
+                                //         }
+                                //     }
+                                // }
                                 await sale.save({ transaction: t });
 
                                 //emitir evento
