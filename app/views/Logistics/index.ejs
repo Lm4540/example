@@ -201,7 +201,7 @@
                   </div>
                </div>
                <div class="modal-footer">
-                  
+
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                   <button type="button" id="save_not_delivered" class="btn btn-primary">Guardar</button>
                </div>
@@ -221,6 +221,7 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+   const __sucursal = Number.parseInt('<%= user.sucursal %>');
    var _process = '<%= Helper.randomString(5) %>';
    var socket = io.connect('<%= baseURL %>/logistics'),
       mayor = {},
@@ -249,7 +250,6 @@
          document.querySelector("#total_delivery_failed").innerHTML = `${totals.delivery_failed} Entregas Fallidas`;
       },
 
-
       showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {}),
       show_image = src => {
          document.getElementById('galery_image').src = src;
@@ -258,7 +258,6 @@
       show_sale = id => {
          window.location.href = `/sales/view/${id}`;
       },
-
       paquete_listo = id => {
          socket.emit('package_ready', {
             sale_id: id,
@@ -279,37 +278,27 @@
       providers = data.providers;
       prepared = data.prepared;
       transport = data.transport;
-
-
       let content = ``;
-
       let indexes = Object.keys(providers);
       for (let index = 0; index < indexes.length; index++) {
          content += `<option value="${indexes[index]}"> ${providers[indexes[index]]}</option>`;
       }
-      
       document.querySelector("#nd_delivery_provider").innerHTML = content;
-
-
       //pintar los totales
       update_totals();
    });
 
    socket.on('new_sale', data => {
-      console.log(data);
-      totals.reservas += 1;
-      update_totals();
-
-      reservas[data.sale.id] = data;
-
-      if (on_screen == 'reservas') {
-
-
-         let div = document.createElement('div');
-         div.classList.add('col-12', 'col-md-6', 'mb-3');
-         div.id = `reservas_sale_${data.sale.id}`;
-
-         let content = `<div class="card card-round">
+      if (data.sale.sucursal == __sucursal) {
+         console.log('Recibimos esta venta')
+         totals.reservas += 1;
+         update_totals();
+         reservas[data.sale.id] = data;
+         if (on_screen == 'reservas') {
+            let div = document.createElement('div');
+            div.classList.add('col-12', 'col-md-6', 'mb-3');
+            div.id = `reservas_sale_${data.sale.id}`;
+            let content = `<div class="card card-round">
                      <div class="card-body">
                         <h5 class="mb-2">${data.client} 
                            &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${data.sale.id})">Paquete Listo</span>
@@ -317,10 +306,10 @@
                         </h5>
                         <p>${data.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (data.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[data.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
                         <div class="list-group">`;
-         //recorrer los detalles de la venta
-         data.details.forEach(detail => {
+            //recorrer los detalles de la venta
+            data.details.forEach(detail => {
 
-            content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
+               content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
                   <div class="d-flex justify-content-start">
                      <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
                      <div class="ml-3">
@@ -330,29 +319,36 @@
 
                   </div>
                </span>`;
-         });
+            });
 
-
-         content += `</div>
+            content += `</div>
                      </div>
                   </div>
                `;
-         div.innerHTML = content;
-         document.querySelector("#div_reservas").appendChild(div);
+            div.innerHTML = content;
+            document.querySelector("#div_reservas").appendChild(div);
+         }
+
+         if (mayor[data.sale.id] !== undefined) {
+            //recorrer los detalles
+            mayor[data.sale.id].details.forEach(el => {
+               document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+            });
+            update_totals();
+         }
       }
-
-
    });
 
    socket.on('package_ready_success', sale => {
-      reservas[sale.id] = null;
-      reservas_resolved[sale.id] = sale;
-      document.querySelector("#div_reservas").removeChild(document.getElementById(`reservas_sale_${sale.id}`));
-      totals.reservas -= 1;
-      totals.prepared += 1;
-      update_totals();
-
-      successMessage('Paquete Listo!');
+      if (reservas[sale.id] != undefined) {
+         reservas[sale.id] = null;
+         reservas_resolved[sale.id] = sale;
+         document.querySelector("#div_reservas").removeChild(document.getElementById(`reservas_sale_${sale.id}`));
+         totals.reservas -= 1;
+         totals.prepared += 1;
+         update_totals();
+         successMessage('Paquete Listo!');
+      }
    });
 
    socket.on('package_ready_error', data => {
@@ -375,11 +371,24 @@
    socket.on('deleted_major_detail', data => {
       console.log(data);
       let new_details = [];
-
-      //recorrer los detalles
       mayor[data.sale_id].details.forEach(el => {
          el.id == data.deleted_detail
       });
+
+      let restantes = new Array();
+      mayor[data.sale_id].details.forEach(el => {
+         if (el.id == data.deleted_detail) {
+            document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+         } else {
+            restantes.push(el);
+         }
+      });
+
+      if (restantes.length < 1) {
+         update_totals();
+      } else {
+         mayor[data.sale_id].details = restantes;
+      }
 
       // errorMessage('Detalle de info Eliminado')
    });
@@ -416,7 +425,7 @@
 
    socket.on('nd_package_revoke_success', data => {
       let div = document.querySelector("#info_sale_" + data.id);
-      if(div !== undefined){
+      if (div !== undefined) {
          div.parentNode.removeChild(div);
       }
 
@@ -427,41 +436,38 @@
 
    socket.on('nd_package_resend_success', data => {
       let div = document.querySelector("#info_sale_" + data.id);
-      if(div !== undefined){
+      if (div !== undefined) {
          div.parentNode.removeChild(div);
       }
       transport[data.id] = null;
       totals.transport -= 1;
-
-
       prepared[data.id] = data;
       totals.prepared += 1;
       update_totals();
    });
 
-   
-   
+
+
 
    socket.on('mayor_detail_revised_success', data => {
-      //recorrer los detalles
-      let restantes = new Array();
-      mayor[data.sale].details.forEach(el => {
-         if (data.details.includes(el.id)) {
-            document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+
+      if (mayor[data.sale] !== undefined) {
+         //recorrer los detalles
+         let restantes = new Array();
+         mayor[data.sale].details.forEach(el => {
+            if (data.details.includes(el.id)) {
+               document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+            } else {
+               restantes.push(el);
+            }
+         });
+         if (restantes.length < 1) {
+            update_totals();
          } else {
-            restantes.push(el);
+            mayor[data.sale].details = restantes;
          }
-      });
-
-      if (restantes.length < 1) {
-         update_totals();
-      } else {
-         mayor[data.sale].details = restantes;
       }
-
-
    });
-
 
    socket.on('new_major_detail', data => {
       totals.mayor_details++;
@@ -475,8 +481,7 @@
 </script>
 <!-- Manejo de las reservas -->
 <script>
-
-let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
+   let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
    var delivery_failed_id = null;
    const show_reservas = () => {
       document.querySelector("#div_reservas").style.display = 'flex';
@@ -571,7 +576,7 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
 
    }
 
-   const package_delivered = (sale, element ) => {
+   const package_delivered = (sale, element) => {
       element.parentNode.removeChild(element);
       socket.emit('pakage_delivered', sale)
    }
@@ -733,7 +738,7 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
       document.querySelector("#nd_div_resend").style.display = "none";
 
       document.querySelector("#nd_option").addEventListener('change', e => {
-            document.querySelector("#nd_div_resend").style.display = e.target.value === "resend" ? 'block' : "none";
+         document.querySelector("#nd_div_resend").style.display = e.target.value === "resend" ? 'block' : "none";
       });
 
 
@@ -768,17 +773,17 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
 
          let reason = document.querySelector("#nd_reason").value;
 
-         if(reason.length < 5){
+         if (reason.length < 5) {
             return errorMessage('Por favor escriba una justificacion por la cual el paquete no fue entregado');
          }
 
-         if(document.querySelector("#nd_option").value != "resend"){
+         if (document.querySelector("#nd_option").value != "resend") {
             e.target.disabled = true;
-            socket.emit('nd_package_revoke',{
+            socket.emit('nd_package_revoke', {
                sale: delivery_failed_id,
                reason
             });
-         }else{
+         } else {
             let data = {
                sale: delivery_failed_id,
                delivery_type: document.querySelector("#nd_delivery_type").value,
@@ -791,11 +796,11 @@ let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDel
                delivery_amount: document.querySelector("#nd_delivery_amount").value,
                reason
             }
-   
+
             if (data.delivery_type == 'delivery') {
                data.delivery_provider = document.querySelector("#nd_delivery_provider").value;
             }
-   
+
             if (data.direction.length < 5) {
                return errorMessage('Coloque una Dirección válida');
             } else if (data.phone.length < 8) {
