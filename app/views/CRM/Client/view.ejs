@@ -1447,12 +1447,13 @@ if (cliente.type == 'major') { %>
    };
 
    const form_inventory = () => {
+      return false;
       free = false;
       document.querySelector('#free_detail').style.display = 'none';
       document.querySelector('#inventory_toggle').style.display = 'none';
 
       document.querySelector('#inventory_detail').style.display = 'block';
-      document.querySelector('#free_toggle').style.display = 'inline-block';
+      document.querySelector('#free_toggle').style.display = 'none';
    };
 
    const quit = _id => {

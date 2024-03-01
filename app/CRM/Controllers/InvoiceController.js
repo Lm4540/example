@@ -536,6 +536,10 @@ const InvoiceController = {
         let sale = await Sale.findByPk(data.sale);
         if (sale) {
             //buscar el numero de serie
+            if (sale.invoice_number != null && sale.invoice_number !== "") {
+                return res.json({ status: 'errorMessage', message: 'Esta Venta ya esta Facturada' });
+            }
+
             //buscar la serie
             let serie = await InvoiceSeries.findByPk(data.invoice_serie);
             if (serie == null) {
