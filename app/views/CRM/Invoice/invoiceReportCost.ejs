@@ -43,6 +43,7 @@
                <button class="btn btn-success mt-4" onclick="search_data()">Buscar</button>
                <button class="btn btn-primary mt-4 ml-2" onclick="search_data2()">Detallado</button>
                <button class="btn btn-danger mt-4 ml-2" onclick="search_data2('clasificado')">Detallado (Resumido)</button>
+               <button class="btn bg-purple mt-4 ml-2 text-white" onclick="search_data3()">Pagos Relacionados</button>
             </div>
          </div>
          <h2 class="page-title text-center mt-5" id="title"></h2>
@@ -170,6 +171,96 @@
 
    }
 
+   const search_data3 = async () => {
+
+      //mostrar la cuestion de calculando datos
+      let init = document.querySelector('#init_date').value;
+      let end = document.querySelector('#end_date').value;
+      let sucursal = document.querySelector("#selected_serie").options[document.querySelector("#selected_serie").selectedIndex].dataset.sucursal;
+      let serie = Number.parseInt(document.querySelector("#selected_serie").value);
+
+      if (init.length < 10 || end.length < 10 || end < init) {
+         return errorMessage('Seleccione un rango de fechas válido');
+      } else if (sucursal < 1) {
+         return errorMessage('Seleccione una Sucursal');
+      } else {
+
+         document.querySelector("#attaced_content").innerHTML =
+            ` <div class="text-center">
+               <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+                  <span class="visually-hidden"></span>
+               </div>
+               <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
+            </div>`;
+
+
+         const response = await fetch(`/sales/invoices_payments?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&serie=${serie}`, s_options);
+         let res = await response.json();
+         console.log(res)
+         document.querySelector("#title").innerHTML = ``;
+
+         //procesar la informacion: 
+         let content = "";
+         let invoices = res.invoices;
+         let payments = res.payments;
+
+         content = `<table class="table table-sm table-hover table-bordered">
+               <thead class="text-center">
+                  <tr>
+                     <th>Numero</th>
+                     <th>Fecha</th>
+                     <th>Nombre</th>
+                     <th>Forma de Pago</th>
+                     <th>Ref</th>
+                     <th>Monto del pago</th>
+                     <th>Opciones</th>
+                  </tr>
+               </thead>
+               <tbody class="text-center">`;
+
+            invoices.forEach(invoice => {
+
+               if(invoice.collected > 0.00){
+
+                  invoice.payments.forEach(pay => {
+                     content += `
+                     <tr>
+                        <td>${invoice.invoice_number}</td>
+                        <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>${invoice.invoice_data.name}</td>`;
+                         if(payments[pay.id].type == "money"){
+                           content += `<td>EFECTIVO</td>`;
+                         }else{
+                            content += `<td>${ payments[pay.id].bank} (${payments[pay.id].reference})</td>`;
+
+                         }
+                         content += `<td>$${money_format(pay.amount)}</td>
+                         <td>$${money_format(payments[pay.id].amount)}</td>
+                         <td>
+                              --
+                         </td>
+                     </tr>`;
+                  });
+               }else{
+                  content += `
+                     <tr>
+                        <td>${invoice.invoice_number}</td>
+                        <td>${format_date(invoice.invoice_date, false, 6)}</td>
+                         <td>${invoice.invoice_data.name}</td>
+                         <td>PENDIENTE</td>
+                         <td>--</td>
+                         <td>--</td>
+                         <td>
+                              --
+                         </td>
+                     </tr>`;
+               }
+            });
+            content += `</tbody></table></div>`;
+         document.querySelector("#attaced_content").innerHTML = content;
+      }
+   };
+
 
    const search_data2 = async (option) => {
 
@@ -187,11 +278,11 @@
 
          document.querySelector("#attaced_content").innerHTML =
             ` <div class="text-center">
-      <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
-         <span class="visually-hidden"></span>
-       </div>
-       <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
-   </div>`;
+               <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
+                  <span class="visually-hidden"></span>
+               </div>
+               <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
+            </div>`;
 
 
          const response = await fetch(`/sales/invoices_details2?init=${encodeURIComponent(init)}&end=${encodeURIComponent(end)}&sucursal=${sucursal}&serie=${serie}`, s_options);

@@ -3,10 +3,11 @@ const InvoiceSeries = require("../Models/InvoiceSerie");
 const Sale = require("../Models/Sale");
 const SaleDetail = require("../Models/SaleDetail");
 const Sucursal = require("../../Inventory/Models/Sucursal");
-const sequelize = require("../../DataBase/DataBase");
+const SalePayment = require("../Models/SalePayment");
 const Product = require('../../Inventory/Models/Product');
 const Stock = require('../../Inventory/Models/Stock');
 const StockReserve = require('../../Inventory/Models/StockReserve');
+const sequelize = require("../../DataBase/DataBase");
 
 const { Op, QueryTypes } = require("sequelize");
 const Helper = require("../../System/Helpers");
@@ -477,6 +478,47 @@ const InvoiceController = {
 
         return res.json({
             invoices, sucursal, details
+        })
+    },
+
+    invoices_payments: async (req, res) => {
+        //obtener el rango de fechas y la sucursal
+        let init = `${req.query.init} 00:00:00`;
+        let end = `${req.query.end} 23:59:59`;
+        //buscar la sucursal
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+        let serie = req.query.serie;
+
+        let sql = "SELECT * FROM `crm_sale` WHERE invoice_number is not null and invoce_serie =  :_serie and invoice_date BETWEEN :init and :end order by invoice_number ASC";
+
+        let invoices = await sequelize.query(sql, {
+            replacements: {
+                _serie: serie,
+                init: init,
+                end: end,
+            },
+            type: QueryTypes.SELECT,
+            model: Sale
+        });
+
+        let ids = [];
+        invoices.forEach(sale => {
+            if(sale.collected > 0.00){
+                sale.payments.forEach(p => {
+                    ids.push(p.id);
+                })
+            }
+        });
+
+        let payments = {};
+        ids = await SalePayment.findAll({
+            where: {
+                id: {[Op.in]: ids}
+            },
+        });
+        ids.forEach(id => payments[id.id] = id)
+        return res.json({
+            invoices, payments
         })
     },
 

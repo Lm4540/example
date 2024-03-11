@@ -64,6 +64,8 @@ router.get('/invoices', InvoiceController.invoice_report);
 router.get('/invoices_with_costs',  (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), InvoiceController.invoice_report2);
 router.get('/invoices_details', InvoiceController.invoice_report_details);
 router.get('/invoices_details2', InvoiceController.invoice_report_details2);
+router.get('/invoices_payments', InvoiceController.invoices_payments);
+
 
 router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, next, ['revoke_sales_details']), SaleController.quit_detail_revised);
 
