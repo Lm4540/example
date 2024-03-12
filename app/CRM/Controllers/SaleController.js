@@ -77,35 +77,27 @@ const relacionar_pago2 = async (pago) => {
                         let sale_value = Helper.fix_number(Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
                         console.log('array de pagos', sale.payments);
 
-
+                        let __sale_payments = sale.payments;
                         if (sale_value > valor_restante) {
 
                             sale.collected = (_collected + valor_restante);
-
-                            if (sale.payments.length > 0) {
-                                sale.payments.push({ "id": registered_payment.id, "amount": valor_restante })
-                            } else {
-                                sale.payments = [{ "id": registered_payment.id, "amount": valor_restante },];
-                            }
-
+                            __sale_payments.push({ "id": registered_payment.id, "amount": valor_restante })
+                            
                             if (sale.balance + sale.delivery_amount - sale.collected == 0) {
                                 sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
                             }
-
-
+                            
+                            sale.payments = __sale_payments;
                             await sale.save({ transaction: t });
                             ids_registro.push({ "id": sale.id, "amount": valor_restante });
                             valor_restante = 0;
                         } else {
                             sale.collected = (_collected + sale_value);
-                            if (sale.payments.length > 0) {
-                                sale.payments.push({ "id": registered_payment.id, "amount": sale_value })
-                            } else {
-                                sale.payments = [{ "id": registered_payment.id, "amount": sale_value }];
-                            }
+
+                            __sale_payments.push({ "id": registered_payment.id, "amount": sale_value })
 
                             sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-
+                            sale.payments = __sale_payments;
                             await sale.save({ transaction: t });
                             ids_registro.push({ "id": sale.id, "amount": sale_value });
                             valor_restante = Helper.fix_number(valor_restante - sale_value);
