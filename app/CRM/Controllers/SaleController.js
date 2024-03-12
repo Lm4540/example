@@ -74,7 +74,7 @@ const relacionar_pago2 = async (pago) => {
                     if (valor_restante > 0) {
                         let _collected = Number.parseFloat(sale.collected);
                         _collected = isNaN(_collected) ? 0.00 : _collected;
-                        let sale_value = (Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
+                        let sale_value = Helper.fix_number(Number.parseFloat(sale.balance) + Number.parseFloat(sale.delivery_amount) - _collected);
                         console.log('array de pagos', sale.payments);
 
 
@@ -108,7 +108,7 @@ const relacionar_pago2 = async (pago) => {
 
                             await sale.save({ transaction: t });
                             ids_registro.push({ "id": sale.id, "amount": sale_value });
-                            valor_restante -= sale_value;
+                            valor_restante = Helper.fix_number(valor_restante - sale_value);
                         }
                     } else {
                         break;
@@ -117,11 +117,8 @@ const relacionar_pago2 = async (pago) => {
                 }
 
                 registered_payment.sales = ids_registro;
-                registered_payment.asigned_amount = registered_payment.amount - valor_restante;
+                registered_payment.asigned_amount = Helper.fix_number(registered_payment.amount - valor_restante);
                 await registered_payment.save({ transaction: t });
-
-
-
                 return true;
             }
 
@@ -1578,11 +1575,13 @@ const SaleController = {
                     });
 
 
-                    ids = await SalePayment.findAll({where: {
-                        id: {
-                            [Op.in]: ids
+                    ids = await SalePayment.findAll({
+                        where: {
+                            id: {
+                                [Op.in]: ids
+                            }
                         }
-                    }});
+                    });
 
                     let payments = [];
 
@@ -1590,12 +1589,12 @@ const SaleController = {
 
                         payments.push({
                             amount: pays[id.id],
-                            type : id.type,
-                            total_amount : id.amount,
-                            bank : id.bank,
-                            reference : id.reference,
-                            createdAt : id.createdAt,
-                            createdBy : id.createdBy,
+                            type: id.type,
+                            total_amount: id.amount,
+                            bank: id.bank,
+                            reference: id.reference,
+                            createdAt: id.createdAt,
+                            createdBy: id.createdBy,
                         });
                     });
 
@@ -1603,7 +1602,7 @@ const SaleController = {
 
                     let serie = null;
 
-                    if(sale.invoice_number != null && sale.invoice_number != '' && sale.invoice_number > 0){
+                    if (sale.invoice_number != null && sale.invoice_number != '' && sale.invoice_number > 0) {
                         serie = await InvoiceSeries.findByPk(sale.invoce_serie);
                     }
 
