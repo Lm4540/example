@@ -120,7 +120,7 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.TEXT,
         get() {
             let prefe = this.getDataValue('payments');
-            return (prefe !== null && prefe !== undefined) ? JSON.parse(prefe) : [];
+            return (prefe !== null && prefe !== undefined && prefe != '[]') ? JSON.parse(prefe) : new Array();
         },
         set(param) {
             this.setDataValue('payments', JSON.stringify(param == null ? [] : param));
