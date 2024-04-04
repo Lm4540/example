@@ -397,9 +397,10 @@
                      <table class="table table-sm table-bordered table-hover">
                         <thead>
                            <tr>
+                              <th>Tipo</th>
+                              <th>Detalles</th>
                               <th>Monto</th>
-                              <th>Fecha</th>
-                              <th>Referencia</th>
+                              
                            </tr>
                         </thead>
                         <tbody>
@@ -420,7 +421,12 @@
                                  <br> Registrado por: <%= payment.createdBy %>
                                  <% } %>
                               </td>
-                              <td class="text-center">$<%= Helper.money_format(payment.amount) %></td>
+                              <td class="text-center">
+                                 $<%= Helper.money_format(payment.amount) %>
+                                 <% if (payment.asigned_amount < payment.amount) { %>
+                                  <br> <span class="text-success"> Saldo a Favor ($<%= Helper.money_format(payment.amount - payment.asigned_amount) %>)</span>
+                                 <% } %>
+                              </td>
                            </tr>
                            <% }) %>
                         </tbody>
