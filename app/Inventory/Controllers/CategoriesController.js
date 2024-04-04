@@ -16,9 +16,13 @@ const CategoriesController = {
         let message = null;
 
         if (data.name.length < 2) {
-            message = 'Por favor, proporcione el nombre para la nueva Sucursal';
+            message = 'Por favor, proporcione el nombre para la nueva Categoria';
         }
 
+
+        if(data.group.length < 1 || data.group == ""){
+            message = 'Por favor, seleccione un grupo';
+        }
         if (message === null) {
             //validar que el nombre no este registrado
             let occurency = await ProductClassification.findAll({ where: { name: data.name } });
@@ -58,6 +62,7 @@ const CategoriesController = {
                 const category = await ProductClassification.create({
                     name: data.name,
                     image: image_name,
+                    _group: data.group
                 });
                 res.json({
                     status: 'success',

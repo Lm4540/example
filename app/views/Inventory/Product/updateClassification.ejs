@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <%- include('../../Layouts/Head.ejs') %>
+   <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
+   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+   <%# custom styles %>
+</head>
+
+<body class="<%= darkMode %>">
+   <%- include('../../Layouts/SideBar.ejs') %>
+   <div id="main">
+      <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+      <%- include('../../Layouts/NavBar.ejs') %>
+      <div class="main-content container-fluid">
+         <div class="page-title text-center">
+            <h4><%= pageTitle %></h4>
+         </div>
+         <section class="section">
+            <div class="card">
+
+               <div class="card-header">
+                  <div class="form-group">
+                     <label for="searchBox">Terminos de busqueda</label>
+                     <input type="text" class="form-control" name="searchBox" id="searchBox">
+                     <small>Write the SKU or Name to search</small>
+                  </div>
+               </div>
+               <div class="card-body table-responsive">
+
+                  <table class="table table sm table hover table-bordered">
+                     <thead>
+                        <tr>
+                           <th>Imagen</th>
+                           <th>Producto</th>
+                           <th>Classificaciones</th>
+                           <th>Operaciones</th>
+
+                        </tr>
+                     </thead>
+                     <tbody id="product_div">
+                        <select id="select_model" style="display: none;">
+                           <option value="">Seleccione una opción</option>
+                           <% classification.forEach(cls => { %>
+                           <option value="<%= cls.id %>"><%= cls.name %></option>
+                           <% }) %>
+                        </select>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         </section>
+      </div>
+
+
+
+      <%- include('../../Layouts/Footer.ejs') %>
+   </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+   const save_product = (id, element) => {
+      let classification = document.querySelector("#select_" + id).value;
+      if (classification == "" || classification.length < 1) {
+         return errorMessage('Seleccione una clasificación');
+      } else {
+
+         console.log('a probar post')
+           postData('/inventory/product/updateClassification', {
+             product: id,
+             classification: classification
+           }).then(data => {
+              if (data.status == 'success') {
+                 successMessage('Guardado');
+              } else if (data.status == 'errorMessage') {
+                 return errorMessage(data.message);
+              } else {
+                 console.log(data);
+                 return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+              }
+           });
+         element.parentNode.removeChild(element);
+      }
+   }
+
+   var sucursal = {},
+      query_offset = 0,
+      query_limit = Number.parseInt('<%= limit %>'),
+      search_last_val = "",
+      last_query = '',
+      more = true,
+      last_product,
+      details = {};
+   class_ = document.querySelector("#select_model").innerHTML;
+
+
+   const observer = new IntersectionObserver((observed, observer) => {
+      observed.forEach((entry => {
+         if (entry.isIntersecting) {
+            getproducts(false);
+         }
+      }));
+   }, {
+      rootMargin: '0px 0px 0px 0px',
+      threshold: 1.0,
+   });
+
+   const getproducts = async (reset = false) => {
+      let parent = document.querySelector('#product_div');
+      if (reset) {
+         more = true;
+         query_offset = 0;
+      } else if (more == false) {
+         return false;
+      }
+      //Construir la Url
+      //Verificar si hay terminos de busqueda
+      let query = search_last_val.length > 0 ?
+         `/inventory/product/ProductosACorregir?search=${encodeURIComponent(search_last_val)}&offset=${query_offset}` :
+         `/inventory/product/ProductosACorregir?offset=${query_offset}`;
+
+      if (last_query == query) {
+         return false;
+      } else {
+         if (reset) {
+            parent.innerHTML = '';
+         }
+         last_query = query;
+      }
+
+      let data = await fetch(query, {
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+         })
+         .then(response => response.json())
+         .then(data => {
+            let len = data.length;
+            if (len > 0) {
+               data.forEach(element => {
+                  details[element.id] = element.stocks;
+                  let div = document.createElement('tr');
+                  div.classList.add('product_item');
+
+                  div.innerHTML = `<td><img src="${element.image}" alt="Image" class="product_image" style="width: 150px"></td>
+                 <td><span class="product_name" style="cursor:pointer;" onclick="copy('${element.sku}')">${element.name} #SKU ${element.sku}</span></td>
+                 <td><select name="select_${element.id}" id="select_${element.id}" class="form-control">
+                            ${class_}
+                        </select></td>
+                 <td><span class="badge bg-purple" onclick="save_product(${element.id}, this)">Actualizar</span></td>`;
+                  parent.appendChild(div);
+               });
+            }
+            query_offset += len;
+
+            if (last_product !== undefined) {
+               observer.unobserve(last_product);
+            }
+            if (len < query_limit) {
+               let div = document.createElement('tr');
+               
+               div.innerHTML = `<td colspan="4" class="text-center"> <h4> < < Fin de la lista > > </h4></td>`;
+               parent.appendChild(div);
+               more = false;
+            } else {
+               let to_observe = document.querySelectorAll('.product_item');
+               last_product = to_observe[to_observe.length - 1];
+               observer.observe(last_product);
+            }
+         });
+   }
+
+
+   document.addEventListener("DOMContentLoaded", (event) => {
+      getproducts();
+
+      var timer_search;
+      document.querySelector('#searchBox').addEventListener('input', async (e) => {
+         let val = e.target.value;
+         if (search_last_val !== val) {
+            search_last_val = val.trim();
+            clearTimeout(timer_search);
+            timer_search = setTimeout(async () => {
+               getproducts(true);
+            }, 500);
+         }
+      });
+   });
+</script>
+
+</html>

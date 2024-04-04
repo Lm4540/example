@@ -126,8 +126,7 @@ const verify_DUI = (dui) => {
 }
 
 const verify_NRC = (nrc) => {
-    let regex = /^\d{1,6}-\d$/;
-    return regex.test(nrc);
+    return true;
 }
 
 const isInPage = node => node === document.body ? false : document.body.contains(node);

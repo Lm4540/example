@@ -58,51 +58,59 @@
           <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
         </div>
         <div class="modal-body">
-          <form class="row g-3">
-            <div class="col-12">
+
+          <div class="form">
+            <div class="form-group">
               <label for="classificationName" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="classificationName">
             </div>
-
-
-            <div class="col-12">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="col-md-12">
-                    <div class="form-group text-center">
-                      <label for="fake_image_input" class="subir" style="font-size: x-large;">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <b>Subir</b>
-                        Imagen
-                      </label>
-                      <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
-                    </div>
-                  </div>
-                  <div class="col-md-12 text-center">
-                    Ó
-                  </div>
-
-                  <div class="col-md-12 text-center">
-                    <div class="form-group">
-                      <label style="font-size: large;" for="add-image-fake_text ">
-                        Pega una imagen o URL Aca
-                      </label>
-                      <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
-                    </div>
-                  </div>
-
-                </div>
-                <div class="col-md-6">
-                  <div id="add_image_preview"></div>
-                  <input type="hidden" id="add_image_real" name="add_image_real">
-                </div>
-              </div>
-
-
-
+            <div class="form-group">
+              <label for="group" class="form-label">Grupo</label>
+              <select name="group" id="group" class="form-control">
+                <option value="">Selecciona una opción</option>
+                <option value="Carteras">Carteras</option>
+                <option value="Mochilas">Mochilas</option>
+                <option value="Relojes">Relojes</option>
+                <option value="Electrodomesticos">Electrodomesticos</option>
+                <option value="Tecnologia">Tecnologia</option>
+                <option value="Accesorios para dama">Accesorios para dama</option>
+                <option value="Productos y accesorios para niños">Productos y accesorios para niños</option>
+                <option value="Productos para el Hogar">Productos para el Hogar</option>
+              </select>
             </div>
 
-          </form>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="col-md-12">
+                  <div class="form-group text-center">
+                    <label for="fake_image_input" class="subir" style="font-size: x-large;">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <b>Subir</b>
+                      Imagen
+                    </label>
+                    <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                  </div>
+                </div>
+                <div class="col-md-12 text-center">
+                  Ó
+                </div>
+
+                <div class="col-md-12 text-center">
+                  <div class="form-group">
+                    <label style="font-size: large;" for="add-image-fake_text ">
+                      Pega una imagen o URL Aca
+                    </label>
+                    <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
+                  </div>
+                </div>
+
+              </div>
+              <div class="col-md-6">
+                <div id="add_image_preview"></div>
+                <input type="hidden" id="add_image_real" name="add_image_real">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer text-right">
@@ -135,11 +143,14 @@
       let data = {
         name: document.getElementById('classificationName').value,
         image: document.getElementById('add_image_real').value,
+        group: document.querySelector('#group').value,
       };
       if (data.name.length < 3) {
         return errorMessage('Ingrese un nombre para la Clasificación que intenta guardar');
       } else if (data.image == "") {
         return errorMessage('Por favor proporcione una imagen para la nueva Clasificación');
+      } else if (data.group == "") {
+        return errorMessage('Por favor proporcione un grupo para la nueva Clasificación');
       } else {
         postData('/inventory/productClassifications/create', data)
           .then(data => {

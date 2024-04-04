@@ -76,8 +76,13 @@ router.get('/product/stock_report', StockController.general_report);
 router.get('/product/stock_report/detailed', StockController.reporte_detallado);
 router.get('/product/stock_report/dates', StockController.inventory_report_per_dates);
 router.get('/product/stock_report/get_details', StockController.inventory_retpor_details);
+router.get('/product/archive/:id(\\d+)', ProductController.archive);
+router.get('/product/updateClassification', ProductController.getVistadeCorreccionDeClassificaciones);
+router.get('/product/ProductosACorregir', ProductController.obtenerProductosACorregir);
+router.post('/product/updateClassification', ProductController.corregirClassificacion);
 
-router.get('/product/archive/:id(\\d+)', ProductController.archive); //pendiente
+
+
 
 router.get('/reserveList', StockController.reserveList);
 

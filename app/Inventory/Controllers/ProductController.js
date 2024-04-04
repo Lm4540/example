@@ -55,30 +55,55 @@ const ProductController = {
     },
 
 
-    /*   corregir_precios: async (req, res) => {
-           let data = await sequelize.query('SELECT * FROM inventory_product WHERE major_price > base_price', 
-               {
-                   type: QueryTypes.SELECT,
-                   model: Product,
-               });
-   
-           let data_len = data.length;
-   
-           for (let index = 0; index < data_len; index++) {
-               var product = data[index];
-               if(product.base_price < product.major_price){
-                   let base = product.base_price;
-                   product.base_price = product.major_price;
-                   product.major_price= base;
-                   await product.save();
-               }
-           }
-   
-           return res.json(data.length)
-       },*/
+    getVistadeCorreccionDeClassificaciones: async (req, res) => {
+        let limit = 15;
+        let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']] });
+        res.render('Inventory/Product/updateClassification', { pageTitle: 'Corregir Classificaciones', classification, limit });
+
+    },
+
+    obtenerProductosACorregir: async (req, res) => {
+
+        let _date = '2024-02-01';
+        let search = req.query.search;
+        let offset = Number.parseInt(req.query.offset);
+        let limit = 15;
+        let replacements = { date: _date, offset: offset, limit: limit };
+        let sql = "SELECT * FROM `inventory_product` WHERE id not in(SELECT product FROM `inventory_product_movement` WHERE createdAt < :date) order by name ASC Limit :offset,:limit";
+
+        if (search !== undefined) {
+            sql = "SELECT * FROM `inventory_product` WHERE name like :search and id not in(SELECT product FROM `inventory_product_movement` WHERE createdAt < :date) order by name ASC Limit :offset,:limit";
+            replacements = { date: _date, search: `${search}%`, offset: offset, limit: limit };
+        }
+
+        let products = await sequelize.query(sql, {
+            type: QueryTypes.SELECT,
+            replacements,
+            model: Product,
+        });
+
+        return res.json(products)
+    },
+
+    corregirClassificacion: async (req, res) => {
+        let product = await Product.findByPk(req.body.product);
+
+
+        if (product) {
+            product.classification = req.body.classification;
+            await product.save();
+
+            return res.json({
+                status: 'success',
+                data: product.id,
+            });
+        }
+
+
+    },
 
     getCreationView: async (req, res) => {
-        let classification = await ProductClassification.findAll({ attributes: ['id', 'name'] });
+        let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']] });
         res.render('Inventory/Product/create', { pageTitle: 'Crear nuevo Producto', classification });
     },
     createProduct: async (req, res) => {
@@ -137,7 +162,7 @@ const ProductController = {
 
 
         if (message !== null) {
-            res.json({
+            return res.json({
                 status: 'errorMessage',
                 message: message,
             });
