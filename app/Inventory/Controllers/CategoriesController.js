@@ -60,7 +60,7 @@ const CategoriesController = {
                 }
 
                 const category = await ProductClassification.create({
-                    name: data.name,
+                    name: data.name.replace('"', '').replace("'", "").trim(),
                     image: image_name,
                     _group: data.group
                 });

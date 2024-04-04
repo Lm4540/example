@@ -40,12 +40,7 @@
                         </tr>
                      </thead>
                      <tbody id="product_div">
-                        <select id="select_model" style="display: none;">
-                           <option value="">Seleccione una opción</option>
-                           <% classification.forEach(cls => { %>
-                           <option value="<%= cls.id %>"><%= cls.name %></option>
-                           <% }) %>
-                        </select>
+
                      </tbody>
                   </table>
                </div>
@@ -68,19 +63,19 @@
       } else {
 
          console.log('a probar post')
-           postData('/inventory/product/updateClassification', {
-             product: id,
-             classification: classification
-           }).then(data => {
-              if (data.status == 'success') {
-                 successMessage('Guardado');
-              } else if (data.status == 'errorMessage') {
-                 return errorMessage(data.message);
-              } else {
-                 console.log(data);
-                 return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-              }
-           });
+         postData('/inventory/product/updateClassification', {
+            product: id,
+            classification: classification
+         }).then(data => {
+            if (data.status == 'success') {
+               successMessage('Guardado');
+            } else if (data.status == 'errorMessage') {
+               return errorMessage(data.message);
+            } else {
+               console.log(data);
+               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }
+         });
          element.parentNode.removeChild(element);
       }
    }
@@ -92,8 +87,8 @@
       last_query = '',
       more = true,
       last_product,
-      details = {};
-   class_ = document.querySelector("#select_model").innerHTML;
+      details = {},
+      class_ = JSON.parse('<%- classification %>');
 
 
    const observer = new IntersectionObserver((observed, observer) => {
@@ -149,11 +144,18 @@
                   let div = document.createElement('tr');
                   div.classList.add('product_item');
 
+                  let selOptions = `<option value="">Seleccione una Opción</option>`;
+                  class_.forEach(cls => {
+                     if(cls.id == element.classification){
+                        selOptions += `<option value="${cls.id}" selected>${cls.name}</option>`;
+                     }else{
+                        selOptions += `<option value="${cls.id}">${cls.name}</option>`;
+                     }
+                  });
+
                   div.innerHTML = `<td><img src="${element.image}" alt="Image" class="product_image" style="width: 150px"></td>
                  <td><span class="product_name" style="cursor:pointer;" onclick="copy('${element.sku}')">${element.name} #SKU ${element.sku}</span></td>
-                 <td><select name="select_${element.id}" id="select_${element.id}" class="form-control">
-                            ${class_}
-                        </select></td>
+                 <td><select name="select_${element.id}" id="select_${element.id}" class="form-control">${selOptions}</select></td>
                  <td><span class="badge bg-purple" onclick="save_product(${element.id}, this)">Actualizar</span></td>`;
                   parent.appendChild(div);
                });
@@ -165,7 +167,7 @@
             }
             if (len < query_limit) {
                let div = document.createElement('tr');
-               
+
                div.innerHTML = `<td colspan="4" class="text-center"> <h4> < < Fin de la lista > > </h4></td>`;
                parent.appendChild(div);
                more = false;

@@ -57,8 +57,8 @@ const ProductController = {
 
     getVistadeCorreccionDeClassificaciones: async (req, res) => {
         let limit = 15;
-        let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']] });
-        res.render('Inventory/Product/updateClassification', { pageTitle: 'Corregir Classificaciones', classification, limit });
+        let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']], raw: true });
+        res.render('Inventory/Product/updateClassification', { pageTitle: 'Corregir Classificaciones', classification: JSON.stringify(classification), limit });
 
     },
 
