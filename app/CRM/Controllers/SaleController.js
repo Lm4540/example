@@ -65,8 +65,8 @@ const relacionar_pago2 = async (pago) => {
             if (sales.length > 0) {
 
 
-                let valor_restante = registered_payment.amount;
-                let ids_registro = [];
+                let valor_restante = Helper.fix_number(registered_payment.amount - registered_payment.asigned_amount);
+                let ids_registro = registered_payment.sales;
                 let len = sales.length;
 
                 for (let index = 0; index < len; index++) {
