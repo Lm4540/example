@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes, DECIMAL } = require("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../../DataBase/DataBase");
 const SaleDetail = require('./SaleDetail');
 
@@ -29,7 +29,7 @@ const Sale = sequelize.define('Sale', {
         defaultValue: 'process',
         set(param) {
             this.setDataValue('_status', param);
-            if(param == 'collected'){
+            if (param == 'collected') {
                 this.setDataValue('endAt', new Date());
             }
         },
@@ -47,7 +47,7 @@ const Sale = sequelize.define('Sale', {
     delivery_instructions: DataTypes.STRING(500),
     delivery_date: {
         type: DataTypes.DATE,
-        get(){
+        get() {
             let date = new Date(this.getDataValue('delivery_date'));
             date = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${this.getDataValue('delivery_time')}`;
             return new Date(date);
@@ -139,8 +139,8 @@ const Sale = sequelize.define('Sale', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    invoice_date: {type: DataTypes.DATE, },
-    endAt: {type: DataTypes.DATE,},
+    invoice_date: { type: DataTypes.DATE, },
+    endAt: { type: DataTypes.DATE, },
     locked: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -157,15 +157,15 @@ const Sale = sequelize.define('Sale', {
     },
 }, {
     tableName: 'crm_sale',
-    hooks : {
-        beforeSave : (record, options) => {
-            if(record.dataValues.locked == true || record.dataValues.locked == 1){
+    hooks: {
+        beforeSave: (record, options) => {
+            if (record.dataValues.locked == true || record.dataValues.locked == 1) {
                 console.log('registro bloaqueado')
                 return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
             }
         },
-        beforeUpdate : (record, options) => {
-            if(record.dataValues.locked == true || record.dataValues.locked == 1){
+        beforeUpdate: (record, options) => {
+            if (record.dataValues.locked == true || record.dataValues.locked == 1) {
                 console.log('registro bloaqueado')
                 return Promise.reject(new Error("Esta Venta ya ha finalizado su proceso y no puede ser actualizada!"));
             }

@@ -43,27 +43,32 @@
                      </tr>
                   </thead>
                   <tbody>
-                     <% details.forEach(dt => { %>
-                     <tr>
-                        <td class="text-center"><%= dt.id %></td>
-                        <td class="text-center">
-                           <img src="<%= products[dt.product].image %>" class="round" alt="<%= products[dt.product].name %>" width="150px">
-                        </td>
-                        <td class="text-center">
-                           Nombre:<%= products[dt.product].name %> <a href="/inventory/product/view/<%= dt.product %>" class="badge bg-secondary round"> Ver Producto</a><br>
-                           SKU: <%= products[dt.product].sku %><br>
-                           Codigo: <%= products[dt.product].provider_code %><br>
-                           Agregado por: <%= dt.createdBy %>
-                        </td>
-                        <td class="text-center"><%= dt.cant %></td>
-                        <td class="text-center">
-                           <% if ((permission.includes('close_requisitions') && user.sucursal == requisition.origin) || permission.includes('trasnfer_between_all_warehouses') || (permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) ) { %>
-                           <span class="badge bg-orange" data-bs-target="#quitDetailModal" data-bs-toggle="modal" onclick="quit_detail('<%= dt.id %>', '<%= dt.cant %>')"> Quit</span>
-                           <% } %>
-                        </td>
-                     </tr>
+                     <% let keys = Object.keys(products)
+                        keys.forEach(key => { 
+                           let prod = products[key] ;
+                        %>
 
-                     <% }) %>
+                           <tr>
+                              <td class="text-center"><%= prod.detail.id %></td>
+                              <td class="text-center">
+                                 <img src="<%= prod.image %>" class="round" alt="<%= prod.name %>" width="150px">
+                              </td>
+                              <td class="text-center">
+                                 <%= prod.name %> <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round"> Ver Producto</a><br>
+                                 SKU: <%= prod.sku %><br>
+                                 Codigo: <%= prod.provider_code %><br>
+                                 Agregado por: <%= prod.detail.createdBy %>
+                              </td>
+                              <td class="text-center"><%= prod.detail.cant %></td>
+                              <td class="text-center">
+                                 <% if ((permission.includes('close_requisitions') && user.sucursal == requisition.origin) || permission.includes('trasnfer_between_all_warehouses') || (permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) ) { %>
+                                 <span class="badge bg-orange" data-bs-target="#quitDetailModal" data-bs-toggle="modal" onclick="quit_detail('<%= prod.detail.id %>', '<%= prod.detail.cant %>')"> Quit</span>
+                                 <% } %>
+                              </td>
+                           </tr>
+
+                       <% })
+                     %>
                   </tbody>
 
 

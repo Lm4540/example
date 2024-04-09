@@ -506,7 +506,7 @@
                               
                               <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
                            </h5>
-                           <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}</p>
+                           <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}<br>Referencia: ${element.sale.delivery_instructions}</p>
                            <div class="list-group">`;
                //recorrer los detalles de la venta
                element.details.forEach(detail => {
@@ -590,18 +590,21 @@
       document.querySelector("#div_info").style.display = 'flex';
       document.querySelector("#div_delivery").style.display = 'none';
       on_screen = 'mayor';
-      document.querySelector("#div_reservas").innerHTML = '';
+      document.querySelector("#div_reservas").innerHTML = ``;
 
 
       //cargar los controlles de las reservas
       let keys = Object.keys(mayor);
       if (keys.length > 0) {
-         let content = '';
+         let content = `<div class="mt-5 mb-5 text-center">
+                           <a class="btn btn-primary" target="_blank" href="/inventory/productReserveList">Ver Lista de productos a buscar</a>
+                        </div>`;
          keys.forEach(index => {
             element = mayor[index];
             if (element !== null) {
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">
+                        
                         <div class="card-body">
                            <h5 class="mb-2">${element.client} 
                               &nbsp;<span class="badge bg-danger" onclick="all_detail_revised(${element.sale.id})">Todo Revisado y Guardado</span>
@@ -671,6 +674,7 @@
                      <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
 
                      <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
+                     <p>Referencia: ${element.sale.delivery_instructions}</p>
 
                      <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
                      <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
@@ -717,7 +721,7 @@
                      <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
 
                      <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
-
+                     <p>Referencia: ${element.sale.delivery_instructions}</p>
                      <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
                      <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
                      <p>Total: $${money_format(Number.parseFloat(element.sale.balance) + Number.parseFloat(element.sale.delivery_amount))}</p>

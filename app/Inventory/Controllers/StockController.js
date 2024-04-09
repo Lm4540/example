@@ -15,8 +15,47 @@ const Helper = require('../../System/Helpers');
 const Money = require('../../System/Money');
 const sequelize = require("../../DataBase/DataBase");
 const { Op, QueryTypes } = require("sequelize");
+const SaleDetail = require('../../CRM/Models/SaleDetail');
 
 const StockController = {
+
+    ProductreserveList: async (req, res) => {
+        let tmp = await Product.findAll({
+            where: {
+                id: { [Op.in]: sequelize.literal("(SELECT product FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM `crm_sale` WHERE _status = 'process'))") }
+            },
+            order: [['name', 'ASC']],
+        });
+
+        let products = {};
+        tmp.forEach(prod => {
+            products[prod.id] = {
+                name: prod.name,
+                image: prod.image,
+                cant: 0,
+                provider_code: prod.provider_code,
+                internal_code: prod.internal_code,
+
+            }
+        })
+
+        tmp = await sequelize.query("SELECT * FROM `crm_sale_detail` WHERE cant > ready and sale in (SELECT id FROM `crm_sale` WHERE _status = 'process')", { type: QueryTypes.SELECT, model: SaleDetail });
+
+        tmp.forEach(dt => {
+            products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant + dt.ready) : products[dt.product].cant = (dt.cant + dt.ready);
+        });
+
+        // let llaves = Object.keys(products);
+
+        return res.render('Inventory/Stock/productReserveList', {
+            pageTitle: 'Lista de productos a Buscar',
+            products
+        });
+
+
+
+    },
+
     viewRequisitions: async (req, res) => {
         let sucursals = await Sucursal.findAll();
         let init = null, end = null;
@@ -58,14 +97,10 @@ const StockController = {
         let requisition = await Requisition.findByPk(req.params.id);
 
         if (requisition) {
-            let details = await RequisitionDetail.findAll({
-                where: {
-                    requisition: requisition.id
-                }
-            });
+
 
             let products = {};
-            sucursals = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)', {
+            sucursals = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)order by name ASC', {
                 type: QueryTypes.SELECT,
                 model: Product,
                 replacements: {
@@ -73,12 +108,27 @@ const StockController = {
                 }
             });
 
+            sucursals.forEach(prod => {
+                products[prod.id] = {
+                    name: prod.name,
+                    image: prod.image,
+                    detail: {},
+                    provider_code: prod.provider_code,
+                    sku: prod.internal_code,
+                }
+            });
 
-            sucursals.forEach(el => products[el.id] = el);
+            let details = await RequisitionDetail.findAll({
+                where: {
+                    requisition: requisition.id
+                }, raw: true,
+            });
+
+            details.forEach(det => products[det.product].detail = det);
 
             return res.render(requisition._status == 'open' ? 'Inventory/Requisition/view' : 'Inventory/Requisition/closed', {
                 pageTitle: `Solicitud de Transferencia ${requisition.id}`,
-                requisition, indexed_sucursals, details, products
+                requisition, indexed_sucursals, products
             });
         }
 
@@ -821,7 +871,7 @@ const StockController = {
         //obtener los clientes
         tmp = await Client.findAll({
             where: {
-                id: { [Op.in]: sequelize.literal("(select client from crm_sale where id in(SELECT saleId FROM inventory_product_stock_reserve))") }
+                id: { [Op.in]: sequelize.literal("(select client from crm_sale where crm_sale.id in(select sale from crm_sale_detail where id in (SELECT saleId FROM inventory_product_stock_reserve where inventory_product_stock_reserve.type = 'sale')))") }
             }
         });
         tmp.forEach(element => clients[element.id] = element.name);
@@ -842,7 +892,7 @@ const StockController = {
         tmp.forEach(e => sucursals[e.id] = e.name);
 
         //buscar las reservas e indexarlas
-        tmp = await sequelize.query('SELECT crm_sale_detail.sale, inventory_product_stock_reserve.* FROM `crm_sale_detail` inner join inventory_product_stock_reserve on inventory_product_stock_reserve.saleId = crm_sale_detail.id order by crm_sale_detail.sale', { type: QueryTypes.SELECT });
+        tmp = await sequelize.query('SELECT crm_sale_detail.sale, crm_sale_detail.ready, inventory_product_stock_reserve.* FROM `crm_sale_detail` inner join inventory_product_stock_reserve on inventory_product_stock_reserve.saleId = crm_sale_detail.id order by crm_sale_detail.sale', { type: QueryTypes.SELECT });
         tmp.forEach(reserve => {
             if (sales[reserve.sale] !== undefined) {
                 sales[reserve.sale].details.push(reserve);
@@ -851,6 +901,8 @@ const StockController = {
 
             }
         })
+
+        console.log(clients)
 
         return res.render('Inventory/Stock/reserveList', {
             pageTitle: 'lista de Reservas',

@@ -35,6 +35,7 @@
                            <img src="<%= products[detail.product].image %>" alt="Image" class="product_image" style="width: 150px; "><br>
                            <p style="cursor:pointer;"><a href="/inventory/product/view/<%= products[detail.product].id %>"><%= products[detail.product].name %></a> </p>
                            <p class="text-danger"><%= detail.cant == 1 ? ' 1 Unidad Reservada' : `${detail.cant} Unidades Reservadas` %> </p>
+                           <p class="text-danger"><%= detail.ready == 1 ? ' 1 Unidad Revisada' : `${detail.ready} Unidades Revisadas` %> </p>
                         </div>
                      </div>
                   </div>

@@ -39,7 +39,7 @@ const SalesStatusController = {
 
         //buscar los clientes
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status in('closed','process','prepared', 'transport', 'revoking', 'delivery_failed'))",
+            "SELECT * FROM `crm_client` WHERE id in (SELECT client FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status in('closed','process','prepared', 'to_resend','transport', 'revoking', 'delivery_failed'))",
             { type: QueryTypes.SELECT }
         );
         tmp.forEach(client => { clients[client.id] = client.name });

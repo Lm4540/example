@@ -85,6 +85,7 @@ router.post('/product/updateClassification', ProductController.corregirClassific
 
 
 router.get('/reserveList', StockController.reserveList);
+router.get('/productReserveList', StockController.ProductreserveList);
 
 router.get('/requisition', StockController.viewRequisitions);
 router.get('/requisition/:id(\\d+)', StockController.viewRequisition);
