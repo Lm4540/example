@@ -42,7 +42,7 @@ const StockController = {
         tmp = await sequelize.query(`SELECT * FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and _status = 'process')`, { type: QueryTypes.SELECT, model: SaleDetail });
 
         tmp.forEach(dt => {
-            products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant + dt.ready) : products[dt.product].cant = (dt.cant + dt.ready);
+            products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant - dt.ready) : products[dt.product].cant = (dt.cant - dt.ready);
         });
 
         // let llaves = Object.keys(products);

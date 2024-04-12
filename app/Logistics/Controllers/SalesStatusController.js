@@ -128,11 +128,13 @@ const SalesStatusController = {
             if (detail.cant > detail.ready) {
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
                 mayor[detail.sale].details.push(detail);
+                if (mayor[detail.sale].open == false) {
+                    mayor[detail.sale].open = detail.ready > 0;
+                }
 
             } else {
                 totals.mayor_details -= 1;
                 if (mayor[detail.sale] !== undefined) {
-
                     mayor[detail.sale].open = true;
                 }
             }
@@ -279,7 +281,7 @@ const SalesStatusController = {
 
         //return { status: 'errorMessage', message: 'Funcion en revision' };
         sale = await Sale.findByPk(sale);
-        if (sale == null || sale.delivered_by !== null ) {
+        if (sale == null || sale.delivered_by !== null) {
             return { status: 'errorMessage', message: 'Sale not found or sale was already delivered' };
         }
 
