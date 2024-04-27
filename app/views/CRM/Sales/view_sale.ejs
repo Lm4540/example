@@ -79,8 +79,8 @@
          <h3 class="text-center">Estado: <%= status[sale._status] %></h3>
 
          <% if (sale.revoked_at !== null) { %>
-            <h3 class="text-center text-danger">Orden/Venta Anulad@</h3>
-          
+         <h3 class="text-center text-danger">Orden/Venta Anulad@</h3>
+
          <% } %>
          <div class="row justify-content-center ">
             <div class="col table-responsive">
@@ -88,40 +88,74 @@
                <table class="table table-sm table-bordered table-hover">
                   <thead>
                      <tr>
-                        <th>ID</th>
                         <th style="width: 180px;">IMG</th>
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
-                        <th>Opciones</th>
+                        <th>ID</th>
                      </tr>
                   </thead>
                   <tbody>
 
+                     <% if (sale._status == "process") { %>
                      <% details.forEach(detail => { %>
                      <tr>
-                        <td class="text-center"><%= detail.id %></td>
                         <td>
                            <img src="<%= detail.image %>" alt="Imagen del Producto" width="150px">
                         </td>
                         <td>
                            <%= detail.description %><br>
                            <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span><br>
-                           <a class="badge bg-success mt-4" href="/inventory/product/view/<%= detail.product %>" target="_blank">Ir al Producto</a>
+                           <a class="badge bg-success" href="/inventory/product/view/<%= detail.product %>" target="_blank">Ir al Producto</a>
                         </td>
-                        <td class="text-center"><%= detail.cant %></td>
-                        <td class="text-center"><%= Helper.money_format(detail.price) %></td>
-                        <td class="text-center"></td>
+                        <td class="text-center">
+                           <%= detail.cant %> Reservado
+                           <% if (detail.cant > detail.ready) { %>
+                              <span class="text-danger" style="font-weight: bolder; font-size: larger;"><br><%= detail.cant - detail.ready %> por revisar </span>
+                            
+                           <% } %>
+                        </td>
+                        <td class="text-center">$<%= Helper.money_format(detail.price) %></td>
+                        
+                        <td class="text-center"><%= detail.id %></td>
                      </tr>
                      <% }) %>
 
                      <tr>
-                        <td> -- </td>
-                        <td>Monto del Envio</td>
+                        <td class="text-center" colspan="2">Monto del Envio</td>
                         <td class="text-center">1</td>
-                        <td class="text-center"><%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
-                        <td class="text-center"></td>
+                        <td class="text-center">$<%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
+                        
+                        <td class="text-center"> -- </td>
                      </tr>
+
+                     <% } else { %>
+                     <% details.forEach(detail => { %>
+                     <tr>
+                        <td>
+                           <img src="<%= detail.image %>" alt="Imagen del Producto" width="150px">
+                        </td>
+                        <td>
+                           <%= detail.description %><br>
+                           <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/<%= detail.product %>')">Ver producto</span><br>
+                           <a class="badge bg-success" href="/inventory/product/view/<%= detail.product %>" target="_blank">Ir al Producto</a>
+                        </td>
+                        <td class="text-center"><%= detail.cant %></td>
+                        <td class="text-center">$<%= Helper.money_format(detail.price) %></td>
+                        <td class="text-center"><%= detail.id %></td>
+                     </tr>
+                     <% }) %>
+
+                     <tr>
+                        <td colspan="2" class="text-center">Monto del Envio</td>
+                        <td class="text-center">1</td>
+                        <td class="text-center">$<%= Helper.money_format(sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00) %></td>
+                        
+                        <td class="text-center"> -- </td>
+                     </tr>
+                     <% } %>
+
+
 
                   </tbody>
                </table>
