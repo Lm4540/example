@@ -30,6 +30,7 @@ const Sucursal = sequelize.define('Sucursal', {
     hasAreas: DataTypes.BOOLEAN,
     isWharehouse: DataTypes.BOOLEAN,
     isSalesRoom: DataTypes.BOOLEAN,
+    abreviation: DataTypes.STRING(10),
 }, {
     tableName: 'system_sucursal',
 });

@@ -30,7 +30,7 @@ const { type } = require('os');
 
 const status = {
     'process': 'En Proceso',
-    'prepared': "paquete preparado",
+    'prepared': "Paquete Preparado",
     'transport': "En Ruta",
     'delivered': 'Entregado',
     'collected': "Pago Recibido",
@@ -82,11 +82,11 @@ const relacionar_pago2 = async (pago) => {
 
                             sale.collected = (_collected + valor_restante);
                             __sale_payments.push({ "id": registered_payment.id, "amount": valor_restante })
-                            
+
                             if (sale.balance + sale.delivery_amount - sale.collected == 0) {
                                 sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
                             }
-                            
+
                             sale.payments = __sale_payments;
                             await sale.save({ transaction: t });
                             ids_registro.push({ "id": sale.id, "amount": valor_restante });
@@ -969,7 +969,7 @@ const SaleController = {
 
         let _options = [
             { id: 'process', name: 'En Proceso' },
-            { id: 'prepared', name: "paquete preparado" },
+            { id: 'prepared', name: "Paquete Preparado" },
             { id: 'transport', name: "En Ruta" },
             { id: 'delivered', name: 'Entregado' },
             { id: 'to_resend', name: "Marcado para reenvio" },
@@ -1031,11 +1031,15 @@ const SaleController = {
             ]
         });
         let sellers = {};
-        employees.forEach(e => sellers[e.id] = e.name);
+
+        employees.forEach(e => {
+            let name = e.name.split(' ');
+            sellers[e.id] = name.length == 4 ? `${name[0]} ${name[2]}` : e.name;
+        });
 
         tmp = await Sucursal.findAll();
         let sucursals = {};
-        tmp.forEach(el => sucursals[el.id] = el.name);
+        tmp.forEach(el => sucursals[el.id] = el.abreviation);
 
         //pasar los datos
         return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, employees, _options });

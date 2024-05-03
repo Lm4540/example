@@ -47,8 +47,8 @@
               <div class=" mb-3 col-md-6">
                 <label for="clientType">Tipo de Compras</label>
                 <select name="clientType" id="clientType" class="form-control">
-                  <option value="minor">Comprador al Detalle</option>
                   <option value="major">Comprador por Mayor</option>
+                  <option value="minor">Comprador al Detalle</option>
                 </select>
               </div>
 
@@ -124,15 +124,15 @@
     document.getElementById('saveClient').addEventListener('click', async (e) => {
       // e.target.disabled = true;
       let data = {
-        name: document.getElementById("clientName").value,
-        phone: document.getElementById("clientPhone").value,
-        mail: document.getElementById("clientMail").value,
-        type: document.getElementById("clientType").value,
+        name: document.getElementById("clientName").value.trim(),
+        phone: document.getElementById("clientPhone").value.trim(),
+        mail: document.getElementById("clientMail").value.trim(),
+        type: document.getElementById("clientType").value.trim(),
         isLocal: document.getElementById("isLocal").value === 'true',
-        dui: document.getElementById("clientDUI").value,
-        nrc: document.getElementById("clientNRC").value,
+        dui: document.getElementById("clientDUI").value.trim(),
+        nrc: document.getElementById("clientNRC").value.trim(),
         classification: document.getElementById("clientClassification").value,
-        direction: document.getElementById("clientDirection").value,
+        direction: document.getElementById("clientDirection").value.trim(),
         seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
       }
 
