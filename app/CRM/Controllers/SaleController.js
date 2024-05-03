@@ -1821,12 +1821,12 @@ const SaleController = {
                     }, { transaction: t });
                 }
 
-                sale.balance = Helper.fix_number(sale.balance + (data.cant * data.price));
+                sale.balance = sale.balance + Helper.fix_number(data.cant * data.price);
                 await sale.save({ transaction: t });
 
                 if (detail !== null) {
-                    detail.cant += data.cant;
-                    detail.reserved += data.cant;
+                    detail.cant = detail.cant + data.cant;
+                    detail.reserved = detail.reserved + data.cant;
                     await detail.save({ transaction: t });
                     //buscar la reserva y actualizarla
                     let reserve = await StockReserve.findOne({

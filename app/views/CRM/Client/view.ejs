@@ -166,55 +166,53 @@
                         <% } else { %>
 
                         <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
-                           <% in_process_details.forEach(detail => { %>
+                        <% in_process_details.forEach(detail => { %>
 
-                              <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
-                                 <div class="card">
-                                    <div class="card-body text-center">
-                                       <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                       <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
-                                       <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-      
-                                       <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                                       <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                                       <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
-                                       <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
-                                       <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                       <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
-                                       <% } else if(detail.cant == detail.ready) { %>
-                                       <p class="text-primary"> Reservado y Revisado<br></p>
-                                       <% if (permission.includes('revoke_sales_details')) { %>
-                                       <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
-                                       <% } %>
-                                       <% } %>
-                                    </div>
-                                 </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                           <div class="card">
+                              <div class="card-body text-center">
+                                 <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                                 <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+
+                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                                 <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                                 <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
+                                 <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                                 <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                                 <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
+                                 <% } else if(detail.cant == detail.ready) { %>
+                                 <p class="text-primary"> Reservado y Revisado<br></p>
+                                 <% if (permission.includes('revoke_sales_details')) { %>
+                                 <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
+                                 <% } %>
+                                 <% } %>
                               </div>
-                              <% }) %>
+                           </div>
+                        </div>
+                        <% }) %>
                         <% } else { %>
-                           <% in_process_details.forEach(detail => { %>
+                        <% in_process_details.forEach(detail => { %>
 
-                              <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
-                                 <div class="card">
-                                    <div class="card-body text-center">
-                                       <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                       <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
-                                       <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-      
-                                       <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                                       <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                                       <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
-                                       <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                       <% } else if(detail.cant == detail.ready) { %>
-                                       <p class="text-primary"> Reservado y Revisado<br></p>
-                                       <% } %>
-                                    </div>
-                                 </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                           <div class="card">
+                              <div class="card-body text-center">
+                                 <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                                 <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+
+                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                                 <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                                 <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                                 <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                                 <% } else if(detail.cant == detail.ready) { %>
+                                 <p class="text-primary"> Reservado y Revisado<br></p>
+                                 <% } %>
                               </div>
-                              <% }) %>
+                           </div>
+                        </div>
+                        <% }) %>
                         <% }  %>
-
-                        
 
 
 
@@ -369,10 +367,10 @@
                                  <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
                                  <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
                                  <% } else { %>
-                                  <% if (new Date(order.createdAt).getTime() > new Date('2024-01-01').getTime()) { %>
-                                    <a href="/sales/view_pays/<%= order.id %>" class="badge bg-purple mt-2" target="_blank">Ver Pagos</a>
-                                   
-                                  <% } %>
+                                 <% if (new Date(order.createdAt).getTime() > new Date('2024-01-01').getTime()) { %>
+                                 <a href="/sales/view_pays/<%= order.id %>" class="badge bg-purple mt-2" target="_blank">Ver Pagos</a>
+
+                                 <% } %>
                                  <% } %>
 
                               </td>
@@ -400,7 +398,7 @@
                               <th>Tipo</th>
                               <th>Detalles</th>
                               <th>Monto</th>
-                              
+
                            </tr>
                         </thead>
                         <tbody>
@@ -424,7 +422,7 @@
                               <td class="text-center">
                                  $<%= Helper.money_format(payment.amount) %>
                                  <% if (payment.asigned_amount < payment.amount) { %>
-                                  <br> <span class="text-success"> Saldo a Favor ($<%= Helper.money_format(payment.amount - payment.asigned_amount) %>)</span>
+                                 <br> <span class="text-success"> Saldo a Favor ($<%= Helper.money_format(payment.amount - payment.asigned_amount) %>)</span>
                                  <% } %>
                               </td>
                            </tr>
@@ -444,7 +442,7 @@
                   <div class="card-body pb-3">
                      <div class="d-flex align-items-center mb-3">
                         <h3 class="me-1"><%= cliente.name %></h3>
-                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %> >Editar</button>
+                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %>>Editar</button>
                      </div>
                      <h5 class="text-800">Vendedor Asignado</h5>
                      <p class="text-800"><%= seller.name %></p>
@@ -1014,6 +1012,7 @@ if (cliente.type == 'major') { %>
    socket.on('add_detail_error', data => {
       if (data._process == _process) {
          document.querySelector("#save_sale_detail").disabled = false;
+         
          return errorMessage(data.errorMessage);
       }
    });
@@ -1153,6 +1152,8 @@ if (cliente.type == 'major') { %>
       document.getElementById('personalizedPrice').style.display = 'none';
       document.getElementById('product__image').style.display = 'none';
       choices_product.removeActiveItems();
+
+      document.querySelector("#save_sale_detail").disabled = false;
       // choices_product.clearChoices();
 
       form_inventory();
@@ -1345,40 +1346,41 @@ if (cliente.type == 'major') { %>
             case: 'inventory',
             _process,
          }
-         if (free) {
+         // if (free) {
 
-            data.description = document.querySelector("#freeName").value;
-            data.cant = document.querySelector("#freeCant").value;
-            data.price = document.querySelector("#freePrice").value;
-            data.image = document.querySelector("#add_image_real").value;
-            data.case = 'free';
+         //    data.description = document.querySelector("#freeName").value;
+         //    data.cant = document.querySelector("#freeCant").value;
+         //    data.price = document.querySelector("#freePrice").value;
+         //    data.image = document.querySelector("#add_image_real").value;
+         //    data.case = 'free';
 
-            if (data.image == '') {
-               return errorMessage('Por favor agregue una imagen para poder identificar el producto cuando ingrese al inventario');
-            } else if (data.description === "" || data.description.length < 10) {
-               return errorMessage('Proporcione una descripción con al menos 10 caracteres');
+         //    if (data.image == '') {
+         //       return errorMessage('Por favor agregue una imagen para poder identificar el producto cuando ingrese al inventario');
+         //    } else if (data.description === "" || data.description.length < 10) {
+         //       return errorMessage('Proporcione una descripción con al menos 10 caracteres');
+         //    }
+
+         // } else {
+         document.querySelector("#save_sale_detail").disabled = true;
+         let p = product_in_select2[document.getElementById('productSelect').value];
+         if (p !== undefined) {
+            data.product = p.id;
+            let price = document.getElementById('priceSelect').value;
+            data.price = price == 'none' ?
+               document.getElementById('personalizedPrice').value :
+               (price == 'minor' ? p.price : p.major);
+
+            data.cant = document.getElementById('product_cant').value;
+            let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
+            if (data.cant > _dist) {
+               return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
+
             }
-
+            console.log(p)
          } else {
-            let p = product_in_select2[document.getElementById('productSelect').value];
-            if (p !== undefined) {
-               data.product = p.id;
-               let price = document.getElementById('priceSelect').value;
-               data.price = price == 'none' ?
-                  document.getElementById('personalizedPrice').value :
-                  (price == 'minor' ? p.price : p.major);
-
-               data.cant = document.getElementById('product_cant').value;
-               let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
-               if (data.cant > _dist) {
-                  return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
-
-               }
-               console.log(p)
-            } else {
-               return errorMessage('No ha Seleccionado un producto');
-            }
+            return errorMessage('No ha Seleccionado un producto');
          }
+         // }
 
          if (data.price == '' || data.price < 0 || data.price == null) {
             return errorMessage('Precio no Válido, Si desea realizar una regalía, por favor seleccione valor personalizado y escriba el precio 0');
@@ -1387,7 +1389,6 @@ if (cliente.type == 'major') { %>
             document.querySelector("#freeCant").value = "1";
             return errorMessage('La cantidad no puede ser menor a 1');
          }
-
          //enviar datos al server
          socket.emit('add_sale_detail', data);
 
@@ -1662,7 +1663,7 @@ if (cliente.type == 'major') { %>
          }
       });
 
-      
+
       document.getElementById('payment_method2').addEventListener('change', async (e) => {
          document.getElementById('other_pays_2').style.display = document.getElementById('payment_method2').value == 'money' ? 'none' : 'block';
          document.querySelector("#payment_amount2").focus();

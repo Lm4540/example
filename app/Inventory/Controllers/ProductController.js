@@ -64,7 +64,7 @@ const ProductController = {
 
     obtenerProductosACorregir: async (req, res) => {
 
-        let _date = '2024-02-01';
+        let _date = '2024-03-01';
         let search = req.query.search;
         let offset = Number.parseInt(req.query.offset);
         let limit = 15;
