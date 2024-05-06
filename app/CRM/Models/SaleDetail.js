@@ -54,9 +54,12 @@ const SaleDetail = sequelize.define('SaleDetail', {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 0,
     },
-    to_reverse: {
+    from_translate: {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 0,
+    },
+    requisition_detail: {
+        type: DataTypes.INTEGER,
     },
     product_cost: {
         type: DataTypes.DECIMAL(10,2), 
