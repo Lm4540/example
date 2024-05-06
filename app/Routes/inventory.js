@@ -53,8 +53,10 @@ router.get('/product/:id(\\d+)', ProductController.getProduct);
 router.get('/product/view/:id(\\d+)', ProductController.viewProduct);
 router.get('/product/edit/:id(\\d+)', ProductController.editProduct);
 router.post('/product/edit/:id(\\d+)', ProductController.updateProduct);
-router.get('/product/kardex/:id(\\d+)', StockController.kardex);
-router.get('/product/kardex/:id(\\d+)/details', StockController.kardexDetails);
+
+router.get('/product/kardex/:id(\\d+)', (req, res, next) => Auth.HasPermission(req, res, next, ['view_kardex']), StockController.kardex);//TOKEN
+router.get('/product/kardex/:id(\\d+)/details', (req, res, next) => Auth.HasPermission(req, res, next, ['view_kardex.,l,.']), StockController.kardexDetails);
+
 router.get('/product/move/:id(\\d+)', StockController.move);
 router.get('/product/move/:id(\\d+)/details', StockController.moveDetails);
 router.get('/product/in/:id(\\d+)', StockController.in);
@@ -77,7 +79,7 @@ router.get('/product/stock_report/detailed', StockController.reporte_detallado);
 router.get('/product/stock_report/dates', StockController.inventory_report_per_dates);
 router.get('/product/stock_report/get_details', StockController.inventory_retpor_details);
 router.get('/product/archive/:id(\\d+)', ProductController.archive);
-router.get('/product/updateClassification', ProductController.getVistadeCorreccionDeClassificaciones);
+// router.get('/product/updateClassification', ProductController.getVistadeCorreccionDeClassificaciones);
 router.get('/product/ProductosACorregir', ProductController.obtenerProductosACorregir);
 router.post('/product/updateClassification', ProductController.corregirClassificacion);
 
