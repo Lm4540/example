@@ -55,7 +55,7 @@ router.get('/product/edit/:id(\\d+)', ProductController.editProduct);
 router.post('/product/edit/:id(\\d+)', ProductController.updateProduct);
 
 router.get('/product/kardex/:id(\\d+)', (req, res, next) => Auth.HasPermission(req, res, next, ['view_kardex']), StockController.kardex);//TOKEN
-router.get('/product/kardex/:id(\\d+)/details', (req, res, next) => Auth.HasPermission(req, res, next, ['view_kardex.,l,.']), StockController.kardexDetails);
+router.get('/product/kardex/:id(\\d+)/details', (req, res, next) => Auth.HasPermission(req, res, next, ['view_kardex']), StockController.kardexDetails);
 
 router.get('/product/move/:id(\\d+)', StockController.move);
 router.get('/product/move/:id(\\d+)/details', StockController.moveDetails);
