@@ -57,8 +57,15 @@
                         <td><%= detail.description %> (<%= detail.code !== null && detail.code !== "" ? detail.code : 'Sin Codigo' %>)</td>
                         <td><%= detail.cant %></td>
                         <td>
+
+                           (<% detail.identification.forEach(prod => { %>
+                              <%= prod.product %>,
+                           <% }) %>)<br>
+
+
                            <ul class="list-group">
                               <% detail.identification.forEach(prod => { %>
+                                 
                                  <li class="list-group-item"><a href="/inventory/product/view/<%= prod.product %>"><%= prod.product %></a> <%= prod.cant %> </li>
                                
                               <% }) %>
