@@ -11,11 +11,13 @@ router.post('/register', PurchaseController.register_purchase);
 router.get('/registered', PurchaseController.get_registered_view);
 router.get('/get_registered', PurchaseController.get_registered);
 router.get('/view/:id(\\d+)', PurchaseController.view_purchase);
+
 router.get('/in', PurchaseController.get_to_in);
 router.get('/in/:id(\\d+)', PurchaseController.in_purchase);
 router.post('/in', PurchaseController.in_purchase_to_inventory2);
 
 
 router.get('/cost/:id(\\d+)', PurchaseController.cost_purchase);
+router.get('/report/:id(\\d+)', PurchaseController.view_report);
 
 module.exports = router;

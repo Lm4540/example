@@ -108,7 +108,7 @@ const PurchaseController = {
                         other_taxes: data.other_taxes,
                         invoice_type: data.invoice_type,
                         invoice_number: data.invoice_number,
-                        invoice_date: data.invoice_date,
+                        invoice_date: new Date(data.invoice_date),
                         credit_conditions: data.credit_days,
                         _nit: data.nit,
                         _ncr: data.nrc,
@@ -841,7 +841,41 @@ const PurchaseController = {
             return res.redirect(`/purchase/view/${purchase.id}`);
         }
         return Helper.notFound(req, res, 'Purchase not Found');
-    }
+    },
+
+
+    view_report: async (req, res) => {
+        //buscar la compra
+        let purchase = await Purchase.findByPk(req.params.id);
+        if (purchase) {
+            let details = await PurchaseDetail.findAll({
+                where: {
+                    purchase: purchase.id
+                }
+            });
+            let provider = await Provider.findByPk(purchase.provider);
+
+            if (purchase.isIn == true) {
+                let costs = await PurchaseCost.findAll({
+                    where: {
+                        purchase: purchase.id
+                    }
+                });
+
+                return res.render('Purchase/viewReport', {
+                    pageTitle: 'Reporte de Ingresos',
+                    purchase,
+                    details,
+                    provider,
+                    invoice_types,
+                    permission: req.session.userSession.permission,
+                    costs
+                });
+            }
+            return res.redirect(`/purchase/view/${purchase.id}`);
+        }
+        return Helper.notFound(req, res, 'Purchase not Found');
+    },
 };
 
 module.exports = PurchaseController;
