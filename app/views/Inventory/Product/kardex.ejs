@@ -13,8 +13,8 @@
     <%- include('../../Layouts/NavBar.ejs') %>
     <div class="main-content container-fluid">
 
-      <div class="row justify-content-center">
-        <section class="section col-12" style="min-width: 1000px;">
+      <div class="row">
+        <section class="section col-12" style="min-width: 1000px; overflow-x: auto;">
           <div class="card">
             <div class="card-header">
                 <div class="row">
@@ -31,7 +31,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body table-responsive">
               <table class="table table-striped table-hover table-bordered table-sm" >
                 <thead class="text-center">
                   <tr>
@@ -128,14 +128,14 @@
             <td>${a.date}</td>
             <td>${a.concept}</td>
             <td>${a.in_cant}</td>
-            <td>${a.in_val}</td>
-            <td>${a.in_sub}</td>
-            <td>${a.out_cant}</td>
-            <td>${a.out_val}</td>
-            <td>${a.out_sub}</td>
-            <td>${a.cant}</td>
-            <td>${a.val}</td>
-            <td>${a.sub}</td>`;
+            <td class="text-center">${a.in_val}</td>
+            <td class="text-center">${a.in_sub}</td>
+            <td class="text-center">${a.out_cant}</td>
+            <td class="text-center">${a.out_val}</td>
+            <td class="text-center">${a.out_sub}</td>
+            <td class="text-center">${a.cant}</td>
+            <td class="text-center">${a.val}</td>
+            <td class="text-center">${a.sub}</td>`;
           tbody.appendChild(tr);
         });
       } else {

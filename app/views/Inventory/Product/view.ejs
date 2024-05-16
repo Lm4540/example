@@ -107,6 +107,7 @@
                               <table class="table table-sm table-hover table borderless">
                                  <thead>
                                     <tr>
+                                       <th>id</th>
                                        <th>Nombre del Cliente/Objetivo de la reserva</th>
                                        <th>Estado de preparacion/Unidades</th>
                                        <th>Venta/Requisición</th>
@@ -116,17 +117,22 @@
                                  </thead>
 
                                  <tbody>
-                                    <% in_reserve.forEach(ele => { %>
+                                    <% 
+                                    let a = 0;
+                                    in_reserve.forEach(ele => {
+                                       a++;
+                                       %>
 
                                     <tr>
+                                       <td class="text-danger"><%= a %></td>
                                        <td>
                                           <%= ele.client_name %>
                                        </td>
                                        <td>
                                           <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
                                        </td>
-                                       <td> ID <%= ele.sale_id %></td>
-                                       <td> ID <%= ele.reserve.createdBy %></td>
+                                       <td> Venta <%= ele.sale_id %> (Detalle: <%= ele.id %>)</td>
+                                       <td><%= ele.reserve.createdBy %></td>
 
                                        <td>
                                           <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
@@ -139,6 +145,7 @@
                                     <% transfers.forEach(ele => { %>
 
                                     <tr>
+                                       <td>--</td>
                                        <td>
                                           Solicitud de Transferencia entre Sucursales
                                        </td>

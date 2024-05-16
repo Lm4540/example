@@ -1290,7 +1290,7 @@ const StockController = {
                 'out_val': '',
                 'out_sub': '',
                 'cant': first.last_product_stock,
-                'val': `$ ${Money.money_format(first.last_cost)}`,
+                'val': first.last_product_stock > 0 ? `$ ${Money.money_format(first.last_cost)}`: '--',
                 'sub': `$ ${Money.money_format(Number.parseFloat(first.last_product_stock * first.last_cost).toFixed(2))}`,
             }]
 
@@ -1318,7 +1318,7 @@ const StockController = {
                         'sub': `$ ${Money.money_format(Number.parseFloat(cant * prom).toFixed(2))}`,
                     }
                 } else {
-
+                    let cant = (element.last_product_stock - element.cant);
                     return {
                         'number': numb,
                         'date': Helper.format_date(element.createdAt),
@@ -1329,9 +1329,9 @@ const StockController = {
                         'out_cant': element.cant,
                         'out_val': `$ ${Money.money_format(element.cost)}`,
                         'out_sub': `$ ${Money.money_format(Number.parseFloat(element.cant * element.cost).toFixed(2))}`,
-                        'cant': (element.last_product_stock - element.cant),
-                        'val': `$ ${Money.money_format(element.cost)}`,
-                        'sub': `$ ${Money.money_format(Number.parseFloat((element.last_product_stock - element.cant) * element.cost).toFixed(2))}`,
+                        'cant': cant,
+                        'val': cant > 0 ? `$ ${Money.money_format(element.cost)}` : '--',
+                        'sub': cant > 0 ? `$ ${Money.money_format(Number.parseFloat((element.last_product_stock - element.cant) * element.cost).toFixed(2))}` : '$ 0.00',
                     }
                 }
             });
