@@ -400,7 +400,7 @@ const ProductController = {
 
 
         //buscar lso detalles de las ventas
-        let _sql = `select crm_sale.id as sale_id, crm_client.id as client_id, crm_client.name as client_name, crm_sale_detail.* from crm_sale_detail INNER JOIN crm_sale on crm_sale.id = crm_sale_detail.sale INNER JOIN crm_client on crm_client.id = crm_sale.client where crm_sale_detail.id in(SELECT saleId FROM inventory_product_stock_reserve WHERE product = :product)`;
+        let _sql = `select crm_sale.id as sale_id, crm_client.id as client_id, crm_client.name as client_name, crm_sale_detail.* from crm_sale_detail INNER JOIN crm_sale on crm_sale.id = crm_sale_detail.sale INNER JOIN crm_client on crm_client.id = crm_sale.client where crm_sale_detail.id in(SELECT saleId FROM inventory_product_stock_reserve WHERE product = :product) Order By crm_sale_detail.id ASC`;
         let in_reserve = await sequelize.query(_sql, {
             replacements: { product: product.id },
             type: QueryTypes.SELECT
