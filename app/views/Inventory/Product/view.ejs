@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-   <%- include('../../Layouts/Head.ejs') %>
-   <%# custom styles %>
+  <%- include('../../Layouts/Head.ejs') %>
+  <%# custom styles %>
 </head>
 <% options = `
 <li class="dropdown ml-5">
@@ -27,62 +27,62 @@
     `; %>
 
 <body class="<%= darkMode %>">
-   <%- include('../../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
 
-         <div class="row justify-content-center">
-            <section class="section col-8">
-               <div class="row">
-                  <div class="col-12 col-md-5">
-                     <% if(product.image !== null && product.image.length > 0) {%>
-                     <img src="<%= product.image %>" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
-                     <% }else{ %>
-                     <img src="/upload/images/image-not-found.png" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
-                     <% } %>
-                  </div>
-                  <div class="col-12 col-md-6 ml-3">
-                     <h2>
-                        <strong><%= product.name %></strong> #SKU(<%= product.internal_code %>) <button class="btn btn-soft-danger" onclick="copyNumber()"><i class="fas fa-copy"></i></button>
-                     </h2>
-                     <a href="/inventory/productClassifications/view/<%= product.classification %>" class="badge bg-green"> <%= classification.name %></a><br>
-                     <span style="font-size: 3em; font-weight: bold;">$<%= Helper.money_format(product.base_price) %></span> &nbsp;
-                     <span style="font-size: 2.2em; font-weight: bold;" class="ml-2">($<%= Helper.money_format(product.major_price) %>)</span>
-                     <br>
-                     <b>
-                        <% if (stock > 0) { %>
-                        <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
+      <div class="row justify-content-center">
+        <section class="section col-8">
+          <div class="row">
+            <div class="col-12 col-md-5">
+              <% if(product.image !== null && product.image.length > 0) {%>
+              <img src="<%= product.image %>" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
+              <% }else{ %>
+              <img src="/upload/images/image-not-found.png" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
+              <% } %>
+            </div>
+            <div class="col-12 col-md-6 ml-3">
+              <h2>
+                <strong><%= product.name %></strong> #SKU(<%= product.internal_code %>) <button class="btn btn-soft-danger" onclick="copyNumber()"><i class="fas fa-copy"></i></button>
+              </h2>
+              <a href="/inventory/productClassifications/view/<%= product.classification %>" class="badge bg-green"> <%= classification.name %></a><br>
+              <span style="font-size: 3em; font-weight: bold;">$<%= Helper.money_format(product.base_price) %></span> &nbsp;
+              <span style="font-size: 2.2em; font-weight: bold;" class="ml-2">($<%= Helper.money_format(product.major_price) %>)</span>
+              <br>
+              <b>
+                <% if (stock > 0) { %>
+                <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
 
-                        <% } else { %>
-                        <p style="font-size: 125%;" class="text-danger">No hay Existencias disponibles</p>
+                <% } else { %>
+                <p style="font-size: 125%;" class="text-danger">No hay Existencias disponibles</p>
 
-                        <% } %>
-                     </b>
-                     <br>
-                     <p>
-                        <%= product.description %>
-                     </p>
-                  </div>
-               </div>
-            </section>
+                <% } %>
+              </b>
+              <br>
+              <p>
+                <%= product.description %>
+              </p>
+            </div>
+          </div>
+        </section>
 
-            <div class="row">
-               <div class="col-12">
+        <div class="row">
+          <div class="col-12">
 
-                  <div class="">
-                     <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
-                        <li class="nav-item me-3" role="presentation">
-                           <a class="nav-link text-nowrap active" id="orders-tab" data-bs-toggle="tab" href="#tab-orders" role="tab" aria-controls="tab-orders" aria-selected="true">
-                              <i class="far fa-adjust"></i>Reservas
-                           </a>
-                        </li>
-                        <li class="nav-item me-3" role="presentation">
-                           <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-reviews" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
-                              <i class="far fa-adjust"></i>Existencias
-                           </a>
-                        </li>
-                        <!-- <li class="nav-item me-3" role="presentation">
+            <div class="">
+              <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap active" id="orders-tab" data-bs-toggle="tab" href="#tab-orders" role="tab" aria-controls="tab-orders" aria-selected="true">
+                    <i class="far fa-adjust"></i>Reservas
+                  </a>
+                </li>
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-reviews" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                    <i class="far fa-adjust"></i>Existencias
+                  </a>
+                </li>
+                <!-- <li class="nav-item me-3" role="presentation">
                            <a class="nav-link text-nowrap" id="wishlist-tab" data-bs-toggle="tab" href="#tab-wishlist" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
                               <i class="far fa-adjust"></i>Wishlist
                            </a>
@@ -97,173 +97,173 @@
                               <i class="far fa-adjust"></i>Personal info
                            </a>
                         </li> -->
-                     </ul>
+              </ul>
 
-                     <div class="tab-content" id="profileTabContent">
-                        <div class="tab-pane fade active show" id="tab-orders" role="tabpanel" aria-labelledby="orders-tab">
-                           <h4 class="text-center mt-5 mb-5">Lista de Reservas de este producto</h4>
+              <div class="tab-content" id="profileTabContent">
+                <div class="tab-pane fade active show" id="tab-orders" role="tabpanel" aria-labelledby="orders-tab">
+                  <h4 class="text-center mt-5 mb-5">Lista de Reservas de este producto</h4>
 
-                           <div class="table-responsive">
-                              <table class="table table-sm table-hover table borderless">
-                                 <thead>
-                                    <tr>
-                                       <th>id</th>
-                                       <th>Nombre del Cliente/Objetivo de la reserva</th>
-                                       <th>Estado de preparacion/Unidades</th>
-                                       <th>Venta/Requisición</th>
-                                       <th>Reservado por</th>
-                                       <th>options</th>
-                                    </tr>
-                                 </thead>
+                  <div class="table-responsive">
+                    <table class="table table-sm table-hover table borderless">
+                      <thead>
+                        <tr>
+                          <th>id</th>
+                          <th>Nombre del Cliente/Objetivo de la reserva</th>
+                          <th>Estado de preparacion/Unidades</th>
+                          <th>Venta/Requisición</th>
+                          <th>Reservado por</th>
+                          <th>options</th>
+                        </tr>
+                      </thead>
 
-                                 <tbody>
-                                    <% 
+                      <tbody>
+                        <% 
                                     let a = 0;
                                     in_reserve.forEach(ele => {
                                        a++;
                                        %>
 
-                                    <tr>
-                                       <td class="text-danger"><%= a %></td>
-                                       <td>
-                                          <%= ele.client_name %>
-                                       </td>
-                                       <td>
-                                          <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
-                                       </td>
-                                       <td> Venta <%= ele.sale_id %> (Detalle: <%= ele.id %>)</td>
-                                       <td><%= ele.reserve.createdBy %></td>
+                        <tr>
+                          <td class="text-danger"><%= a %></td>
+                          <td>
+                            <%= ele.client_name %>
+                          </td>
+                          <td>
+                            <%= ele.cant %> Unidades Vendidas / <%= ele.cant %> Unidades Reservadas / <%= ele.ready %> Unidades Preparadas
+                          </td>
+                          <td> Venta <%= ele.sale_id %> (Detalle: <%= ele.id %>)</td>
+                          <td><%= ele.reserve.createdBy %></td>
 
-                                       <td>
-                                          <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
-                                          <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>
-                                       </td>
-                                    </tr>
-                                    <% }) %>
+                          <td>
+                            <a href="/sales/view/<%= ele.sale_id %>" class="badge bg-success">Ver Venta</a>
+                            <a href="/sales/client/view/<%= ele.client_id %>" class="badge bg-blue">Ver cliente</a>
+                          </td>
+                        </tr>
+                        <% }) %>
 
 
-                                    <% transfers.forEach(ele => { %>
+                        <% transfers.forEach(ele => { %>
 
-                                    <tr>
-                                       <td>--</td>
-                                       <td>
-                                          Solicitud de Transferencia entre Sucursales
-                                       </td>
-                                       <td>
-                                          <%= ele.cant %> Unidades Solicitadas
-                                       </td>
-                                       <td> Solicitud ID <%= ele.requisition %></td>
-                                       <td> ID <%= ele.createdBy %></td>
-                                       <td>
-                                          <a href="/inventory/requisition/<%= ele.requisition %>" class="badge bg-purple">=> Solicitud</a>
-                                       </td>
-                                    </tr>
-                                    <% }) %>
-                                 </tbody>
-                              </table>
-                           </div>
-                        </div>
-                        <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                           <h4 class="text-center mt-5 mb-5">Detalle de las existencias</h4>
-
-                           <table class="table table-sm table-bordered">
-                              <thead>
-                                 <tr>
-                                    <th>Sucursal</th>
-                                    <th>Existencias</th>
-                                    <th>Reservado</th>
-                                    <th>Disponible</th>
-                                 </tr>
-                              </thead>
-                              <tbody>
-                                 <% almacen.forEach(element => { %>
-                                 <tr>
-                                    <td><%= element.name %></td>
-                                    <td class="text-center"><%= element.cant %></td>
-                                    <td class="text-center"><%= element.reserved %></td>
-                                    <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
-                                 </tr>
-                                 <% })%>
-                              </tbody>
-                           </table>
-                        </div>
-                        <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
-                           Tercer panel
-                        </div>
-                        <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
-                           Cuarto panel
-                        </div>
-                        <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
-                           Ultimo Panel
-                        </div>
-                     </div>
+                        <tr>
+                          <td>--</td>
+                          <td>
+                            Solicitud de Transferencia entre Sucursales
+                          </td>
+                          <td>
+                            <%= ele.cant %> Unidades Solicitadas
+                          </td>
+                          <td> Solicitud ID <%= ele.requisition %></td>
+                          <td> ID <%= ele.createdBy %></td>
+                          <td>
+                            <a href="/inventory/requisition/<%= ele.requisition %>" class="badge bg-purple">=> Solicitud</a>
+                          </td>
+                        </tr>
+                        <% }) %>
+                      </tbody>
+                    </table>
                   </div>
+                </div>
+                <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                  <h4 class="text-center mt-5 mb-5">Detalle de las existencias</h4>
 
-
-               </div>
-            </div>
-         </div>
-      </div>
-      <%- include('../../Layouts/Footer.ejs') %>
-   </div>
-
-   <!-- Modal -->
-   <div class="modal fade" id="Stock_detail" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="staticBackdropLabel">Detalle de Existencias (SKU: <%= product.internal_code%>)</h5>
-            </div>
-            <div class="modal-body">
-               <table class="table table-sm table-bordered">
-                  <thead>
-                     <tr>
+                  <table class="table table-sm table-bordered">
+                    <thead>
+                      <tr>
                         <th>Sucursal</th>
                         <th>Existencias</th>
                         <th>Reservado</th>
                         <th>Disponible</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     <% almacen.forEach(element => { %>
-                     <tr>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% almacen.forEach(element => { %>
+                      <tr>
                         <td><%= element.name %></td>
                         <td class="text-center"><%= element.cant %></td>
                         <td class="text-center"><%= element.reserved %></td>
                         <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
-                     </tr>
-                     <% })%>
-                  </tbody>
-               </table>
+                      </tr>
+                      <% })%>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
+                  Tercer panel
+                </div>
+                <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
+                  Cuarto panel
+                </div>
+                <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                  Ultimo Panel
+                </div>
+              </div>
             </div>
-            <div class="modal-footer">
-               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
-            </div>
-         </div>
+
+
+          </div>
+        </div>
       </div>
-   </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="Stock_detail" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Detalle de Existencias (SKU: <%= product.internal_code%>)</h5>
+        </div>
+        <div class="modal-body">
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                <th>Sucursal</th>
+                <th>Existencias</th>
+                <th>Reservado</th>
+                <th>Disponible</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% almacen.forEach(element => { %>
+              <tr>
+                <td><%= element.name %></td>
+                <td class="text-center"><%= element.cant %></td>
+                <td class="text-center"><%= element.reserved %></td>
+                <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
+              </tr>
+              <% })%>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
-   const copyNumber = () => {
-      copiarAlPortapapeles('<%= product.internal_code %>');
-      successMessage('Copiado');
-   }
+  const copyNumber = () => {
+    copiarAlPortapapeles('<%= product.internal_code %>');
+    successMessage('Copiado');
+  }
 
-   const dar_baja = () => {
-      fetch('/inventory/product/archive/<%=product.id%>').then(data => data.json()).then(response => {
-         if (response.status == 'error') {
-            return errorMessage(response.message);
-         } else if (response.status == 'success') {
-            successMessage(response.message);
-            setTimeout(() => {
-               window.location.href = '/inventory/product'
-            }, 2000);
-         }
-      }).catch(response => console.log(response));
-   }
+  const dar_baja = () => {
+    fetch('/inventory/product/archive/<%=product.id%>').then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        successMessage(response.message);
+        setTimeout(() => {
+          window.location.href = '/inventory/product'
+        }, 2000);
+      }
+    }).catch(response => console.log(response));
+  }
 </script>
 
 </html>
