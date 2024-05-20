@@ -122,7 +122,8 @@
 	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
       <a class="list-group-item" href="javascript:show_edit_modal()"><i class="fas fa-edit mr-3"></i></i>Editar Detalles</a>
       <a class="list-group-item" href="/sales/view/${sale.id}"><i class="fas fa-align-center mr-3"></i>Ir a la Venta</a>
-      <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>`;
+      <a class="list-group-item" href="/sales/print_invoice/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir</a>
+      <a class="list-group-item" href="/sales/print_invoice2/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir PROVISIONAL</a>`;
 
        if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
           options += `<a class="list-group-item" href="/sales/print_invoice_detail/${sale.id}"><i class="fas fa-print mr-3"></i>Imprimir detalle</a>`;

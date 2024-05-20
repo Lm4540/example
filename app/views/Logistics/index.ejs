@@ -371,9 +371,7 @@
    socket.on('deleted_major_detail', data => {
       console.log(data);
       let new_details = [];
-      mayor[data.sale_id].details.forEach(el => {
-         el.id == data.deleted_detail
-      });
+      
 
       let restantes = new Array();
       mayor[data.sale_id].details.forEach(el => {
@@ -395,6 +393,7 @@
 
    socket.on('mayor_detail_revised_error', data => {
       console.log(data);
+      
    });
 
    socket.on('package_trasnport_error', data => {
@@ -601,7 +600,7 @@
                         </div>`;
          keys.forEach(index => {
             element = mayor[index];
-            if (element !== null) {
+            if (element !== null && element.details.length > 0) {
                content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
                      <div class="card card-round">
                         

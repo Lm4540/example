@@ -809,6 +809,49 @@ const InvoiceController = {
         return Helper.notFound(req, res,
             "Invoice not Found or the sale has'nt been invoced ");
     },
+
+    print_invoice2: async (req, res) => {
+        //Buscar la venta
+        let sale = await Sale.findByPk(req.params.id);
+
+        if (sale && sale.invoice_number !== null && sale.invoice_type == "fcf" && sale.invoice_number > 3000) {
+            if (sale._status == "revoked") {
+                ref = `/sales/view_invoice/${sale.id}`;
+                res.redirect(301, ref);
+            }
+            //Buscar los detalles
+            let details = await SaleDetail.findAll({
+                where: {
+                    sale: sale.id,
+                },
+                raw: true,
+            });
+
+            if (sale.delivery_amount !== null && sale.delivery_amount > 0.00) {
+                details.push({
+                    price: sale.delivery_amount,
+                    description: 'Envio',
+                    _order: details.length + 1,
+                    cant: 1,
+                    invoice_column: 'gravado',
+                });
+            }
+
+            //buscar el cliente
+            let cliente = await Client.findByPk(sale.client);
+
+            //reolver los detalles de la factura
+            let serie = await InvoiceSeries.findByPk(sale.invoce_serie);
+            //enviar los datos a la vista
+
+            return res.render('CRM/Invoice/print-fcf-provisional', { sale, details, cliente, data: sale.invoice_data, serie });
+
+        }
+        return Helper.notFound(req, res,
+            "Invoice not Found or the sale has'nt been invoced ");
+    },
+
+
     view_invoice: async (req, res) => {
         //Buscar la venta
         let sale = await Sale.findByPk(req.params.id);

@@ -9,7 +9,6 @@
    <style>
       table {
          border-collapse: collapse;
-
       }
 
       td {
@@ -23,8 +22,6 @@
          border-bottom: 0px solid #fff;
          border-spacing: 0
       }
-
-
 
       .hidden_row td {
          border: 0px solid #fff !important;
@@ -98,10 +95,35 @@
          margin-top: 0;
          font-size: 85%;
       }
+
+      #__number {
+         position: absolute;
+         color: red;
+         font-size: 200%;
+         font-family: monospace;
+         margin-top: -1.4cm;
+         margin-left: 8.2cm;
+         font-weight: bolder;
+      }
+
+
+      @media print {
+         html {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+         }
+
+        
+
+         @page {
+            size: landscape
+         }
+      }
    </style>
 </head>
 
 <body>
+   <div id="__number"><%= sale.invoice_number %></div>
    <table id="first_table">
       <tbody class="head-table">
 
@@ -189,39 +211,39 @@
          <% if(gravadas > 0.00){ 
             largo++;
          %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2)) %></td>
-      </tr>
+         <tr>
+            <td class="text-center">1</td>
+            <td colspan="2"><%= sale.invoice_resume %></td>
+            <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2), 3) %></td>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+            <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2)) %></td>
+         </tr>
 
-      <% } else if (exento > 0.00) {
+         <% } else if (exento > 0.00) {
          largo++;
          %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2)) %></td>
-         <td class="text-right"></td>
-      </tr>
+         <tr>
+            <td class="text-center">1</td>
+            <td colspan="2"><%= sale.invoice_resume %></td>
+            <td class="text-right">$<%= Helper.money_format(exento.toFixed(2), 3) %></td>
+            <td class="text-right"></td>
+            <td class="text-right">$<%= Helper.money_format(exento.toFixed(2)) %></td>
+            <td class="text-right"></td>
+         </tr>
 
-      <% } else if (no_sujeto > 0.00) { largo++;
+         <% } else if (no_sujeto > 0.00) { largo++;
          %>
-      <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2), 3) %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2)) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
-      </tr>
-      <% } %>
-       <% } else { %>
+         <tr>
+            <td class="text-center">1</td>
+            <td colspan="2"><%= sale.invoice_resume %></td>
+            <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2), 3) %></td>
+            <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2)) %></td>
+            <td class="text-right"></td>
+            <td class="text-right"></td>
+         </tr>
+         <% } %>
+         <% } else { %>
 
 
 
@@ -269,7 +291,7 @@
             %>
          <tr>
             <td></td>
-            <td colspan="2"  class="text-center" style="white-space: pre-line"><br><%= data.leyend %></td>
+            <td colspan="2" class="text-center" style="white-space: pre-line"><br><%= data.leyend %></td>
             <td></td>
             <td></td>
             <td></td>

@@ -58,13 +58,13 @@ const Helper = {
         let m = date.getMonth() > 8 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;
         let d = date.getDate();
         d = d > 9 ? d : `0${d}`;
-        return init ?  `${date.getFullYear()}-${m}-01` : `${date.getFullYear()}-${m}-${d}`;
+        return init ? `${date.getFullYear()}-${m}-01` : `${date.getFullYear()}-${m}-${d}`;
     },
 
     hour_to_input: (date = null) => {
         date = date ? new Date(date) : new Date();
-        let hour = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours(); 
-        let minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes(); 
+        let hour = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
+        let minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
         return `${hour}:${minutes}`;
     },
 
@@ -86,9 +86,11 @@ const Helper = {
         let decimalNumbersLength = decimalNumbers.length;
         let fixNumber = 10 ** decimalNumbersLength;
         return Number.parseFloat((Math.round(fixNumber * number) / fixNumber).toFixed(redondeo));
+    },
+
+    getRandomInt: (max) => {
+        return Math.floor(Math.random() * max);
     }
-
-
 };
 
 

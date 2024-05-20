@@ -118,14 +118,14 @@ const SalesStatusController = {
         //bloque nuevo
 
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process')",
+            "SELECT * FROM `crm_sale_detail` WHERE  sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process')",
             { type: QueryTypes.SELECT }
         );
         totals.mayor_details = tmp.length;
 
         tmp.forEach(detail => {
 
-            if (detail.cant > detail.ready) {
+            if (detail.reserved > detail.ready) {
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
                 mayor[detail.sale].details.push(detail);
                 if (mayor[detail.sale].open == false) {
