@@ -409,7 +409,7 @@
           document.querySelector("#invoice_direction").value = _data.direction;
           document.querySelector("#invoice_giro").value = _data.giro;
           document.querySelector("#invoice_nit").value = _data.nit;
-          document.querySelector("#invoice_nrc").value = _data.ncr;
+          document.querySelector("#invoice_nrc").value = _data.ncr !== undefined ? _data.ncr : "";
           document.querySelector("#invoice_nota_remision_anterior").value = _data.nota_remision_anterior;
           document.querySelector("#invoice_cuenta_de").value = _data.cuenta_de;
           document.querySelector("#invoice_leyend").value = _data.leyend;
