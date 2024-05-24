@@ -2,442 +2,446 @@
 <html lang="en">
 
 <head>
-   <%- include('../Layouts/Head.ejs') %>
-   <style>
-      .icon-card i {
-         font-size: 4rem;
-         padding-top: 20%;
-      }
+  <%- include('../Layouts/Head.ejs') %>
+  <style>
+    .icon-card i {
+      font-size: 4rem;
+      padding-top: 20%;
+    }
 
-      .icon-card p {
-         padding-top: 60%;
-         font-weight: 550;
-         font-size: 1rem;
-         margin-bottom: 15px;
-         ;
-      }
-   </style>
+    .icon-card p {
+      padding-top: 60%;
+      font-weight: 550;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      ;
+    }
+
+    .modal {
+      overflow-y: auto;
+    }
+  </style>
 </head>
 
 <body class="<%= darkMode %>">
-   <%- include('../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10 col-12">
-               <h2 class="text-center">Ventas / CRM</h2>
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-12">
+          <h2 class="text-center">Ventas / CRM</h2>
 
-               <div class="row justify-content-center">
+          <div class="row justify-content-center">
 
-                  <a class="card icon-card text-center" href="/sales/client">
-                     <i class="fas fa-user-friends"></i>
-                     <p>Clientes</p>
-                  </a>
+            <a class="card icon-card text-center" href="/sales/client">
+              <i class="fas fa-user-friends"></i>
+              <p>Clientes</p>
+            </a>
 
-                  <a class="card icon-card text-center" href="/sales/client/create">
-                     <i class="fas fa-user-plus"></i>
-                     <p>Nuevo Cliente</p>
-                  </a>
-                  <!-- 
+            <a class="card icon-card text-center" href="/sales/client/create">
+              <i class="fas fa-user-plus"></i>
+              <p>Nuevo Cliente</p>
+            </a>
+            <!-- 
                   <a class="card icon-card text-center" href="/sales/history">
                      <i class="fas fa-calendar-alt"></i>
                      <p>Historial de ventas</p>
                   </a> -->
-                  <% if (permission.includes('view_commission_report')) { %>
-                  <a class="card icon-card text-center" href="/sales/seller/history">
-                     <i class="fas fa-calendar-alt"></i>
-                     <p>Reporte de Ventas por Vendedor</p>
-                  </a>
-                  <% } %>
+            <% if (permission.includes('view_commission_report')) { %>
+            <a class="card icon-card text-center" href="/sales/seller/history">
+              <i class="fas fa-calendar-alt"></i>
+              <p>Reporte de Ventas por Vendedor</p>
+            </a>
+            <% } %>
 
-                  <a class="card icon-card text-center" href="/sales/inProccess?_status=all&seller=all">
-                     <i class="far fa-file-check"></i>
-                     <p>Ventas en Proceso</p>
-                  </a>
-
-
-
-                  <a class="card icon-card text-center" href="/sales/sellers">
-                     <i class="fas fa-users"></i>
-                     <p>Vendedores</p>
-                  </a>
-
-                  <a class="card icon-card text-center" href="/sales/sale_in_room">
-                     <i class="fas fa-file-invoice-dollar"></i>
-                     <p>Factura Rapida</p>
-                  </a>
+            <a class="card icon-card text-center" href="/sales/inProccess?_status=all&seller=all">
+              <i class="far fa-file-check"></i>
+              <p>Ventas en Proceso</p>
+            </a>
 
 
 
+            <a class="card icon-card text-center" href="/sales/sellers">
+              <i class="fas fa-users"></i>
+              <p>Vendedores</p>
+            </a>
 
-                  <a class="card icon-card text-center" href="/sales/invoice_serie">
-                     <i class="fas fa-file-invoice"></i>
-                     <p>Numeros de Serie</p>
-                  </a>
-
-                  <a class="card icon-card text-center" href="/sales/invoices">
-                     <i class="fas fa-file-invoice"></i>
-                     <p>Facturas Registradas</p>
-                  </a>
-
-                  <a class="card icon-card text-center" href="/sales/invoices_with_costs">
-                     <i class="fas fa-file-invoice"></i>
-                     <p>Facturas Registradas (Costo de Venta)</p>
-                  </a>
+            <a class="card icon-card text-center" href="/sales/sale_in_room">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <p>Factura Rapida</p>
+            </a>
 
 
 
-                  <!-- <a class="card icon-card text-center" href="/sales/daily_report">
+
+            <a class="card icon-card text-center" href="/sales/invoice_serie">
+              <i class="fas fa-file-invoice"></i>
+              <p>Numeros de Serie</p>
+            </a>
+
+            <a class="card icon-card text-center" href="/sales/invoices">
+              <i class="fas fa-file-invoice"></i>
+              <p>Facturas Registradas</p>
+            </a>
+
+            <a class="card icon-card text-center" href="/sales/invoices_with_costs">
+              <i class="fas fa-file-invoice"></i>
+              <p>Facturas Registradas (Costo de Venta)</p>
+            </a>
+
+
+
+            <!-- <a class="card icon-card text-center" href="/sales/daily_report">
                      <i class="far fa-file-spreadsheet"></i>
                      <p>Reporte Diario de Ventas</p>
                   </a> -->
-                  <% if (permission.includes('revoke_invoice_documents')) { %>
-                  <a class="card icon-card text-center" href="javascript:void(0)" onclick="revoke_invoice()">
-                     <i class="fas fa-file-excel"></i>
-                     <p>Anular Factura</p>
-                  </a>
+            <% if (permission.includes('revoke_invoice_documents')) { %>
+            <a class="card icon-card text-center" href="javascript:void(0)" onclick="revoke_invoice()">
+              <i class="fas fa-file-excel"></i>
+              <p>Anular Factura</p>
+            </a>
 
-                  <% } %>
-
-
-                  <a class="card icon-card text-center" href="/sales/update_prices">
-                     <i class="fas fa-search-dollar"></i>
-                     <p>Actualizar Lista de Precios</p>
-                  </a>
+            <% } %>
 
 
+            <a class="card icon-card text-center" href="/sales/update_prices">
+              <i class="fas fa-search-dollar"></i>
+              <p>Actualizar Lista de Precios</p>
+            </a>
 
 
-               </div>
-            </div>
-         </div>
+
+
+          </div>
+        </div>
       </div>
+    </div>
 
-      <% if (permission.includes('revoke_invoice_documents')) { %>
-      <div class="modal fade" id="addInvoice" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-            <div class="modal-content">
-               <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
-                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-               </div>
-               <div class="modal-body">
-                  <div class="row">
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_type">Tipo de Documento</label>
-                           <select name="invoice_type" id="invoice_type" class="form-control">
+    <% if (permission.includes('revoke_invoice_documents')) { %>
+    <div class="modal fade" id="addInvoice" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_type">Tipo de Documento</label>
+                  <select name="invoice_type" id="invoice_type" class="form-control">
 
-                           </select>
-                        </div>
-                     </div>
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_number">Numero del Documento</label>
-                           <input type="number" class="form-control" step="1" id="invoice_number">
-                        </div>
-                     </div>
-                  </div>
-
-                  <div class="form-group">
-                     <label for="invoice_name">Nombre en la factura</label>
-                     <input type="text" class="form-control" name="invoice_name" id="invoice_name">
-                  </div>
-
-                  <div class="form-group">
-                     <label for="invoice_direction">Direccion</label>
-                     <input type="text" class="form-control" name="invoice_direction" id="invoice_direction">
-                  </div>
-
-                  <div class="form-group">
-                     <label for="invoice_giro">Giro</label>
-                     <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
-                  </div>
-
-                  <div class="row">
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_nit">NIT/DUI</label>
-                           <input type="text" class="form-control" name="invoice_nit" id="invoice_nit">
-                        </div>
-                     </div>
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_nrc">NRC</label>
-                           <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
-                        </div>
-                     </div>
-                  </div>
-
-                  <div class="row">
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
-                           <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
-                        </div>
-                     </div>
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="invoice_cuenta_de">Venta a cuenta de:</label>
-                           <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
-                        </div>
-                     </div>
-                  </div>
-                  <div class="form-group">
-                     <label for="invoice_date">Fecha de La Factura</label>
-                     <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
-                  </div>
-                  <div class="form-group">
-                     <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
-                     <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
-                  </div>
-
-
-                  <div class="form-group">
-                     <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
-                     <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
-                  </div>
-
-                  <div class="form-check form-switch">
-                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
-                     <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
-                  </div>
-
-                  <br>
-                  <div class="form-check form-switch">
-                     <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
-                     <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
-                  </div>
-               </div>
-               <div class="modal-footer" style="display: block;">
-                  <div class="text-center">
-                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                     <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
-                  </div>
-               </div>
+                  </select>
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_number">Numero del Documento</label>
+                  <input type="number" class="form-control" step="1" id="invoice_number">
+                </div>
+              </div>
             </div>
-         </div>
-      </div>
 
-      <div class="modal fade" id="revokeInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-            <div class="modal-content">
-               <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
-                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-               </div>
-               <div class="modal-body">
-                  <div class="bg-danger text-white p-4 mb-4">
-                     <p>NOTA: Antes de Proceder, verifique el tipo de documento, numero de Serie y numero de documento. </p>
-                     <p>Este proceso no es reversible</p>
-                  </div>
-
-                  <div class="row">
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="revoke_invoice_type">Tipo de Documento</label>
-                           <select name="revoke_invoice_type" id="revoke_invoice_type" class="form-control">
-
-                           </select>
-                        </div>
-                     </div>
-                     <div class="col">
-                        <div class="form-group">
-                           <label for="revoke_invoice_number">Numero del Documento</label>
-                           <input type="number" class="form-control" step="1" id="revoke_invoice_number">
-                        </div>
-                     </div>
-                  </div>
-
-                  <div class="form-group">
-                     <label for="revoke_operation">Operacion a Realizar</label>
-                     <select class="form-control" name="revoke_operation" id="revoke_operation">
-                        <option value="1">Solo Anular Factura</option>
-                        <option value="2">Anular Factura y Venta</option>
-                        <option value="3">Sustituir por otro correlativo</option>
-                     </select>
-                  </div>
-
-               </div>
-
-               <div class="modal-footer" style="display: block;">
-                  <div class="text-center">
-                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                     <button type="button" class="btn btn-primary" id="revokeButton">Procesar</button>
-                  </div>
-               </div>
-
-
+            <div class="form-group">
+              <label for="invoice_name">Nombre en la factura</label>
+              <input type="text" class="form-control" name="invoice_name" id="invoice_name">
             </div>
-         </div>
+
+            <div class="form-group">
+              <label for="invoice_direction">Direccion</label>
+              <input type="text" class="form-control" name="invoice_direction" id="invoice_direction">
+            </div>
+
+            <div class="form-group">
+              <label for="invoice_giro">Giro</label>
+              <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_nit">NIT/DUI</label>
+                  <input type="text" class="form-control" name="invoice_nit" id="invoice_nit">
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_nrc">NRC</label>
+                  <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
+                  <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+                  <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="invoice_date">Fecha de La Factura</label>
+              <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
+            </div>
+            <div class="form-group">
+              <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+              <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
+            </div>
+
+
+            <div class="form-group">
+              <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+              <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
+            </div>
+
+            <div class="form-check form-switch">
+              <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
+              <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+            </div>
+
+            <br>
+            <div class="form-check form-switch">
+              <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
+              <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: block;">
+            <div class="text-center">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+              <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <% } %>
+    <div class="modal fade" id="revokeInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <div class="bg-danger text-white p-4 mb-4">
+              <p>NOTA: Antes de Proceder, verifique el tipo de documento, numero de Serie y numero de documento. </p>
+              <p>Este proceso no es reversible</p>
+            </div>
 
-      <%- include('../Layouts/Footer.ejs') %>
-   </div>
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="revoke_invoice_type">Tipo de Documento</label>
+                  <select name="revoke_invoice_type" id="revoke_invoice_type" class="form-control">
+
+                  </select>
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="revoke_invoice_number">Numero del Documento</label>
+                  <input type="number" class="form-control" step="1" id="revoke_invoice_number">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="revoke_operation">Operacion a Realizar</label>
+              <select class="form-control" name="revoke_operation" id="revoke_operation">
+                <option value="1">Solo Anular Factura</option>
+                <option value="2">Anular Factura y Venta</option>
+                <option value="3">Sustituir por otro correlativo</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="modal-footer" style="display: block;">
+            <div class="text-center">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+              <button type="button" class="btn btn-primary" id="revokeButton">Procesar</button>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+    <% } %>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
 
 </body><%- include('../Layouts/Scripts.ejs') %>
 
 <% if (permission.includes('revoke_invoice_documents')) { %>
 <script>
-   const NewInvoiceModal = new bootstrap.Modal(document.getElementById('addInvoice'), {
-         keyboard: true
-      }),
-      RevokeInvoiceModal = new bootstrap.Modal(document.getElementById('revokeInvoiceModal'), {
-         keyboard: true
-      });
-   var series = null,
-      revoke_data = null;
-   const s_options = {
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: {
-         'Content-Type': 'application/json'
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-   };
+  const NewInvoiceModal = new bootstrap.Modal(document.getElementById('addInvoice'), {
+      keyboard: true
+    }),
+    RevokeInvoiceModal = new bootstrap.Modal(document.getElementById('revokeInvoiceModal'), {
+      keyboard: true
+    });
+  var series = null,
+    revoke_data = null;
+  const s_options = {
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+  };
 
-   const revoke_invoice = async () => {
-      if (series === null) {
-         series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
-         let content = '';
-         let llaves = Object.keys(series);
-         for (let index = 0; index < llaves.length; index++) {
-            let _serie = series[llaves[index]];
-            content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
-         }
-         document.querySelector("#revoke_invoice_type").innerHTML = content;
-         document.querySelector("#invoice_type").innerHTML = content;
+  const revoke_invoice = async () => {
+    if (series === null) {
+      series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+      let content = '';
+      let llaves = Object.keys(series);
+      for (let index = 0; index < llaves.length; index++) {
+        let _serie = series[llaves[index]];
+        content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
       }
-      document.querySelector("#revokeButton").innerHTML = ` Procesar`;
-      RevokeInvoiceModal.toggle();
-   }
+      document.querySelector("#revoke_invoice_type").innerHTML = content;
+      document.querySelector("#invoice_type").innerHTML = content;
+    }
+    document.querySelector("#revokeButton").innerHTML = ` Procesar`;
+    RevokeInvoiceModal.toggle();
+  }
 
 
-   document.addEventListener('DOMContentLoaded', event => {
+  document.addEventListener('DOMContentLoaded', event => {
 
-      document.querySelector("#addInvoiceButton").addEventListener('click', e => {
-         let _s = series[document.querySelector("#invoice_type").value];
-         revoke_data.invoice_serie = _s.id;
-         revoke_data.invoice_type = _s.type;
-         revoke_data.invoice_number = document.querySelector("#invoice_number").value;
+    document.querySelector("#addInvoiceButton").addEventListener('click', e => {
+      let _s = series[document.querySelector("#invoice_type").value];
+      revoke_data.invoice_serie = _s.id;
+      revoke_data.invoice_type = _s.type;
+      revoke_data.invoice_number = document.querySelector("#invoice_number").value;
 
-         if (revoke_data.invoice_number > _s.end || revoke_data.invoice_number < _s.init) {
-            return errorMessage("Numero de factura fuera de Rango");
-         }
-
-
+      if (revoke_data.invoice_number > _s.end || revoke_data.invoice_number < _s.init) {
+        return errorMessage("Numero de factura fuera de Rango");
+      }
 
 
-         revoke_data.data = {
-            name: document.querySelector("#invoice_name").value,
-            direction: document.querySelector("#invoice_direction").value,
-            giro: document.querySelector("#invoice_giro").value,
-            nit: document.querySelector("#invoice_nit").value,
-            ncr: document.querySelector("#invoice_nrc").value,
-            nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
-            cuenta_de: document.querySelector("#invoice_cuenta_de").value,
-            leyend: document.querySelector("#invoice_leyend").value,
-            invoice_date: document.querySelector("#invoice_date").value,
-         }
-         revoke_data.invoice_date = document.querySelector("#invoice_date").value;
 
-         if (revoke_data.invoice_type == "ccf" && revoke_data.data.ncr.length < 3) {
-            return errorMessage("para Credito Fiscal proporcione el numero de Registro");
-         } else if (revoke_data.invoice_date.length < 10) {
-            return errorMessage("Fecha invalida");
-         }
 
-         revoke_data.invoice_resume = document.querySelector("#invoice_simplification").value.trim();
-         revoke_data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
-         revoke_data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
+      revoke_data.data = {
+        name: document.querySelector("#invoice_name").value,
+        direction: document.querySelector("#invoice_direction").value,
+        giro: document.querySelector("#invoice_giro").value,
+        nit: document.querySelector("#invoice_nit").value,
+        ncr: document.querySelector("#invoice_nrc").value,
+        nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
+        cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+        leyend: document.querySelector("#invoice_leyend").value,
+        invoice_date: document.querySelector("#invoice_date").value,
+      }
+      revoke_data.invoice_date = document.querySelector("#invoice_date").value;
 
-         console.log(revoke_data);
-         document.querySelector("#addInvoiceButton").disabled = true;
-         postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
-            if (data.status == 'success') {
-               successMessage('registrado');
-               setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
-            } else if (data.status == 'errorMessage') {
-               document.querySelector("#revokeButton").innerHTML = ` Guardar`;
-               document.querySelector("#revokeButton").disabled = false;
-               return errorMessage(data.message);
-            } else {
-               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-            }
-         });
+      if (revoke_data.invoice_type == "ccf" && revoke_data.data.ncr.length < 3) {
+        return errorMessage("para Credito Fiscal proporcione el numero de Registro");
+      } else if (revoke_data.invoice_date.length < 10) {
+        return errorMessage("Fecha invalida");
+      }
 
+      revoke_data.invoice_resume = document.querySelector("#invoice_simplification").value.trim();
+      revoke_data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
+      revoke_data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
+
+      console.log(revoke_data);
+      document.querySelector("#addInvoiceButton").disabled = true;
+      postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
+        if (data.status == 'success') {
+          successMessage('registrado');
+          setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
+        } else if (data.status == 'errorMessage') {
+          document.querySelector("#revokeButton").innerHTML = ` Guardar`;
+          document.querySelector("#revokeButton").disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
       });
 
-      document.querySelector("#revokeButton").addEventListener('click', async e => {
-         let n = Number.parseInt(document.querySelector("#revoke_invoice_number").value);
-         revoke_data = {
-            serie: document.querySelector("#revoke_invoice_type").value,
-            number: n,
-            option: document.querySelector("#revoke_operation").value,
-         }
+    });
 
-         let s = series[revoke_data.serie];
-         if (revoke_data.number > s.end || revoke_data.number < s.init || isNaN(revoke_data.number)) {
-            return errorMessage('El numero de documento proporcionado esta fuera de rango');
-         }
+    document.querySelector("#revokeButton").addEventListener('click', async e => {
+      let n = Number.parseInt(document.querySelector("#revoke_invoice_number").value);
+      revoke_data = {
+        serie: document.querySelector("#revoke_invoice_type").value,
+        number: n,
+        option: document.querySelector("#revoke_operation").value,
+      }
 
-         document.querySelector("#revokeButton").innerHTML = ` <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      let s = series[revoke_data.serie];
+      if (revoke_data.number > s.end || revoke_data.number < s.init || isNaN(revoke_data.number)) {
+        return errorMessage('El numero de documento proporcionado esta fuera de rango');
+      }
+
+      document.querySelector("#revokeButton").innerHTML = ` <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
          cargando...`;
-         document.querySelector("#revokeButton").disabled = true;
+      document.querySelector("#revokeButton").disabled = true;
 
 
-         if (revoke_data.option == "3") {
-            //obtener los datos de la factura y cargarlos al formulario
+      if (revoke_data.option == "3") {
+        //obtener los datos de la factura y cargarlos al formulario
 
-            let data = await fetch(`/sales/invoice_data/${revoke_data.number}/${revoke_data.serie}`).then(data => data.json());
+        let data = await fetch(`/sales/invoice_data/${revoke_data.number}/${revoke_data.serie}`).then(data => data.json());
 
-            if (data.status == "success") {
+        if (data.status == "success") {
 
-               let _data = JSON.parse(data.invoice.invoice_data);
-               console.log(_data, _data.ncr);
-               //cargar los controles de la nueva factura
-               document.querySelector("#invoice_name").value = _data.name;
-               document.querySelector("#invoice_direction").value = _data.direction;
-               document.querySelector("#invoice_giro").value = _data.giro;
-               document.querySelector("#invoice_nit").value = _data.nit;
-               document.querySelector("#invoice_nrc").value = _data.ncr;
-               document.querySelector("#invoice_nota_remision_anterior").value = _data.nota_remision_anterior;
-               document.querySelector("#invoice_cuenta_de").value = _data.cuenta_de;
-               document.querySelector("#invoice_leyend").value = _data.leyend;
-               document.querySelector("#invoice_date").value = date_to_input(data.invoice.invoice_date);
-               document.querySelector("#invoice_simplification").value = data.invoice.invoice_resume;
-               document.querySelector("#invoice_iva_retention").checked = data.invoice.invoice_retention == true || data.invoice.invoice_retention == 1;
-               document.querySelector("#invoice_isr_retention").checked = data.invoice.invoice_isr == true || data.invoice.invoice_isr == 1;
+          let _data = JSON.parse(data.invoice.invoice_data);
+          console.log(_data, _data.ncr);
+          //cargar los controles de la nueva factura
+          document.querySelector("#invoice_name").value = _data.name;
+          document.querySelector("#invoice_direction").value = _data.direction;
+          document.querySelector("#invoice_giro").value = _data.giro;
+          document.querySelector("#invoice_nit").value = _data.nit;
+          document.querySelector("#invoice_nrc").value = _data.ncr;
+          document.querySelector("#invoice_nota_remision_anterior").value = _data.nota_remision_anterior;
+          document.querySelector("#invoice_cuenta_de").value = _data.cuenta_de;
+          document.querySelector("#invoice_leyend").value = _data.leyend;
+          document.querySelector("#invoice_date").value = date_to_input(data.invoice.invoice_date);
+          document.querySelector("#invoice_simplification").value = data.invoice.invoice_resume;
+          document.querySelector("#invoice_iva_retention").checked = data.invoice.invoice_retention == true || data.invoice.invoice_retention == 1;
+          document.querySelector("#invoice_isr_retention").checked = data.invoice.invoice_isr == true || data.invoice.invoice_isr == 1;
 
-               NewInvoiceModal.toggle();
-               RevokeInvoiceModal.toggle();
+          NewInvoiceModal.toggle();
+          RevokeInvoiceModal.toggle();
 
-            } else {
-               return errorMessage('Numero de factura no encontrado');
-            }
-         } else {
-            //enviar datos al Servidor
-            postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
-               if (data.status == 'success') {
-                  successMessage('registrado');
-                  setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
-               } else if (data.status == 'errorMessage') {
-                  document.querySelector("#revokeButton").innerHTML = ` Guardar`;
-                  document.querySelector("#revokeButton").disabled = false;
-                  return errorMessage(data.message);
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
+        } else {
+          return errorMessage('Numero de factura no encontrado');
+        }
+      } else {
+        //enviar datos al Servidor
+        postData('/sales/invoice/revoke_invoice', revoke_data).then(data => {
+          if (data.status == 'success') {
+            successMessage('registrado');
+            setTimeout(window.location.href = `/sales/client/view/${data.invoice.client}`, 2000);
+          } else if (data.status == 'errorMessage') {
+            document.querySelector("#revokeButton").innerHTML = ` Guardar`;
+            document.querySelector("#revokeButton").disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
 
-         }
-      });
-   })
+      }
+    });
+  })
 </script>
 <% } %>
 

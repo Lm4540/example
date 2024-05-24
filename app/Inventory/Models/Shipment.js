@@ -56,6 +56,9 @@ module.exports = sequelize.define('Shipment', {
     isIn: {
         type: DataTypes.BOOLEAN,
         defaultValue: 0,
+    },
+    requisition: {
+        type: DataTypes.INTEGER.UNSIGNED,
     }
 }, {
     tableName: 'inventory_shipment',

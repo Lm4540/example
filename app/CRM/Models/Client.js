@@ -22,6 +22,9 @@ const Client = sequelize.define('Client', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+        set(value){
+            this.setDataValue('name', value.replace(/['"]+/g, '').trim());
+        },
     },
     type: {
         type: DataTypes.ENUM('minor', 'major'),
@@ -69,7 +72,12 @@ const Client = sequelize.define('Client', {
     createdBy: DataTypes.STRING,
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
-    direction: DataTypes.STRING(500),
+    direction: {
+        type: DataTypes.STRING(500),
+        set(value){
+            this.setDataValue('direction', value.replace(/['"]+/g, '').trim());
+        },
+    },
     balance: {
         type: DataTypes.DECIMAL(10,2), 
         defaultValue:0.00, 

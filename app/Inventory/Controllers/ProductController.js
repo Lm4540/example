@@ -55,6 +55,74 @@ const ProductController = {
     },
 
 
+    testTest2: async (req, res) => {
+        let products = {}
+        let tmp = await sequelize.query('select * from inventory_product where stock > 0', {
+            type: QueryTypes.SELECT,
+            model: Product,
+        });
+        tmp.forEach(el => products[el.id] = {
+            id: el.id,
+            link: `http://localhost:8080/inventory/product/view/${el.id}`,
+            link2: `http://143.198.75.85:8080/inventory/product/view/${el.id}`,
+            name: el.name,
+            stock: el.stock,
+            cant: 0
+        });
+
+
+        tmp = await sequelize.query('SELECT * FROM `inventory_product_stock` WHERE product in (select id from inventory_product where stock > 0)', {
+            type: QueryTypes.SELECT,
+        });
+        tmp.forEach(el => products[el.product].cant = products[el.product].cant + el.cant);
+
+        keys = Object.keys(products);
+        response = [];
+        for (let index = 0; index < keys.length; index++) {
+            const product = products[keys[index]];
+            if (product.cant !== product.stock) {
+                response.push(product);
+            }
+        }
+
+
+        products = {}
+        tmp = await sequelize.query('select * from inventory_product where id in (SELECT DISTINCT(product) FROM `inventory_product_stock` WHERE cant > 0)', {
+            type: QueryTypes.SELECT,
+            model: Product,
+        });
+        tmp.forEach(el => products[el.id] = {
+            id: el.id,
+            link: `http://localhost:8080/inventory/product/view/${el.id}`,
+            link2: `http://143.198.75.85:8080/inventory/product/view/${el.id}`,
+            name: el.name,
+            stock: el.stock,
+            cant: 0
+        });
+
+
+        tmp = await sequelize.query('SELECT * FROM `inventory_product_stock` WHERE cant > 0', {
+            type: QueryTypes.SELECT,
+        });
+        tmp.forEach(el => products[el.product].cant = products[el.product].cant + el.cant);
+
+        keys = Object.keys(products);
+        response2 = [];
+        for (let index = 0; index < keys.length; index++) {
+            const product = products[keys[index]];
+            if (product.cant !== product.stock) {
+                response.push(product);
+            }
+        }
+
+
+        return res.json({
+            prueba1: response,
+            prueba2: response2
+        });
+    },
+
+
     getVistadeCorreccionDeClassificaciones: async (req, res) => {
         let limit = 15;
         let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']], raw: true });

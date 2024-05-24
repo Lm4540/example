@@ -15,9 +15,13 @@ const RequisitionDetail = sequelize.define('RequisitionDetail', {
     },
     cant: {
         type: DataTypes.INTEGER.UNSIGNED,
-        get(){return Number.parseInt(this.getDataValue('cant'))}
+        get() { return Number.parseInt(this.getDataValue('cant')) }
     },
     createdBy: DataTypes.STRING,
+    client: {
+        type: DataTypes.INTEGER.UNSIGNED
+    },
+    client_name: DataTypes.STRING,
 }, {
     tableName: 'inventory_requisition_detail',
 });

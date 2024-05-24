@@ -19,12 +19,12 @@ const SalePayment = require("./Models/SalePayment");
 // const fs = require('fs');
 // const { Socket } = require("socket.io");
 
-const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 function generateString(length) {
     let result = ' ';
     const charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
@@ -37,7 +37,7 @@ module.exports = (io, socket) => {
         group_identification = 'user__' + socket.request.session.userSession.id;
         socket.join(group_identification);
     } catch (error) {
-        
+
     }
 
     _io = io.of('/sales');
@@ -210,8 +210,17 @@ module.exports = (io, socket) => {
 
     socket.on('close_sale', async data => {
 
+        //Sanitizar la direccion: 
+
+        _direction = data.direction.replace(/['"]+/g, '').trim();
+        _reference = data.reference.replace(/['"]+/g, '').trim();
+
+
+
+        console.log(_direction, _reference);
+
         let errorMessage = null;
-        if (data.direction.length < 5) {
+        if (_direction.length < 5) {
             errorMessage = 'Coloque una Dirección válida';
         } else if (data.phone.length < 8) {
             errorMessage = 'Coloque el teléfono de contacto';
@@ -250,86 +259,16 @@ module.exports = (io, socket) => {
                             const result = await sequelize.transaction(async (t) => {
                                 sale._status = 'closed';
                                 sale.delivery_type = data.delivery_type;
-                                sale.delivery_direction = data.direction;
+                                sale.delivery_direction = _direction;
                                 sale.delivery_contact = data.phone;
-                                sale.delivery_instructions = data.reference;
+                                sale.delivery_instructions = _reference;
                                 sale.delivery_date = new Date(data.day);
                                 sale.delivery_time = data.time;
                                 sale.delivery_amount = data.delivery_amount;
 
                                 if (data.delivery_type == 'delivery') {
                                     sale.delivery_provider = data.delivery_provider;
-                                    //buscar el proveedor y actualizar sus direcciones sugeridas
-
-                                    let provider = await Provider.findByPk(data.delivery_provider);
-                                    if (provider) {
-                                        let destinos = provider.delivery_locations;
-                                        if (!destinos.includes(data.direction)) {
-                                            destinos.push(data.direction);
-                                            provider.delivery_locations = destinos;
-                                            await provider.save({ transaction: t });
-                                        }
-                                    }
                                 }
-
-
-                                // let payments = await SalePayment.findAll({
-                                //     where: {
-                                //         client: cliente.id,
-                                //         asigned_amount: sequelize.literal('asigned_amount < amount')
-                                //     }
-                                // });
-
-
-                                // if (payments.length > 0) {
-                                //     let sale_value = (sale.balance + sale.delivery_amount - sale.collected);
-                                //     for (let index = 0; index < payments.length; index++) {
-                                //         if (sale_value > 0) {
-                                //             let payment = payments[index];
-
-                                //             let max_payment_amount = (payment.amount - payment.asigned_amount);
-
-                                //             if (max_payment_amount > sale_value) {
-                                //                 sale.collected += sale_value;
-                                //                 if (sale.payments !== null) {
-                                //                     sale.payments.push({ "id": payment.id, "amount": sale_value })
-                                //                 } else {
-                                //                     sale.payments = [{ "id": payment.id, "amount": sale_value }];
-                                //                 }
-                                //                 // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                                //                 payment.asigned_amount != null ? payment.asigned_amount += sale_value : payment.asigned_amount = sale_value;
-                                //                 if (payment.sales !== null) {
-                                //                     payment.sales.push({ "id": sale.id, "amount": sale_value });
-                                //                 } else {
-                                //                     payment.sales = [{ "id": sale.id, "amount": sale_value }]
-                                //                 }
-                                //                 await payment.save({ transaction: t });
-                                //                 sale_value = 0;
-                                //             } else {
-
-                                //                 sale.collected += max_payment_amount;
-                                //                 if (sale.payments !== null) {
-                                //                     sale.payments.push({ "id": payment.id, "amount": max_payment_amount })
-                                //                 } else {
-                                //                     sale.payments = [{ "id": payment.id, "amount": max_payment_amount }];
-                                //                 }
-                                //                 // sale._status = sale._status == 'delivered' ? 'collected' : sale._status;
-                                //                 payment.asigned_amount != null ? payment.asigned_amount += max_payment_amount : payment.asigned_amount = max_payment_amount;
-                                //                 if (payment.sales !== null) {
-                                //                     payment.sales.push({ "id": sale.id, "amount": max_payment_amount });
-
-                                //                 } else {
-                                //                     payment.sales = [{ "id": sale.id, "amount": max_payment_amount }];
-                                //                 }
-
-                                //                 await payment.save({ transaction: t });
-                                //                 sale_value -= max_payment_amount;
-                                //             }
-                                //         } else {
-                                //             break;
-                                //         }
-                                //     }
-                                // }
                                 await sale.save({ transaction: t });
 
                                 //emitir evento
