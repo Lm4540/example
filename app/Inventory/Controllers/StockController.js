@@ -29,20 +29,24 @@ const StockController = {
 
         let products = {};
         tmp.forEach(prod => {
-            products[prod.id] = {
+            products[`s_${prod.id}`] = {
                 name: prod.name,
                 image: prod.image,
                 cant: 0,
                 provider_code: prod.provider_code,
                 internal_code: prod.internal_code,
-
+                id: prod.id
             }
         })
 
         tmp = await sequelize.query(`SELECT * FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and _status = 'process')`, { type: QueryTypes.SELECT, model: SaleDetail });
 
         tmp.forEach(dt => {
-            products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant - dt.ready) : products[dt.product].cant = (dt.cant - dt.ready);
+            if (products[`s_${dt.product}`] !== undefined) {
+                products[`s_${dt.product}`].cant = products[`s_${dt.product}`].cant + (dt.cant - dt.ready);
+            }
+
+            // products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant - dt.ready) : products[dt.product].cant = (dt.cant - dt.ready);
         });
 
         // let llaves = Object.keys(products);
@@ -90,7 +94,7 @@ const StockController = {
     },
 
 
-    viewRequisition: async (req, res) => {
+    viewRequisitionOLD: async (req, res) => {
         let sucursals = await Sucursal.findAll();
         let indexed_sucursals = {};
         sucursals.forEach(e => indexed_sucursals[e.id] = e.name);
@@ -135,9 +139,112 @@ const StockController = {
         return Helper.notFound(req, res, 'Requisition not Found')
     },
 
+    viewRequisition: async (req, res) => {
+        let tmp = await Sucursal.findAll();
+        let indexed_sucursals = {};
+        tmp.forEach(e => indexed_sucursals[e.id] = e.name);
+        let requisition = await Requisition.findByPk(req.params.id);
+
+        if (requisition) {
+
+
+            let products = {};
+            tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)order by name ASC', {
+                type: QueryTypes.SELECT,
+                model: Product,
+                replacements: {
+                    _requisition: requisition.id
+                }
+            });
+
+            tmp.forEach(prod => {
+                products[prod.id] = {
+                    name: prod.name,
+                    image: prod.image,
+                    details: [],
+                    provider_code: prod.provider_code,
+                    sku: prod.internal_code,
+                    cant: 0
+                }
+            });
+
+            let details = await RequisitionDetail.findAll({
+                where: {
+                    requisition: requisition.id
+                }, raw: true,
+            });
+
+            details.forEach(det => {
+                products[det.product].details.push(det);
+                products[det.product].cant = det.cant + products[det.product].cant;
+            });
+
+            return res.render(requisition._status == 'open' ? 'Inventory/Requisition/view' : 'Inventory/Requisition/closed', {
+                pageTitle: `Solicitud de Transferencia ${requisition.id}`,
+                requisition, indexed_sucursals, products
+            });
+        }
+
+        return Helper.notFound(req, res, 'Requisition not Found')
+    },
+
+    viewRequisition_MyProducts: async (req, res) => {
+        let tmp = await Sucursal.findAll();
+        let indexed_sucursals = {};
+        let userid = req.session.userSession.employee.id;
+
+        tmp.forEach(e => indexed_sucursals[e.id] = e.name);
+        let requisition = await Requisition.findByPk(req.params.id);
+
+        if (requisition && requisition._status == 'open') {
+
+
+            let products = {};
+            tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where user = :_userid and requisition = :_requisition)order by name ASC', {
+                type: QueryTypes.SELECT,
+                model: Product,
+                replacements: {
+                    _requisition: requisition.id,
+                    _userid: userid
+                }
+            });
+
+            tmp.forEach(prod => {
+                products[prod.id] = {
+                    name: prod.name,
+                    image: prod.image,
+                    details: [],
+                    provider_code: prod.provider_code,
+                    sku: prod.internal_code,
+                    cant: 0
+                }
+            });
+
+            let details = await RequisitionDetail.findAll({
+                where: {
+                    requisition: requisition.id,
+                    user: req.session.userSession.employee.id
+                }, raw: true,
+            });
+
+            details.forEach(det => {
+                products[det.product].details.push(det);
+                products[det.product].cant = det.cant + products[det.product].cant;
+            });
+
+            return res.render(requisition._status == 'open' ? 'Inventory/Requisition/viewMyProducts' : 'Inventory/Requisition/closed', {
+                pageTitle: `Solicitud de Transferencia ${requisition.id}`,
+                requisition, indexed_sucursals, products
+            });
+        }
+
+        return Helper.notFound(req, res, 'Requisition not Found or it´s closed')
+    },
+
     updateRequisition: async (req, res) => {
         let data = req.body;
         let createdBy = req.session.userSession.shortName;
+        let userid = req.session.userSession.employee.id;
 
         switch (data.case) {
             case 'create':
@@ -227,6 +334,7 @@ const StockController = {
                                             product: dt.product,
                                             cant: dt.cant,
                                             createdBy,
+                                            user: userid
                                         }, { transaction: t });
 
                                         let reserve = await StockReserve.create({
@@ -282,6 +390,7 @@ const StockController = {
                                         product: dt.product,
                                         cant: dt.cant,
                                         createdBy,
+                                        user: userid
                                     }, { transaction: t });
 
                                     reserve = await StockReserve.create({
@@ -339,13 +448,13 @@ const StockController = {
                             let detail = await RequisitionDetail.findOne({
                                 where: {
                                     requisition: requisition.id,
-                                    product: data.product
+                                    product: data.product,
+                                    client: { [Op.is]: null },
+                                    user: userid
                                 }
                             });
 
                             return await sequelize.transaction(async (t) => {
-
-
 
                                 if (detail) {
                                     detail.cant = Number.parseInt(detail.cant + data.cant);
@@ -366,6 +475,7 @@ const StockController = {
                                         product: data.product,
                                         cant: data.cant,
                                         createdBy,
+                                        user: userid
                                     }, { transaction: t });
 
                                     let reserve = await StockReserve.create({
@@ -398,6 +508,8 @@ const StockController = {
 
                 break;
             case 'quitDetail':
+
+
                 data.cant = Number.parseInt(data.cant);
                 if (isNaN(data.cant) || data.cant < 1) {
                     return res.json({ status: 'errorMessage', message: 'Ingrese una cantidad valida', });
@@ -422,12 +534,64 @@ const StockController = {
                         if (cant > detail.cant) { cant = detail.cant }
 
 
+
+
                         return await sequelize.transaction(async (t) => {
                             let reserve = await StockReserve.findOne({
                                 where: {
                                     orderId: detail.id,
                                 }
                             });
+
+                            //VERIFICAR SI ES DE VENTA
+                            if (detail.sale_detail !== null) {
+                                let sale_detail = await SaleDetail.findByPk(detail.sale_detail);
+                                if (sale_detail) {
+                                    let more_details = await SaleDetail.count({
+                                        where: {
+                                            sale: sale_detail.sale,
+                                            id: {
+                                                [Op.ne]: sale_detail.id
+                                            }
+                                        }
+                                    });
+
+                                    console.log('\n\n', more_details, 'Esta es la cantidad de otros detalles que hay en la chingadera esta')
+
+                                    let sale = await Sale.findByPk(sale_detail.sale);
+                                    if (sale !== null) {
+                                        // sale.balance = sale.balance - (detail.price * cant);
+
+                                        sale.balance = Helper.fix_number(sale.balance - (sale_detail.price * cant))
+
+                                        if (sale_detail.cant == cant) {
+                                            await sale_detail.destroy({ transaction: t });
+                                        } else {
+
+                                            sale_detail.cant = sale_detail.cant - cant;
+                                            await sale_detail.save({ transaction: t });
+
+                                        }
+
+                                        if (sale.balance > 0 || more_details > 0) {
+                                            await sale.save({ transaction: t });
+                                        } else {
+                                            await sale.destroy({
+                                                transaction: t
+                                            });
+                                        }
+
+                                    } else {
+                                        throw 'venta no encontrada';
+                                    }
+                                } else {
+                                    throw 'Detalle no encontrado';
+                                }
+
+                            }
+
+                            //TOKEN
+
 
                             if (cant == detail.cant) {
                                 await reserve.destroy({ transaction: t });
@@ -444,6 +608,8 @@ const StockController = {
                             await product.save({ transaction: t });
                             stock.reserved -= Number.parseInt(data.cant);
                             await stock.save({ transaction: t });
+
+
 
                             return res.json({ status: 'success', message: 'Detalles eliminados de la solicitud. ¡Redirigiendo!', data: data.requisition });
                         });
@@ -481,7 +647,7 @@ const StockController = {
         let data = req.body;
         let createdBy = req.session.userSession.shortName;
         if (data.transporta.length < 3) {
-            return res.json({ status: 'error', message: "Indique el nombre de la persona que transportara el producto" });
+            return res.json({ status: 'errorMessage', message: "Indique el nombre de la persona que transportara el producto" });
         }
 
 
@@ -496,6 +662,189 @@ const StockController = {
                         requisition: requisition.id,
                     }
                 });
+
+                if (details.length < 1) {
+                    return res.json({ status: 'errorMessage', message: "Agregue detalles al cuerpo de la Solicitud" });
+                }
+
+                //buscar los productos
+                let tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)', {
+                    type: QueryTypes.SELECT,
+                    model: Product,
+                    replacements: {
+                        _requisition: requisition.id
+                    }
+                });
+
+                let products = {};
+                tmp.forEach(e => products[e.id] = e);
+
+                //buscar los stock
+                tmp = await sequelize.query('SELECT * FROM `inventory_product_stock` WHERE sucursal = :sucursal and product in (select product from inventory_requisition_detail where requisition = :_requisition)', {
+                    type: QueryTypes.SELECT,
+                    model: Stock,
+                    replacements: {
+                        sucursal: requisition.origin,
+                        _requisition: requisition.id
+                    }
+                });
+
+                let stocks = {};
+                tmp.forEach(e => stocks[e.product] = e);
+
+                //buscar las reservas
+
+                tmp = await sequelize.query('SELECT * FROM `inventory_product_stock_reserve` WHERE orderId in (select id from inventory_requisition_detail where requisition = :_requisition)', {
+                    type: QueryTypes.SELECT,
+                    model: StockReserve,
+                    replacements: {
+                        sucursal: requisition.origin,
+                        _requisition: requisition.id
+                    }
+                });
+
+                let reserves = {};
+                tmp.forEach(e => reserves[e.orderId] = e);
+                let destino = await Sucursal.findByPk(requisition.destino);
+                let sucursal = await Sucursal.findByPk(requisition.origin);
+
+                let details_bodyes = {};
+                let movements_bodyes = {};
+
+                return await sequelize.transaction(async (t) => {
+                    //crear el envio
+                    let shipment = await Shipment.create({
+                        type: 'transfer',
+                        createdBy,
+                        transportsBy: data.transporta,
+                        requestedBy: requisition.createdBy,
+                        direction: destino.location,
+                        originSucursal: requisition.origin,
+                        destinoSucursal: destino.id
+                    }, { transaction: t });
+
+                    var concept = `Solicitud de Transferencia #${requisition.id} desde ${sucursal.name} hacia ${destino.name} ENVIO N° TR-${sucursal.id}-${destino.id}-${shipment.id}`;
+
+                    let len = details.length;
+
+
+                    for (let index = 0; index < len; index++) {
+                        let dt = details[index],
+                            product = products[dt.product],
+                            stock = stocks[dt.product],
+                            reserve = reserves[dt.id];
+
+                        if (product == undefined || stock == undefined || reserve == undefined) {
+                            throw "Product or Stock not Found";
+                        }
+
+                        //Recopilar aqui la informacion para consolidarla
+                        if (details_bodyes[dt.product] == undefined || details_bodyes[dt.product] == null) {
+
+                            let __array = new Array();
+                            if (dt.sale_detail !== undefined && dt.sale_detail !== null) {
+                                __array.push({
+                                    id: dt.sale_detail,
+                                    cant: dt.cant
+                                });
+
+                            }
+
+                            details_bodyes[dt.product] = {
+                                shipment: shipment.id,
+                                product: dt.product,
+                                cant: dt.cant,
+                                cost: product.cost,
+                                description: `${product.name} (SKU#${product.sku})`,
+                                sale_detail: __array,
+                            };
+
+                            movements_bodyes[dt.product] = {
+                                product: dt.product,
+                                sucursal: stock.sucursal,
+                                cant: dt.cant,
+                                last_sucursal_stock: stock.cant,
+                                last_product_stock: product.stock,
+                                cost: product.cost,
+                                last_cost: product.cost,
+                                sale_detail: null,
+                                concept: concept,
+                                in: false,
+                                createdBy,
+                            }
+
+                        } else {
+                            details_bodyes[dt.product].cant += dt.cant;
+                            movements_bodyes[dt.product].cant += dt.cant;
+
+                            if (dt.sale_detail !== undefined && dt.sale_detail !== null) {
+                                details_bodyes[dt.product].sale_detail.push({
+                                    id: dt.sale_detail,
+                                    cant: dt.cant
+                                });
+                            }
+                        }
+                        //destruir la reserva
+                        await reserve.destroy({ transaction: t });
+                    }
+
+                    let keys = Object.keys(details_bodyes);
+
+                    for (let index = 0; index < keys.length; index++) {
+                        let detail_body = details_bodyes[keys[index]];
+                        let product = products[detail_body.product],
+                            stock = stocks[detail_body.product];
+
+                        let detail = await ShipmentDetail.create(detail_body, { transaction: t });
+                        let movement = await Movement.create(movements_bodyes[keys[index]], { transaction: t });
+
+                        //Actualizar el producto descontando la cantidad
+                        product.stock -= detail_body.cant;
+                        product.reserved -= detail_body.cant;
+                        await product.save({ transaction: t });
+
+                        stock.cant -= detail_body.cant;
+                        stock.reserved -= detail_body.cant;
+                        await stock.save({ transaction: t });
+                    }
+
+                    requisition._status = "closed";
+                    await requisition.save({ transaction: t });
+                    return res.json({ status: 'success', message: 'Guardado', shipment });
+                });
+
+            }
+            return Helper.notFound(req, res, 'Requisition not Found');
+        } catch (error) {
+            console.error(error);
+            return res.json({ status: 'error', message: error.message });
+        }
+    },
+
+
+    proccessRequisitionOLD: async (req, res) => {
+        let data = req.body;
+        let createdBy = req.session.userSession.shortName;
+        if (data.transporta.length < 3) {
+            return res.json({ status: 'errorMessage', message: "Indique el nombre de la persona que transportara el producto" });
+        }
+
+
+        try {
+            //buscar la requisition
+            let requisition = await Requisition.findByPk(data.requisition);
+            if (requisition && requisition._status !== "closed") {
+                //buscar los detalles
+
+                let details = await RequisitionDetail.findAll({
+                    where: {
+                        requisition: requisition.id,
+                    }
+                });
+
+                if (details.length < 1) {
+                    return res.json({ status: 'errorMessage', message: "Agregue detalles al cuerpo de la Solicitud" });
+                }
 
                 //buscar los productos
                 let tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)', {
@@ -1124,10 +1473,13 @@ const StockController = {
         }
 
     },
-    inShipment: async (req, res) => {
+    inShipmentOLD: async (req, res) => {
         let data = req.body;
         let shipment = await Shipment.findByPk(data.shipment).catch(err => next(err));
         if (shipment != null) {
+            if (shipment.isIn == true || shipment.isIn == 1) {
+                return Helper.notFound(req, res, 'Transaccion Duplicada');
+            }
             let details = await ShipmentDetail.findAll({ where: { shipment: shipment.id } });
 
             let tmp = await Product.findAll({
@@ -1169,6 +1521,8 @@ const StockController = {
 
                             //Si el stock existe, aumentamos la cantidad existente
                             let last_sucursal_stock = 0;
+
+
                             if (stock === undefined || stock == null) {
                                 //Si no existe lo creamos con la cantidad inicial del ingreso
                                 stock = await Stock.create({
@@ -1249,6 +1603,164 @@ const StockController = {
 
         return Helper.notFound(req, res, 'Transaction or Resource not Found');
     },
+
+    inShipment: async (req, res) => {
+        let data = req.body;
+        let shipment = await Shipment.findByPk(data.shipment).catch(err => next(err));
+        if (shipment != null) {
+            console.log(shipment.isIn)
+            if (shipment.isIn == true || shipment.isIn == 1) {
+                return Helper.notFound(req, res, 'Transaccion Duplicada');
+            }
+
+
+            let details = await ShipmentDetail.findAll({ where: { shipment: shipment.id } });
+
+            let tmp = await Product.findAll({
+                where: { id: { [Op.in]: sequelize.literal(`(SELECT product FROM inventory_shipment_detail WHERE shipment = ${shipment.id})`,), } }
+            });
+
+            let products = {};
+            tmp.forEach(element => { products[element.id] = element; });
+            //buscar e indexar los stock
+            tmp = await Stock.findAll({
+                where: {
+                    [Op.and]: {
+                        sucursal: shipment.destinoSucursal,
+                        product: {
+                            [Op.in]: sequelize.literal(`(SELECT product FROM inventory_shipment_detail WHERE shipment = ${shipment.id})`),
+                        },
+                    }
+                }
+            });
+            let stocks = {};
+            tmp.forEach(element => { stocks[element.product] = element; });
+
+            tmp = await Sucursal.findAll({ attributes: ['id', 'name'] });
+            let sucursales = {};
+            tmp.forEach(element => { sucursales[element.id] = element.name; });
+
+
+            let len = details.length;
+            let concept = `Transferencia desde ${sucursales[shipment.originSucursal]} hacia ${sucursales[shipment.destinoSucursal]} ENVIO N° TR-${shipment.originSucursal}-${shipment.destinoSucursal}-${shipment.id}`;
+            try {
+                const result = await sequelize.transaction(async (t) => {
+                    let faltan = false;
+                    for (let index = 0; index < len; index++) {
+                        let detail = details[index];
+                        let _cant = detail.cant;
+
+                        let product = products[detail.product];
+                        let stock = stocks[detail.product];
+
+
+
+                        let reserved = 0;
+                        if (detail.sale_detail.length > 0) {
+                            //recorrer los detalles
+                            let _largo = detail.sale_detail.length;
+                            for (let _f = 0; _f < _largo; _f++) {
+                                let _sale_detail = await SaleDetail.findByPk(detail.sale_detail[_f].id);
+                                if (_sale_detail !== null && _sale_detail !== undefined) {
+                                    _sale_detail.reserved += detail.sale_detail[_f].cant;
+                                    await _sale_detail.save({ transaction: t });
+
+                                    //Crear la reserva
+
+                                    let reserve = await StockReserve.create({
+                                        cant: detail.sale_detail[_f].cant,
+                                        createdBy: req.session.userSession.shortName,
+                                        concept: `Reserva por venta id ${_sale_detail.sale}`,
+                                        type: 'sale',
+                                        saleId: _sale_detail.id,
+                                        product: _sale_detail.product,
+                                        sucursal: shipment.destinoSucursal,
+                                    }, { transaction: t });
+
+
+                                    reserved += detail.sale_detail[_f].cant;
+
+
+                                }
+                            }
+                        }
+
+                        //Si el stock existe, aumentamos la cantidad existente
+                        let last_sucursal_stock = 0;
+                        if (stock === undefined || stock == null) {
+                            //Si no existe lo creamos con la cantidad inicial del ingreso
+                            stock = await Stock.create({
+                                'product': product.id,
+                                'sucursal': shipment.destinoSucursal,
+                                'cant': _cant,
+                                'reserved': reserved,
+                            }, { 'transaction': t });
+
+                        } else {
+                            last_sucursal_stock = stock.cant;
+                            stock.cant += _cant;
+                            stock.reserved += reserved;
+                            await stock.save({ 'transaction': t });
+
+                        }
+
+                        //calcular el costo promedio y actualizar el registro del producto
+                        let last_cost = product.cost;
+                        let last_stock = product.stock;
+
+                        product.cost = ((last_cost * last_stock) + (detail.cost * _cant)) / (_cant + last_stock);
+                        product.stock += _cant;
+                        product.reserved += reserved;
+                        product.last_cost = last_cost;
+
+                        //Actualizar cantidad y costo del producto
+                        await product.save({ transaction: t });
+
+                        //registrar el movimiento
+                        let move = await Movement.create({
+                            last_sucursal_stock: last_sucursal_stock,
+                            last_product_stock: last_stock,
+                            cant: _cant,
+                            cost: detail.cost,
+                            last_cost: last_cost,
+                            in: true,
+                            product: product.id,
+                            concept: concept,
+                            sucursal: stock.sucursal,
+                            createdBy: req.session.userSession.shortName,
+                        }, { transaction: t });
+
+                        detail.in += _cant;
+                        await detail.save({ transaction: t });
+
+                        if (detail.in < detail.cant) {
+                            faltan = true;
+                        }
+
+                    }
+
+                    shipment.receivedBy = req.session.userSession.shortName;
+                    shipment.isIn = true;
+                    await shipment.save({ transaction: t });
+                });
+
+                //transaction commit
+                return res.json({
+                    status: 'success',
+                    message: 'Guardado con exito',
+                });
+
+            } catch (error) {
+                console.log(error);
+                return res.status(500).json({ 'error': 'Internal Server Error' });
+            }
+
+            return Helper.notFound(req, res, 'Transaction or Resource not Found');
+
+        }
+
+        return Helper.notFound(req, res, 'Transaction or Resource not Found');
+    },
     kardex: async (req, res) => {
         let product = await Product.findByPk(req.params.id);
         return product === null ? res.status(404) : res.render('Inventory/Product/kardex', { product, pageTitle: product.name, });
@@ -1290,7 +1802,7 @@ const StockController = {
                 'out_val': '',
                 'out_sub': '',
                 'cant': first.last_product_stock,
-                'val': first.last_product_stock > 0 ? `$ ${Money.money_format(first.last_cost)}`: '--',
+                'val': first.last_product_stock > 0 ? `$ ${Money.money_format(first.last_cost)}` : '--',
                 'sub': `$ ${Money.money_format(Number.parseFloat(first.last_product_stock * first.last_cost).toFixed(2))}`,
             }]
 

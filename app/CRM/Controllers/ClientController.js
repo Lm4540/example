@@ -126,7 +126,7 @@ const ClientController = {
                     isLocal: data.isLocal,
                     isRetentionAgent: data.classification === 'gran',
                     classification: data.classification,
-                    createdBy: 'Luis Rivera',
+                    createdBy: req.session.userSession.employee.shortName,
                     phone: data.phone,
                     email: data.mail.length > 0 ? data.mail : null,
                     direction: data.direction.length > 0 ? data.direction : null,
@@ -320,7 +320,20 @@ const ClientController = {
                     ],
                 },
                 order: [['createdAt', 'DESC']],
+                limit: 5,
             });
+
+            let hay_mas_ventas = await Sale.count({
+                where: {
+                    [Op.and]: [
+                        { _status: { [Op.not]: 'process' } },
+                        { client: cliente.id },
+                    ],
+                },
+                order: [['createdAt', 'DESC']],
+            });
+
+            hay_mas_ventas = hay_mas_ventas > 5; 
 
             let in_process = await Sale.findOne({
                 where: {
@@ -366,12 +379,24 @@ const ClientController = {
 
 
             let payments = await SalePayment.findAll({
+                limit: 5,
+                where: {
+                    client: cliente.id
+                }, order: [
+                    ['id', 'DESC'],
+                ],
+            });
+
+
+            let hay_mas_pagos =  await SalePayment.count({
                 where: {
                     client: cliente.id
                 }, order: [
                     ['id', 'DESC'],
                 ]
             });
+
+            hay_mas_pagos = hay_mas_pagos > 5;
 
             //buscar las ordenes en proceso
             return res.render('CRM/Client/view', {
@@ -389,9 +414,89 @@ const ClientController = {
                 locations,
                 _status,
                 sucursals,
-                payments
+                payments,
+                hay_mas_pagos,
+                hay_mas_ventas
             });
         }
+    },
+
+    viewClientSales: async (req, res, next) => {
+        let client = req.params.id;
+        let last_id = req.params.last;
+        let limit = Number.parseInt(req.params.limit);
+
+        let mas = await Sale.count({
+            where: {
+                _status: { [Op.not]: 'process' },
+                client: client,
+                id: {
+                    [Op.lt]: last_id
+                }
+            },
+            order: [['createdAt', 'DESC']],
+        });
+
+        let details = await Sale.findAll({
+            where: {
+                _status: { [Op.not]: 'process' },
+                client: client,
+                id: {
+                    [Op.lt]: last_id
+                }
+
+            },
+            order: [['createdAt', 'DESC']],
+            limit: limit,
+            raw: true,
+        });
+
+
+        return res.json({
+            details: details,
+            more: mas > limit,
+            last: details[details.length - 1].id,
+        })
+    },
+
+    viewClientPayments: async (req, res, next) => {
+
+        let client = req.params.id;
+        let last_id = req.params.last;
+        let limit = Number.parseInt(req.params.limit);
+
+        let mas = await SalePayment.count({
+            where: {
+                client: client,
+                id: { 
+                    [Op.lt]: last_id
+                }
+            }, order: [
+                ['id', 'DESC'],
+            ]
+        });
+
+        let details = await SalePayment.findAll({
+            where: {
+                client: client,
+                id: { 
+                    [Op.lt]: last_id
+                }
+            }, order: [
+                ['id', 'DESC'],
+            ], limit: limit,
+        });
+
+
+        return res.json({
+            details: details,
+            more: mas > limit,
+            last: details[details.length - 1].id,
+        })
+
+
+
+
     },
 
     updateClientData: async (req, res) => {

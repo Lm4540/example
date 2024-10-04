@@ -322,7 +322,6 @@
       document.querySelector("#revoke_invoice_type").innerHTML = content;
       document.querySelector("#invoice_type").innerHTML = content;
     }
-
     document.querySelector("#revokeButton").innerHTML = ` Procesar`;
     RevokeInvoiceModal.toggle();
   }
@@ -330,9 +329,9 @@
 
   document.addEventListener('DOMContentLoaded', event => {
 
-   document.querySelector("#invoice_type").addEventListener('change', () => {
+    document.querySelector("#invoice_type").addEventListener('change', () => {
       set_invoice_number();
-   });
+    });
 
     document.querySelector("#addInvoiceButton").addEventListener('click', e => {
 

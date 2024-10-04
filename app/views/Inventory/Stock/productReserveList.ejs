@@ -1,64 +1,59 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-   <%- include('../../Layouts/Head.ejs') %>
-   <style>
-   </style>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+  </style>
 </head>
+
 <body class="<%= darkMode %>">
-   <%- include('../../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <h3 class="text-center">Lista de Reservas</h3>
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <h3 class="text-center">Lista de Reservas</h3>
 
 
-        <table class="table table-sm table-hover table-stripped">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Imagen</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% let keys = Object.keys(products);
+      <table class="table table-sm table-hover table-stripped">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Imagen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% let keys = Object.keys(products);
                 keys.forEach(key => {
                     let prod = products[key] %>
-                <tr>
-                    <td>
-                        <img src="<%= prod.image %>" alt="Image" class="round" style="width: 150px; ">
-                    </td>
-                    <td>
-                        <%= prod.name %><br>
-                        Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
-                        <a class="badge bg-primary" href="/inventory/product/view/<%= key %>" target="_blank"> Ver Producto</a><br><br>
-                        Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
-                        
-                    </td>
-                </tr>
-                <% }) %>
-            </tbody>
-        </table>
+          <tr>
+            <td>
+              <img src="<%= prod.image %>" alt="Image" class="round" style="width: 150px; ">
+            </td>
+            <td>
+              <%= prod.name %><br>
+              Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
+              <a class="badge bg-primary" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br><br>
+              <a class="badge bg-danger" href="/inventory/product/reserveList/<%= prod.id %>" target="_blank"> Reservar</a><br><br>
+              Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
 
-        
-
-        
-
-
-
-      </div>
-
-      <%- include('../../Layouts/Footer.ejs') %>
-   </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
-   document.addEventListener('DOMContentLoaded', event => {
+  document.addEventListener('DOMContentLoaded', event => {
 
 
 
-   });
+  });
 </script>
 
 </html>

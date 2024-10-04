@@ -594,6 +594,10 @@ const ProductController = {
                             console.log('La imagen se guardó correctamente en el servidor.');
                         }
                     });
+
+
+                    //Verificar si hay detalles que tengan la imagen, si no sobreescribir la imagen
+                    //pendiente
                 }
 
                 product.name = data.name;

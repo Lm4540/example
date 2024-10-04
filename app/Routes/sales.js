@@ -26,6 +26,8 @@ router.post('/client/updateData', ClientController.updateClientData);
 router.get('/client/:id(\\d+)', ClientController.getClient);
 router.get('/client/:id(\\d+)/orders', ClientController.getClientOrders);
 router.get('/client/view/:id(\\d+)', ClientController.viewClient);
+router.get('/client/view/:id(\\d+)/sales/:last(\\d+)/:limit(\\d+)', ClientController.viewClientSales);
+router.get('/client/view/:id(\\d+)/payments/:last(\\d+)/:limit(\\d+)', ClientController.viewClientPayments);
 router.get('/client/select2', ClientController.getClientToSelect2);
 
 router.get('/create/:id(\\d+)', SaleController.createClientSale);
@@ -73,6 +75,10 @@ router.post('/details/quit', (req, res, next) => Auth.HasPermission(req, res, ne
 
 //router.get('/corregir_fecha', InvoiceController.corregir_la_fecha);
 router.get('/asignar_pagos', SaleController.sale_status_check);
+
+router.get('/clientes_registrados', SaleController.reporte_de_clientes_registrados);
+router.get('/actualizar_ventas', SaleController.update_sale_delivery_type);
+
 
 router.get('/test_taxes', InvoiceController.add_taxes);
 router.get('/update_prices', (req, res, next) => Auth.HasPermission(req, res, next, ['update_price_list']), SaleController.update_prices);

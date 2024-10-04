@@ -210,6 +210,7 @@ const Auth = {
         if (session.userSession !== undefined && session.userSession !== null) {
             next();
         } else {
+            
             next(new Error("unauthorized"));
         }
     },

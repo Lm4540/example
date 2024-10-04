@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+</head>
+
+<% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <section class="section">
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr>
+              <th>ID de Proveedor</th>
+              <th>Nombre del Proveedor</th>
+              <th>Fecha de Registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% clients.forEach(cliente => { %>
+            <tr>
+              <td><%= cliente.id %></td>
+              <td><%= cliente.name %></td>
+              <td><%= Helper.format_date(cliente.createdAt, false) %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+|
+</script>
+
+</html>

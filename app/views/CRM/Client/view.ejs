@@ -2,38 +2,38 @@
 <html lang="en">
 
 <head>
-   <%- include('../../Layouts/Head.ejs') %>
-   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
-   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
-   <style>
-      #notes p {
-         margin-top: 0;
-         margin-bottom: .2rem;
-      }
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <style>
+    #notes p {
+      margin-top: 0;
+      margin-bottom: .2rem;
+    }
 
-      #notes .note {
-         border-bottom: 1px #9e9e9e solid;
-         margin-top: 2rem;
-      }
+    #notes .note {
+      border-bottom: 1px #9e9e9e solid;
+      margin-top: 2rem;
+    }
 
-      .product_item .card,
-      .product_item img {
-         border-radius: 1.5em !important;
-      }
+    .product_item .card,
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
 
-      .product_item {
-         font-size: 110%;
-         min-height: 150px;
-      }
+    .product_item {
+      font-size: 110%;
+      min-height: 150px;
+    }
 
-      .product_item img {
-         border-radius: 1.5em !important;
-      }
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
 
-      .product_item p {
-         margin-bottom: .2rem;
-      }
-   </style>
+    .product_item p {
+      margin-bottom: .2rem;
+    }
+  </style>
 </head>
 <% options = `
 <li class="dropdown ml-5">
@@ -49,797 +49,542 @@
  `; %>
 
 <body class="<%= darkMode %>">
-   <%- include('../../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <h3 class="text-center mb-4"><%= cliente.name %></h3>
-         <div class="row">
-            <div class="col-12 col-md-8">
-               <% if (cliente.type == 'minor') { %>
-               <div class="text-center mb-3 mt-3">
-                  <button class="btn btn-lg btn-round btn-success" onclick="new_sale()">Registrar Pedido</button>
-               </div>
-               <% } else { %>
-               <div class="card">
-                  <div class="card-header text-center">
-                     <% if (in_process !== null) { %>
-                     <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
-                     <div class="text-center mb-3 mt-3">
-                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
-                        <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <h3 class="text-center mb-4"><%= cliente.name %></h3>
+      <div class="row">
+        <div class="col-12 col-md-8">
+          <% if (cliente.type == 'minor') { %>
+          <div class="text-center mb-3 mt-3">
+            <button class="btn btn-lg btn-round btn-success" onclick="new_sale()">Registrar Pedido</button>
+          </div>
+          <% } else { %>
+          <div class="card">
+            <div class="card-header text-center">
+              <% if (in_process !== null) { %>
+              <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
+              <div class="text-center mb-3 mt-3">
+                <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
+                <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
+                <span class="badge bg-warning" style="cursor:pointer" onclick="modalRequesTrasnfer.toggle()">Solicitar Traslado</span>
 
-                        <span class="badge bg-success" style="cursor:pointer" id="close_order">Cerrar Pedido</span>
+                <span class="badge bg-success" style="cursor:pointer" id="close_order">Cerrar Pedido</span>
 
-                        <% } %>
-                     </div>
+                <% } %>
+              </div>
 
-                     <% } else { %>
-                     <h3>Pedido Actual <span id="span_sale_balance"></span></h3>
+              <% } else { %>
+              <h3>Pedido Actual <span id="span_sale_balance"></span></h3>
 
-                     <div class="text-center mb-3 mt-3">
-                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
-                        <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
-                        <span class="badge bg-success" style="cursor:pointer; display: none;" id="close_order">Cerrar Pedido</span>
-                        <% } %>
-                     </div>
-                     <% } %>
-                  </div>
-
-                  <div class="card-body">
-                     <div id="form_adding" style="display:none; margin-bottom: 20px;">
-                        <div class="text-center">
-                           <span id="free_toggle" class="badge bg-success" style="cursor:pointer; display: none;">Desde el Inventario</span>
-                           <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;">Cuando Venga del Proveedor</span>
-                        </div>
-
-                        <div id="free_detail" class="row mt-4" style="display:none;">
-                           <div class="form-floating mb-3 col-12">
-                              <input class="form-control" id="freeName" type="text" placeholder="Nombre del Producto">
-                              <label for="freeName">Nombre/descripcion del Producto</label>
-                           </div>
-                           <div class="form-floating mb-3 col-12">
-                              <input class="form-control" id="freeCant" type="number" step="1" placeholder="Cantidad" value="1">
-                              <label for="freeCant">Cantidad</label>
-                           </div>
-                           <div class="form-floating mb-3 col-12">
-                              <input class="form-control" id="freePrice" type="number" step="0.01" placeholder="Precio">
-                              <label for="freePrice">Precio</label>
-                           </div>
-                           <div class="col-12 row">
-                              <div class="col-12 col-md-6">
-                                 <div class="form-group text-center">
-                                    <label for="fake_image_input" class="subir" style="font-size: 2rem; cursor: pointer;">
-                                       <i class="fas fa-cloud-upload-alt"></i>
-                                       <b>Subir</b>
-                                       Imagen
-                                    </label>
-                                    <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
-                                    <input type="hidden" id="add_image_real" name="add_image_real">
-                                 </div>
-                                 <div class="form-group">
-                                    <input type="text" id="add-image-fake_text" class="form-control" placeholder="Pega aqui una imagen">
-                                 </div>
-                              </div>
-                              <div class="col-12 col-md-6">
-                                 <div id="add_image_preview"></div>
-                              </div>
-                           </div>
-                        </div>
-                        <div id="inventory_detail" class="row mt-4">
-                           <img alt=" " id="product__image" class="img round mb-4" style="max-width: 300px; display: none; margin:auto">
-                           <div class="form-group">
-                              <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU</label>
-                              <select name="productSelect" id="productSelect" class="form-control"></select>
-                           </div>
-
-                           <div class="mb-3 col-12">
-                              <span>Precio:</span>
-                              <div class="form-group">
-                                 <select name="priceSelect" id="priceSelect" class="form-control"></select>
-                                 <label for="priceSelect">Selecciona una opción</label>
-                              </div>
-                           </div>
-                           <div class="form-floating mb-3 col-12">
-                              <input class="form-control" id="personalizedPrice" type="number" step="0.01" placeholder="Precio Personalizado" disabled>
-                              <label for="personalizedPrice">Precio Personalizado</label>
-                           </div>
-
-                           <div class="form-floating mb-3 col-12">
-                              <input class="form-control" id="product_cant" type="number" step="1" placeholder="Cantidad" value="1">
-                              <label for="product_cant">Cantidad</label>
-                              <small class="text-danger" id="max_product_cant"></small>
-                           </div>
-                        </div>
-                        <div class="text-center mt-3">
-                           <button class="btn btn-outline-primary" id="save_sale_detail">Guardar</button>
-                        </div>
-
-                     </div>
-                  </div>
-                  <div class="card-body pb-3 pt-3" style="border-top: 1px dotted #cecece;">
-                     <div class="row" id="div_add_details">
-                        <% if (in_process == null) { %>
-                        <h5 class="text-center text-danger text-800 mb-5">
-                           No hay pedido abierto :( ... pero puedes abrir uno inmediatamente
-                        </h5>
-                        <% } else { %>
-
-                        <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
-                        <% in_process_details.forEach(detail => { %>
-
-                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
-                           <div class="card">
-                              <div class="card-body text-center">
-                                 <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
-                                 <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-
-                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                                 <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                                 <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
-                                 <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
-                                 <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                 <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
-                                 <% } else if(detail.cant == detail.ready) { %>
-                                 <p class="text-primary"> Reservado y Revisado<br></p>
-                                 <% if (permission.includes('revoke_sales_details')) { %>
-                                 <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
-                                 <% } %>
-                                 <% } %>
-                              </div>
-                           </div>
-                        </div>
-                        <% }) %>
-                        <% } else { %>
-                        <% in_process_details.forEach(detail => { %>
-
-                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
-                           <div class="card">
-                              <div class="card-body text-center">
-                                 <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
-                                 <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
-                                 <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
-
-                                 <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                                 <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                                 <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
-                                 <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
-                                 <% } else if(detail.cant == detail.ready) { %>
-                                 <p class="text-primary"> Reservado y Revisado<br></p>
-                                 <% } %>
-                              </div>
-                           </div>
-                        </div>
-                        <% }) %>
-                        <% }  %>
-
-
-
-
-
-                        <% } %>
-                     </div>
-                  </div>
-               </div>
-
-               <!-- Modal para cerrar el pedido -->
-               <div class="modal fade" id="deliverydetailsModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-                     <div class="modal-content">
-                        <div class="modal-header">
-                           <h5 class="modal-title" id="exampleModalCenterTitle">Detalles de Entrega</h5>
-                           <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-                        </div>
-                        <div class="modal-body">
-                           <div class="text-white row bg-danger">
-                              <div class="col" style="padding: 1rem;">
-                                 Advertencia: si ha tardado demasiado tiempo en redactar esta Orden puede que algun producto ya no este disponible
-                              </div>
-                           </div>
-                        </div>
-                        <div class="modal-body">
-                           <div class="form-group">
-                              <label for="delivery_type">Tipo de Entrega:</label>
-                              <select name="delivery_type" id="delivery_type" class="form-control">
-                                 <option value="local" selected>Retiro en Local</option>
-                                 <option value="local_delivery">Entrega (Riveras Group)</option>
-                                 <option value="delivery">Entrega (Transportista / Encomienda)</option>
-                              </select>
-                           </div>
-
-                           <div class="form-group" id="local_delivery_div" style="display: none;">
-                              <label for="delivery_provider">Transportista Encomienda:</label>
-                              <select name="delivery_provider" id="delivery_provider" class="form-control" disabled>
-                                 <% providers.forEach(provider => { %>
-                                 <option value="<%= provider.id %>"><%= provider.name %></option>
-                                 <% }) %>
-                              </select>
-                           </div>
-
-                           <div class="form-group">
-                              <label for="delivery_amount">Costo del envio:</label>
-                              <input type="number" step="0.01" min="0" value="0" id="delivery_amount" class="form-control" disabled>
-                           </div>
-                           <div class="form-group">
-                              <label for="direction_">Direccion de Entrega:</label>
-                              <input type="text" name="direction_" id="direction_" class="form-control" list="directions" value="Retiro en Tienda" disabled>
-                           </div>
-
-                           <datalist id="directions">
-                           </datalist>
-
-                           <div class="form-group">
-                              <label for="reference_">Referencia o Instrucciones:</label>
-                              <input type="text" name="reference_" id="reference_" class="form-control">
-                           </div>
-
-                           <div class="form-group">
-                              <label for="phone_">Telefono de Contacto:</label>
-                              <input type="text" name="phone_" id="phone_" class="form-control" value="<%= cliente.phone %>">
-                           </div>
-
-                           <div class="form-group">
-                              <label for="day_">Dia de Entrega:</label>
-                              <input type="date" id="day_" name="day_" class="form-control" data-min="<%= Helper.date_to_input() %>" min="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
-                           </div>
-
-                           <div class="form-group">
-                              <label for="hour_">Hora de Entrega:</label>
-                              <input type="time" id="hour_" name="hour_" class="form-control" value="<%= Helper.hour_to_input()%>">
-                           </div>
-
-
-
-                        </div>
-                        <div class="modal-footer" style="display: block;">
-                           <div class="text-center">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                              <button type="button" class="btn btn-success" id="saveReal">Generar Venta</button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <!-- Fin del modal -->
-               <% } %>
-               <div class="card">
-                  <div class="card-header text-center">
-                     <h3>Historial de Pedidos</h3>
-                  </div>
-                  <div class="card-body pb-3 table-responsive">
-                     <% if (finalized.length > 0) { %>
-                     <table class="table table-sm table-bordered table-hover">
-                        <thead>
-                           <tr>
-                              <th>ID</th>
-                              <th>Monto</th>
-                              <th>Monto Cobrado</th>
-                              <th>Estado</th>
-                              <th>Fecha</th>
-                              <th>options</th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                           <% finalized.forEach((order, index) => { %>
-                           <tr>
-                              <% if (order._status == 'revoked') { %>
-                              <td><%= order.id %></td>
-                              <td>$0.00 <small class="text-danger">(Original: $<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %>)</small></td>
-                              <td class="text-center">
-                                 --
-                              </td>
-                              <td>Pedido Cancelado/Revocado
-                                 <br>
-                                 <%= order.revoked_reason %>
-
-                              </td>
-                              <td><%= Helper.format_date(order.createdAt) %></td>
-                              <td>
-                                 <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
-                                 <% if (order.invoice_number != null) { %>
-                                 <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
-                                 <% } %>
-                              </td>
-                              <% } else { %>
-                              <td><%= order.id %></td>
-                              <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
-                              <td>
-                                 $<%= Helper.money_format(order.collected) %>
-                              </td>
-                              <td><%= _status[order._status] %></td>
-                              <td><%= Helper.format_date(order.createdAt) %></td>
-                              <td>
-                                 <% if (order.status == 'closed') { %>
-                                 <span class="badge bg-green"> Paquete preparado</span>
-
-
-                                 <% } %>
-
-                                 <% if (order.invoice_number == null) { %>
-                                 <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
-                                 <% } else { %>
-                                 <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
-                                 <% } %>
-                                 <br>
-                                 <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
-
-                                 <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
-                                 <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
-                                 <% } else { %>
-                                 <% if (new Date(order.createdAt).getTime() > new Date('2024-01-01').getTime()) { %>
-                                 <a href="/sales/view_pays/<%= order.id %>" class="badge bg-purple mt-2" target="_blank">Ver Pagos</a>
-
-                                 <% } %>
-                                 <% } %>
-
-                              </td>
-                              <% } %>
-                           </tr>
-                           <% }) %>
-                        </tbody>
-                     </table>
-                     <% } else { %>
-                     <h5 class="text-center text-danger text-800">No Hay ningun pedido en el Historial</h5>
-                     <% } %>
-
-                  </div>
-               </div>
-
-               <div class="card">
-                  <div class="card-header text-center">
-                     <h3>Pagos Registrados</h3>
-                  </div>
-                  <div class="card-body pb-3 table-responsive">
-                     <% if (payments.length > 0) { %>
-                     <table class="table table-sm table-bordered table-hover">
-                        <thead>
-                           <tr>
-                              <th>Tipo</th>
-                              <th>Detalles</th>
-                              <th>Monto</th>
-
-                           </tr>
-                        </thead>
-                        <tbody>
-                           <% payments.forEach((payment) => { %>
-                           <tr>
-                              <td>
-                                 <% if (payment.type == "money") { %>
-                                 Efectivo
-                                 <% } else { %>
-                                 <%= payment.type == "transfer" ? 'Depósito o transferencia' : "Tarjeta de Crédito" %>
-                                 <br>Banco: <%= payment.bank%><br>Referencia: <%= payment.reference %>
-
-                                 <% } %>
-                              </td>
-                              <td>
-                                 <%= Helper.format_date(payment.createdAt) %>
-                                 <% if (payment.createdBy !== undefined && payment.createdBy !== null) { %>
-                                 <br> Registrado por: <%= payment.createdBy %>
-                                 <% } %>
-                              </td>
-                              <td class="text-center">
-                                 $<%= Helper.money_format(payment.amount) %>
-                                 <% if (payment.asigned_amount < payment.amount) { %>
-                                 <br> <span class="text-success"> Saldo a Favor ($<%= Helper.money_format(payment.amount - payment.asigned_amount) %>)</span>
-                                 <% } %>
-                              </td>
-                           </tr>
-                           <% }) %>
-                        </tbody>
-                     </table>
-                     <% } else { %>
-                     <h5 class="text-center text-danger text-800">No Hay ningun pago registrado en el Historial</h5>
-                     <% } %>
-
-                  </div>
-               </div>
+              <div class="text-center mb-3 mt-3">
+                <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
+                <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
+                <span class="badge bg-warning" style="cursor:pointer" onclick="modalRequesTrasnfer.toggle()">Solicitar Traslado</span>
+                <span class="badge bg-success" style="cursor:pointer; display: none;" id="close_order">Cerrar Pedido</span>
+                <% } %>
+              </div>
+              <% } %>
             </div>
 
-            <div class="col-12 col-md-4">
-               <div class="card">
-                  <div class="card-body pb-3">
-                     <div class="d-flex align-items-center mb-3">
-                        <h3 class="me-1"><%= cliente.name %></h3>
-                        <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %>>Editar</button>
-                     </div>
-                     <h5 class="text-800">Vendedor Asignado</h5>
-                     <p class="text-800"><%= seller.name %></p>
+            <div class="card-body">
+              <div id="form_adding" style="display:none; margin-bottom: 20px;">
+                <div class="text-center">
+                  <span id="free_toggle" class="badge bg-success" style="cursor:pointer; display: none;">Desde el Inventario</span>
+                  <span id="inventory_toggle" class="badge bg-primary" style="cursor:pointer; display:none;">Cuando Venga del Proveedor</span>
+                </div>
 
-                     <h5 class="text-800">Dirección</h5>
-                     <p class="text-800"><%= cliente.direction%></p>
-                     <div class="mb-3">
-                        <h5 class="text-800">Contacto</h5>
-                        <% if (cliente.email) { %>
-                        <a href="mailto:<%= cliente.email %>" class="btn btn-soft-primary me-1 mb-1">email: <%= cliente.email %></a><br>
-
-                        <% } %>
-                        <button class="btn btn-soft-warning me-1 mb-1" onclick="copyNumber()">Copiar Numero: <%= cliente.phone %></button>
-                        <a class="btn btn-soft-danger me-1 mb-1" href="tel:<%= cliente.phone %>"> <i class="fas fa-phone-square"></i> Llamar </a>
-                        <a href="https://wa.me/<%= Helper.cleanNumber(cliente.phone) %>" class="btn btn-soft-success me-1 mb-1" style="font-weight: bolder;">Chat en WhatsApp</a>
-                     </div>
+                <div id="free_detail" class="row mt-4" style="display:none;">
+                  <div class="form-floating mb-3 col-12">
+                    <input class="form-control" id="freeName" type="text" placeholder="Nombre del Producto">
+                    <label for="freeName">Nombre/descripcion del Producto</label>
                   </div>
-               </div>
-
-               <div class="card">
-                  <div class="card-body">
-                     <h3 class="mb-4">Notas sobre el Cliente</h3>
-                     <textarea class="form-control mb-3" rows="4" id="textNote"></textarea>
-                     <button class="btn btn-phoenix-primary w-100 mb-4" id="addNote">Agregar nota</button>
-                     <div id="notes">
-                        <% if (notes.length > 0) { %>
-                        <% notes.forEach(note => { %>
-                        <div class="fs--1 fw-semi-bold note">
-                           <div class="text-1000 mb-1"><%- note.observation %></div>
-                           <div class="text-right">
-                              <p class="text-600 mb-0"><%= note.createdBy %> (<%= Helper.format_date(note.createdAt) %>)</p>
-                           </div>
-                        </div>
-                        <% }) %>
-                        <% } %>
-                     </div>
+                  <div class="form-floating mb-3 col-12">
+                    <input class="form-control" id="freeCant" type="number" step="1" placeholder="Cantidad" value="1">
+                    <label for="freeCant">Cantidad</label>
                   </div>
-               </div>
-            </div>
-         </div>
-
-
-      </div>
-      <%- include('../../Layouts/Footer.ejs') %>
-   </div>
-   <div class="modal fade" id="editClient" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="exampleModalCenterTitle">Editando Cliente</h5>
-               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente" value="<%= cliente.name %>">
-                  <label for="clientName">Nombre del cliente</label>
-               </div>
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientPhone" type="text" placeholder="Nunmero Telefonico" value="<%= cliente.phone %>">
-                  <label for="clientPhone">Numero Telefonico</label>
-               </div>
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientMail" type="text" placeholder="E-mail" value="<%= cliente.email %>">
-                  <label for="clientMail">E-Mial</label>
-               </div>
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientDirection" type="text" placeholder="Dirección" value="<%= cliente.direction %>">
-                  <label for="clientDirection">Dirección del Cliente</label>
-               </div>
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientDUI" type="text" placeholder="05507306-8" value="<%= cliente.NIT_DUI %>">
-                  <label for="clientDUI">NIT/DUI</label>
-               </div>
-               <div class="form-floating mb-3">
-                  <input class="form-control" id="clientNRC" type="text" placeholder="05507306-8" value="<%= cliente.NRC %>">
-                  <label for="clientNRC">NRC</label>
-               </div>
-               <div class=" mb-3 col-md-12">
-                  <label for="clientType">Tipo de Compras</label>
-                  <select name="clientType" id="clientType" class="form-control">
-                     <% if (cliente.type == 'minor') { %>
-                     <option value="minor" selected>Comprador al Detalle</option>
-                     <option value="major">Comprador por Mayor</option>
-                     <% } else { %>
-                     <option value="minor">Comprador al Detalle</option>
-                     <option value="major" selected>Comprador por Mayor</option>
-                     <% } %>
-                  </select>
-               </div>
-               <div class=" mb-3 col-md-12">
-                  <label for="isLocal">¿Cliente Local?</label>
-                  <select name="isLocal" id="isLocal" class="form-control">
-                     <% if (cliente.isLocal) { %>
-                     <option value="true" selected>Si, es cliente local</option>
-                     <option value="false">No, es cliente Internacional</option>
-                     <% } else { %>
-                     <option value="true">Si, es cliente local</option>
-                     <option value="false" selected>No, es cliente Internacional</option>
-                     <% } %>
-                  </select>
-               </div>
-               <div class=" mb-3 col-md-12">
-                  <label for="clientClassification">Clasificación del Contribuyente</label>
-                  <select name="clientClassification" id="clientClassification" class="form-control">
-                     <% if (cliente.classification == 'otro') { %>
-                     <option value="ninguno">No Clasificado</option>
-                     <option value="otro" selected>Otro Contribuyente</option>
-                     <option value="mediano">Mediano Contribuyente</option>
-                     <option value="gran">Gran Contribuyente</option>
-                     <% } else if (cliente.classification == 'mediano') { %>
-                     <option value="ninguno">No Clasificado</option>
-                     <option value="otro">Otro Contribuyente</option>
-                     <option value="mediano" selected>Mediano Contribuyente</option>
-                     <option value="gran">Gran Contribuyente</option>
-                     <% } else if (cliente.classification == 'gran') { %>
-                     <option value="ninguno">No Clasificado</option>
-                     <option value="otro">Otro Contribuyente</option>
-                     <option value="mediano">Mediano Contribuyente</option>
-                     <option value="gran" selected>Gran Contribuyente</option>
-                     <% } else { %>
-                     <option value="ninguno" selected>No Clasificado</option>
-                     <option value="otro">Otro Contribuyente</option>
-                     <option value="mediano">Mediano Contribuyente</option>
-                     <option value="gran">Gran Contribuyente</option>
-                     <% } %>
-                  </select>
-               </div>
-               <div class="col-12 mb-3">
-                  <label for="clientSeller">Vendedor Asignado</label>
-                  <select name="clientSeller" id="clientSeller" class="form-control">
-                     <option value="none">Ninguno</option>
-                     <% sellers.forEach(employee => { %>
-                     <option value="<%= employee.id %>" <% if (employee.id == cliente.seller) { %>selected<% } %>><%= employee.name %></option>
-                     <% }) %>
-                  </select>
-               </div>
-            </div>
-            <div class="modal-footer text-center">
-               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-               <button type="button" class="btn btn-outline-primary" id="saveClient">Guardar</button>
-            </div>
-         </div>
-      </div>
-   </div>
-
-   <div class="modal fade" id="quitDetailModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="exampleModalCenterTitle">Quitar detalle</h5>
-               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-               <div class="text-white row bg-danger">
-                  <div class="col" style="padding: 1rem;">
-
-                     <h4 class="text-white">Advertencia</h4>
-                     <p>Al presionar el botón quitar las reservas de este producto serán liberadas y puestas a disposición para su venta, para poder volver a reservarlo deberá agregar nuevamente el producto al pedido</p>
+                  <div class="form-floating mb-3 col-12">
+                    <input class="form-control" id="freePrice" type="number" step="0.01" placeholder="Precio">
+                    <label for="freePrice">Precio</label>
                   </div>
-               </div>
-               <div class="text-center mt-3">
-                  <img src="" alt="product" id="quit_image" class="img" style="max-width: 200px;">
-                  <p id="quit_name"></p>
-                  <p>Unidades en el pedido: <span id="quit_units"></span></p>
-                  <p>Unidades reservadas: <span id="quit_reserved"></span></p>
-                  <p>Unidades ya preparadas: <span id="quit_ready"></span></p>
-                  <p>Unidades Eliminables: <span id="quit_revocable"></span></p>
-               </div>
-
-               <div class="form-group mt-2 mb-2">
-                  <label for="quit_input">Cantidad de Unidades a Eliminar</label>
-                  <input type="number" id="quit_input" class="form-control" step="1" value="1">
-               </div>
-
-            </div>
-            <div class="modal-footer" style="display: block;">
-               <div class="text-center">
-                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                  <button type="button" class="btn btn-outline-danger" id="quitDetail">Quitar</button>
-               </div>
-            </div>
-         </div>
-      </div>
-   </div>
-
-   <div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
-               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-               <div class="row g-3" id="add_payment_div">
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount">Tipo de Transacción</label>
-                     <select name="payment_method" id="payment_method" class="form-control">
-                        <option value="transfer">Transferencias y Depósitos</option>
-                        <option value="money">Efectivo</option>
-                        <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
-                     </select>
+                  <div class="col-12 row">
+                    <div class="col-12 col-md-6">
+                      <div class="form-group text-center">
+                        <label for="fake_image_input" class="subir" style="font-size: 2rem; cursor: pointer;">
+                          <i class="fas fa-cloud-upload-alt"></i>
+                          <b>Subir</b>
+                          Imagen
+                        </label>
+                        <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                        <input type="hidden" id="add_image_real" name="add_image_real">
+                      </div>
+                      <div class="form-group">
+                        <input type="text" id="add-image-fake_text" class="form-control" placeholder="Pega aqui una imagen">
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <div id="add_image_preview"></div>
+                    </div>
                   </div>
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount">Monto Recibido</label>
-                     <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
+                </div>
+                <div id="inventory_detail" class="row mt-4">
+                  <img alt=" " id="product__image" class="img round mb-4" style="max-width: 300px; display: none; margin:auto">
+                  <div class="form-group">
+                    <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU</label>
+                    <select name="productSelect" id="productSelect" class="form-control"></select>
                   </div>
-                  <div id="other_pays">
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_bank">Banco (RG)</label>
-                        <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
-                     </div>
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_reference">Numero de Referencia / Numero de Voucher </label>
-                        <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
-                     </div>
+
+                  <div class="mb-3 col-12">
+                    <span>Precio:</span>
+                    <div class="form-group">
+                      <select name="priceSelect" id="priceSelect" class="form-control"></select>
+                      <label for="priceSelect">Selecciona una opción</label>
+                    </div>
+                  </div>
+                  <div class="form-floating mb-3 col-12">
+                    <input class="form-control" id="personalizedPrice" type="number" step="0.01" placeholder="Precio Personalizado" disabled>
+                    <label for="personalizedPrice">Precio Personalizado</label>
+                  </div>
+
+                  <div class="form-floating mb-3 col-12">
+                    <input class="form-control" id="product_cant" type="number" step="1" placeholder="Cantidad" value="1">
+                    <label for="product_cant">Cantidad</label>
+                    <small class="text-danger" id="max_product_cant"></small>
+                  </div>
+                </div>
+                <div class="text-center mt-3">
+                  <button class="btn btn-outline-primary" id="save_sale_detail">Guardar</button>
+                </div>
+
+              </div>
+            </div>
+            <div class="card-body pb-3 pt-3" style="border-top: 1px dotted #cecece;">
+              <div class="row" id="div_add_details">
+                <% if (in_process == null) { %>
+                <h5 class="text-center text-danger text-800 mb-5">
+                  No hay pedido abierto :( ... pero puedes abrir uno inmediatamente
+                </h5>
+                <% } else { %>
+
+                <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
+                <% in_process_details.forEach(detail => { %>
+
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                      <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                      <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+
+                      <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                      <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                      <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
+                      <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                      <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                      <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
+                      <% } else if(detail.cant == detail.ready) { %>
+                      <p class="text-primary"> Reservado y Revisado<br></p>
+                      <% if (permission.includes('revoke_sales_details')) { %>
+                      <button class="btn btn-danger round btn-sm" onclick="release_request('<%= detail.id %>')">Liberar Producto</button>
+                      <% } %>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <% }) %>
+                <% } else { %>
+                <% in_process_details.forEach(detail => { %>
+
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4 product_item" id="product_item_<%=detail.id%>">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <img src="<%= detail.image %>" alt="Image" class="product_image" style="width: 150px; "><br>
+                      <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
+                      <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
+
+                      <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
+                      <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
+                      <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                      <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+                      <% } else if(detail.cant == detail.ready) { %>
+                      <p class="text-primary"> Reservado y Revisado<br></p>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <% }) %>
+                <% }  %>
+
+
+
+
+
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal para cerrar el pedido -->
+          <div class="modal fade" id="deliverydetailsModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalCenterTitle">Detalles de Entrega</h5>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                  <div class="text-white row bg-danger">
+                    <div class="col" style="padding: 1rem;">
+                      Advertencia: si ha tardado demasiado tiempo en redactar esta Orden puede que algun producto ya no este disponible
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="delivery_type">Tipo de Entrega:</label>
+                    <select name="delivery_type" id="delivery_type" class="form-control">
+                      <option value="local" selected>Retiro en Local</option>
+                      <option value="local_delivery">Entrega (Riveras Group)</option>
+                      <option value="delivery">Entrega (Transportista / Encomienda)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" id="local_delivery_div" style="display: none;">
+                    <label for="delivery_provider">Transportista Encomienda:</label>
+                    <select name="delivery_provider" id="delivery_provider" class="form-control" disabled>
+                      <% providers.forEach(provider => { %>
+                      <option value="<%= provider.id %>"><%= provider.name %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="delivery_amount">Costo del envio:</label>
+                    <input type="number" step="0.01" min="0" value="0" id="delivery_amount" class="form-control" disabled>
                   </div>
                   <div class="form-group">
-                     <label for="payment_sucursal">Sucursal que recibe el pago</label>
-                     <select name="payment_sucursal" id="payment_sucursal" class="form-control">
-                        <% sucursals.forEach(sucursal => { %>
-                        <option value="<%= sucursal.id %>" <%= (UserSucursal == sucursal.id ? 'selected' : 'disabled') %>>
-                           <%= sucursal.name %></option>
-                        <% }) %>
-                     </select>
+                    <label for="direction_">Direccion de Entrega:</label>
+                    <input type="text" name="direction_" id="direction_" class="form-control" list="directions" value="Retiro en Tienda" disabled>
                   </div>
-               </div>
-            </div>
 
-            <div class="modal-footer" style="display: block;">
-               <div class="text-center">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                  <button type="button" class="btn btn-primary" id="addPayment">Registrar Pago</button>
-               </div>
-            </div>
+                  <datalist id="directions">
+                  </datalist>
 
-         </div>
-      </div>
-   </div>
-
-   <div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
-               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-               <div class="row">
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_type">Tipo de Documento</label>
-                        <select name="invoice_type" id="invoice_type" class="form-control">
-
-                        </select>
-                     </div>
-                  </div>
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_number">Numero del Documento</label>
-                        <input type="number" class="form-control" step="1" id="invoice_number">
-                     </div>
-                  </div>
-               </div>
-
-               <div class="form-group">
-                  <label for="invoice_name">Nombre en la factura</label>
-                  <input type="text" class="form-control" name="invoice_name" id="invoice_name" value="<%= cliente.name %>">
-               </div>
-
-               <div class="form-group">
-                  <label for="invoice_direction">Direccion</label>
-                  <input type="text" class="form-control" name="invoice_direction" id="invoice_direction" value="<%= cliente.direction %>">
-               </div>
-
-               <div class="form-group">
-                  <label for="invoice_giro">Giro</label>
-                  <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
-               </div>
-
-               <div class="row">
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_nit">NIT/DUI</label>
-                        <input type="text" class="form-control" name="invoice_nit" id="invoice_nit" value="<%= cliente.NIT_DUI %>">
-                     </div>
-                  </div>
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_nrc">NRC</label>
-                        <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc" value="<%= cliente.NRC !== null ? cliente.NRC : '' %>">
-                     </div>
-                  </div>
-               </div>
-
-               <div class="row">
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
-                        <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
-                     </div>
-                  </div>
-                  <div class="col">
-                     <div class="form-group">
-                        <label for="invoice_cuenta_de">Venta a cuenta de:</label>
-                        <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
-                     </div>
-                  </div>
-               </div>
-               <div class="form-group">
-                  <label for="invoice_date">Fecha de La Factura</label>
-                  <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
-               </div>
-               <div class="form-group">
-                  <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
-                  <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
-               </div>
-
-
-               <div class="form-group">
-                  <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
-                  <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
-               </div>
-
-               <div class="form-check form-switch">
-                  <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
-                  <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
-               </div>
-
-               <br>
-               <div class="form-check form-switch">
-                  <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
-                  <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
-               </div>
-            </div>
-            <div class="modal-footer" style="display: block;">
-               <div class="text-center">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                  <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
-               </div>
-            </div>
-         </div>
-      </div>
-   </div>
-
-
-   <div class="modal fade" id="addPaymentModal2" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
-               <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-               <div class="row g-3" id="add_payment_div">
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_method2">Tipo de Transacción</label>
-                     <select name="payment_method2" id="payment_method2" class="form-control">
-                        <option value="transfer">Transferencias y Depósitos</option>
-                        <option value="money">Efectivo</option>
-                        <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
-                     </select>
-                  </div>
-                  <div class="form-group mb-3 col-12">
-                     <label for="payment_amount2">Monto Recibido</label>
-                     <input class="form-control" id="payment_amount2" type="text" name="payment_amount" placeholder="0.00">
-                  </div>
-                  <div id="other_pays_2">
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_bank2">Banco (RG)</label>
-                        <input class="form-control" id="payment_bank2" type="text" name="payment_bank2" placeholder="Banco">
-                     </div>
-                     <div class="form-group mb-3 col-12">
-                        <label for="payment_reference2">Numero de Referencia / Numero de Voucher </label>
-                        <input class="form-control" id="payment_reference2" type="text" placeholder="1525-8">
-                     </div>
-                  </div>
                   <div class="form-group">
-                     <label for="payment_sucursal2">Sucursal que recibe el pago</label>
-                     <select name="payment_sucursal2" id="payment_sucursal2" class="form-control">
-                        <% sucursals.forEach(sucursal => { %>
-                        <option value="<%= sucursal.id %>" <%= (UserSucursal == sucursal.id ? 'selected' : 'disabled') %>>
-                           <%= sucursal.name %></option>
-                        <% }) %>
-                     </select>
+                    <label for="reference_">Referencia o Instrucciones:</label>
+                    <input type="text" name="reference_" id="reference_" class="form-control">
                   </div>
-               </div>
-            </div>
-            <div class="modal-footer" style="display: block;">
-               <div class="text-center">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                  <button type="button" class="btn btn-primary" id="addPayment2">Registrar Pago</button>
-               </div>
-            </div>
 
-         </div>
+                  <div class="form-group">
+                    <label for="phone_">Telefono de Contacto:</label>
+                    <input type="text" name="phone_" id="phone_" class="form-control" value="<%= cliente.phone %>">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="day_">Dia de Entrega:</label>
+                    <input type="date" id="day_" name="day_" class="form-control" data-min="<%= Helper.date_to_input() %>" min="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="hour_">Hora de Entrega:</label>
+                    <input type="time" id="hour_" name="hour_" class="form-control" value="<%= Helper.hour_to_input()%>">
+                  </div>
+
+
+
+                </div>
+                <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                    <button type="button" class="btn btn-success" id="saveReal">Generar Venta</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Fin del modal -->
+          <% } %>
+          <div class="card">
+            <div class="card-header text-center">
+              <h3>Historial de Pedidos</h3>
+            </div>
+            <div class="card-body pb-3 table-responsive">
+              <% if (finalized.length > 0) { %>
+              <table class="table table-sm table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Monto</th>
+                    <th>Monto Cobrado</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>options</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody_sales_history">
+                  <% finalized.forEach((order, index) => { %>
+                  <tr>
+                    <% if (order._status == 'revoked') { %>
+                      <td><%= order.id %></td>
+                      <td>$0.00 <small class="text-danger">(Original: $<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %>)</small></td>
+                      <td class="text-center">
+                        --
+                      </td>
+                      <td>Pedido Cancelado/Revocado
+                        <br>
+                        <%= order.revoked_reason %>
+
+                      </td>
+                      <td><%= Helper.format_date(order.createdAt) %></td>
+                      <td>
+                        <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a><br>
+                        <% if (order.invoice_number != null) { %>
+                        <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-warning mt-2">Ver factura Anulada</a>
+                        <% } %>
+                      </td>
+                    <% } else { %>
+                    <td><%= order.id %></td>
+                    <td>$<%= Helper.money_format(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount)) %></td>
+                    <td>
+                      $<%= Helper.money_format(order.collected) %>
+                    </td>
+                    <td><%= _status[order._status] %></td>
+                    <td><%= Helper.format_date(order.createdAt) %></td>
+                    <td>
+                      <% if (order.status == 'closed') { %>
+                      <span class="badge bg-green"> Paquete preparado</span>
+
+
+                      <% } %>
+
+                      <% if (order.invoice_number == null) { %>
+                      <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
+                      <% } else { %>
+                      <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
+                      <% } %>
+                      <br>
+                      <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
+
+                      <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
+                      <a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('<%= order.id %>', '<%= Helper.fix_number(order.balance + order.delivery_amount - order.collected) %>' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
+                      <% } else { %>
+                      <% if (new Date(order.createdAt).getTime() > new Date('2024-01-01').getTime()) { %>
+                      <a href="/sales/view_pays/<%= order.id %>" class="badge bg-purple mt-2" target="_blank">Ver Pagos</a>
+
+                      <% } %>
+                      <% } %>
+
+                    </td>
+                    <% } %>
+                  </tr>
+                  <% }) %>
+                </tbody>
+
+                <tbody>
+
+                  <% if (hay_mas_ventas) { %>
+                    <tr id="tr_more_sales">
+                      <td colspan="6" class="text-center">
+                        <button class="btn btn-secondary round" onclick="charge_sales()">Cargar mas</button>
+                      </td>
+                    </tr>
+  
+                    <tr id="tr_loading_sales" style="display: none;">
+                      <td colspan="6">
+                        <div class="spinner-border text-secondary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </td>
+                    </tr>
+  
+                    <tr id="tr_no_more_sales" style="display: none;">
+                      <td colspan="6"><h4>FIN</h4></td>
+                    </tr>
+                    
+                    <% } else { %>
+                      <tr id="tr_more_sales">
+                        <td colspan="6" class="text-center" style="display: none;">
+                          <button class="btn btn-secondary round" onclick="charge_sales()">Cargar mas</button>
+                        </td>
+                      </tr>
+    
+                      <tr id="tr_loading_sales" style="display: none;">
+                        <td colspan="6">
+                          <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </td>
+                      </tr>
+    
+                      <tr id="tr_no_more_sales" >
+                        <td colspan="6" class="text-center">
+                          <h4>Fin</h4>
+                        </td>
+                      </tr>
+                   
+                  <% } %>
+
+
+                </tbody>
+              </table>
+              <% } else { %>
+              <h5 class="text-center text-danger text-800">No Hay ningun pedido en el Historial</h5>
+              <% } %>
+
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header text-center">
+              <h3>Pagos Registrados</h3>
+            </div>
+            <div class="card-body pb-3 table-responsive">
+              <% if (payments.length > 0) { %>
+              <table class="table table-sm table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Detalles</th>
+                    <th>Monto</th>
+
+                  </tr>
+                </thead>
+                <tbody id="table_payments">
+                  <% payments.forEach((payment) => { %>
+                  <tr>
+                    <td>
+                      <% if (payment.type == "money") { %>
+                      Efectivo
+                      <% } else { %>
+                      <%= payment.type == "transfer" ? 'Depósito o transferencia' : "Tarjeta de Crédito" %>
+                      <br>Banco: <%= payment.bank%><br>Referencia: <%= payment.reference %>
+
+                      <% } %>
+                    </td>
+                    <td>
+                      <%= Helper.format_date(payment.createdAt) %>
+                      <% if (payment.createdBy !== undefined && payment.createdBy !== null) { %>
+                      <br> Registrado por: <%= payment.createdBy %>
+                      <% } %>
+                    </td>
+                    <td class="text-center">
+                      $<%= Helper.money_format(payment.amount) %>
+                      <% if (payment.asigned_amount < payment.amount) { %>
+                      <br> <span class="text-success"> Saldo a Favor ($<%= Helper.money_format(payment.amount - payment.asigned_amount) %>)</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+
+                <tbody>
+
+                  <% if (hay_mas_pagos) { %>
+                    <tr id="tr_more_payments">
+                      <td colspan="3" class="text-center">
+                        <button class="btn btn-secondary round" onclick="charge_payments()">Cargar mas</button>
+                      </td>
+                    </tr>
+  
+                    <tr id="tr_loading_payments" style="display: none;">
+                      <td colspan="3">
+                        <div class="spinner-border text-secondary" role="status" class="text-center">
+                          <span class="visually-hidden"></span>
+                        </div>
+                      </td>
+                    </tr>
+  
+                    <tr id="tr_no_more_payments" style="display: none;">
+                      <td colspan="3" class="text-center"><h4 class="text-center">FIN</h4></td>
+                    </tr>
+                    
+                    <% } else { %>
+                      <tr id="tr_more_payments">
+                        <td colspan="3" class="text-center" style="display: none;">
+                          <button class="btn btn-secondary round" onclick="charge_payments()">Cargar mas</button>
+                        </td>
+                      </tr>
+    
+                      <tr id="tr_loading_payments" style="display: none;">
+                        <td colspan="3" class="text-center">
+                          <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden"></span>
+                          </div>
+                        </td>
+                      </tr>
+    
+                      <tr id="tr_no_more_payments" >
+                        <td colspan="3" class="text-center">
+                          <h4 class="text-center">Fin</h4>
+                        </td>
+                      </tr>
+                   
+                  <% } %>
+
+
+                </tbody>
+              </table>
+              <% } else { %>
+              <h5 class="text-center text-danger text-800">No Hay ningun pago registrado en el Historial</h5>
+              <% } %>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card">
+            <div class="card-body pb-3">
+              <div class="d-flex align-items-center mb-3">
+                <h3 class="me-1"><%= cliente.name %></h3>
+                <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %>>Editar</button>
+              </div>
+              <h5 class="text-800">Vendedor Asignado</h5>
+              <p class="text-800"><%= seller.name %></p>
+
+              <h5 class="text-800">Dirección</h5>
+              <p class="text-800"><%= cliente.direction%></p>
+              <div class="mb-3">
+                <h5 class="text-800">Contacto</h5>
+                <% if (cliente.email) { %>
+                <a href="mailto:<%= cliente.email %>" class="btn btn-soft-primary me-1 mb-1">email: <%= cliente.email %></a><br>
+
+                <% } %>
+                <button class="btn btn-soft-warning me-1 mb-1" onclick="copyNumber()">Copiar Numero: <%= cliente.phone %></button>
+                <a class="btn btn-soft-danger me-1 mb-1" href="tel:<%= cliente.phone %>"> <i class="fas fa-phone-square"></i> Llamar </a>
+                <a href="https://wa.me/<%= Helper.cleanNumber(cliente.phone) %>" class="btn btn-soft-success me-1 mb-1" style="font-weight: bolder;">Chat en WhatsApp</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h3 class="mb-4">Notas sobre el Cliente</h3>
+              <textarea class="form-control mb-3" rows="4" id="textNote"></textarea>
+              <button class="btn btn-phoenix-primary w-100 mb-4" id="addNote">Agregar nota</button>
+              <div id="notes">
+                <% if (notes.length > 0) { %>
+                <% notes.forEach(note => { %>
+                <div class="fs--1 fw-semi-bold note">
+                  <div class="text-1000 mb-1"><%- note.observation %></div>
+                  <div class="text-right">
+                    <p class="text-600 mb-0"><%= note.createdBy %> (<%= Helper.format_date(note.createdAt) %>)</p>
+                  </div>
+                </div>
+                <% }) %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-   </div>
+
+
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+  <%- include('view_client_modal_section.ejs') %>
 
 </body>
 
@@ -847,839 +592,952 @@
 <script src="assets/libs/grid/gridjs.js"></script>
 <script src="assets/libs/choices/choices.min.js"></script>
 <script>
-   var __order = null,
-      modal_options = {
-         keyboard: true
+  var __order = null,
+    modal_options = {
+      keyboard: true
+    },
+    s_options = {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
       },
-      s_options = {
-         mode: 'cors',
-         cache: 'no-cache',
-         credentials: 'same-origin',
-         headers: {
-            'Content-Type': 'application/json'
-         },
-         redirect: 'follow',
-         referrerPolicy: 'no-referrer',
-      },
-      modalInvoice = new bootstrap.Modal(document.getElementById('addInvoiceModal'), modal_options);
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    },
+    modalInvoice = new bootstrap.Modal(document.getElementById('addInvoiceModal'), modal_options);
 
-   const get_facturation_options = async () => {
+  const get_facturation_options = async () => {
 
-      series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
-      let k = Object.keys(series);
-      let content = '`<option value="0">Seleccione una opcion</option>`';
-      let df = false;
-      k.forEach(key => {
-         let _serie = series[key];
-         if (df == false) {
-            if ('<%= cliente.classification %>' == 'ninguno' && _serie.type == "fcf") {
-               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
-               document.querySelector("#invoice_number").value = _serie.number;
-               df = true;
+    series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+    let k = Object.keys(series);
+    let content = '`<option value="0">Seleccione una opcion</option>`';
+    let df = false;
+    k.forEach(key => {
+      let _serie = series[key];
+      if (df == false) {
+        if ('<%= cliente.classification %>' == 'ninguno' && _serie.type == "fcf") {
+          content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+          document.querySelector("#invoice_number").value = _serie.number;
+          df = true;
 
-            } else if ('<%= cliente.classification %>' != 'ninguno' && _serie.type == "ccf") {
+        } else if ('<%= cliente.classification %>' != 'ninguno' && _serie.type == "ccf") {
 
-               content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
-               document.querySelector("#invoice_number").value = _serie.number;
-               df = true;
-            } else {
-               content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
-            }
-         } else {
-            content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
-         }
+          content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+          document.querySelector("#invoice_number").value = _serie.number;
+          df = true;
+        } else {
+          content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+        }
+      } else {
+        content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+      }
 
+    });
+
+    document.querySelector("#invoice_type").innerHTML = content;
+  };
+
+
+
+  const create_invoice = async (order_id) => {
+    __order = order_id;
+
+    modalInvoice.toggle();
+    get_facturation_options();
+
+  }
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+
+
+    document.querySelector("#invoice_type").addEventListener('change', e => {
+      if (e.target.value !== "0") {
+        document.querySelector("#invoice_number").value = series[e.target.value].number;
+      } else {
+        createToast('rose', 'Seleccione el tipo de documento', null);
+      }
+
+    });
+
+
+    document.querySelector("#addInvoiceButton").addEventListener('click', e => {
+      let data = {};
+      //obtener los datos de facturacion
+      data.invoice_serie = document.querySelector("#invoice_type").value;
+      data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
+      data.invoice_resume = document.querySelector("#invoice_simplification").value;
+      data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
+      data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
+      data.sale = __order;
+
+      let invoice_data = {
+        name: document.querySelector("#invoice_name").value,
+        direction: document.querySelector("#invoice_direction").value,
+        giro: document.querySelector("#invoice_giro").value,
+        nit: document.querySelector("#invoice_nit").value,
+        nrc: document.querySelector("#invoice_nrc").value,
+        nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
+        cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+        invoice_date: document.querySelector("#invoice_date").value,
+        leyend: document.querySelector("#invoice_leyend").value,
+
+      }
+
+      if (isNaN(data.invoice_number) || data.invoice_number < 1) {
+        return errorMessage('Coloque el numero de la factura');
+      }
+
+      let _s = series[data.invoice_serie];
+      if (_s.type == "ccf") {
+        if (invoice_data.direction.length < 5) {
+          return errorMessage('Coloque la direccion para el Credito Fiscal');
+        } else if (invoice_data.nrc.length < 3) {
+          return errorMessage('Coloque el Numero de Registro para el Credito Fiscal');
+        }
+      }
+
+      data.invoice_data = invoice_data;
+
+      console.log(data);
+
+      document.querySelector("#addInvoiceButton").disabled = true;
+
+      postData('/sales/invoice/create_invoice', data).then(data => {
+
+        console.log(data)
+        if (data.status == 'success') {
+          successMessage('Factura Generada');
+          setTimeout(() => {
+            window.location.href = `/sales/view_invoice/${data.sale}`;
+          }, 1500);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+          document.querySelector("#addInvoiceButton").disabled = false;
+
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
       });
 
-      document.querySelector("#invoice_type").innerHTML = content;
-   };
 
+      //enviar la data
+    });
 
-
-   const create_invoice = async (order_id) => {
-      __order = order_id;
-
-      modalInvoice.toggle();
-      get_facturation_options();
-
-   }
-
-   document.addEventListener('DOMContentLoaded', event => {
-
-
-
-      document.querySelector("#invoice_type").addEventListener('change', e => {
-         if (e.target.value !== "0") {
-            document.querySelector("#invoice_number").value = series[e.target.value].number;
-         } else {
-            createToast('rose', 'Seleccione el tipo de documento', null);
-         }
-
-      });
-
-
-      document.querySelector("#addInvoiceButton").addEventListener('click', e => {
-         let data = {};
-         //obtener los datos de facturacion
-         data.invoice_serie = document.querySelector("#invoice_type").value;
-         data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
-         data.invoice_resume = document.querySelector("#invoice_simplification").value;
-         data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
-         data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
-         data.sale = __order;
-
-         let invoice_data = {
-            name: document.querySelector("#invoice_name").value,
-            direction: document.querySelector("#invoice_direction").value,
-            giro: document.querySelector("#invoice_giro").value,
-            nit: document.querySelector("#invoice_nit").value,
-            nrc: document.querySelector("#invoice_nrc").value,
-            nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
-            cuenta_de: document.querySelector("#invoice_cuenta_de").value,
-            invoice_date: document.querySelector("#invoice_date").value,
-            leyend: document.querySelector("#invoice_leyend").value,
-
-         }
-
-         if (isNaN(data.invoice_number) || data.invoice_number < 1) {
-            return errorMessage('Coloque el numero de la factura');
-         }
-
-         let _s = series[data.invoice_serie];
-         if (_s.type == "ccf") {
-            if (invoice_data.direction.length < 5) {
-               return errorMessage('Coloque la direccion para el Credito Fiscal');
-            } else if (invoice_data.nrc.length < 3) {
-               return errorMessage('Coloque el Numero de Registro para el Credito Fiscal');
-            }
-         }
-
-         data.invoice_data = invoice_data;
-
-         console.log(data);
-
-         document.querySelector("#addInvoiceButton").disabled = true;
-
-         postData('/sales/invoice/create_invoice', data).then(data => {
-
-            console.log(data)
-            if (data.status == 'success') {
-               successMessage('Factura Generada');
-               setTimeout(() => {
-                  window.location.href = `/sales/view_invoice/${data.sale}`;
-               }, 1500);
-            } else if (data.status == 'errorMessage') {
-               e.target.disabled = false;
-               return errorMessage(data.message);
-               document.querySelector("#addInvoiceButton").disabled = false;
-
-            } else {
-               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-            }
-         });
-
-
-         //enviar la data
-      });
-
-   });
+  });
 </script>
 
 <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) {
 if (cliente.type == 'major') { %>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-   var _process = '<%= Helper.randomString(5) %>';
-   var socket = io.connect('<%= baseURL %>/sales');
-   var quit_case = null;
-   //const socket = io('/logistics');
-   socket.on('close_sale_error', data => {
-      console.log(data);
-      if (data._process == _process) {
-         document.querySelector('#saveReal').disabled = false;
-         return errorMessage(data.errorMessage);
+  var _process = '<%= Helper.randomString(5) %>';
+  var socket = io.connect('<%= baseURL %>/sales');
+  var quit_case = null;
+  //const socket = io('/logistics');
+  socket.on('close_sale_error', data => {
+    console.log(data);
+    if (data._process == _process) {
+      document.querySelector('#saveReal').disabled = false;
+      return errorMessage(data.errorMessage);
+    }
+  });
+
+  socket.on('sale_saved', data => {
+    if (data._process == _process) {
+      successMessage('Guardado con Exito');
+      // window.location.href = `/sales/view/${data.sale}`;
+      window.location.reload();
+    }
+  });
+
+  socket.on('add_detail_error', data => {
+    if (data._process == _process) {
+      document.querySelector("#save_sale_detail").disabled = false;
+
+      return errorMessage(data.errorMessage);
+    }
+  });
+
+  socket.on('add_detail_success', data => {
+    if (data._process == _process) {
+      successMessage('Guardado');
+
+      document.getElementById('close_order').style.display = 'inline-block';
+
+      let detail = data.detail;
+      let div = null;
+
+      if (current_details[data.detail.id] == undefined) {
+        div = document.createElement('div');
+        div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
+        div.id = `product_item_${detail.id}`;
+        document.querySelector('#div_add_details').appendChild(div);
+      } else {
+        div = document.getElementById(`product_item_${detail.id}`)
       }
-   });
+      document.querySelector('#span_sale_balance').innerHTML = `($${data.balance})`;
 
-   socket.on('sale_saved', data => {
-      if (data._process == _process) {
-         successMessage('Guardado con Exito');
-         // window.location.href = `/sales/view/${data.sale}`;
-         window.location.reload();
-      }
-   });
+      current_details[data.detail.id] = detail;
 
-   socket.on('add_detail_error', data => {
-      if (data._process == _process) {
-         document.querySelector("#save_sale_detail").disabled = false;
-         
-         return errorMessage(data.errorMessage);
-      }
-   });
-
-   socket.on('add_detail_success', data => {
-      if (data._process == _process) {
-         successMessage('Guardado');
-
-         document.getElementById('close_order').style.display = 'inline-block';
-
-         let detail = data.detail;
-         let div = null;
-
-         if (current_details[data.detail.id] == undefined) {
-            div = document.createElement('div');
-            div.classList.add('col-12', 'col-sm-6', 'col-md-6', 'col-lg-4', 'product_item');
-            div.id = `product_item_${detail.id}`;
-            document.querySelector('#div_add_details').appendChild(div);
-         } else {
-            div = document.getElementById(`product_item_${detail.id}`)
-         }
-         document.querySelector('#span_sale_balance').innerHTML = `($${data.balance})`;
-
-         current_details[data.detail.id] = detail;
-
-         let content = `<div class="card">
+      let content = `<div class="card">
                               <div class="card-body text-center">
                                  <img src="${detail.image}" alt="Image" class="product_image" style="width: 150px; "><br>
                                  <p style="cursor:pointer;">${detail.description}</p>
                                  <p> <b>${detail.cant}</b> X $${money_format(detail.price)} = $${money_format(detail.cant  * detail.price)}</p>`;
-         if (detail.product == null) {
-            content += `<p class="text-danger">Esperando que Ingrese</p><br>
+      if (detail.product == null) {
+        content += `<p class="text-danger">Esperando que Ingrese</p><br>
                                  <button class="btn btn-outline-danger" onclick="quit('${detail.id }')">Quitar</button>`;
-         } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
-            content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
+      } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
+        content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
                                  <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no reservados</button>`;
-         } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
-            content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+      } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
+        content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
                                  <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
-         } else if (detail.cant == detail.ready) {
-            content += `<p class="text-primary"> Reservado y Revisado<br></p>
+      } else if (detail.cant == detail.ready) {
+        content += `<p class="text-primary"> Reservado y Revisado<br></p>
                                  <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;
-         }
-         content += `</div> </div>`;
-         div.innerHTML = content;
-
-         clean_detail_inputs();
       }
-   });
+      content += `</div> </div>`;
+      div.innerHTML = content;
+
+      clean_detail_inputs();
+    }
+  });
 
 
-   socket.on('quit_detail_error', data => {
-      if (data._process == _process) {
-         document.querySelector("#quitDetail").disabled = false;
-         return errorMessage(data.message);
-      }
-   });
-
-   socket.on('quit_detail_success', data => {
+  socket.on('quit_detail_error', data => {
+    if (data._process == _process) {
       document.querySelector("#quitDetail").disabled = false;
-      if (data._process == _process) {
-         successMessage('Guardado');
-         document.querySelector('#span_sale_balance').innerHTML = `($${money_format(data.balance)})`;
+      return errorMessage(data.message);
 
-         let detail = data.detail;
-         current_details[detail_to_quit] = detail;
-         let div = document.getElementById(`product_item_${detail_to_quit}`);
+    }
+  });
 
-         if (detail == null) {
-            div.parentElement.removeChild(div);
-            //Emitir evento detalle eliminado
-         } else {
-            let content = `<div class="card">
+  socket.on('quit_detail_success', data => {
+    document.querySelector("#quitDetail").disabled = false;
+    if (data._process == _process) {
+      successMessage('Guardado');
+      document.querySelector('#span_sale_balance').innerHTML = `($${money_format(data.balance)})`;
+
+      let detail = data.detail;
+      current_details[detail_to_quit] = detail;
+      let div = document.getElementById(`product_item_${detail_to_quit}`);
+
+      if (detail == null) {
+        div.parentElement.removeChild(div);
+        //Emitir evento detalle eliminado
+      } else {
+        let content = `<div class="card">
                                  <div class="card-body text-center">
                                     <img src="${detail.image}" alt="Image" class="product_image" style="width: 150px; "><br>
                                     <p style="cursor:pointer;">${detail.description}</p>
                                     <p> <b>${detail.cant}</b> X $${money_format(detail.price)} = $${money_format(detail.cant  * detail.price)}</p>`;
-            if (detail.product == null) {
-               content += `<p class="text-danger">Esperando que Ingrese</p><br>
+        if (detail.product == null) {
+          content += `<p class="text-danger">Esperando que Ingrese</p><br>
                                     <button class="btn btn-outline-danger" onclick="quit('${detail.id }')">Quitar</button>`;
-            } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
-               content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
+        } else if (detail.reserved > 0 && detail.reserved < detail.cant) {
+          content += `<p class="text-warning"> Solamente <b>${detail.reserved}</b> reservdaos</p>
                                     <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no reservados</button>`;
-            } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
-               content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
+        } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) {
+          content += `<p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
                                     <button class="btn btn-outline-danger" onclick="quit('${detail.id}')">Quitar no revisados</button>`;
-            } else if (detail.cant == detail.ready) {
-               /* content += `<p class="text-primary"> Reservado y Revisado<br></p>
-                                     <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;*/
-            }
-            content += `</div> </div>`;
-            div.innerHTML = content;
-         }
-
-         modalQuit.toggle();
+        } else if (detail.cant == detail.ready) {
+          /* content += `<p class="text-primary"> Reservado y Revisado<br></p>
+                                <button class="btn btn-outline-danger" onclick="release_request('${detail.id}')">Solicitar Liberación</button>`;*/
+        }
+        content += `</div> </div>`;
+        div.innerHTML = content;
       }
-   });
+
+      modalQuit.toggle();
+    }
+  });
 
 
 
 
-   const locations = JSON.parse('<%- JSON.stringify(locations) %>');
-   //recorte de imagen del pproducto principal
-   const previewimagezone = document.getElementById("add_image_preview"),
-      realImage = document.getElementById("add_image_real"),
-      selectProduct = document.querySelector('#productSelect'),
-      client_type = '<%= cliente.type %>',
+  const locations = JSON.parse('<%- JSON.stringify(locations) %>');
+  //recorte de imagen del pproducto principal
+  const previewimagezone = document.getElementById("add_image_preview"),
+    realImage = document.getElementById("add_image_real"),
+    selectProduct = document.querySelector('#productSelect'),
+    selectProduct2 = document.querySelector('#productSelect2'),
+
+    client_type = '<%= cliente.type %>',
 
 
-      modalQuit = new bootstrap.Modal(document.getElementById('quitDetailModal'), modal_options);
+    modalQuit = new bootstrap.Modal(document.getElementById('quitDetailModal'), modal_options);
 
-   var free = false,
-      product_in_select2 = {},
-      current_details = JSON.parse('<%- JSON.stringify(indexed_details) %>'),
-      detail_to_quit = null,
-      product_last_val = '',
-      modalfinish = new bootstrap.Modal(document.getElementById('deliverydetailsModal'), {
-         keyboard: true
-      });
+  var free = false,
+    product_in_select2 = {},
+    current_details = JSON.parse('<%- JSON.stringify(indexed_details) %>'),
+    detail_to_quit = null,
+    product_last_val = '',
+    product_last_val2 = '',
+    modalfinish = new bootstrap.Modal(document.getElementById('deliverydetailsModal'), {
+      keyboard: true
+    });
 
-   const choices_product = new Choices(selectProduct, {
-      'searchResultLimit': 15,
-      'searchChoices': false,
-      'searchFloor': 2,
-   });
+  const choices_product2 = new Choices(selectProduct2, {
+    'searchResultLimit': 15,
+    'searchChoices': false,
+    'searchFloor': 2,
+  });
+
+  const choices_product = new Choices(selectProduct, {
+    'searchResultLimit': 15,
+    'searchChoices': false,
+    'searchFloor': 2,
+  });
 
 
-   const clean_detail_inputs = () => {
-      document.querySelector("#freeName").value = "";
-      document.querySelector("#freeCant").value = "1";
-      document.querySelector("#freePrice").value = "";
-      document.querySelector("#add_image_real").value = "";
+  const clean_detail_inputs = () => {
+    document.querySelector("#freeName").value = "";
+    document.querySelector("#freeCant").value = "1";
+    document.querySelector("#freePrice").value = "";
+    document.querySelector("#add_image_real").value = "";
 
-      document.getElementById('product_cant').value = "1";
-      document.getElementById('personalizedPrice').value = "";
-      document.getElementById('personalizedPrice').disabled = true;
-      document.getElementById('personalizedPrice').style.display = 'none';
-      document.getElementById('product__image').style.display = 'none';
-      choices_product.removeActiveItems();
+    document.getElementById('product_cant').value = "1";
+    document.getElementById('personalizedPrice').value = "";
+    document.getElementById('personalizedPrice').disabled = true;
+    document.getElementById('personalizedPrice').style.display = 'none';
+    document.getElementById('product__image').style.display = 'none';
+    choices_product.removeActiveItems();
 
-      document.querySelector("#save_sale_detail").disabled = false;
-      // choices_product.clearChoices();
+    document.querySelector("#save_sale_detail").disabled = false;
+    // choices_product.clearChoices();
 
-      form_inventory();
-   }
+    form_inventory();
+  }
 
-   // Variables para la nueva orden
+  // Variables para la nueva orden
 
-   const doSearchProduct = async (val) => {
-      // Opciones por defecto estan marcadas con un *
-      const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=<%= UserSucursal %>`, {
-         mode: 'cors',
-         cache: 'no-cache',
-         credentials: 'same-origin',
-         headers: {
-            'Content-Type': 'application/json'
-         },
-         redirect: 'follow',
-         referrerPolicy: 'no-referrer',
-      });
+  const doSearchProduct = async (val, sucursal) => {
+    // Opciones por defecto estan marcadas con un *
+    const response = await fetch(`/inventory/products/select2?search=${encodeURIComponent(val)}&onlystock=true&sucursal=${sucursal}`, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    });
 
-      //Procesar la respuest para que me guarde los productos en cuestion en una variable
-      let res = await response.json();
-      product_in_select2 = {};
-      res.forEach(element => product_in_select2[element.id] = element);
-      return res;
-   }
+    //Procesar la respuest para que me guarde los productos en cuestion en una variable
+    let res = await response.json();
+    product_in_select2 = {};
+    res.forEach(element => product_in_select2[element.id] = element);
+    return res;
+  }
 
-   var timer_product;
-   selectProduct.addEventListener('search', async (e) => {
-      let valor_actual = e.detail.value;
-      if (product_last_val !== valor_actual) {
-         product_last_val = valor_actual;
-         clearTimeout(timer_product);
-         timer_product = setTimeout(async () => {
-            let data = await doSearchProduct(e.detail.value);
-            choices_product.setChoices(data, 'value', 'label', true);
-         }, 500);
+  var timer_product;
+  selectProduct.addEventListener('search', async (e) => {
+    let valor_actual = e.detail.value;
+    if (product_last_val !== valor_actual) {
+      product_last_val = valor_actual;
+      clearTimeout(timer_product);
+      timer_product = setTimeout(async () => {
+        let data = await doSearchProduct(e.detail.value, '<%= UserSucursal %>');
+        choices_product.setChoices(data, 'value', 'label', true);
+      }, 500);
+    }
+  });
+
+  var timer_product_transfer;
+  selectProduct2.addEventListener('search', async (e) => {
+    let valor_actual = e.detail.value;
+    if (product_last_val2 !== valor_actual) {
+      product_last_val2 = valor_actual;
+      clearTimeout(timer_product_transfer);
+      timer_product_transfer = setTimeout(async () => {
+        let data = await doSearchProduct(e.detail.value, document.querySelector("#trasnferSucursal").value);
+        choices_product2.setChoices(data, 'value', 'label', true);
+      }, 500);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+    clean_detail_inputs();
+    document.querySelector("#free_toggle").style.display = "none";
+
+    // Controles para cerrar la Orden:
+
+    document.querySelector('#close_order').addEventListener('click', e => {
+      modalfinish.toggle();
+      document.querySelector("#reference_").focus();
+    });
+
+    document.querySelector("#delivery_type").addEventListener('change', e => {
+      document.querySelector("#direction_").disabled = false;
+      document.querySelector("#direction_").value = '<%= cliente.direction %>';
+      if (e.target.value == 'delivery') {
+        document.querySelector("#local_delivery_div").style.display = 'block';
+        document.querySelector("#delivery_provider").disabled = false;
+        document.querySelector("#delivery_amount").disabled = false;
+        document.querySelector("#delivery_amount").value = 4.55;
+        document.querySelector("#direction_").focus();
+      } else {
+        if (e.target.value == 'local') {
+          document.querySelector("#delivery_amount").disabled = true;
+          document.querySelector("#delivery_amount").value = 0.00;
+          document.querySelector("#direction_").value = 'Retiro en Tienda';
+          document.querySelector("#direction_").disabled = true;
+          document.querySelector("#reference_").focus();
+        } else {
+          document.querySelector("#delivery_amount").disabled = false;
+          document.querySelector("#delivery_amount").value = 3.00;
+          document.querySelector("#direction_").focus();
+        }
+
+        document.querySelector("#local_delivery_div").style.display = 'none';
+        document.querySelector("#delivery_provider").disabled = true;
       }
-   });
+    });
 
-   document.addEventListener('DOMContentLoaded', event => {
+    document.querySelector("#delivery_provider").addEventListener('change', e => {
+      let value = e.target.value;
+      let local = locations[e.target.value];
+      let content = '';
+
+      if (local !== null && local !== undefined) {
+        local.forEach(l => {
+          content += `<option value="${l}">`;
+        });
+      }
+      document.querySelector("#directions").innerHTML = content;
+    });
+
+    document.querySelector('#saveReal').addEventListener('click', e => {
+      let delivery_amount = Number.parseFloat(document.querySelector("#delivery_amount").value);
+      delivery_amount = Number.isNaN(delivery_amount) ? 0 : delivery_amount;
+      let data = {
+        _process,
+        client: '<%= cliente.id %>',
+        delivery_type: document.querySelector("#delivery_type").value,
+        delivery_provider: null,
+        direction: document.querySelector("#direction_").value,
+        reference: document.querySelector("#reference_").value,
+        phone: document.querySelector("#phone_").value,
+        day: document.querySelector("#day_").value,
+        time: document.querySelector("#hour_").value,
+        delivery_amount,
+      }
+
+      if (data.delivery_type == 'delivery') {
+        data.delivery_provider = document.querySelector("#delivery_provider").value;
+      }
+
+      if (data.direction.length < 5) {
+        return errorMessage('Coloque una Dirección válida');
+      } else if (data.phone.length < 8) {
+        return errorMessage('Coloque el teléfono de contacto');
+      } else if (data.day.length < 10) {
+        return errorMessage('Seleccione una fecha válida');
+      } else if (data.time.length < 5) {
+        return errorMessage('Seleccione una hora valida');
+      } else if (data.day < document.querySelector("#day_").dataset.min) {
+        return errorMessage('Seleccione una fecha válida');
+      }
+
+      e.target.disabled = true;
+      socket.emit('close_sale', data);
+
+      setTimeout(window.location.reload(), 5000);
+    });
+
+    document.querySelector("#quitDetail").addEventListener('click', e => {
+      document.querySelector("#quitDetail").disabled = true;
+      if (detail_to_quit == null) {
+        return errorMessage('Has abierto el modal de manera Manual, si sigues intentando dañar el sistema seras bloqueado');
+      }
+      let cant = document.querySelector('#quit_input').value;
+      if (cant < 1) {
+        toast('rose', 'Operación cancelada');
+        modalQuit.toggle();
+        return false;
+      }
+
+      let data = {
+        cant,
+        detail_id: detail_to_quit,
+        case: 'delete',
+        _process,
+      }
 
 
+      if (quit_case == "reserved") {
+        //token
+
+        postData('/sales/details/quit', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('Actualizado');
+            setTimeout(() => {
+              document.location.reload();
+            }, 1500);
+          } else if (data.status == 'errorMessage') {
+            document.querySelector("#quitDetail").disabled = false;
+            return errorMessage(data.message);
+
+
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+
+      } else {
+        socket.emit('quit_sale_detail', data);
+      }
+
+
+    });
+
+    document.getElementById('quitDetailModal').addEventListener('hidden.bs.modal', event => {
+      detail_to_quit = null;
+      quit_case = null;
+    })
+
+    document.querySelector("#save_sale_detail").addEventListener('click', e => {
+      let data = {
+        client: '<%= cliente.id %>',
+        sale: '<%= in_process !== null ? in_process.id : "" %>',
+        case: 'inventory',
+        _process,
+      }
+      // if (free) {
+
+      //    data.description = document.querySelector("#freeName").value;
+      //    data.cant = document.querySelector("#freeCant").value;
+      //    data.price = document.querySelector("#freePrice").value;
+      //    data.image = document.querySelector("#add_image_real").value;
+      //    data.case = 'free';
+
+      //    if (data.image == '') {
+      //       return errorMessage('Por favor agregue una imagen para poder identificar el producto cuando ingrese al inventario');
+      //    } else if (data.description === "" || data.description.length < 10) {
+      //       return errorMessage('Proporcione una descripción con al menos 10 caracteres');
+      //    }
+
+      // } else {
+      document.querySelector("#save_sale_detail").disabled = true;
+      let p = product_in_select2[document.getElementById('productSelect').value];
+      if (p !== undefined) {
+        data.product = p.id;
+        let price = document.getElementById('priceSelect').value;
+        data.price = price == 'none' ?
+          document.getElementById('personalizedPrice').value :
+          (price == 'minor' ? p.price : p.major);
+
+        data.cant = document.getElementById('product_cant').value;
+        let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
+        if (data.cant > _dist) {
+          return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
+
+        }
+        console.log(p)
+      } else {
+        return errorMessage('No ha Seleccionado un producto');
+      }
+      // }
+
+      if (data.price == '' || data.price < 0 || data.price == null) {
+        return errorMessage('Precio no Válido, Si desea realizar una regalía, por favor seleccione valor personalizado y escriba el precio 0');
+      } else if (data.cant < 1) {
+        document.getElementById('product_cant').value = '1';
+        document.querySelector("#freeCant").value = "1";
+        return errorMessage('La cantidad no puede ser menor a 1');
+      }
+      //enviar datos al server
+      socket.emit('add_sale_detail', data);
 
 
       clean_detail_inputs();
-      document.querySelector("#free_toggle").style.display = "none";
 
-      // Controles para cerrar la Orden:
+    });
 
-      document.querySelector('#close_order').addEventListener('click', e => {
-         modalfinish.toggle();
-         document.querySelector("#reference_").focus();
-      });
-
-      document.querySelector("#delivery_type").addEventListener('change', e => {
-         document.querySelector("#direction_").disabled = false;
-         document.querySelector("#direction_").value = '<%= cliente.direction %>';
-         if (e.target.value == 'delivery') {
-            document.querySelector("#local_delivery_div").style.display = 'block';
-            document.querySelector("#delivery_provider").disabled = false;
-            document.querySelector("#delivery_amount").disabled = false;
-            document.querySelector("#delivery_amount").value = 4.55;
-            document.querySelector("#direction_").focus();
-         } else {
-            if (e.target.value == 'local') {
-               document.querySelector("#delivery_amount").disabled = true;
-               document.querySelector("#delivery_amount").value = 0.00;
-               document.querySelector("#direction_").value = 'Retiro en Tienda';
-               document.querySelector("#direction_").disabled = true;
-               document.querySelector("#reference_").focus();
-            } else {
-               document.querySelector("#delivery_amount").disabled = false;
-               document.querySelector("#delivery_amount").value = 3.00;
-               document.querySelector("#direction_").focus();
-            }
-
-            document.querySelector("#local_delivery_div").style.display = 'none';
-            document.querySelector("#delivery_provider").disabled = true;
-         }
-      });
-
-      document.querySelector("#delivery_provider").addEventListener('change', e => {
-         let value = e.target.value;
-         let local = locations[e.target.value];
-         let content = '';
-
-         if (local !== null && local !== undefined) {
-            local.forEach(l => {
-               content += `<option value="${l}">`;
-            });
-         }
-         document.querySelector("#directions").innerHTML = content;
-      });
-
-
-      document.querySelector('#saveReal').addEventListener('click', e => {
-
-         let data = {
-            _process,
-            client: '<%= cliente.id %>',
-            delivery_type: document.querySelector("#delivery_type").value,
-            delivery_provider: null,
-            direction: document.querySelector("#direction_").value,
-            reference: document.querySelector("#reference_").value,
-            phone: document.querySelector("#phone_").value,
-            day: document.querySelector("#day_").value,
-            time: document.querySelector("#hour_").value,
-            delivery_amount: document.querySelector("#delivery_amount").value,
-         }
-
-         if (data.delivery_type == 'delivery') {
-            data.delivery_provider = document.querySelector("#delivery_provider").value;
-         }
-
-         if (data.direction.length < 5) {
-            return errorMessage('Coloque una Dirección válida');
-         } else if (data.phone.length < 8) {
-            return errorMessage('Coloque el teléfono de contacto');
-         } else if (data.day.length < 10) {
-            return errorMessage('Seleccione una fecha válida');
-         } else if (data.time.length < 5) {
-            return errorMessage('Seleccione una hora valida');
-         } else if (data.day < document.querySelector("#day_").dataset.min) {
-            return errorMessage('Seleccione una fecha válida');
-         }
-
-         e.target.disabled = true;
-         socket.emit('close_sale', data);
-
-         setTimeout(window.location.reload(), 5000);
-      });
-
-
-      document.querySelector("#quitDetail").addEventListener('click', e => {
-         document.querySelector("#quitDetail").disabled = true;
-         if (detail_to_quit == null) {
-            return errorMessage('Has abierto el modal de manera Manual, si sigues intentando dañar el sistema seras bloqueado');
-         }
-         let cant = document.querySelector('#quit_input').value;
-         if (cant < 1) {
-            toast('rose', 'Operación cancelada');
-            modalQuit.toggle();
-            return false;
-         }
-
-         let data = {
-            cant,
-            detail_id: detail_to_quit,
-            case: 'delete',
-            _process,
-         }
-
-
-         if (quit_case == "reserved") {
-            //token
-
-            postData('/sales/details/quit', data).then(data => {
-               if (data.status == 'success') {
-                  successMessage('Actualizado');
-                  setTimeout(() => {
-                     document.location.reload();
-                  }, 1500);
-               } else if (data.status == 'errorMessage') {
-                  document.querySelector("#quitDetail").disabled = false;
-                  return errorMessage(data.message);
-
-
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
-
-         } else {
-            socket.emit('quit_sale_detail', data);
-         }
-
-
-      });
-
-      document.getElementById('quitDetailModal').addEventListener('hidden.bs.modal', event => {
-         detail_to_quit = null;
-         quit_case = null;
-      })
-
-      document.querySelector("#save_sale_detail").addEventListener('click', e => {
-         let data = {
-            client: '<%= cliente.id %>',
-            sale: '<%= in_process !== null ? in_process.id : "" %>',
-            case: 'inventory',
-            _process,
-         }
-         // if (free) {
-
-         //    data.description = document.querySelector("#freeName").value;
-         //    data.cant = document.querySelector("#freeCant").value;
-         //    data.price = document.querySelector("#freePrice").value;
-         //    data.image = document.querySelector("#add_image_real").value;
-         //    data.case = 'free';
-
-         //    if (data.image == '') {
-         //       return errorMessage('Por favor agregue una imagen para poder identificar el producto cuando ingrese al inventario');
-         //    } else if (data.description === "" || data.description.length < 10) {
-         //       return errorMessage('Proporcione una descripción con al menos 10 caracteres');
-         //    }
-
-         // } else {
-         document.querySelector("#save_sale_detail").disabled = true;
-         let p = product_in_select2[document.getElementById('productSelect').value];
-         if (p !== undefined) {
-            data.product = p.id;
-            let price = document.getElementById('priceSelect').value;
-            data.price = price == 'none' ?
-               document.getElementById('personalizedPrice').value :
-               (price == 'minor' ? p.price : p.major);
-
-            data.cant = document.getElementById('product_cant').value;
-            let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
-            if (data.cant > _dist) {
-               return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
-
-            }
-            console.log(p)
-         } else {
-            return errorMessage('No ha Seleccionado un producto');
-         }
-         // }
-
-         if (data.price == '' || data.price < 0 || data.price == null) {
-            return errorMessage('Precio no Válido, Si desea realizar una regalía, por favor seleccione valor personalizado y escriba el precio 0');
-         } else if (data.cant < 1) {
-            document.getElementById('product_cant').value = '1';
-            document.querySelector("#freeCant").value = "1";
-            return errorMessage('La cantidad no puede ser menor a 1');
-         }
-         //enviar datos al server
-         socket.emit('add_sale_detail', data);
-
-
-         clean_detail_inputs();
-
-      });
-
-      selectProduct.addEventListener('change', e => {
-         let product = product_in_select2[selectProduct.value];
-         if (product != undefined) {
-            document.querySelector('#priceSelect').innerHTML = client_type == 'minor' ?
-               `<option value="minor" selected>Precio de Detalle $${product.price}</option>
+    selectProduct.addEventListener('change', e => {
+      let product = product_in_select2[selectProduct.value];
+      if (product != undefined) {
+        document.querySelector('#priceSelect').innerHTML = client_type == 'minor' ?
+          `<option value="minor" selected>Precio de Detalle $${product.price}</option>
                <option value="major">Precio de Mayor $${product.major}</option>
                <option value="none">Valor Personalizado</option>` :
-               `<option value="minor">Precio de Detalle $${product.price}</option>
+          `<option value="minor">Precio de Detalle $${product.price}</option>
                <option value="major" selected>Precio de Mayor $${product.major}</option>
                <option value="none">Valor Personalizado</option>`
-            document.querySelector("#max_product_cant").innerHTML = `Cantidad maxima ${product.stock - product.reserved}`;
-            document.querySelector("#product__image").src = product.image;
-            document.getElementById('product__image').style.display = 'block';
-         }
+        document.querySelector("#max_product_cant").innerHTML = `Cantidad maxima ${product.stock - product.reserved}`;
+        document.querySelector("#product__image").src = product.image;
+        document.getElementById('product__image').style.display = 'block';
+      }
+    });
+
+    document.querySelector("#priceSelect").addEventListener('change', e => {
+      if (document.querySelector("#priceSelect").value == 'none') {
+        document.getElementById('personalizedPrice').style.display = 'block';
+        document.querySelector("#personalizedPrice").disabled = false;
+        document.querySelector("#personalizedPrice").focus();
+
+      } else {
+        document.getElementById('personalizedPrice').style.display = 'none';
+        document.querySelector("#personalizedPrice").disabled = true;
+      }
+    });
+
+    selectProduct2.addEventListener('change', e => {
+      let product = product_in_select2[selectProduct2.value];
+      if (product != undefined) {
+        document.querySelector('#priceSelect2').innerHTML = client_type == 'minor' ?
+          `<option value="minor" selected>Precio de Detalle $${product.price}</option>
+               <option value="major">Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>` :
+          `<option value="minor">Precio de Detalle $${product.price}</option>
+               <option value="major" selected>Precio de Mayor $${product.major}</option>
+               <option value="none">Valor Personalizado</option>`
+        document.querySelector("#max_product_cant2").innerHTML = `Cantidad maxima ${product.stock - product.reserved}`;
+        document.querySelector("#product__image2").src = product.image;
+        document.getElementById('product__image2').style.display = 'block';
+      }
+    });
+
+    document.querySelector("#priceSelect2").addEventListener('change', e => {
+      if (document.querySelector("#priceSelect2").value == 'none') {
+        document.getElementById('personalizedPrice2').style.display = 'block';
+        document.querySelector("#personalizedPrice2").disabled = false;
+        document.querySelector("#personalizedPrice2").focus();
+
+      } else {
+        document.getElementById('personalizedPrice2').style.display = 'none';
+        document.querySelector("#personalizedPrice2").disabled = true;
+      }
+    });
+
+    document.querySelector("#requestTransferButton").addEventListener('click', e => {
+      let data = {
+        client: '<%= cliente.id %>',
+        sale: '<%= in_process !== null ? in_process.id : null %>',
+        sucursal: document.querySelector("#trasnferSucursal").value,
+        product: selectProduct2.value,
+      }
+
+      document.querySelector("#requestTransferButton").disabled = true;
+
+
+      let p = product_in_select2[selectProduct2.value];
+      if (p !== undefined) {
+        data.product = p.id;
+        let price = document.getElementById('priceSelect2').value;
+        data.price = price == 'none' ?
+          document.getElementById('personalizedPrice2').value :
+          (price == 'minor' ? p.price : p.major);
+
+        data.cant = document.getElementById('product_cant2').value;
+        let _dist = Number.parseInt(p.stock) - Number.parseInt(p.reserved);
+        if (data.cant > _dist) {
+          document.querySelector("#requestTransferButton").disabled = false;
+          document.getElementById('product_cant2').value = _dist;
+          return errorMessage(`La cantidad Maxima no puede ser mayor a ${_dist}`);
+        }
+        console.log(p)
+      } else {
+        return errorMessage('No ha Seleccionado un producto');
+      }
+      // }
+
+      if (data.price == '' || data.price < 0 || data.price == null) {
+        return errorMessage('Precio no Válido, Si desea realizar una regalía, por favor seleccione valor personalizado y escriba el precio 0');
+      } else if (data.cant < 1) {
+        document.getElementById('product_cant2').value = '1';
+        return errorMessage('La cantidad no puede ser menor a 1');
+      }
+      //enviar datos al server
+      console.log(data)
+
+      //TOKEN
+      postData('/inventory/requisition/addToClient', data).then(data => {
+        if (data.status == 'success') {
+          successMessage('Actualizado');
+          setTimeout(() => {
+            document.location.reload();
+          }, 1500);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
       });
 
-      document.querySelector("#priceSelect").addEventListener('change', e => {
-         if (document.querySelector("#priceSelect").value == 'none') {
-            document.getElementById('personalizedPrice').style.display = 'block';
-            document.querySelector("#personalizedPrice").disabled = false;
-            document.querySelector("#personalizedPrice").focus();
+    });
 
-         } else {
-            document.getElementById('personalizedPrice').style.display = 'none';
-            document.querySelector("#personalizedPrice").disabled = true;
-         }
-      });
+    document.getElementById('fake_image_input').onchange = function(e) {
+      if (addingImageValidateImage(this)) {
+        AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+      } else {
+        document.getElementById("add_image_preview").innerHTML = "";
+        realImage.value = "";
+        return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+      }
+    };
 
-      document.getElementById('fake_image_input').onchange = function(e) {
-         if (addingImageValidateImage(this)) {
-            AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
-         } else {
-            document.getElementById("add_image_preview").innerHTML = "";
-            realImage.value = "";
-            return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
-         }
-      };
+    captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, 1 / 1, realImage);
 
-      captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, 1 / 1, realImage);
+    document.querySelector('#show_to_add').addEventListener('click', e => {
+      document.querySelector('#form_adding').style.display = 'block';
+      document.querySelector('#show_to_add').style.display = 'none';
+    });
 
-      document.querySelector('#show_to_add').addEventListener('click', e => {
-         document.querySelector('#form_adding').style.display = 'block';
-         document.querySelector('#show_to_add').style.display = 'none';
-      });
+  });
 
-   });
+  const free_detail = () => {
+    free = true;
+    document.querySelector('#inventory_detail').style.display = 'none';
+    document.querySelector('#free_toggle').style.display = 'none';
 
-   const free_detail = () => {
-      free = true;
-      document.querySelector('#inventory_detail').style.display = 'none';
-      document.querySelector('#free_toggle').style.display = 'none';
+    document.querySelector('#free_detail').style.display = 'block';
+    document.querySelector('#inventory_toggle').style.display = 'inline-block';
+  };
 
-      document.querySelector('#free_detail').style.display = 'block';
-      document.querySelector('#inventory_toggle').style.display = 'inline-block';
-   };
+  const form_inventory = () => {
+    return false;
+    free = false;
+    document.querySelector('#free_detail').style.display = 'none';
+    document.querySelector('#inventory_toggle').style.display = 'none';
 
-   const form_inventory = () => {
-      return false;
-      free = false;
-      document.querySelector('#free_detail').style.display = 'none';
-      document.querySelector('#inventory_toggle').style.display = 'none';
+    document.querySelector('#inventory_detail').style.display = 'block';
+    document.querySelector('#free_toggle').style.display = 'none';
+  };
 
-      document.querySelector('#inventory_detail').style.display = 'block';
-      document.querySelector('#free_toggle').style.display = 'none';
-   };
+  const quit = _id => {
+    let detail = current_details[_id];
+    detail_to_quit = _id;
 
-   const quit = _id => {
-      let detail = current_details[_id];
-      detail_to_quit = _id;
+    document.querySelector('#quit_image').src = detail.image;
+    document.querySelector('#quit_name').innerHTML = detail.description;
+    document.querySelector('#quit_units').innerHTML = `<b>${detail.cant} Unidades</b>`;
+    document.querySelector('#quit_reserved').innerHTML = `<b>${detail.reserved} Unidades</b>`;
+    document.querySelector('#quit_ready').innerHTML = `<b>${detail.ready} Unidades</b>`;
+    document.querySelector('#quit_revocable').innerHTML = `<b>${detail.cant - detail.ready} Unidades</b>`;
+    document.querySelector('#quit_input').value = detail.cant - detail.ready;
+    document.querySelector('#quit_input').max = detail.cant - detail.ready;
+    document.querySelector('#quit_input').disabled = false;
 
-      document.querySelector('#quit_image').src = detail.image;
-      document.querySelector('#quit_name').innerHTML = detail.description;
-      document.querySelector('#quit_units').innerHTML = `<b>${detail.cant} Unidades</b>`;
-      document.querySelector('#quit_reserved').innerHTML = `<b>${detail.reserved} Unidades</b>`;
-      document.querySelector('#quit_ready').innerHTML = `<b>${detail.ready} Unidades</b>`;
-      document.querySelector('#quit_revocable').innerHTML = `<b>${detail.cant - detail.ready} Unidades</b>`;
-      document.querySelector('#quit_input').value = detail.cant - detail.ready;
-      document.querySelector('#quit_input').max = detail.cant - detail.ready;
-      document.querySelector('#quit_input').disabled = false;
+    modalQuit.toggle();
+  }
 
-      modalQuit.toggle();
-   }
+  const release_request = _id => {
+    let detail = current_details[_id];
+    detail_to_quit = _id;
+    quit_case = 'reserved';
 
-   const release_request = _id => {
-      let detail = current_details[_id];
-      detail_to_quit = _id;
-      quit_case = 'reserved';
-
-      document.querySelector('#quit_image').src = detail.image;
-      document.querySelector('#quit_name').innerHTML = detail.description;
-      document.querySelector('#quit_units').innerHTML = `<b>${detail.cant} Unidades</b>`;
-      document.querySelector('#quit_reserved').innerHTML = `<b>${detail.reserved} Unidades</b>`;
-      document.querySelector('#quit_ready').innerHTML = `<b>${detail.ready} Unidades</b>`;
-      document.querySelector('#quit_input').value = detail.ready;
-      document.querySelector('#quit_input').max = detail.ready;
-      document.querySelector('#quit_input').disabled = true;
-      modalQuit.toggle();
-   }
+    document.querySelector('#quit_image').src = detail.image;
+    document.querySelector('#quit_name').innerHTML = detail.description;
+    document.querySelector('#quit_units').innerHTML = `<b>${detail.cant} Unidades</b>`;
+    document.querySelector('#quit_reserved').innerHTML = `<b>${detail.reserved} Unidades</b>`;
+    document.querySelector('#quit_ready').innerHTML = `<b>${detail.ready} Unidades</b>`;
+    document.querySelector('#quit_input').value = detail.ready;
+    document.querySelector('#quit_input').max = detail.ready;
+    document.querySelector('#quit_input').disabled = true;
+    modalQuit.toggle();
+  }
 </script>
 <% } else { %>
 <script>
-   const new_sale = () => {
-      window.location.href = `/sales/create/<%= cliente.id %>`
-   };
+  const new_sale = () => {
+    window.location.href = `/sales/create/<%= cliente.id %>`
+  };
 </script>
 <% }} %>
 <script>
-   var registrando_pago_en = null,
-      registrando_pago_monto = 0.00;
-   const modal_options_ = {
-      keyboard: true
-   };
-   const modalPayment = new bootstrap.Modal(document.getElementById('addPaymentModal'), modal_options_);
-   const modalPayment2 = new bootstrap.Modal(document.getElementById('addPaymentModal2'), modal_options_);
+  var registrando_pago_en = null,
+    registrando_pago_monto = 0.00;
+  const modal_options_ = {
+    keyboard: true
+  };
+  const modalPayment = new bootstrap.Modal(document.getElementById('addPaymentModal'), modal_options_);
+  const modalPayment2 = new bootstrap.Modal(document.getElementById('addPaymentModal2'), modal_options_);
+  const modalRequesTrasnfer = new bootstrap.Modal(document.getElementById('RequestTrasnferModal'), modal_options_);
 
-   const create_payment = (id = null) => {
-      registrando_pago_en = id;
-      modalPayment.toggle();
-   }
+  const create_payment = (id = null) => {
+    registrando_pago_en = id;
+    modalPayment.toggle();
+  }
 
-   const create_payment2 = (id, monto) => {
-      registrando_pago_en = id;
-      registrando_pago_monto = monto;
-      modalPayment2.toggle();
-   }
+  const create_payment2 = (id, monto) => {
+    registrando_pago_en = id;
+    registrando_pago_monto = monto;
+    modalPayment2.toggle();
+  }
 
 
-   document.addEventListener('DOMContentLoaded', event => {
 
-      document.getElementById('addNote').addEventListener('click', async (e) => {
-         let note = document.getElementById('textNote').value;
-         e.target.disabled = true;
 
-         if (note.length < 10) {
+  document.addEventListener('DOMContentLoaded', event => {
+
+    document.getElementById('addNote').addEventListener('click', async (e) => {
+      let note = document.getElementById('textNote').value;
+      e.target.disabled = true;
+
+      if (note.length < 10) {
+        e.target.disabled = false;
+        return errorMessage('Agregue como minimo 10 caracteres para guardar una nueva nota');
+      } else {
+        postData('/sales/client/updateData', {
+          case: 'note',
+          note,
+          client: '<%= cliente.id %>'
+        }).then(data => {
+          if (data.status == 'success') {
+            successMessage('Actualizado');
+            document.getElementById('textNote').value = "";
+            setTimeout(() => {
+              document.location.reload();
+            }, 1500);
+          } else if (data.status == 'errorMessage') {
             e.target.disabled = false;
-            return errorMessage('Agregue como minimo 10 caracteres para guardar una nueva nota');
-         } else {
-            postData('/sales/client/updateData', {
-               case: 'note',
-               note,
-               client: '<%= cliente.id %>'
-            }).then(data => {
-               if (data.status == 'success') {
-                  successMessage('Actualizado');
-                  document.getElementById('textNote').value = "";
-                  setTimeout(() => {
-                     document.location.reload();
-                  }, 1500);
-               } else if (data.status == 'errorMessage') {
-                  e.target.disabled = false;
-                  return errorMessage(data.message);
+            return errorMessage(data.message);
 
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
-         }
-      });
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
 
-      document.getElementById('saveClient').addEventListener('click', async (e) => {
-         e.target.disabled = true;
-         let data = {
-            client: '<%= cliente.id %>',
-            name: document.getElementById("clientName").value,
-            phone: document.getElementById("clientPhone").value,
-            email: document.getElementById("clientMail").value,
-            type: document.getElementById("clientType").value,
-            isLocal: document.getElementById("isLocal").value === 'true',
-            dui: document.getElementById("clientDUI").value,
-            nrc: document.getElementById("clientNRC").value,
-            classification: document.getElementById("clientClassification").value,
-            direction: document.getElementById("clientDirection").value,
-            seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
-         }
-         if (data.name.length < 2) {
+    document.getElementById('saveClient').addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      let data = {
+        client: '<%= cliente.id %>',
+        name: document.getElementById("clientName").value,
+        phone: document.getElementById("clientPhone").value,
+        email: document.getElementById("clientMail").value,
+        type: document.getElementById("clientType").value,
+        isLocal: document.getElementById("isLocal").value === 'true',
+        dui: document.getElementById("clientDUI").value,
+        nrc: document.getElementById("clientNRC").value,
+        classification: document.getElementById("clientClassification").value,
+        direction: document.getElementById("clientDirection").value,
+        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
+      }
+      if (data.name.length < 2) {
+        e.target.disabled = false;
+        return errorMessage('Por favor, registre el nombre del Cliente');
+      } else if (data.phone.length < 8) {
+        e.target.disabled = false;
+        return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
+      } else {
+        postData('/sales/client/update', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('Actualizado');
+            setTimeout(() => {
+              document.location.reload();
+            }, 1500);
+          } else if (data.status == 'errorMessage') {
             e.target.disabled = false;
-            return errorMessage('Por favor, registre el nombre del Cliente');
-         } else if (data.phone.length < 8) {
-            e.target.disabled = false;
-            return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
-         } else {
-            postData('/sales/client/update', data).then(data => {
-               if (data.status == 'success') {
-                  successMessage('Actualizado');
-                  setTimeout(() => {
-                     document.location.reload();
-                  }, 1500);
-               } else if (data.status == 'errorMessage') {
-                  e.target.disabled = false;
-                  return errorMessage(data.message);
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
-         }
-      });
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
 
-      document.getElementById('addPayment').addEventListener('click', async (e) => {
-         let data = {
-            method: document.querySelector("#payment_method").value,
-            amount: Number.parseFloat(document.querySelector("#payment_amount").value),
-            bank: document.querySelector("#payment_bank").value,
-            reference: document.querySelector("#payment_reference").value,
-            client: '<%= cliente.id %>',
-            sucursal: document.querySelector('#payment_sucursal').value,
-         }
+    document.getElementById('addPayment').addEventListener('click', async (e) => {
+      let data = {
+        method: document.querySelector("#payment_method").value,
+        amount: Number.parseFloat(document.querySelector("#payment_amount").value),
+        bank: document.querySelector("#payment_bank").value,
+        reference: document.querySelector("#payment_reference").value,
+        client: '<%= cliente.id %>',
+        sucursal: document.querySelector('#payment_sucursal').value,
+      }
 
-         if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
-            return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
-         } else if (isNaN(data.amount) || data.amount < 0.01) {
-            return errorMessage('monto no Valido');
+      if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
+        return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
+      } else if (isNaN(data.amount) || data.amount < 0.01) {
+        return errorMessage('monto no Valido');
 
-         } else {
-            document.getElementById('addPayment').disabled = true;
-            postData('/sales/client/create_payment', data).then(data => {
-               if (data.status == 'success') {
-                  successMessage('registrado');
-                  // postData('/sales/client/re_payment', {
-                  //    id: data.data
-                  // });
-                  setTimeout(window.location.reload(), 3000);
-               } else if (data.status == 'errorMessage') {
-                  document.getElementById('addPayment').disabled = false;
-                  return errorMessage(data.message);
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
-         }
-      });
+      } else {
+        document.getElementById('addPayment').disabled = true;
+        postData('/sales/client/create_payment', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('registrado');
+            // postData('/sales/client/re_payment', {
+            //    id: data.data
+            // });
+            setTimeout(window.location.reload(), 3000);
+          } else if (data.status == 'errorMessage') {
+            document.getElementById('addPayment').disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
 
 
-      document.getElementById('addPayment2').addEventListener('click', async (e) => {
-         let data = {
-            method: document.querySelector("#payment_method2").value,
-            amount: Number.parseFloat(document.querySelector("#payment_amount2").value),
-            bank: document.querySelector("#payment_bank2").value,
-            reference: document.querySelector("#payment_reference2").value,
-            client: '<%= cliente.id %>',
-            sucursal: document.querySelector('#payment_sucursal2').value,
-            sale: registrando_pago_en,
-            max: Number.parseFloat(registrando_pago_monto),
-         }
+    document.getElementById('addPayment2').addEventListener('click', async (e) => {
+      let data = {
+        method: document.querySelector("#payment_method2").value,
+        amount: Number.parseFloat(document.querySelector("#payment_amount2").value),
+        bank: document.querySelector("#payment_bank2").value,
+        reference: document.querySelector("#payment_reference2").value,
+        client: '<%= cliente.id %>',
+        sucursal: document.querySelector('#payment_sucursal2').value,
+        sale: registrando_pago_en,
+        max: Number.parseFloat(registrando_pago_monto),
+      }
 
-         if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
-            return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
-         } else if (isNaN(data.amount) || data.amount < 0.01 || data.amount > data.max) {
-            return errorMessage('monto no Valido');
+      if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
+        return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
+      } else if (isNaN(data.amount) || data.amount < 0.01 || data.amount > data.max) {
+        return errorMessage('monto no Valido');
 
-         } else {
+      } else {
 
-            document.getElementById('addPayment2').disabled = true;
-            postData('/sales/client/create_payment2', data).then(data => {
-               if (data.status == 'success') {
-                  successMessage('registrado');
-                  setTimeout(window.location.reload(), 2000);
-               } else if (data.status == 'errorMessage') {
-                  document.getElementById('addPayment2').disabled = false;
-                  return errorMessage(data.message);
-               } else {
-                  return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-               }
-            });
-         }
-      });
+        document.getElementById('addPayment2').disabled = true;
+        postData('/sales/client/create_payment2', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('registrado');
+            setTimeout(window.location.reload(), 2000);
+          } else if (data.status == 'errorMessage') {
+            document.getElementById('addPayment2').disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
 
 
-      document.getElementById('payment_method2').addEventListener('change', async (e) => {
-         document.getElementById('other_pays_2').style.display = document.getElementById('payment_method2').value == 'money' ? 'none' : 'block';
-         document.querySelector("#payment_amount2").focus();
-      });
+    document.getElementById('payment_method2').addEventListener('change', async (e) => {
+      document.getElementById('other_pays_2').style.display = document.getElementById('payment_method2').value == 'money' ? 'none' : 'block';
+      document.querySelector("#payment_amount2").focus();
+    });
 
-      document.getElementById('payment_method').addEventListener('change', async (e) => {
-         document.getElementById('other_pays').style.display = document.getElementById('payment_method').value == 'money' ? 'none' : 'block';
-         document.querySelector("#payment_amount").focus();
-      });
+    document.getElementById('payment_method').addEventListener('change', async (e) => {
+      document.getElementById('other_pays').style.display = document.getElementById('payment_method').value == 'money' ? 'none' : 'block';
+      document.querySelector("#payment_amount").focus();
+    });
 
-   });
+  });
 
-   const copyNumber = () => {
-      copiarAlPortapapeles('<%= cliente.phone %>');
-      successMessage('Copiado');
-   }
+  const copyNumber = () => {
+    copiarAlPortapapeles('<%= cliente.phone %>');
+    successMessage('Copiado');
+  }
+
+
+  
 </script>
+<%- include('view_client_chargue_payment.ejs') %>
 
 </html>

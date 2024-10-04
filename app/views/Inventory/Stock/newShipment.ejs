@@ -167,8 +167,6 @@
    var _process = '<%= Helper.randomString(5) %>';
    var socket = io.connect('<%= baseURL %>/logistics');
 
-
-
    socket.on('save_new_transfer_error', data => {
       console.log(data);
       if (data._process == _process) {

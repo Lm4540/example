@@ -191,6 +191,13 @@ module.exports = [
         "permission": "update_sales_of_another_user"
     },
     {
+        "name": "Actualizacion de Ventas de otra Sucursal",
+        "explication": "Permite agregar detalles o realizar cambios en la venta registrada por otro usuario de una sucursal diferente",
+        "group": "Ventas",
+        "permission": "update_sales_of_another_sucursal"
+    },
+    
+    {
         "name": "Consultar Informacion de Clientes",
         "explication": "permite acceder al historial de compras y pagos de los clientes",
         "group": "Ventas",

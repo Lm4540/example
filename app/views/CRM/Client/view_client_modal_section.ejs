@@ -1,0 +1,404 @@
+<div class="modal fade" id="editClient" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Editando Cliente</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente" value="<%= cliente.name %>">
+          <label for="clientName">Nombre del cliente</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientPhone" type="text" placeholder="Nunmero Telefonico" value="<%= cliente.phone %>">
+          <label for="clientPhone">Numero Telefonico</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientMail" type="text" placeholder="E-mail" value="<%= cliente.email %>">
+          <label for="clientMail">E-Mial</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientDirection" type="text" placeholder="Dirección" value="<%= cliente.direction %>">
+          <label for="clientDirection">Dirección del Cliente</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientDUI" type="text" placeholder="05507306-8" value="<%= cliente.NIT_DUI %>">
+          <label for="clientDUI">NIT/DUI</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input class="form-control" id="clientNRC" type="text" placeholder="05507306-8" value="<%= cliente.NRC %>">
+          <label for="clientNRC">NRC</label>
+        </div>
+        <div class=" mb-3 col-md-12">
+          <label for="clientType">Tipo de Compras</label>
+          <select name="clientType" id="clientType" class="form-control">
+            <% if (cliente.type == 'minor') { %>
+            <option value="minor" selected>Comprador al Detalle</option>
+            <option value="major">Comprador por Mayor</option>
+            <% } else { %>
+            <option value="minor">Comprador al Detalle</option>
+            <option value="major" selected>Comprador por Mayor</option>
+            <% } %>
+          </select>
+        </div>
+        <div class=" mb-3 col-md-12">
+          <label for="isLocal">¿Cliente Local?</label>
+          <select name="isLocal" id="isLocal" class="form-control">
+            <% if (cliente.isLocal) { %>
+            <option value="true" selected>Si, es cliente local</option>
+            <option value="false">No, es cliente Internacional</option>
+            <% } else { %>
+            <option value="true">Si, es cliente local</option>
+            <option value="false" selected>No, es cliente Internacional</option>
+            <% } %>
+          </select>
+        </div>
+        <div class=" mb-3 col-md-12">
+          <label for="clientClassification">Clasificación del Contribuyente</label>
+          <select name="clientClassification" id="clientClassification" class="form-control">
+            <% if (cliente.classification == 'otro') { %>
+            <option value="ninguno">No Clasificado</option>
+            <option value="otro" selected>Otro Contribuyente</option>
+            <option value="mediano">Mediano Contribuyente</option>
+            <option value="gran">Gran Contribuyente</option>
+            <% } else if (cliente.classification == 'mediano') { %>
+            <option value="ninguno">No Clasificado</option>
+            <option value="otro">Otro Contribuyente</option>
+            <option value="mediano" selected>Mediano Contribuyente</option>
+            <option value="gran">Gran Contribuyente</option>
+            <% } else if (cliente.classification == 'gran') { %>
+            <option value="ninguno">No Clasificado</option>
+            <option value="otro">Otro Contribuyente</option>
+            <option value="mediano">Mediano Contribuyente</option>
+            <option value="gran" selected>Gran Contribuyente</option>
+            <% } else { %>
+            <option value="ninguno" selected>No Clasificado</option>
+            <option value="otro">Otro Contribuyente</option>
+            <option value="mediano">Mediano Contribuyente</option>
+            <option value="gran">Gran Contribuyente</option>
+            <% } %>
+          </select>
+        </div>
+        <div class="col-12 mb-3">
+          <label for="clientSeller">Vendedor Asignado</label>
+          <select name="clientSeller" id="clientSeller" class="form-control">
+            <option value="none">Ninguno</option>
+            <% sellers.forEach(employee => { %>
+            <option value="<%= employee.id %>" <% if (employee.id == cliente.seller) { %>selected<% } %>><%= employee.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer text-center">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+        <button type="button" class="btn btn-outline-primary" id="saveClient">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="quitDetailModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Quitar detalle</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="text-white row bg-danger">
+          <div class="col" style="padding: 1rem;">
+
+            <h4 class="text-white">Advertencia</h4>
+            <p>Al presionar el botón quitar las reservas de este producto serán liberadas y puestas a disposición para su venta, para poder volver a reservarlo deberá agregar nuevamente el producto al pedido</p>
+          </div>
+        </div>
+        <div class="text-center mt-3">
+          <img src="" alt="product" id="quit_image" class="img" style="max-width: 200px;">
+          <p id="quit_name"></p>
+          <p>Unidades en el pedido: <span id="quit_units"></span></p>
+          <p>Unidades reservadas: <span id="quit_reserved"></span></p>
+          <p>Unidades ya preparadas: <span id="quit_ready"></span></p>
+          <p>Unidades Eliminables: <span id="quit_revocable"></span></p>
+        </div>
+
+        <div class="form-group mt-2 mb-2">
+          <label for="quit_input">Cantidad de Unidades a Eliminar</label>
+          <input type="number" id="quit_input" class="form-control" step="1" value="1">
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-outline-danger" id="quitDetail">Quitar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3" id="add_payment_div">
+          <div class="form-group mb-3 col-12">
+            <label for="payment_amount">Tipo de Transacción</label>
+            <select name="payment_method" id="payment_method" class="form-control">
+              <option value="transfer">Transferencias y Depósitos</option>
+              <option value="money">Efectivo</option>
+              <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
+            </select>
+          </div>
+          <div class="form-group mb-3 col-12">
+            <label for="payment_amount">Monto Recibido</label>
+            <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
+          </div>
+          <div id="other_pays">
+            <div class="form-group mb-3 col-12">
+              <label for="payment_bank">Banco (RG)</label>
+              <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
+            </div>
+            <div class="form-group mb-3 col-12">
+              <label for="payment_reference">Numero de Referencia / Numero de Voucher </label>
+              <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="payment_sucursal">Sucursal que recibe el pago</label>
+            <select name="payment_sucursal" id="payment_sucursal" class="form-control">
+              <% sucursals.forEach(sucursal => { %>
+              <option value="<%= sucursal.id %>" <%= (UserSucursal == sucursal.id ? 'selected' : 'disabled') %>>
+                <%= sucursal.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="addPayment">Registrar Pago</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Datos de facturación</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_type">Tipo de Documento</label>
+              <select name="invoice_type" id="invoice_type" class="form-control">
+
+              </select>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_number">Numero del Documento</label>
+              <input type="number" class="form-control" step="1" id="invoice_number">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="invoice_name">Nombre en la factura</label>
+          <input type="text" class="form-control" name="invoice_name" id="invoice_name" value="<%= cliente.name %>">
+        </div>
+
+        <div class="form-group">
+          <label for="invoice_direction">Direccion</label>
+          <input type="text" class="form-control" name="invoice_direction" id="invoice_direction" value="<%= cliente.direction %>">
+        </div>
+
+        <div class="form-group">
+          <label for="invoice_giro">Giro</label>
+          <input type="text" class="form-control" name="invoice_giro" id="invoice_giro">
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_nit">NIT/DUI</label>
+              <input type="text" class="form-control" name="invoice_nit" id="invoice_nit" value="<%= cliente.NIT_DUI %>">
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_nrc">NRC</label>
+              <input type="text" class="form-control" name="invoice_nrc" id="invoice_nrc" value="<%= cliente.NRC !== null ? cliente.NRC : '' %>">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_nota_remision_anterior">Numero de Remision Anterior</label>
+              <input type="text" class="form-control" name="invoice_nota_remision_anterior" id="invoice_nota_remision_anterior">
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="invoice_cuenta_de">Venta a cuenta de:</label>
+              <input type="text" class="form-control" name="invoice_cuenta_de" id="invoice_cuenta_de">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="invoice_date">Fecha de La Factura</label>
+          <input type="date" class="form-control" name="invoice_date" id="invoice_date" min="<%= Helper.date_to_input(); %>" value="<%= Helper.date_to_input(); %>">
+        </div>
+        <div class="form-group">
+          <label for="invoice_leyend">Leyenda<i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta es una descripcion Adicional que aparecera bajo los detalles del documento"></i></label>
+          <textarea name="invoice_leyend" id="invoice_leyend" class="form-control"></textarea>
+        </div>
+
+
+        <div class="form-group">
+          <label for="invoice_simplification">Descripción Simplificada <i class="fas fa-question-circle text-danger" style="cursor:pointer; font-size: 125%;" data-toggle="tooltip" data-placement="bottom" title="Esta descripción debe establecerse cuando el documento contenga demasiados detalles y se desborde de la página de impresión"></i></label>
+          <textarea name="invoice_simplification" id="invoice_simplification" class="form-control"></textarea>
+        </div>
+
+        <div class="form-check form-switch">
+          <input class="form-check-input fs-3 text" type="checkbox" id="invoice_iva_retention">
+          <label class="form-check-label" for="invoice_iva_retention">¿Iva Retenido?</label>
+        </div>
+
+        <br>
+        <div class="form-check form-switch">
+          <input class="form-check-input fs-3 text" type="checkbox" id="invoice_isr_retention">
+          <label class="form-check-label" for="invoice_isr_retention">¿Retencion ISR?</label>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="addInvoiceButton">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addPaymentModal2" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Forma de Pago</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3" id="add_payment_div">
+          <div class="form-group mb-3 col-12">
+            <label for="payment_method2">Tipo de Transacción</label>
+            <select name="payment_method2" id="payment_method2" class="form-control">
+              <option value="transfer">Transferencias y Depósitos</option>
+              <option value="money">Efectivo</option>
+              <option value="credit_card">Tarjeta Crédito/Débito y POS Físico o Virtual</option>
+            </select>
+          </div>
+          <div class="form-group mb-3 col-12">
+            <label for="payment_amount2">Monto Recibido</label>
+            <input class="form-control" id="payment_amount2" type="text" name="payment_amount" placeholder="0.00">
+          </div>
+          <div id="other_pays_2">
+            <div class="form-group mb-3 col-12">
+              <label for="payment_bank2">Banco (RG)</label>
+              <input class="form-control" id="payment_bank2" type="text" name="payment_bank2" placeholder="Banco">
+            </div>
+            <div class="form-group mb-3 col-12">
+              <label for="payment_reference2">Numero de Referencia / Numero de Voucher </label>
+              <input class="form-control" id="payment_reference2" type="text" placeholder="1525-8">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="payment_sucursal2">Sucursal que recibe el pago</label>
+            <select name="payment_sucursal2" id="payment_sucursal2" class="form-control">
+              <% sucursals.forEach(sucursal => { %>
+              <option value="<%= sucursal.id %>" <%= (UserSucursal == sucursal.id ? 'selected' : 'disabled') %>>
+                <%= sucursal.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="addPayment2">Registrar Pago</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="RequestTrasnferModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Solicitar Traslado</h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="trasnferSucursal">Selecciona la sucursal de Origen</label>
+          <select name="trasnferSucursal" id="trasnferSucursal" class="form-control">
+            <% sucursals.forEach(sucursal => { %>
+            <option value="<%= sucursal.id %>" <% if (UserSucursal == sucursal.id) { %> disabled <% } %>><%= sucursal.name %></option>
+
+            <% }) %>
+          </select>
+        </div>
+        <img alt=" " id="product__image2" class="img round mb-4" style="max-width: 200px; display: none; margin:auto">
+        <div class="form-group">
+          <label for="productSelect2" style="font-size: 120%;">Escribe el nombre o SKU</label>
+          <select name="productSelect2" id="productSelect2" class="form-control"></select>
+        </div>
+
+        <div class="mb-3 col-12">
+          <span>Precio:</span>
+          <div class="form-group">
+            <select name="priceSelect2" id="priceSelect2" class="form-control"></select>
+            <label for="priceSelect">Selecciona una opción</label>
+          </div>
+        </div>
+        <div class="form-floating mb-3 col-12">
+          <input class="form-control" id="personalizedPrice2" type="number" step="0.01" placeholder="Precio Personalizado" disabled>
+          <label for="personalizedPrice2">Precio Personalizado</label>
+        </div>
+
+        <div class="form-floating mb-3 col-12">
+          <input class="form-control" id="product_cant2" type="number" step="1" placeholder="Cantidad" value="1">
+          <label for="product_cant2">Cantidad</label>
+          <small class="text-danger" id="max_product_cant2"></small>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="requestTransferButton">Solicitar Traslado</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

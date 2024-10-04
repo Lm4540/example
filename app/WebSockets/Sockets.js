@@ -1,20 +1,22 @@
 const { Server } = require("socket.io");
 const LogisticsSocket = require("../Logistics/Sockets/Logistic");
 const SalesSocket = require("../CRM/SalesWS");
+const Auth = require("../System/Middleware/SocketAuth");
 
 module.exports = (server, session) => {
+
     const io = new Server(server);
     const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
-    
+
     io.use(wrap(session));
-    
+
     //Eventos del modulo de Logistica
-    io.of('/logistics').use(wrap(session)).on('connection', function(socket) {
-        LogisticsSocket(io, socket);
+    io.of('/logistics').use(wrap(session)).on('connection', function (socket) {
+            LogisticsSocket(io, socket);
     });
-    
+
     //Eventos del modulo de ventas
-    io.of('/sales').use(wrap(session)).on('connection', function(socket) {
+    io.of('/sales').use(wrap(session)).on('connection', function (socket) {
         // console.log(socket.request.session.userSession);
         SalesSocket(io, socket);
     });
@@ -25,7 +27,7 @@ module.exports = (server, session) => {
 
     //Eventos generales de Socket Io
     io.on('connection', (socket) => {
-        
+
         //importar rutas eventos
 
 
@@ -56,5 +58,5 @@ module.exports = (server, session) => {
 
         });
     });
-    
+
 }

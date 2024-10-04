@@ -5,6 +5,7 @@ const CategoriesController = require('../Inventory/Controllers/CategoriesControl
 const ProductController = require('../Inventory/Controllers/ProductController');
 const StockController = require('../Inventory/Controllers/StockController');
 const Auth = require('../System/Middleware/Auth');
+const SaleController = require("../CRM/Controllers/SaleController");
 
 
 // Home page route.
@@ -91,8 +92,12 @@ router.get('/productReserveList', StockController.ProductreserveList);
 
 router.get('/requisition', StockController.viewRequisitions);
 router.get('/requisition/:id(\\d+)', StockController.viewRequisition);
+router.get('/requisition/:id(\\d+)/my', StockController.viewRequisition_MyProducts);
 router.post('/requisition', StockController.updateRequisition);
 router.post('/requisition/proccess', StockController.proccessRequisition);
+router.post('/requisition/addToClient', SaleController.add_detail_from_request_tranfer);
+
+
 
 
 router.get('/shipment', StockController.viewShipments);
@@ -117,7 +122,7 @@ router.get('/product/test', (req, res) => {
     console.log(palabraSecretaValida);*/
 }); //pendiente
 
-router.get('/test/test', ProductController.testTest);
+router.get('/test/test', ProductController.testTest2);
 /** Stock & Movements Routes */
 
 /** Reports Routes */

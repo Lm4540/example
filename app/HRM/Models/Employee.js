@@ -18,6 +18,8 @@ const Employee = sequelize.define('Employee', {
     _user: DataTypes.INTEGER.UNSIGNED,
     sucursal: DataTypes.INTEGER.UNSIGNED,
     image: DataTypes.STRING,
+    shortName: DataTypes.STRING,
+    nickname: DataTypes.STRING,
 }, {
     tableName: 'hrm_employee',
 });

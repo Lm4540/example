@@ -323,7 +323,7 @@ module.exports = (io, socket) => {
             io.of('/logistics').emit('deleted_major_detail', res);
             _io.to(group_identification).emit("quit_detail_success", res);
         } else {
-            _io.to(group_identification).emit("quit_detail_error", { errorMessage: res.message, _process: data._process });
+            _io.to(group_identification).emit("quit_detail_error", { message: res.message, _process: data._process });
 
         }
 

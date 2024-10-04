@@ -11,6 +11,8 @@ const Movement = require("../../Inventory/Models/Movement");
 const Provider = require("../../Inventory/Models/Provider");
 const PettyCashMoves = require('../../Financial/Models/PettyCashMoves');
 const Employee = require('../../HRM/Models/Employee');
+const RequisitionDetail = require('../../Inventory/Models/RequisitionDetail');
+const Requisition = require('../../Inventory/Models/Requisition');
 
 
 const Helper = require('../../System/Helpers');
@@ -40,6 +42,8 @@ const status = {
     'to_resend': "Marcado para reenvio",
     'closed': 'Cerrado'
 };
+
+
 
 
 const relacionar_pago2 = async (pago) => {
@@ -218,6 +222,74 @@ const sale_status_verification = async (seller) => {
 
 
 const SaleController = {
+
+    update_sale_delivery_type: async (req, res) => {
+        //obtener los pedidos que esten abiertos
+
+
+        let sales = await Sale.findAll({
+            where: {
+                _status: 'process',
+                delivery_type: 'local',
+            }
+        });
+
+        //recorrerlos y buscar la ultima compra realizada
+
+        let largo = sales.length;
+        let to_save = [];
+
+        for (let index = 0; index < largo; index++) {
+            let sale = sales[index];
+
+            //buscar la ultima venta del mismo cliente 
+            let last_sale = await Sale.findOne({
+                where: {
+                    client: sale.client,
+                    id: {
+                        [Op.lt]: sale.id,
+                    }
+                },
+                order: [
+                    ['id', 'DESC']
+                ]
+            });
+
+            if (last_sale !== null) {
+                if (last_sale.delivery_type !== sale.delivery_type) {
+                    to_save.push(`UPDATE crm_sale SET _status = '${last_sale.delivery_type}' WHERE id = ${sale.id}`);
+                }
+            }
+
+        }
+
+        if (to_save.length > 0) {
+            try {
+                return await sequelize.transaction(async (t) => {
+                    for (let index = 0; index < to_save.length; index++) {
+                        await sequelize.query(
+                            to_save[index],
+                            {
+                                type: QueryTypes.UPDATE,
+                                transaction: t
+                            }
+                        );
+
+                    }
+                    return res.json({ status: 'success', message: "guardado" });
+                });
+
+            } catch (error) {
+                return res.json({
+                    status: 'error',
+                    message: error.message,
+                });
+            }
+        }
+
+
+
+    },
 
     update_prices: async (req, res) => {
         return res.render('CRM/Products/UpdatePrices', { pageTitle: 'Reporte de Ventas por Vendedor', limit: 10 });
@@ -683,7 +755,6 @@ const SaleController = {
         return Helper.notFound(req, res, 'Client not Found!')
     },
 
-
     relacionar_pago: async (req, res) => {
         try {
             //buscar el pago
@@ -1004,8 +1075,6 @@ const SaleController = {
             };
         }
 
-
-
         let limit_date = new Date();
         limit_date.setDate(limit_date.getDate() - 7);
         //Buscar las ventas que no esten finalizadas
@@ -1043,8 +1112,6 @@ const SaleController = {
 
         //pasar los datos
         return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, employees, _options });
-
-
     },
 
     addDetail: async (req, res) => {
@@ -1063,6 +1130,8 @@ const SaleController = {
             return res.json({ status: 'errorMessage', message: 'Cliente no seleccionado' });
         }
 
+
+
         try {
             data.cant = Number.parseInt(data.cant);
             data.price = Number.parseFloat(data.price);
@@ -1071,6 +1140,18 @@ const SaleController = {
                 let sale = null, detail_count = 0;
 
                 if (data.sale == "" || data.sale == null) {
+                    let last_sale = await Sale.findOne({
+                        where: {
+                            client: client.id
+                        },
+                        order: [
+                            ['id', 'DESC']
+                        ]
+                    });
+
+                    console.log('ESTA ES LA INFORMACION DE LA ULTIMA COMPRA', last_sale);
+
+
                     sale = await Sale.create({
                         client: client.id,
                         seller: req.session.userSession.employee.id,
@@ -1078,6 +1159,7 @@ const SaleController = {
                         credit_conditions: 0,
                         _status: 'process',
                         type: client.type,
+                        delivery_type: last_sale !== null ? last_sale.delivery_type : 'local',
                         balance: 0.00
                     }, { transaction: t });
                 } else {
@@ -1573,16 +1655,13 @@ const SaleController = {
 
                     ids = await SalePayment.findAll({
                         where: {
-                            id: {
-                                [Op.in]: ids
-                            }
+                            id: { [Op.in]: ids }
                         }
                     });
 
                     let payments = [];
 
                     ids.forEach(id => {
-
                         payments.push({
                             amount: pays[id.id],
                             type: id.type,
@@ -1594,27 +1673,19 @@ const SaleController = {
                         });
                     });
 
-
-
                     let serie = null;
-
                     if (sale.invoice_number != null && sale.invoice_number != '' && sale.invoice_number > 0) {
                         serie = await InvoiceSeries.findByPk(sale.invoce_serie);
                     }
-
-
-
                     //buscar los detalles
                     return res.render('CRM/Sales/viewPayments', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, seller, cliente, status, payments, serie });
                 }
-
             }
-
         }
 
         return Helper.notFound(req.res, 'Invoice or Sale not Found!');
-
     },
+
     viewSale: async (req, res) => {
         //buscar la venta
         let sale = await Sale.findByPk(req.params.id)
@@ -1646,10 +1717,16 @@ const SaleController = {
         let detail = await SaleDetail.findByPk(req.body.detail_id);
 
         if (detail) {
-
             //Buscar la venta
             let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
             if (sale) {
+
+
+                if (sale._status != 'process') {
+                    return res.json({
+                        status: 'errorMessage', message: 'Ya no se puede modificar esta venta',
+                    });
+                }
                 try {
                     //contar si la venta tiene mas detalles
                     let count = await SaleDetail.count({ where: { sale: sale.id } });
@@ -1728,6 +1805,244 @@ const SaleController = {
         }
     },
 
+    add_detail_from_request_tranfer: async (req, res) => {
+        let data = req.body;
+        let session = req.session.userSession;
+
+        if (session.employee.sucursal == data.sucursal) {
+            return res.json({ status: 'errorMessage', message: 'La sucursal origen del traslado no puede ser el mismo sitio de el lugar asignado al vendedor' });
+        } else if (data.cant < 1) {
+            return res.json({ status: 'errorMessage', message: 'Agrega una cantidad' });
+        } else if (data.price < 0 || data.price == "") {
+            return res.json({ status: 'errorMessage', message: 'El precio no es valido' });
+        } else if (data.client < 1 || data.client == "") {
+            return res.json({ status: 'errorMessage', message: 'Cliente no seleccionado' });
+        }
+
+        //buscar el cliente
+        let client = await Client.findByPk(data.client);
+        if (client == null) { return res.json({ status: 'errorMessage', message: 'Cliente no seleccionado' }); }
+        if (client.seller !== session.employee.id && !session.permission.includes('update_sales_of_another_user')) { return res.json({ status: 'errorMessage', message: 'No tienes permiso para agregar productos a este cliente' }); }
+
+        try {
+            data.cant = Number.parseInt(data.cant);
+            data.price = Number.parseFloat(data.price);
+
+            let sale = await Sale.findOne({
+                where: {
+                    [Op.and]: {
+                        client: data.client,
+                        _status: 'process'
+                    }
+                }
+            });
+
+            let product = await Product.findByPk(data.product);
+            if (product == null) { throw 'Producto no encontrado'; }
+
+            let detail_count = 0;
+            let detail = null;
+            if (sale !== null && sale !== undefined) {
+                if (sale.sucursal !== session.employee.sucursal) { throw 'No puedes agregar productos a una venta de otra sucursal'; }
+                detail_count = await SaleDetail.count({ where: { sale: sale.id } });
+            }
+
+            //buscar el stock que pertenece a la sucursal seleccionada
+            var stock = await Stock.findOne({
+                where: {
+                    product: data.product,
+                    sucursal: data.sucursal
+                }
+            });
+
+
+            if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) { throw 'No hay suficientes ecistencias en tu sucursal asignada para poder agregar este producto'; }
+
+            //buscar a ver si ya hay un detalle existente
+            if (detail_count > 0) {
+                detail = await SaleDetail.findOne({
+                    where: {
+                        [Op.and]: {
+                            sale: sale.id,
+                            product: data.product,
+                            price: data.price
+                        }
+                    }
+                });
+            }
+
+            //buscar la requisicion
+            let requisition = await Requisition.findOne({
+                where: {
+                    origin: data.sucursal,
+                    destino: session.employee.sucursal,
+                    _status: 'open'
+                }
+            })
+
+            return await sequelize.transaction(async (t) => {
+
+                var createdBy = session.employee.name;
+                let userid = session.employee.id;
+
+                if (sale == null) {
+                    sale = await Sale.create({
+                        client: client.id,
+                        seller: session.employee.id,
+                        sucursal: session.employee.sucursal,
+                        credit_conditions: 0,
+                        _status: 'process',
+                        type: client.type,
+                        balance: 0.00
+                    }, { transaction: t });
+                }
+
+                sale.balance = sale.balance + Helper.fix_number(data.cant * data.price);
+                await sale.save({ transaction: t });
+
+                if (detail !== null) {
+                    detail.cant = detail.cant + data.cant;
+                    await detail.save({ transaction: t });
+                } else {
+                    detail = await SaleDetail.create({
+                        sale: sale.id,
+                        product: product.id,
+                        price: data.price,
+                        description: product.name + ' SKU ' + product.sku,
+                        image: product.raw_image_name,
+                        _order: detail_count,
+                        cant: data.cant,
+                        ready: 0,
+                        delivered: 0,
+                        reserved: 0
+                    }, { transaction: t });
+                }
+
+                if (requisition == null) {
+                    requisition = await Requisition.create({
+                        origin: data.sucursal,
+                        destino: session.employee.sucursal,
+                        _status: 'open',
+                        createdBy,
+                    }, { transaction: t });
+
+                    let req_detail = await RequisitionDetail.create({
+                        requisition: requisition.id,
+                        product: product.id,
+                        client: data.client,
+                        cant: data.cant,
+                        createdBy,
+                        client_name: client.name,
+                        user: userid,
+                        sale_detail: detail.id
+                    }, { transaction: t });
+
+                    let reserve = await StockReserve.create({
+                        cant: data.cant,
+                        createdBy,
+                        concept: 'Reserva por Solicitudes de Trasalado',
+                        type: 'requisition',
+                        orderId: req_detail.id,
+                        product: stock.product,
+                        sucursal: stock.sucursal,
+                    }, { transaction: t });
+
+                } else {
+
+                    let req_detail = await RequisitionDetail.findOne({
+                        where: {
+                            requisition: requisition.id,
+                            product: product.id,
+                            sale_detail: detail.id
+                        }
+                    });
+
+                    if (req_detail == null) {
+
+                        let req_detail = await RequisitionDetail.create({
+                            requisition: requisition.id,
+                            product: product.id,
+                            client: data.client,
+                            cant: data.cant,
+                            createdBy,
+                            client_name: client.name,
+                            user: userid,
+                            sale_detail: detail.id
+                        }, { transaction: t });
+                        let reserve = await StockReserve.create({
+                            cant: data.cant,
+                            createdBy,
+                            concept: 'Reserva por Solicitudes de Trasalado',
+                            type: 'requisition',
+                            orderId: req_detail.id,
+                            product: stock.product,
+                            sucursal: stock.sucursal,
+                            saleId: detail.id
+                        }, { transaction: t });
+
+                    } else {
+                        req_detail.cant = req_detail.cant + data.cant;
+                        await req_detail.save({ transaction: t });
+
+                        let reserve = await StockReserve.findOne({
+                            where: {
+                                product: data.product,
+                                sucursal: stock.sucursal,
+                                orderId: req_detail.id
+                            }
+                        });
+
+                        // realizar raw sql aqui
+                        reserve.cant = Number.parseInt(reserve.cant + data.cant);
+                        await reserve.save({ transaction: t });
+                    }
+
+                    //Actualizar el producto
+
+                    //realizar raws sql aqui
+                    // stock.reserved = stock.reserved + data.cant;
+                    // await stock.save({ transaction: t });
+                    await sequelize.query(
+                        "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
+                        {
+                            replacements: {
+                                cant: data.cant, stock_id: stock.id
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        }
+                    );
+
+                    //realizar raws sql aqui
+                    //  product.reserved = product.reserved + data.cant;
+                    //  await product.save({ transaction: t });
+                    await sequelize.query(
+                        "UPDATE `inventory_product` SET `reserved` = reserved + :cant WHERE id = :product_id",
+                        {
+                            replacements: {
+                                cant: data.cant, product_id: product.id
+                            },
+                            type: QueryTypes.UPDATE,
+                            transaction: t
+                        }
+                    );
+                }
+
+
+                return res.json({
+                    status: 'success',
+                    message: 'Guardado',
+                });
+            });
+
+        } catch (error) {
+            console.error(error);
+            message = error.message !== undefined ? error.message : error;
+            return { status: 'errorMessage', message: message, data: error };
+        }
+    },
+
+
     socket_add_detail: async (data, session) => {
         if (data.cant < 1) {
             return { status: 'errorMessage', message: 'Agrega una cantidad' };
@@ -1748,12 +2063,10 @@ const SaleController = {
         }
 
         if (client.seller !== session.employee.id && !session.permission.includes('update_sales_of_another_user')) {
-
-            console.log('No hay permiso');
             return { status: 'errorMessage', message: 'No tienes permiso para agregar productos a este cliente' };
         }
 
-        console.log("llega aca");
+
         try {
             data.cant = Number.parseInt(data.cant);
             data.price = Number.parseFloat(data.price);
@@ -1771,9 +2084,11 @@ const SaleController = {
             let detail_count = 0;
             let detail = null;
             if (sale !== null && sale !== undefined) {
-                if (sale.sucursal !== session.employee.sucursal) {
+                if (sale.sucursal !== session.employee.sucursal ) {
+                    // Eliminado el permiso && !session.permission.includes('update_sales_of_another_sucursal') porque reservaba cosas de la sucursal incorrecta
                     throw 'No puedes agregar productos a una venta de otra sucursal';
                 }
+                //token
                 detail_count = await SaleDetail.count({ where: { sale: sale.id } });
             }
 
@@ -1814,6 +2129,15 @@ const SaleController = {
             return await sequelize.transaction(async (t) => {
 
                 if (sale == null) {
+                    let last_sale = await Sale.findOne({
+                        where: {
+                            client: client.id
+                        },
+                        order: [
+                            ['id', 'DESC']
+                        ]
+                    });
+
                     sale = await Sale.create({
                         client: client.id,
                         seller: session.employee.id,
@@ -1821,6 +2145,7 @@ const SaleController = {
                         credit_conditions: 0,
                         _status: 'process',
                         type: client.type,
+                        delivery_type: last_sale != null ? last_sale.delivery_type : 'local',
                         balance: 0.00
                     }, { transaction: t });
                 }
@@ -1832,15 +2157,31 @@ const SaleController = {
                     detail.cant = detail.cant + data.cant;
                     detail.reserved = detail.reserved + data.cant;
                     await detail.save({ transaction: t });
+
+
                     //buscar la reserva y actualizarla
                     let reserve = await StockReserve.findOne({
                         where: {
                             product: data.product,
                             saleId: detail.id,
+                            sucursal: stock.sucursal
                         }
                     });
-                    reserve.cant = (reserve.cant + data.cant);
-                    await reserve.save({ transaction: t });
+
+                    if (reserve) {
+                        reserve.cant = (reserve.cant + data.cant);
+                        await reserve.save({ transaction: t });
+                    } else {
+                        let reserve = await StockReserve.create({
+                            cant: data.cant,
+                            createdBy: session.shortName,
+                            concept: 'reserva por venta',
+                            type: 'sale',
+                            saleId: detail.id,
+                            product: stock.product,
+                            sucursal: stock.sucursal,
+                        }, { transaction: t });
+                    }
                 } else {
                     detail = await SaleDetail.create({
                         sale: sale.id,
@@ -1869,25 +2210,23 @@ const SaleController = {
 
                 }
 
-
-
                 await sequelize.query(
                     "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
                     {
                         replacements: {
-                            cant: data.cant, stock_id: stock.id
+                            cant: data.cant,
+                            stock_id: stock.id
                         },
                         type: QueryTypes.UPDATE,
                         transaction: t
                     }
                 );
-
-
                 await sequelize.query(
                     "UPDATE `inventory_product` SET `reserved` = reserved + :cant WHERE id = :product_id",
                     {
                         replacements: {
-                            cant: data.cant, product_id: product.id
+                            cant: data.cant,
+                            product_id: product.id
                         },
                         type: QueryTypes.UPDATE,
                         transaction: t
@@ -1898,457 +2237,150 @@ const SaleController = {
             });
 
         } catch (error) {
-            console.error(error);
+            console.error('\n\n', error, '\n\n');
             message = error.message !== undefined ? error.message : error;
             return { status: 'errorMessage', message: message, data: error };
         }
 
     },
 
-
-    socket_add_detail_old: async (data, session) => {
-        if (data.cant < 1) {
-            return { status: 'errorMessage', message: 'Agrega una cantidad' };
-        } else if (data.price < 0 || data.price == "") {
-            return { status: 'errorMessage', message: 'El precio no es valido' };
-        } else if (data.client < 1 || data.client == "") {
-            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
-        }
-
-        //buscar el cliente
-        let client = await Client.findByPk(data.client).catch(err => next(err));
-        if (client == null) {
-            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
-        }
-
-        try {
-            data.cant = Number.parseInt(data.cant);
-            data.price = Number.parseFloat(data.price);
-
-            return await sequelize.transaction(async (t) => {
-                let sale = null, detail_count = 0;
-
-                sale = await Sale.findOne({
-                    where: {
-                        [Op.and]: {
-                            client: data.client,
-                            _status: 'process'
-                        }
-                    }
-                });
-
-
-                // console.log(sale)
-
-                // if (data.sale != "" || data.sale != null) {
-                //     sale = await Sale.findByPk(data.sale);
-                // }else{
-                // }
-
-                if (sale) {
-                    detail_count = await SaleDetail.count({ where: { sale: sale.id } });
-                }
-
-
-                if (sale == null) {
-                    sale = await Sale.create({
-                        client: client.id,
-                        seller: session.employee.id,
-                        sucursal: session.employee.sucursal,
-                        credit_conditions: 0,
-                        _status: 'process',
-                        type: client.type,
-                        balance: 0.00
-                    }, { transaction: t });
-                }
-
-                let detail = {
-                    sale: sale.id,
-                    product: null,
-                    price: data.price,
-                    description: null,
-                    image: null,
-                    _order: detail_count,
-                    cant: data.cant,
-                    ready: 0,
-                    delivered: 0,
-                    reserved: 0
-                };
-
-                sale.balance = Number.parseFloat(sale.balance) + (data.cant * data.price);
-                await sale.save({ transaction: t });
-                let existe = null;
-                let product = null;
-                if (data.case == 'inventory') {
-                    //buscar el productoo
-                    product = await Product.findByPk(data.product);
-                    if (product == null) {
-                        throw 'Producto no encontrado';
-
-                        console.log('rollback por product not found')
-                        return { status: 'errorMessage', message: 'Producto no encontrado' };
-                    }
-                    //buscar a ver si ya hay un detalle existente
-                    existe = await SaleDetail.findOne({
-                        where: {
-                            [Op.and]: {
-                                sale: sale.id,
-                                product: product.id,
-                                price: data.price
-                            }
-                        }
-                    });
-
-                    if (existe !== null) {
-                        existe.cant += data.cant;
-                        await existe.save({ transaction: t })
-                    } else {
-                        detail.description = product.name + ' SKU ' + product.sku;
-                        detail.product = product.id;
-                        detail.image = product.raw_image_name;
-                    }
-
-                } else {
-                    detail.description = data.description;
-
-                    let image_name = null;
-                    if (data.image.length > 1) {
-                        image_name = 'sd_temp_' + Helper.generateNameForUploadedFile() + '.jpg';
-                        let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
-                        let image_data = data.image.slice(23);
-                        fs.writeFile(location, image_data, 'base64', (err) => { if (err) { console.log(err) } });
-                    }
-                    detail.image = image_name;
-                }
-
-                //buscar ah ver si existe un detalle anterior
-                detail = existe !== null ? existe : await SaleDetail.create(detail, { transaction: t });
-
-                if (data.case == 'inventory') {
-                    //buscar los stock e indexarlos
-                    let tmp = await sequelize.query('SELECT * FROM `inventory_product_stock` WHERE product = :id and cant > reserved;', {
-                        replacements: { id: data.product, },
-                        type: QueryTypes.SELECT,
-                        model: Stock,
-                    });
-
-                    var stocks = [],
-                        stock = null;
-                    if (tmp.length > 0) {
-                        tmp.forEach(element => {
-                            if (element.sucursal == sale.sucursal) {
-                                stock = element;
-                            } else {
-                                stocks.push(element);
-                            }
-                        });
-                    } else {
-                        throw 'Existencias no econtradas';
-                        console.log('RollBack por falta de stocks')
-                        return { status: 'errorMessage', message: 'Existencias no econtradas' };
-                    }
-
-
-                    var faltante = data.cant;
-                    //buscar el stock de la sucursal de la venta
-                    if (stock != null) {
-
-                        let disponible = stock.cant - stock.reserved;
-                        if (disponible > faltante) {
-                            stock.reserved += faltante;
-                            await stock.save({ transaction: t });
-
-
-                            //buscar una reserva que coincida con el producto, sucursal e id del detalle
-                            let reserve = await StockReserve.findOne({
-                                where: {
-                                    [Op.and]: {
-                                        type: 'sale',
-                                        saleId: detail.id,
-                                        product: stock.product,
-                                        sucursal: stock.sucursal,
-                                    }
-                                }
-                            });
-
-                            if (reserve !== null) {
-                                reserve.cant += faltante;
-                                await reserve.save({ transaction: t });
-                            } else {
-                                //Si no existe, crearlo
-                                reserve = await StockReserve.create({
-                                    cant: faltante,
-                                    createdBy: session.shortName,
-                                    concept: 'reserva por venta',
-                                    type: 'sale',
-                                    saleId: detail.id,
-                                    product: stock.product,
-                                    sucursal: stock.sucursal,
-                                }, { transaction: t });
-                            }
-
-                            faltante = 0;
-                        } else {
-                            stock.reserved += disponible;
-                            await stock.save({ transaction: t });
-
-                            //registrar la reserva
-                            //buscar una reserva que coincida con el producto, sucursal e id del detalle
-                            let reserve = await StockReserve.findOne({
-                                where: {
-                                    [Op.and]: {
-                                        type: 'sale',
-                                        saleId: detail.id,
-                                        product: stock.product,
-                                        sucursal: stock.sucursal,
-                                    }
-                                }
-                            });
-
-                            if (reserve !== null) {
-                                reserve.cant += disponible;
-                                await reserve.save({ transaction: t });
-                            } else {
-                                reserve = await StockReserve.create({
-                                    cant: disponible,
-                                    createdBy: session.shortName,
-                                    concept: 'reserva por venta',
-                                    type: 'sale',
-                                    saleId: detail.id,
-                                    product: stock.product,
-                                    sucursal: stock.sucursal,
-                                }, { transaction: t });
-                            }
-                            faltante -= disponible;
-                        }
-                    }
-
-                    //Bloque para reservas multisucursal
-                    if (faltante > 0 && false) {
-                        for (let index = 0; index < stocks.length; index++) {
-                            const stock = stocks[index];
-                            if (faltante > 0) {
-                                let disponible = stock.cant - stock.reserved;
-                                if (disponible > faltante) {
-                                    stock.reserved += faltante;
-                                    await stock.save({ transaction: t });
-
-                                    //buscar una reserva que coincida con el producto, sucursal e id del detalle
-                                    let reserve = await StockReserve.findOne({
-                                        where: {
-                                            [Op.and]: {
-                                                type: 'sale',
-                                                saleId: detail.id,
-                                                product: stock.product,
-                                                sucursal: stock.sucursal,
-                                            }
-                                        }
-                                    });
-
-                                    if (reserve !== null) {
-                                        reserve.cant += faltante;
-                                        await reserve.save({ transaction: t });
-                                    } else {
-                                        //registrar la reserva
-                                        reserve = await StockReserve.create({
-                                            cant: faltante,
-                                            createdBy: session.shortName,
-                                            concept: 'reserva por venta',
-                                            type: 'sale',
-                                            saleId: detail.id,
-                                        }, { transaction: t });
-                                    }
-                                    faltante = 0;
-                                } else {
-                                    stock.reserved += disponible;
-                                    await stock.save({ transaction: t });
-
-                                    //buscar una reserva que coincida con el producto, sucursal e id del detalle
-                                    let reserve = await StockReserve.findOne({
-                                        where: {
-                                            [Op.and]: {
-                                                type: 'sale',
-                                                saleId: detail.id,
-                                                product: stock.product,
-                                                sucursal: stock.sucursal,
-                                            }
-                                        }
-                                    });
-
-                                    if (reserve !== null) {
-                                        reserve.cant += disponible;
-                                        await reserve.save({ transaction: t });
-                                    } else {
-                                        reserve = await StockReserve.create({
-                                            cant: disponible,
-                                            createdBy: session.shortName,
-                                            concept: 'reserva por venta',
-                                            type: 'sale',
-                                            saleId: detail.id,
-                                        }, { transaction: t });
-                                    }
-                                    faltante -= disponible;
-                                }
-                            }
-                        }
-                    }
-
-                    detail.reserved += data.cant - faltante;
-                    await detail.save({ transaction: t });
-
-                    product.reserved += data.cant - faltante;
-                    await product.save({ transaction: t });
-                }
-                return { status: 'success', message: 'Guardado', data: { detail, balance: sale.balance } };
-            });
-
-        } catch (error) {
-            console.error(error);
-            return { status: 'errorMessage', message: 'Error Interno', data: error.message };
-        }
-
-    },
-
     socket_delete_detail: async (data) => {
+
+        
         //obtener el detalle
         let detail = await SaleDetail.findByPk(data.detail_id);
 
         if (detail) {
             let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
             if (sale) {
-                try {
-                    let count = await SaleDetail.count({ where: { sale: sale.id } }) - 1;
+                if (sale._status != 'process') {
+                    return { status: 'errorMessage', message: 'Ya no se puede modificar esta venta' };
+                }
+                //Verificar si la venta tiene mas detalles
+                let count = await SaleDetail.count({
+                    where: {
+                        sale: sale.id,
+                        id: {
+                            [Op.ne]: detail.id
+                        }
+                    }
+                });
 
-                    return await sequelize.transaction(async (t) => {
+                //Guardar el subtotal del detalle
+                let old_amount = Number.parseInt(detail.cant) * Number.parseFloat(detail.price);
+                //Obtener el valo maximo liberable y formatear la cantidad
+                let max_liberable = detail.reserved - detail.ready;
+                data.cant = Number.parseInt(data.cant > max_liberable ? max_liberable : data.cant);
 
-                        let old_amount = Number.parseInt(detail.cant) * Number.parseFloat(detail.price);
+                if (data.cant < 1) {
+                    return { status: 'errorMessage', message: 'Cantidad Liberable Cero, no se puede liberar por medio de esta opción', data: error.message };
+                }
 
-                        data.price = data.price !== undefined ? Number.parseFloat(data.price) : 0;
-                        data.cant = Number.parseInt(data.cant > detail.cant ? detail.cant : data.cant);
 
-                        if (detail.product == null || detail.reserved == 0) {
+                //Busca la reserva en la sucursal de la venta
+                let reserve = await StockReserve.findOne({
+                    where: {
+                        [Op.and]: {
+                            saleId: detail.id,
+                            product: detail.product,
+                            sucursal: sale.sucursal
+                        }
+                    },
+                });
+
+                let stock = await Stock.findOne({
+                    where: {
+                        product: detail.product,
+                        sucursal: sale.sucursal
+                    }
+                });
+                //buscar el producto
+                let product = await Product.findByPk(detail.product);
+                if (product && stock && reserve) {
+                    console.log('\n\n', 'Eliminando Detalle desde el Socket', '\n\n');
+                    try {
+
+                        return await sequelize.transaction(async (t) => {
+                            //actualizar y guardar venta
+                            sale.balance = Helper.fix_number(sale.balance - (data.cant * detail.price));
+
                             if (data.cant == detail.cant) {
-                                //actualizar el monto de la venta
-                                sale.balance = Number.parseFloat(sale.balance) - old_amount;
-                                //detruir el detalle
-                                let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', detail.img);
+                                // destuir detalle y reserva
                                 await detail.destroy({ transaction: t });
+                                await reserve.destroy({ transaction: t });
+
                                 detail = null;
-                                //eliminar la imagen temporal
-                                fs.unlink(location, (err) => { if (err) { console.log(err); } else { console.log('image deleted'); } });
                             } else {
-                                // reducir el detalle
-                                detail.cant -= data.cant;
-                                await detail.save();
-                                sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
-                            }
-                        } else {
-                            //buscar el producto
-
-                            let product = await Product.findByPk(detail.product);
-
-                            //buscar las reservas que esten relacionadas con el stock del producto
-                            let reserves = await StockReserve.findAll({
-                                where: {
-                                    [Op.and]: {
-                                        saleId: detail.id,
-                                        product: detail.product
-                                    }
-                                },
-                                order: [['id', 'DESC']]
-                                //por la creacion se tiene como prioridad la sucursal del empleado que registra, para la eliminacion se tendra como prioridad las otras sucursales
-                            });
-                            //buscar los stock que esten relacionados con el producto, se puede optimizar
-                            let tmp = await Stock.findAll({ where: { product: detail.product }, order: [['id', 'DESC']] });
-                            let stocks = {};
-                            tmp.forEach(element => stocks[element.sucursal] = element);
-                            //Si hay producto revisado no se puede eliminar por tanto cambiaremos el valor maximo para tomar el valor de lo que no esta revisado
-                            if (detail.ready > 0) {
-                                //significa que hay parte ya revisada, la cual no se puede quitar asi por asi
-                                let revertible = detail.cant - detail.ready;
-                                if (data.cant > revertible) {
-                                    let sol = data.cant - revertible;
-                                    data.cant = revertible;
-                                    //realizar solicitud de reversion si se quiere hacer en automatico
-                                }
-
-                            }
-                            if (data.cant > 0) {
-                                //si la cantidad es igual a la cantidad del detalle vamos a eliminarlo
-                                if (data.cant == detail.cant) {
-                                    //buscar las reservas y destruirlas
-                                    for (let index = 0; index < reserves.length; index++) {
-                                        let reserve = reserves[index];
-                                        let stock = stocks[reserve.sucursal];
-
-                                        stock.reserved -= reserve.cant;
-                                        await stock.save({ transaction: t });
-                                        await reserve.destroy({ transaction: t });
-                                    }
-
-                                    await detail.destroy({ transaction: t });
-                                    detail = null;
-                                    sale.balance = Number.parseFloat(sale.balance) - old_amount;
-                                    product.reserved -= data.cant;
-                                    await product.save({ transaction: t });
+                                //Disminuir reserva
+                                if (reserve.cant > data.cant) {
+                                    reserve.cant = Number.parseInt(reserve.cant - data.cant);
+                                    await reserve.save({ transaction: t });
                                 } else {
-
-                                    //si no a reducirlo
-                                    let faltante = data.cant;
-
-                                    for (let index = 0; index < reserves.length; index++) {
-                                        if (faltante > 0) {
-                                            let reserve = reserves[index];
-                                            let stock = stocks[reserve.sucursal];
-
-                                            if (faltante > reserve.cant) {
-                                                //destruir la reserva
-                                                stock.reserved -= reserve.cant;
-                                                await stock.save({ transaction: t });
-                                                await reserve.destroy({ transaction: t });
-                                            } else {
-                                                //reducir la reserva
-                                                reserve.cant -= faltante;
-                                                stock.reserved -= faltante;
-                                                await stock.save({ transaction: t });
-                                                await reserve.save({ transaction: t });
-                                            }
-                                        }
-                                    }
-                                    detail.cant -= data.cant;
-                                    detail.reserved -= data.cant;
-                                    product.reserved -= data.cant;
-                                    await product.save({ transaction: t });
-                                    await detail.save({ transaction: t });
-                                    sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
+                                    reserve.destroy({ transaction: t });
                                 }
+                                //Disminuir Detalle
+                                detail.cant = Number.parseInt(detail.cant - data.cant);
+                                detail.reserved = Number.parseInt(detail.reserved - data.cant);
+                                await detail.save({ transaction: t });
                             }
-                        }
 
+                            
+                            //Actualizar Stock y  Actuañlizar Producto
+                            await sequelize.query(
+                                "UPDATE `inventory_product_stock` SET `reserved` = reserved - :cant WHERE id = :stock_id",
+                                {
+                                    replacements: {
+                                        cant: data.cant,
+                                        stock_id: stock.id
+                                    },
+                                    type: QueryTypes.UPDATE,
+                                    transaction: t
+                                }
+                            );
+                            await sequelize.query(
+                                "UPDATE `inventory_product` SET `reserved` = reserved - :cant WHERE id = :product_id",
+                                {
+                                    replacements: {
+                                        cant: data.cant,
+                                        product_id: product.id
+                                    },
+                                    type: QueryTypes.UPDATE,
+                                    transaction: t
+                                }
+                            );
 
-                        let _sale_id = sale.id;
+                            let _sale_id = sale.id;
+                            if (count < 1 && detail == null) {
+                                await sale.destroy({ transaction: t });
+                                sale = null;
+                            } else {
+                                sale = await sale.save({ transaction: t });
+                            }
+                            return {
+                                status: 'success',
+                                message: 'Guardado',
+                                detail,
+                                balance: sale !== null ? sale.balance : null,
+                                sale_id: _sale_id
+                            };
 
-                        if (count < 1 && detail == null) {
-                            await sale.destroy({ transaction: t });
-                            sale = null;
-                        } else {
-                            sale = await sale.save({ transaction: t });
-                        }
-                        return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id };
-
-                    });
-                } catch (error) {
-                    console.error(error);
-                    return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        console.log('\n\n', error, '\n\n');
+                        return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
+                    }
+                } else {
+                    return { status: 'errorMessage', message: 'Algo esta mal con este producto, por favor notifica al desarrollador del sistema' };
                 }
             } else {
                 return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
-
             }
         } else {
             return { status: 'errorMessage', message: 'Detalle no encontrado' };
         }
     },
+
 
     socket_save_sale_in_room: async (data, session) => {
         // console.log(session)
@@ -2785,6 +2817,488 @@ const SaleController = {
             return { status: 'errorMessage', message: 'Sale or details not Found' };
         }
     },
+
+    //OLDS
+    socket_add_detail_old: async (data, session) => {
+        if (data.cant < 1) {
+            return { status: 'errorMessage', message: 'Agrega una cantidad' };
+        } else if (data.price < 0 || data.price == "") {
+            return { status: 'errorMessage', message: 'El precio no es valido' };
+        } else if (data.client < 1 || data.client == "") {
+            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
+        }
+
+        //buscar el cliente
+        let client = await Client.findByPk(data.client).catch(err => next(err));
+        if (client == null) {
+            return { status: 'errorMessage', message: 'Cliente no seleccionado' };
+        }
+
+        try {
+            data.cant = Number.parseInt(data.cant);
+            data.price = Number.parseFloat(data.price);
+
+            return await sequelize.transaction(async (t) => {
+                let sale = null, detail_count = 0;
+
+                sale = await Sale.findOne({
+                    where: {
+                        [Op.and]: {
+                            client: data.client,
+                            _status: 'process'
+                        }
+                    }
+                });
+
+
+                // console.log(sale)
+
+                // if (data.sale != "" || data.sale != null) {
+                //     sale = await Sale.findByPk(data.sale);
+                // }else{
+                // }
+
+                if (sale) {
+                    detail_count = await SaleDetail.count({ where: { sale: sale.id } });
+                }
+
+
+                if (sale == null) {
+                    sale = await Sale.create({
+                        client: client.id,
+                        seller: session.employee.id,
+                        sucursal: session.employee.sucursal,
+                        credit_conditions: 0,
+                        _status: 'process',
+                        type: client.type,
+                        balance: 0.00
+                    }, { transaction: t });
+                }
+
+                let detail = {
+                    sale: sale.id,
+                    product: null,
+                    price: data.price,
+                    description: null,
+                    image: null,
+                    _order: detail_count,
+                    cant: data.cant,
+                    ready: 0,
+                    delivered: 0,
+                    reserved: 0
+                };
+
+                sale.balance = Number.parseFloat(sale.balance) + (data.cant * data.price);
+                await sale.save({ transaction: t });
+                let existe = null;
+                let product = null;
+                if (data.case == 'inventory') {
+                    //buscar el productoo
+                    product = await Product.findByPk(data.product);
+                    if (product == null) {
+                        throw 'Producto no encontrado';
+
+                        console.log('rollback por product not found')
+                        return { status: 'errorMessage', message: 'Producto no encontrado' };
+                    }
+                    //buscar a ver si ya hay un detalle existente
+                    existe = await SaleDetail.findOne({
+                        where: {
+                            [Op.and]: {
+                                sale: sale.id,
+                                product: product.id,
+                                price: data.price
+                            }
+                        }
+                    });
+
+                    if (existe !== null) {
+                        existe.cant += data.cant;
+                        await existe.save({ transaction: t })
+                    } else {
+                        detail.description = product.name + ' SKU ' + product.sku;
+                        detail.product = product.id;
+                        detail.image = product.raw_image_name;
+                    }
+
+                } else {
+                    detail.description = data.description;
+
+                    let image_name = null;
+                    if (data.image.length > 1) {
+                        image_name = 'sd_temp_' + Helper.generateNameForUploadedFile() + '.jpg';
+                        let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
+                        let image_data = data.image.slice(23);
+                        fs.writeFile(location, image_data, 'base64', (err) => { if (err) { console.log(err) } });
+                    }
+                    detail.image = image_name;
+                }
+
+                //buscar ah ver si existe un detalle anterior
+                detail = existe !== null ? existe : await SaleDetail.create(detail, { transaction: t });
+
+                if (data.case == 'inventory') {
+                    //buscar los stock e indexarlos
+                    let tmp = await sequelize.query('SELECT * FROM `inventory_product_stock` WHERE product = :id and cant > reserved;', {
+                        replacements: { id: data.product, },
+                        type: QueryTypes.SELECT,
+                        model: Stock,
+                    });
+
+                    var stocks = [],
+                        stock = null;
+                    if (tmp.length > 0) {
+                        tmp.forEach(element => {
+                            if (element.sucursal == sale.sucursal) {
+                                stock = element;
+                            } else {
+                                stocks.push(element);
+                            }
+                        });
+                    } else {
+                        throw 'Existencias no econtradas';
+                        console.log('RollBack por falta de stocks')
+                        return { status: 'errorMessage', message: 'Existencias no econtradas' };
+                    }
+
+
+                    var faltante = data.cant;
+                    //buscar el stock de la sucursal de la venta
+                    if (stock != null) {
+
+                        let disponible = stock.cant - stock.reserved;
+                        if (disponible > faltante) {
+                            stock.reserved += faltante;
+                            await stock.save({ transaction: t });
+
+
+                            //buscar una reserva que coincida con el producto, sucursal e id del detalle
+                            let reserve = await StockReserve.findOne({
+                                where: {
+                                    [Op.and]: {
+                                        type: 'sale',
+                                        saleId: detail.id,
+                                        product: stock.product,
+                                        sucursal: stock.sucursal,
+                                    }
+                                }
+                            });
+
+                            if (reserve !== null) {
+                                reserve.cant += faltante;
+                                await reserve.save({ transaction: t });
+                            } else {
+                                //Si no existe, crearlo
+                                reserve = await StockReserve.create({
+                                    cant: faltante,
+                                    createdBy: session.shortName,
+                                    concept: 'reserva por venta',
+                                    type: 'sale',
+                                    saleId: detail.id,
+                                    product: stock.product,
+                                    sucursal: stock.sucursal,
+                                }, { transaction: t });
+                            }
+
+                            faltante = 0;
+                        } else {
+                            stock.reserved += disponible;
+                            await stock.save({ transaction: t });
+
+                            //registrar la reserva
+                            //buscar una reserva que coincida con el producto, sucursal e id del detalle
+                            let reserve = await StockReserve.findOne({
+                                where: {
+                                    [Op.and]: {
+                                        type: 'sale',
+                                        saleId: detail.id,
+                                        product: stock.product,
+                                        sucursal: stock.sucursal,
+                                    }
+                                }
+                            });
+
+                            if (reserve !== null) {
+                                reserve.cant += disponible;
+                                await reserve.save({ transaction: t });
+                            } else {
+                                reserve = await StockReserve.create({
+                                    cant: disponible,
+                                    createdBy: session.shortName,
+                                    concept: 'reserva por venta',
+                                    type: 'sale',
+                                    saleId: detail.id,
+                                    product: stock.product,
+                                    sucursal: stock.sucursal,
+                                }, { transaction: t });
+                            }
+                            faltante -= disponible;
+                        }
+                    }
+
+                    //Bloque para reservas multisucursal
+                    if (faltante > 0 && false) {
+                        for (let index = 0; index < stocks.length; index++) {
+                            const stock = stocks[index];
+                            if (faltante > 0) {
+                                let disponible = stock.cant - stock.reserved;
+                                if (disponible > faltante) {
+                                    stock.reserved += faltante;
+                                    await stock.save({ transaction: t });
+
+                                    //buscar una reserva que coincida con el producto, sucursal e id del detalle
+                                    let reserve = await StockReserve.findOne({
+                                        where: {
+                                            [Op.and]: {
+                                                type: 'sale',
+                                                saleId: detail.id,
+                                                product: stock.product,
+                                                sucursal: stock.sucursal,
+                                            }
+                                        }
+                                    });
+
+                                    if (reserve !== null) {
+                                        reserve.cant += faltante;
+                                        await reserve.save({ transaction: t });
+                                    } else {
+                                        //registrar la reserva
+                                        reserve = await StockReserve.create({
+                                            cant: faltante,
+                                            createdBy: session.shortName,
+                                            concept: 'reserva por venta',
+                                            type: 'sale',
+                                            saleId: detail.id,
+                                        }, { transaction: t });
+                                    }
+                                    faltante = 0;
+                                } else {
+                                    stock.reserved += disponible;
+                                    await stock.save({ transaction: t });
+
+                                    //buscar una reserva que coincida con el producto, sucursal e id del detalle
+                                    let reserve = await StockReserve.findOne({
+                                        where: {
+                                            [Op.and]: {
+                                                type: 'sale',
+                                                saleId: detail.id,
+                                                product: stock.product,
+                                                sucursal: stock.sucursal,
+                                            }
+                                        }
+                                    });
+
+                                    if (reserve !== null) {
+                                        reserve.cant += disponible;
+                                        await reserve.save({ transaction: t });
+                                    } else {
+                                        reserve = await StockReserve.create({
+                                            cant: disponible,
+                                            createdBy: session.shortName,
+                                            concept: 'reserva por venta',
+                                            type: 'sale',
+                                            saleId: detail.id,
+                                        }, { transaction: t });
+                                    }
+                                    faltante -= disponible;
+                                }
+                            }
+                        }
+                    }
+
+                    detail.reserved += data.cant - faltante;
+                    await detail.save({ transaction: t });
+
+                    product.reserved += data.cant - faltante;
+                    await product.save({ transaction: t });
+                }
+                return { status: 'success', message: 'Guardado', data: { detail, balance: sale.balance } };
+            });
+
+        } catch (error) {
+            console.error(error);
+            return { status: 'errorMessage', message: 'Error Interno', data: error.message };
+        }
+
+    },
+
+    socket_delete_detail_old: async (data) => {
+        //obtener el detalle
+        let detail = await SaleDetail.findByPk(data.detail_id);
+
+        if (detail) {
+
+            let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
+            if (sale) {
+                if (sale._status != 'process') {
+                    return { status: 'errorMessage', message: 'Ya no se puede modificar esta venta' };
+                }
+                try {
+                    let count = await SaleDetail.count({ where: { sale: sale.id } }) - 1;
+
+                    return await sequelize.transaction(async (t) => {
+
+                        let old_amount = Number.parseInt(detail.cant) * Number.parseFloat(detail.price);
+
+                        data.price = data.price !== undefined ? Number.parseFloat(data.price) : 0;
+                        data.cant = Number.parseInt(data.cant > detail.cant ? detail.cant : data.cant);
+
+                        if (detail.product == null || detail.reserved == 0) {
+                            if (data.cant == detail.cant) {
+                                //actualizar el monto de la venta
+                                sale.balance = Number.parseFloat(sale.balance) - old_amount;
+                                //detruir el detalle
+                                let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', detail.img);
+                                await detail.destroy({ transaction: t });
+                                detail = null;
+                                //eliminar la imagen temporal
+                                fs.unlink(location, (err) => { if (err) { console.log(err); } else { console.log('image deleted'); } });
+                            } else {
+                                // reducir el detalle
+                                detail.cant -= data.cant;
+                                await detail.save();
+                                sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
+                            }
+                        } else {
+                            //buscar el producto
+
+                            let product = await Product.findByPk(detail.product);
+
+                            //buscar las reservas que esten relacionadas con el stock del producto
+                            let reserves = await StockReserve.findAll({
+                                where: {
+                                    [Op.and]: {
+                                        saleId: detail.id,
+                                        product: detail.product
+                                    }
+                                },
+                                order: [['id', 'DESC']]
+                                //por la creacion se tiene como prioridad la sucursal del empleado que registra, para la eliminacion se tendra como prioridad las otras sucursales
+                            });
+                            //buscar los stock que esten relacionados con el producto, se puede optimizar
+                            let tmp = await Stock.findAll({ where: { product: detail.product }, order: [['id', 'DESC']] });
+                            let stocks = {};
+
+                            tmp.forEach(element => stocks[element.sucursal] = element);
+                            //Si hay producto revisado no se puede eliminar por tanto cambiaremos el valor maximo para tomar el valor de lo que no esta revisado
+                            if (detail.ready > 0) {
+                                //significa que hay parte ya revisada, la cual no se puede quitar asi por asi
+                                let revertible = detail.cant - detail.ready;
+                                if (data.cant > revertible) {
+                                    let sol = data.cant - revertible;
+                                    data.cant = revertible;
+                                    //realizar solicitud de reversion si se quiere hacer en automatico
+                                }
+
+                            }
+                            if (data.cant > 0) {
+                                //si la cantidad es igual a la cantidad del detalle vamos a eliminarlo
+                                if (data.cant == detail.cant) {
+                                    //buscar las reservas y destruirlas
+                                    for (let index = 0; index < reserves.length; index++) {
+                                        let reserve = reserves[index];
+                                        let stock = stocks[reserve.sucursal];
+
+                                        stock.reserved -= reserve.cant;
+                                        await stock.save({ transaction: t });
+                                        await reserve.destroy({ transaction: t });
+                                    }
+
+                                    await detail.destroy({ transaction: t });
+                                    detail = null;
+                                    sale.balance = Number.parseFloat(sale.balance) - old_amount;
+                                    product.reserved -= data.cant;
+                                    await product.save({ transaction: t });
+                                } else {
+
+                                    //si no a reducirlo
+                                    let faltante = data.cant;
+
+                                    for (let index = 0; index < reserves.length; index++) {
+                                        if (faltante > 0) {
+                                            let reserve = reserves[index];
+                                            let stock = stocks[reserve.sucursal];
+
+                                            if (faltante > reserve.cant) {
+                                                //destruir la reserva
+                                                stock.reserved -= reserve.cant;
+                                                await stock.save({ transaction: t });
+                                                await reserve.destroy({ transaction: t });
+                                            } else {
+                                                //reducir la reserva
+                                                reserve.cant -= faltante;
+                                                stock.reserved -= faltante;
+                                                await stock.save({ transaction: t });
+                                                await reserve.save({ transaction: t });
+                                            }
+                                        }
+                                    }
+                                    detail.cant -= data.cant;
+                                    detail.reserved -= data.cant;
+                                    product.reserved -= data.cant;
+                                    await product.save({ transaction: t });
+                                    await detail.save({ transaction: t });
+                                    sale.balance = Number.parseFloat(sale.balance) - old_amount + (Number.parseInt(detail.cant) * Number.parseFloat(detail.price));
+                                }
+                            }
+                        }
+
+
+                        let _sale_id = sale.id;
+
+                        if (count < 1 && detail == null) {
+                            await sale.destroy({ transaction: t });
+                            sale = null;
+                        } else {
+                            sale = await sale.save({ transaction: t });
+                        }
+                        return { status: 'success', message: 'Guardado', detail, balance: sale !== null ? sale.balance : null, sale_id: _sale_id };
+
+                    });
+                } catch (error) {
+                    console.error(error);
+                    return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
+                }
+            } else {
+                return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
+
+            }
+        } else {
+            return { status: 'errorMessage', message: 'Detalle no encontrado' };
+        }
+    },
+
+
+    reporte_de_clientes_registrados: async (req, res) => {
+        let clients = await Client.findAll({
+            where: { seller: 19 },
+            order: [
+                ['name', 'ASC']
+            ]
+        });
+
+        return res.render('CRM/Client/registered_clients', { pageTitle: 'Cliente Registrados', clients });
+
+    },
+
+    reporte_de_clientes_registrados2: async (req, res) => {
+        //SELECT * FROM `inventory_provider` WHERE NRC is not null and NRC != "";
+        let clients = await Provider.findAll({
+            where: {
+                [Op.and]: [{
+                    NRC: { [Op.not]: null, }
+                }, {
+                    NRC: { [Op.not]: '', }
+                }],
+            },
+            order: [
+                ['name', 'ASC']
+            ]
+        });
+
+        return res.render('CRM/Client/registered_providers', { pageTitle: 'Proveedores Registrados', clients });
+
+    }
 
 };
 

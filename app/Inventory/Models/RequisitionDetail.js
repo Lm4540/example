@@ -22,6 +22,13 @@ const RequisitionDetail = sequelize.define('RequisitionDetail', {
         type: DataTypes.INTEGER.UNSIGNED
     },
     client_name: DataTypes.STRING,
+    user: {
+        type: DataTypes.INTEGER.UNSIGNED
+    },
+    sale_detail: {
+        type: DataTypes.INTEGER.UNSIGNED,
+        allowNull: true,
+    },
 }, {
     tableName: 'inventory_requisition_detail',
 });

@@ -41,7 +41,16 @@ module.exports = sequelize.define('ShipmentDetail', {
         defaultValue:0
     },
     
-    sale_detail: DataTypes.INTEGER.UNSIGNED,
+    sale_detail: { 
+        type: DataTypes.TEXT,
+        get() {
+            let prefe = this.getDataValue('sale_detail');
+            return (prefe !== null && prefe !== undefined) ? JSON.parse(prefe) : new Array();
+        },
+        set(param) {
+            this.setDataValue('sale_detail', JSON.stringify(param == null ? new Array() : param) );
+        }
+    },
 }, {
     tableName: 'inventory_shipment_detail',
 });

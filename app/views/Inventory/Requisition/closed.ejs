@@ -2,87 +2,87 @@
 <html lang="es">
 
 <head>
-   <%- include('../../Layouts/Head.ejs') %>
-   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
-   <style></style>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <style></style>
 </head>
 
 <body class="<%= darkMode %>">
-   <%- include('../../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <div class="card">
-            <div class="card-header">
-               <h2 class="card-title text-center">
-                  Solicitud de traslado de <%= indexed_sucursals[requisition.origin] %> hacia <%= indexed_sucursals[requisition.destino] %> #<%= requisition.id %> (CERRADO)
-               </h2>
-            </div>
-            <div class="card-body table-responsive">
-               <table class="table table-sm table-bordered table-hover table-stripped">
-                  <thead>
-                     <tr>
-                        <th>ID REF:</th>
-                        <th>image</th>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     <!-- < details.forEach(dt => { %>
-                     <tr>
-                        <td class="text-center"><= dt.id %></td>
-                        <td class="text-center">
-                           <img src="<= products[dt.product].image %>" class="round" alt="<= products[dt.product].name %>" width="150px">
-                        </td>
-                        <td class="text-center">
-                           Nombre:<= products[dt.product].name %> <a href="/inventory/product/view/<= dt.product %>" class="badge bg-secondary round"> Ver Producto</a><br>
-                           SKU: <= products[dt.product].sku %><br>
-                           Codigo: <= products[dt.product].provider_code %><br>
-                           Agregado por: <= dt.createdBy %>
-                        </td>
-                        <td class="text-center"><= dt.cant %></td>
-                     </tr>
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title text-center">
+            Solicitud de traslado de <%= indexed_sucursals[requisition.origin] %> hacia <%= indexed_sucursals[requisition.destino] %> #<%= requisition.id %>
+          </h2>
+        </div>
+        <div class="card-body table-responsive">
+          <table class="table table-sm table-bordered table-hover table-stripped">
+            <thead>
+              <tr>
+                <th>image</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% let keys = Object.keys(products)
+                        keys.forEach(key => { 
+                           let prod = products[key] ;
+                        %>
 
-                     <}) %> -->
+              <tr>
+                <td class="text-center">
+                  <img src="<%= prod.image %>" class="round" alt="<%= prod.name %>" width="150px">
+                </td>
+                <td class="text-center">
+                  <%= prod.name %> <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round"> Ver Producto</a><br>
+                  SKU: <%= prod.sku %><br>
+                  Codigo: <%= prod.provider_code %><br>
 
-                     <% let keys = Object.keys(products)
-                     keys.forEach(key => { 
-                        let prod = products[key] ;
+                </td>
+                <td class="text-center"><%= prod.cant %></td>
+                <td class="text-center">
+                  <ul class="list-group">
+
+                    <% prod.details.forEach(dt => {
+
+                     if (dt.client !== null) { %>
+                    <li class="list-group-item"> <%= dt.cant %>U <%= `para ${dt.client_name}` %> (<%= dt.createdBy %>) </li><br>
+                    <% }else{ %>
+
+                    <li class="list-group-item">
+                      <%= dt.cant %>U (<%= dt.createdBy %>)
+                    </li><br>
+
+                    <% }
+                  }) %>
+                  </ul>
+                </td>
+              </tr>
+
+              <% })
                      %>
-
-                        <tr>
-                           <td class="text-center"><%= prod.detail.id %></td>
-                           <td class="text-center">
-                              <img src="<%= prod.image %>" class="round" alt="<%= prod.name %>" width="150px">
-                           </td>
-                           <td class="text-center">
-                              <%= prod.name %> <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round"> Ver Producto</a><br>
-                              SKU: <%= prod.sku %><br>
-                              Codigo: <%= prod.provider_code %><br>
-                              Agregado por: <%= prod.detail.createdBy %>
-                           </td>
-                           <td class="text-center"><%= prod.detail.cant %></td>
-                           
-                        </tr>
-
-                    <% })
-                  %>
-
-                     <tr>
-                        <td>Comentario</td>
-                        <td class="" colspan="3" style="white-space: pre-line"><%= requisition.commentary %></td>
-                     </tr>
-                  </tbody>
-               </table>
-            </div>
-         </div>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Comentario:</td>
+                <td colspan="4">
+                  <p><%= requisition.commentary %></p>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
-      <%- include('../../Layouts/Footer.ejs') %>
-   </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
-
 
 </html>
