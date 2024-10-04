@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+
+      <div class="row justify-content-md-center">
+        <div class="col col-md-2">
+        </div>
+        <div class="col-sm-auto">
+          <img src="<%= product.image %>" alt="Porduct Image" class="rounded mx-auto d-block" style="width: 200px; ">
+        </div>
+        <div class="col col-md-2">
+        </div>
+      </div>
+
+      <div class="row justify-content-md-center mt-4">
+        <div class="col col-md-2">
+        </div>
+        <div class="col-sm-auto">
+          <h5 class="text-center"><%= product.name %> SKU# <%= product.sku %> </h5>
+        </div>
+        <div class="col col-md-2">
+        </div>
+      </div>
+
+      <div class="row justify-content-md-center mt-4 table-responsive">
+        <table class="table table-sm table stripped table-hover">
+          <thead>
+            <tr>
+
+              <th>Cliente</th>
+              <th>Vendido</th>
+              <th>Faltante</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% 
+            var sales = `[`;
+            details.forEach(detail => {
+                  sales += `${detail.sale_id},`
+                  %>
+            <tr id="info_detail_div_<%= detail.id %>">
+              <td><%= detail.client_name %></td>
+              <td><%= detail.cant %> Unidades Vendidas / <%= detail.ready %> Unidades Preparadas </td>
+              <td class="text-danger"><%= (detail.cant - detail.ready) %> por Preparar</td>
+              <td>
+                <a href="/sales/view/<%= detail.sale_id %>" class="badge bg-success">Ver Venta</a>
+                <a href="/sales/client/view/<%= detail.client_id %>" class="badge bg-blue">Ver cliente</a>
+                <span class="badge bg-warning" onclick="detail_revised('<%= detail.id %>', '<%= detail.sale_id %>')">Revisado y guardado</span>
+              </td>
+            </tr>
+            <% }) 
+            
+            sales += `]`%>
+          </tbody>
+
+        </table>
+      </div>
+
+
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  let sucursal = Number.parseInt('<%= sucursal.id %>');
+  var socket = io.connect('<%= baseURL %>/logistics', {
+    autoConnect: false
+  });
+
+
+  socket.connect();
+
+  socket.on("disconnect", () => {
+    errorMessage("Se ha perdido la conexión con el Servidor, recagando la página para poder recuperarla");
+    socket.close();
+    setTimeout(() => {
+      window.location.reload()
+    }, 10000);
+  });
+
+  socket.on('mayor_detail_revised_error', data => {
+    console.log(data);
+  });
+
+  socket.on('mayor_detail_revised_success', data => {
+    data.details.forEach(el => {
+      let div = document.querySelector(`#info_detail_div_${el}`);
+      if (div !== null) {
+        div.parentNode.removeChild(div);
+      }
+    });
+  });
+
+  socket.on('new_sale', data => {
+
+      successMessage('recibiendo evento venta cerrada')
+
+    if (data.sale.sucursal == sucursal) {
+      data.details.forEach(el => {
+        let div = document.querySelector(`#info_detail_div_${el.id}`);
+        if (div !== null) {
+          div.parentNode.removeChild(div);
+        }
+      })
+    }
+  });
+
+  const detail_revised = (detail_id, sale_id) => {
+    let data = {
+      sale: sale_id,
+      details: [detail_id, ],
+    }
+    socket.emit('mayor_detail_revised', data);
+  }
+
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+
+
+  });
+</script>
+
+</html>

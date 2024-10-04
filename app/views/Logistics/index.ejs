@@ -459,7 +459,7 @@
     } else {
       prepared[data.id] = null;
       totals.prepared -= 1;
-      
+
     }
 
     update_totals();
@@ -492,20 +492,17 @@
 
 
   socket.on('mayor_detail_revised_success', data => {
-
     if (mayor[data.sale] !== undefined) {
-      //recorrer los detalles
       let restantes = new Array();
+
       mayor[data.sale].details.forEach(el => {
-        if (data.details.includes(el.id)) {
+        if (data.details.includes(`${el.id}`)) {
           totals.mayor_details -= 1;
           document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
         } else {
           restantes.push(el);
         }
       });
-
-
       mayor[data.sale].details = restantes;
       update_totals();
     }

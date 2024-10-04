@@ -25,7 +25,9 @@
         <tbody>
           <% let keys = Object.keys(products);
                 keys.forEach(key => {
-                    let prod = products[key] %>
+                    let prod = products[key] 
+
+                    if(prod.cant > 0){ %>
           <tr>
             <td>
               <img src="<%= prod.image %>" alt="Image" class="round" style="width: 150px; ">
@@ -34,12 +36,12 @@
               <%= prod.name %><br>
               Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
               <a class="badge bg-primary" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br><br>
-              <a class="badge bg-danger" href="/inventory/product/reserveList/<%= prod.id %>" target="_blank"> Reservar</a><br><br>
+              <a class="badge bg-danger" href="/inventory/product/<%= prod.id %>/reserveList" target="_blank"> Reservar</a><br><br>
               Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
 
             </td>
           </tr>
-          <% }) %>
+          <% }}) %>
         </tbody>
       </table>
     </div>

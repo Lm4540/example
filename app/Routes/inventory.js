@@ -51,6 +51,7 @@ router.post('/product/create', ProductController.createProduct);
 router.get('/products', ProductController.getProductsToTable);
 router.get('/products/select2', ProductController.getProductsToSelect2);
 router.get('/product/:id(\\d+)', ProductController.getProduct);
+router.get('/product/:id(\\d+)/reserveList', StockController.getProductReserveList);
 router.get('/product/view/:id(\\d+)', ProductController.viewProduct);
 router.get('/product/edit/:id(\\d+)', ProductController.editProduct);
 router.post('/product/edit/:id(\\d+)', ProductController.updateProduct);

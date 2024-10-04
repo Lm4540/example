@@ -19,6 +19,41 @@ const SaleDetail = require('../../CRM/Models/SaleDetail');
 
 const StockController = {
 
+    getProductReserveList: async (req, res) => {
+        let product = await Product.findByPk(req.params.id);
+        let sucursal = await  Sucursal.findByPk(req.session.userSession.employee.sucursal);
+        if (product && sucursal) {
+            console.log(sucursal)
+            //buscar lso detalles de las ventas
+            let _sql = `select crm_sale.id as sale_id, crm_client.id as client_id, crm_client.name as client_name, crm_sale_detail.* from crm_sale_detail INNER JOIN crm_sale on crm_sale.id = crm_sale_detail.sale INNER JOIN crm_client on crm_client.id = crm_sale.client WHERE crm_sale_detail.product = :_product and crm_sale_detail.cant > crm_sale_detail.ready and crm_sale_detail.reserved > crm_sale_detail.ready and crm_sale_detail.sale in (select id from crm_sale where crm_sale.sucursal = :_abc and crm_sale._status = "process")`;
+
+            let details = await sequelize.query(_sql, {
+                replacements: {
+                    _product: product.id,
+                    _abc: sucursal.id,
+                },
+                type: QueryTypes.SELECT
+            });
+
+            return res.render('Inventory/Stock/ReservarProductoIndividual', {
+                product,
+                pageTitle: product.name + " Lista de reservas",
+                sucursal, details
+            });
+
+        }
+
+        return Helper.notFound(req, res, 'Product no Found')
+
+
+
+
+
+
+
+
+    },
+
     ProductreserveList: async (req, res) => {
         let tmp = await Product.findAll({
             where: {
@@ -39,7 +74,7 @@ const StockController = {
             }
         })
 
-        tmp = await sequelize.query(`SELECT * FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and _status = 'process')`, { type: QueryTypes.SELECT, model: SaleDetail });
+        tmp = await sequelize.query(`SELECT * FROM crm_sale_detail WHERE cant > ready and reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and _status = 'process')`, { type: QueryTypes.SELECT, model: SaleDetail });
 
         tmp.forEach(dt => {
             if (products[`s_${dt.product}`] !== undefined) {
