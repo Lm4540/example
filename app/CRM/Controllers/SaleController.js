@@ -257,37 +257,36 @@ const SaleController = {
 
             if (last_sale !== null) {
                 if (last_sale.delivery_type !== sale.delivery_type) {
-                    to_save.push(`UPDATE crm_sale SET _status = '${last_sale.delivery_type}' WHERE id = ${sale.id}`);
+                    to_save.push(`UPDATE crm_sale SET delivery_type = '${last_sale.delivery_type}' WHERE id = ${sale.id}`);
                 }
             }
 
         }
         console.log(to_save);
 
-        return res.json(to_save);
-        // if (to_save.length > 0) {
-        //     try {
-        //         return await sequelize.transaction(async (t) => {
-        //             for (let index = 0; index < to_save.length; index++) {
-        //                 await sequelize.query(
-        //                     to_save[index],
-        //                     {
-        //                         type: QueryTypes.UPDATE,
-        //                         transaction: t
-        //                     }
-        //                 );
+        if (to_save.length > 0) {
+            try {
+                return await sequelize.transaction(async (t) => {
+                    for (let index = 0; index < to_save.length; index++) {
+                        await sequelize.query(
+                            to_save[index],
+                            {
+                                type: QueryTypes.UPDATE,
+                                transaction: t
+                            }
+                        );
 
-        //             }
-        //             return res.json({ status: 'success', message: "guardado" });
-        //         });
+                    }
+                    return res.json({ status: 'success', message: "guardado" });
+                });
 
-        //     } catch (error) {
-        //         return res.json({
-        //             status: 'error',
-        //             message: error.message,
-        //         });
-        //     }
-        // }
+            } catch (error) {
+                return res.json({
+                    status: 'error',
+                    message: error.message,
+                });
+            }
+        }
 
 
 
