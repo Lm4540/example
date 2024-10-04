@@ -262,30 +262,32 @@ const SaleController = {
             }
 
         }
+        console.log(to_save);
 
-        if (to_save.length > 0) {
-            try {
-                return await sequelize.transaction(async (t) => {
-                    for (let index = 0; index < to_save.length; index++) {
-                        await sequelize.query(
-                            to_save[index],
-                            {
-                                type: QueryTypes.UPDATE,
-                                transaction: t
-                            }
-                        );
+        return res.json(to_save);
+        // if (to_save.length > 0) {
+        //     try {
+        //         return await sequelize.transaction(async (t) => {
+        //             for (let index = 0; index < to_save.length; index++) {
+        //                 await sequelize.query(
+        //                     to_save[index],
+        //                     {
+        //                         type: QueryTypes.UPDATE,
+        //                         transaction: t
+        //                     }
+        //                 );
 
-                    }
-                    return res.json({ status: 'success', message: "guardado" });
-                });
+        //             }
+        //             return res.json({ status: 'success', message: "guardado" });
+        //         });
 
-            } catch (error) {
-                return res.json({
-                    status: 'error',
-                    message: error.message,
-                });
-            }
-        }
+        //     } catch (error) {
+        //         return res.json({
+        //             status: 'error',
+        //             message: error.message,
+        //         });
+        //     }
+        // }
 
 
 
