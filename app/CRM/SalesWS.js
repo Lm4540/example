@@ -253,42 +253,53 @@ module.exports = (io, socket) => {
                     //buscar que la venta tenga detalles en ella
                     let details = await SaleDetail.findAll({ where: { sale: sale.id } });
 
-                    if (details.length > 0) {
-                        //cerrar la venta y emitir el evento para el modulo de logistica
-                        try {
-                            const result = await sequelize.transaction(async (t) => {
-                                sale._status = 'closed';
-                                sale.delivery_type = data.delivery_type;
-                                sale.delivery_direction = _direction;
-                                sale.delivery_contact = data.phone;
-                                sale.delivery_instructions = _reference;
-                                sale.delivery_date = new Date(data.day);
-                                sale.delivery_time = data.time;
-                                sale.delivery_amount = data.delivery_amount;
+                    let incomplete = await sequelize.query('select * from crm_sale_detail where sale = :sale and cant > reserved;;', {
+                        replacements: { sale: sale.id, },
+                        type: QueryTypes.SELECT,
+                        model: SaleDetail,
+                    });
 
-                                if (data.delivery_type == 'delivery') {
-                                    sale.delivery_provider = data.delivery_provider;
-                                }
-                                await sale.save({ transaction: t });
-
-                                //emitir evento
-                                _io.to(group_identification).emit("sale_saved", { sale: sale.id, _process: data._process });
-
-                                io.of('/logistics').emit('new_sale', {
-                                    sale, details, client: cliente.name
-                                });
-
-                            });
-                        } catch (error) {
-                            console.error(error);
-                            _io.to(group_identification).emit("close_sale_error", { errorMessage: error.message, _process: data._process });
-                        }
-
-
+                    if (incomplete.length > 0) {
+                        _io.to(group_identification).emit("close_sale_error", { errorMessage: 'No puedes cerrar esta venta porque tiene un traslado abierto', _process: data._process });
                     } else {
-                        _io.to(group_identification).emit("close_sale_error", { errorMessage: 'No Hay pedido abierto para este cliente', _process: data._process });
-                        sale.destroy();
-                    };
+
+                        if (details.length > 0) {
+                            //cerrar la venta y emitir el evento para el modulo de logistica
+                            try {
+                                const result = await sequelize.transaction(async (t) => {
+                                    sale._status = 'closed';
+                                    sale.delivery_type = data.delivery_type;
+                                    sale.delivery_direction = _direction;
+                                    sale.delivery_contact = data.phone;
+                                    sale.delivery_instructions = _reference;
+                                    sale.delivery_date = new Date(data.day);
+                                    sale.delivery_time = data.time;
+                                    sale.delivery_amount = data.delivery_amount;
+
+                                    if (data.delivery_type == 'delivery') {
+                                        sale.delivery_provider = data.delivery_provider;
+                                    }
+                                    await sale.save({ transaction: t });
+
+                                    //emitir evento
+                                    _io.to(group_identification).emit("sale_saved", { sale: sale.id, _process: data._process });
+
+                                    io.of('/logistics').emit('new_sale', {
+                                        sale, details, client: cliente.name
+                                    });
+
+                                });
+                            } catch (error) {
+                                console.error(error);
+                                _io.to(group_identification).emit("close_sale_error", { errorMessage: error.message, _process: data._process });
+                            }
+
+
+                        } else {
+                            _io.to(group_identification).emit("close_sale_error", { errorMessage: 'No Hay pedido abierto para este cliente', _process: data._process });
+                            await sale.destroy();
+                        }
+                    }
                 }
             }
         }
