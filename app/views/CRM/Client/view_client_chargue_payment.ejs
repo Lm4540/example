@@ -1,6 +1,6 @@
 <script>
-  var last_payment_rendered = '<%= payments[payments.length - 1].id %>',
-    last_sale_rendered = '<%= finalized[finalized.length - 1].id %>',
+  var last_payment_rendered = '<%= payments.length > 0 ? payments[payments.length - 1].id : 0 %>',
+    last_sale_rendered = '<%= finalized.length ? finalized[finalized.length - 1].id : 0 %>',
     load_limit = 10,
     more_payments_to_render = '<%= hay_mas_pagos %>',
     more_sale_to_render = '<%= hay_mas_ventas %>';

@@ -1886,7 +1886,20 @@ const SaleController = {
                 var createdBy = session.employee.name;
                 let userid = session.employee.id;
 
+                //Agregar aca el tipo de envio
+
                 if (sale == null) {
+
+                    let last_sale = await Sale.findOne({
+                        where: {
+                            client: client.id,
+
+                        },
+                        order: [
+                            ['id', 'desc']
+                        ]
+                    });
+
                     sale = await Sale.create({
                         client: client.id,
                         seller: session.employee.id,
@@ -1894,7 +1907,8 @@ const SaleController = {
                         credit_conditions: 0,
                         _status: 'process',
                         type: client.type,
-                        balance: 0.00
+                        balance: 0.00,
+                        delivery_type: last_sale !== null ? last_sale.delivery_type : 'delivery'
                     }, { transaction: t });
                 }
 
@@ -2146,7 +2160,7 @@ const SaleController = {
                         credit_conditions: 0,
                         _status: 'process',
                         type: client.type,
-                        delivery_type: last_sale != null ? last_sale.delivery_type : 'local',
+                        delivery_type: last_sale != null ? last_sale.delivery_type : 'delivery',
                         balance: 0.00
                     }, { transaction: t });
                 }

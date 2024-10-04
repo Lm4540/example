@@ -6,3 +6,4 @@ node_modules
 .vscode
 public/upload/images
 app/notas.ejs
+app/sql por ejecutar.sql

@@ -455,7 +455,7 @@ const ClientController = {
         return res.json({
             details: details,
             more: mas > limit,
-            last: details[details.length - 1].id,
+            last: details.length > 0 ? details[details.length - 1].id : 0,
         })
     },
 
@@ -491,7 +491,7 @@ const ClientController = {
         return res.json({
             details: details,
             more: mas > limit,
-            last: details[details.length - 1].id,
+            last: details.length > 0 ?  details[details.length - 1].id : 0,
         })
 
 
