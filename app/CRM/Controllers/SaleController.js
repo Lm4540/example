@@ -1826,8 +1826,8 @@ const SaleController = {
         if (client.seller !== session.employee.id && !session.permission.includes('update_sales_of_another_user')) { return res.json({ status: 'errorMessage', message: 'No tienes permiso para agregar productos a este cliente' }); }
 
         try {
-            data.cant = Number.parseInt(data.cant);
-            data.price = Number.parseFloat(data.price);
+            var cantidad = Number.parseInt(data.cant);
+            var precio = Number.parseFloat(data.price);
 
             let sale = await Sale.findOne({
                 where: {
@@ -1857,7 +1857,7 @@ const SaleController = {
             });
 
 
-            if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) { throw 'No hay suficientes ecistencias en tu sucursal asignada para poder agregar este producto'; }
+            if (stock == null || stock == undefined || (stock.cant - stock.reserved < cantidad)) { throw 'No hay suficientes existencias para poder agregar este producto'; }
 
             //buscar a ver si ya hay un detalle existente
             if (detail_count > 0) {
@@ -1866,7 +1866,7 @@ const SaleController = {
                         [Op.and]: {
                             sale: sale.id,
                             product: data.product,
-                            price: data.price
+                            price: precio
                         }
                     }
                 });
@@ -1907,26 +1907,28 @@ const SaleController = {
                         credit_conditions: 0,
                         _status: 'process',
                         type: client.type,
-                        balance: 0.00,
+                        balance: Helper.fix_number(cantidad * precio),
                         delivery_type: last_sale !== null ? last_sale.delivery_type : 'delivery'
                     }, { transaction: t });
+                } else {
+                    sale.balance = sale.balance + Helper.fix_number(cantidad * precio);
+                    await sale.save({ transaction: t });
+
                 }
 
-                sale.balance = sale.balance + Helper.fix_number(data.cant * data.price);
-                await sale.save({ transaction: t });
 
                 if (detail !== null) {
-                    detail.cant = detail.cant + data.cant;
+                    detail.cant = detail.cant + cantidad;
                     await detail.save({ transaction: t });
                 } else {
                     detail = await SaleDetail.create({
                         sale: sale.id,
                         product: product.id,
-                        price: data.price,
+                        price: precio,
                         description: product.name + ' SKU ' + product.sku,
                         image: product.raw_image_name,
                         _order: detail_count,
-                        cant: data.cant,
+                        cant: cantidad,
                         ready: 0,
                         delivered: 0,
                         reserved: 0
@@ -1945,7 +1947,7 @@ const SaleController = {
                         requisition: requisition.id,
                         product: product.id,
                         client: data.client,
-                        cant: data.cant,
+                        cant: cantidad,
                         createdBy,
                         client_name: client.name,
                         user: userid,
@@ -1953,7 +1955,7 @@ const SaleController = {
                     }, { transaction: t });
 
                     let reserve = await StockReserve.create({
-                        cant: data.cant,
+                        cant: cantidad,
                         createdBy,
                         concept: 'Reserva por Solicitudes de Trasalado',
                         type: 'requisition',
@@ -1978,14 +1980,15 @@ const SaleController = {
                             requisition: requisition.id,
                             product: product.id,
                             client: data.client,
-                            cant: data.cant,
+                            cant: cantidad,
                             createdBy,
                             client_name: client.name,
                             user: userid,
                             sale_detail: detail.id
                         }, { transaction: t });
+
                         let reserve = await StockReserve.create({
-                            cant: data.cant,
+                            cant: cantidad,
                             createdBy,
                             concept: 'Reserva por Solicitudes de Trasalado',
                             type: 'requisition',
@@ -1996,7 +1999,7 @@ const SaleController = {
                         }, { transaction: t });
 
                     } else {
-                        req_detail.cant = req_detail.cant + data.cant;
+                        req_detail.cant = req_detail.cant + cantidad;
                         await req_detail.save({ transaction: t });
 
                         let reserve = await StockReserve.findOne({
@@ -2008,41 +2011,34 @@ const SaleController = {
                         });
 
                         // realizar raw sql aqui
-                        reserve.cant = Number.parseInt(reserve.cant + data.cant);
+                        reserve.cant += cantidad;
                         await reserve.save({ transaction: t });
                     }
 
-                    //Actualizar el producto
 
-                    //realizar raws sql aqui
-                    // stock.reserved = stock.reserved + data.cant;
-                    // await stock.save({ transaction: t });
-                    await sequelize.query(
-                        "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
-                        {
-                            replacements: {
-                                cant: data.cant, stock_id: stock.id
-                            },
-                            type: QueryTypes.UPDATE,
-                            transaction: t
-                        }
-                    );
-
-                    //realizar raws sql aqui
-                    //  product.reserved = product.reserved + data.cant;
-                    //  await product.save({ transaction: t });
-                    await sequelize.query(
-                        "UPDATE `inventory_product` SET `reserved` = reserved + :cant WHERE id = :product_id",
-                        {
-                            replacements: {
-                                cant: data.cant, product_id: product.id
-                            },
-                            type: QueryTypes.UPDATE,
-                            transaction: t
-                        }
-                    );
                 }
+                
+                await sequelize.query(
+                    "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
+                    {
+                        replacements: {
+                            cant: cantidad, stock_id: stock.id
+                        },
+                        type: QueryTypes.UPDATE,
+                        transaction: t
+                    }
+                );
 
+                await sequelize.query(
+                    "UPDATE `inventory_product` SET `reserved` = reserved + :cant WHERE id = :product_id",
+                    {
+                        replacements: {
+                            cant: cantidad, product_id: product.id
+                        },
+                        type: QueryTypes.UPDATE,
+                        transaction: t
+                    }
+                );
 
                 return res.json({
                     status: 'success',
@@ -2099,7 +2095,7 @@ const SaleController = {
             let detail_count = 0;
             let detail = null;
             if (sale !== null && sale !== undefined) {
-                if (sale.sucursal !== session.employee.sucursal ) {
+                if (sale.sucursal !== session.employee.sucursal) {
                     // Eliminado el permiso && !session.permission.includes('update_sales_of_another_sucursal') porque reservaba cosas de la sucursal incorrecta
                     throw 'No puedes agregar productos a una venta de otra sucursal';
                 }
@@ -2261,7 +2257,7 @@ const SaleController = {
 
     socket_delete_detail: async (data) => {
 
-        
+
         //obtener el detalle
         let detail = await SaleDetail.findByPk(data.detail_id);
 
@@ -2339,7 +2335,7 @@ const SaleController = {
                                 await detail.save({ transaction: t });
                             }
 
-                            
+
                             //Actualizar Stock y  Actuañlizar Producto
                             await sequelize.query(
                                 "UPDATE `inventory_product_stock` SET `reserved` = reserved - :cant WHERE id = :stock_id",
