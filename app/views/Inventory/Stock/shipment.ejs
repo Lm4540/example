@@ -156,6 +156,7 @@
     document.addEventListener('DOMContentLoaded', event => {
       document.querySelector("#ingresar").addEventListener('click', e => {
          //obtener los detalles y recorrelos,
+         document.querySelector("#ingresar").disabled = true;
          postData('/inventory/shipment/in', {
             shipment: '<%= shipment.id %>'
          }).then(data => {
