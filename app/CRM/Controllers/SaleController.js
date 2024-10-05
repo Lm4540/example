@@ -1962,6 +1962,7 @@ const SaleController = {
                         orderId: req_detail.id,
                         product: stock.product,
                         sucursal: stock.sucursal,
+                        saleId: detail.id
                     }, { transaction: t });
 
                 } else {
@@ -2308,7 +2309,6 @@ const SaleController = {
                 //buscar el producto
                 let product = await Product.findByPk(detail.product);
                 if (product && stock && reserve) {
-                    console.log('\n\n', 'Eliminando Detalle desde el Socket', '\n\n');
                     try {
 
                         return await sequelize.transaction(async (t) => {
