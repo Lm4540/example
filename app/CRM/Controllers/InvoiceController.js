@@ -627,6 +627,14 @@ const InvoiceController = {
                 isr: sale.invoice_isr ? Helper.fix_number(sin_iva * process.env.RET_ISR) : 0.00,
             }
 
+            if(data.invoice_data.giro !== ""){
+                let client = await Client.findByPk(sale.client);
+                if(client){
+                    client.giro = data.invoice_data.giro;
+                    client.save();
+                }
+            }
+
 
             try {
                 return sequelize.transaction(async (t) => {

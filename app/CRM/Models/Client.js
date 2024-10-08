@@ -96,6 +96,7 @@ const Client = sequelize.define('Client', {
     },
     seller: DataTypes.INTEGER.UNSIGNED,
     sucursal: DataTypes.INTEGER,
+    giro: DataTypes.STRING(255),
 }, {
     tableName: 'crm_client',
 });

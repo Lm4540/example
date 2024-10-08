@@ -177,10 +177,7 @@
                       <p style="cursor:pointer;"> <a href="/inventory/product/view/<%= detail.product.id %>"><%= detail.description %></a> </p>
                       <p> <b><%= detail.cant %></b> X $<%= Helper.money_format(detail.price)%> = $<%= Helper.money_format(detail.cant  * detail.price)%></p>
 
-                      <% if (detail.reserved > 0 && detail.reserved < detail.cant) { %>
-                      <p class="text-warning"> Solamente <b><%= detail.reserved %></b> reservdaos</p>
-                      <button class="btn btn-outline-danger" onclick="quit('<%= detail.id %>')">Quitar no reservados</button>
-                      <% } else if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
+                      <%  if (detail.reserved == detail.cant && detail.ready < detail.reserved) { %>
                       <p class="text-primary"> Unidades reservadas<br> Pendiente de revisión</p>
                       <button class="btn btn-primary round" onclick="quit('<%= detail.id %>')">Quitar no revisados</button>
                       <% } else if(detail.cant == detail.ready) { %>
