@@ -98,10 +98,6 @@ const SalesStatusController = {
             }
         });
 
-
-        
-
-
         //bloque nuevo
 
         tmp = await sequelize.query(
@@ -116,7 +112,7 @@ const SalesStatusController = {
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
                 mayor[detail.sale].details.push(detail);
                 if (mayor[detail.sale].open == false) {
-                    mayor[detail.sale].open = detail.ready > 0;
+                    mayor[detail.sale].open = (detail.ready > 0);
                 }
 
             } else {
