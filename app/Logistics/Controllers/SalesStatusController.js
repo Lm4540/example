@@ -117,7 +117,7 @@ const SalesStatusController = {
 
             } else {
                 totals.mayor_details -= 1;
-                if (mayor[detail.sale] !== undefined) {
+                if (mayor[detail.sale] !== undefined && detail.reserved > 0) {
                     mayor[detail.sale].open = true;
                 }
             }
@@ -216,7 +216,7 @@ const SalesStatusController = {
                 console.error(error);
                 return { status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message };
             }
-        }else{
+        } else {
             return { status: 'errorMessage', message: 'La venta no fue encontrada :P' };
         }
         return { status: 'errorMessage', message: 'Venta o Pedido no encontrado' };
