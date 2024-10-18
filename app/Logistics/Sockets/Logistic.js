@@ -13,7 +13,7 @@ module.exports = async (io, socket) => {
 
     _io.to(group_identification).emit("logistics data", await SalesStatusController.get_data(socket.request.session.userSession));
 
-    socket.on('pakage_delivered', async sale => {
+    socket.on('package_delivered', async sale => {
       if (await Auth.Auth(socket.request.session)) {
 
         let res = await SalesStatusController.pakage_delivered(sale, socket.request.session.userSession);

@@ -1,0 +1,494 @@
+<script>
+  const __sucursal = Number.parseInt('<%= user.sucursal %>');
+  var _process = '<%= Helper.randomString(5) %>';
+  var
+    contador_conexion = 0,
+    mayor = {},
+    reservas = {},
+    clients = {},
+    entregas = {},
+    mayor_resolved = {},
+    reservas_resolved = {},
+    totals = {},
+    sellers = {},
+    prepared = {},
+    on_screen = null;
+  transport = {};
+
+  const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
+  const charge_iframe = (url) => {
+    document.querySelector("#iframe_data").src = url;
+    ShowDataModal.toggle();
+  }
+
+  const update_totals = () => {
+    document.querySelector("#info_total").innerHTML = `${totals.mayor_details} Productos por Mayor`;
+    document.querySelector("#reservas_total").innerHTML = `${totals.reservas} Paquetes por armar`;
+    document.querySelector("#total_delivery").innerHTML = `${totals.prepared} Listo para entrega`;
+    document.querySelector("#total_trasnport").innerHTML = `${totals.transport} En ruta`;
+    // document.querySelector("#total_delivery_failed").innerHTML = `${totals.delivery_failed} Entregas Fallidas`;
+  };
+
+  const showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {});
+  const show_image = src => {
+    document.getElementById('galery_image').src = src;
+    showImageModal.toggle();
+  };
+  const show_sale = id => {
+    document.querySelector("#iframe_data").src = `/sales/view/${id}`;
+    ShowDataModal.toggle();
+  };
+
+  let modalNotDelivered = new bootstrap.Modal(document.getElementById('modalNotDelivered'), {});
+  var delivery_failed_id = null;
+
+  const paquete_listo = id => {
+    socket.emit('package_ready', {
+      sale_id: id,
+      _process
+    });
+  };
+
+  const detail_revised = (detail_id, sale_id) => {
+    let data = {
+      sale: sale_id,
+      details: [detail_id, ],
+    }
+
+    socket.emit('mayor_detail_revised', data);
+
+  }
+
+  const all_detail_revised = (sale_id) => {
+    let data = {
+      sale: sale_id,
+      details: [],
+    }
+    mayor[sale_id].details.forEach(e => {
+      data.details.push(e.id);
+    })
+    socket.emit('mayor_detail_revised', data);
+  }
+
+  const delivery_failed_process = (sale_id) => {
+    delivery_failed_id = sale_id;
+    console.log(transport[sale_id]);
+    let reg = transport[sale_id];
+    document.querySelector("#notdeliveredTittle").innerHTML = `${reg.client}`;
+    modalNotDelivered.toggle();
+
+  }
+
+  const package_delivered = (sale, element) => {
+    element.parentNode.removeChild(element);
+    socket.emit('package_delivered', sale)
+  }
+
+  const package_transport = (sale) => {
+    socket.emit('package_trasnport', sale)
+  }
+
+
+  const show_info = () => {
+    document.querySelector("#div_reservas").style.display = 'none';
+    document.querySelector("#div_info").style.display = 'flex';
+    document.querySelector("#div_delivery").style.display = 'none';
+    on_screen = 'mayor';
+    document.querySelector("#div_reservas").innerHTML = ``;
+
+
+    //cargar los controlles de las reservas
+    let keys = Object.keys(mayor);
+    if (keys.length > 0) {
+      let content = ``,
+        local_abriendo = ``,
+        local_abierto = ``,
+        envio_abriendo = '';
+
+      keys.forEach(index => {
+        element = mayor[index];
+
+        if (element !== null && element.details.length > 0) {
+
+          if (element.sale.delivery_type == 'local') {
+            if (element.open == true) {
+              local_abierto += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} <br>
+                                  <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
+                               </h5>
+                               <p class="text-success">Pedido Abierto (Tienda)</p><div class="list-group">`;
+              //recorrer los detalles de la venta
+              element.details.forEach(detail => {
+
+                local_abierto += `<span class="list-group-item list-group-item-action py-3 lh-sm" id="info_detail_div_${detail.id}">
+                         <div class="d-flex justify-content-start" >
+                            <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                            <div class="ml-3">
+                               <span>${detail.description} ($${detail.price}) &nbsp; <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/${detail.product}')">Ver producto</span></span>
+                               <br><span style="font-size:120%; color:#d43f53;">${detail.cant - detail.ready} Unidades por revisar </span>
+                               <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
+                               <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
+                            </div>
+       
+                         </div>
+                      </span>`;
+              });
+
+
+              local_abierto += `</div>
+                            </div>
+                         </div>
+                      </div>`;
+
+            } else {
+
+              local_abriendo += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} <br>
+                                  <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
+                               </h5>
+                               <p class="text-danger">Abriendo Pedido (Tienda)`;
+              //recorrer los detalles de la venta
+              element.details.forEach(detail => {
+
+                local_abriendo += `<span class="list-group-item list-group-item-action py-3 lh-sm" id="info_detail_div_${detail.id}">
+                         <div class="d-flex justify-content-start" >
+                            <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                            <div class="ml-3">
+                               <span>${detail.description} ($${detail.price}) &nbsp; <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/${detail.product}')">Ver producto</span></span>
+                               <br><span style="font-size:120%; color:#d43f53;">${detail.cant - detail.ready} Unidades por revisar </span>
+                               <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
+                               <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
+                            </div>
+       
+                         </div>
+                      </span>`;
+              });
+
+
+              local_abriendo += `</div>
+                            </div>
+                         </div>
+                      </div>`;
+
+            }
+
+          } else {
+            if (element.open == true) {
+
+              content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} <br>
+                                  <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
+                               </h5>
+                               <p class="text-success">Pedido Abierto  (Envio)</p><div class="list-group">`;
+              //recorrer los detalles de la venta
+              element.details.forEach(detail => {
+
+                content += `<span class="list-group-item list-group-item-action py-3 lh-sm" id="info_detail_div_${detail.id}">
+                         <div class="d-flex justify-content-start" >
+                            <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                            <div class="ml-3">
+                               <span>${detail.description} ($${detail.price}) &nbsp; <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/${detail.product}')">Ver producto</span></span>
+                               <br><span style="font-size:120%; color:#d43f53;">${detail.cant - detail.ready} Unidades por revisar </span>
+                               <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
+                               <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
+                            </div>
+       
+                         </div>
+                      </span>`;
+              });
+
+
+              content += `</div>
+                            </div>
+                         </div>
+                      </div>`;
+
+            } else {
+
+              envio_abriendo += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} <br>
+                                  <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
+                               </h5>
+                               <p class="text-danger">Abriendo Pedido  (Envio)</p><div class="list-group">`;
+              //recorrer los detalles de la venta
+              element.details.forEach(detail => {
+
+                envio_abriendo += `<span class="list-group-item list-group-item-action py-3 lh-sm" id="info_detail_div_${detail.id}">
+                         <div class="d-flex justify-content-start" >
+                            <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                            <div class="ml-3">
+                               <span>${detail.description} ($${detail.price}) &nbsp; <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/${detail.product}')">Ver producto</span></span>
+                               <br><span style="font-size:120%; color:#d43f53;">${detail.cant - detail.ready} Unidades por revisar </span>
+                               <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} de ${detail.cant} Vendidas </span>
+                               <br><span class="badge bg-warning" onclick="detail_revised(${detail.id}, ${element.sale.id})">Revisado y guardado</span>
+                            </div>
+       
+                         </div>
+                      </span>`;
+              });
+
+
+              envio_abriendo += `</div>
+                            </div>
+                         </div>
+                      </div>`;
+
+            }
+          }
+
+        }
+      });
+
+
+      document.querySelector("#div_info").innerHTML = `${content} ${envio_abriendo} ${local_abierto} ${local_abriendo}`;
+    } else {
+      createToast('rose', 'No hay mas tareas por completar');
+    }
+  }
+
+  const show_delivery = () => {
+    document.querySelector("#div_reservas").style.display = 'none';
+    document.querySelector("#div_info").style.display = 'none';
+    document.querySelector("#div_delivery").style.display = 'flex';
+
+    on_screen = 'delivery';
+
+    let keys = Object.keys(prepared);
+    if (keys.length > 0) {
+      let content = '';
+      keys.forEach(index => {
+        element = prepared[index];
+        if (element !== null) {
+          let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id}, this)">Marcar Entregado</span>`;
+          let _st = element.sale._status == "to_resend" ? `<p class="text-danger" style="font-size: 125%;">Reenvio</p>` : '';
+          if (element.sale.delivery_type == 'delivery') {
+            badge = `&nbsp;<span class="badge bg-primary" onclick="package_transport(${element.sale.id})">Entregado a Transportista</span>`;
+          }
+
+          content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            <div class="card-body">${_st}
+                               <h5 class="mb-2">${element.client} 
+                                  ${badge}
+                                  &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                               </h5>`;
+          content += `<div>
+                         <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+    
+                         <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
+                         <p>Referencia: ${element.sale.delivery_instructions}</p>
+    
+                         <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
+                         <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
+                         <p>Total: $${money_format(Number.parseFloat(element.sale.balance) + Number.parseFloat(element.sale.delivery_amount))}</p>
+                      </div>`;
+
+
+          content += `</div>
+                         </div>
+                      </div>`;
+        }
+      });
+      document.querySelector("#div_delivery").innerHTML = content;
+    } else {
+      createToast('rose', 'No hay mas tareas por completar');
+    }
+  }
+
+  const show_trasnport = () => {
+    document.querySelector("#div_reservas").style.display = 'none';
+    document.querySelector("#div_info").style.display = 'none';
+    document.querySelector("#div_delivery").style.display = 'flex';
+
+    on_screen = 'transport';
+
+    let keys = Object.keys(transport);
+    if (keys.length > 0) {
+      let content = '';
+      keys.forEach(index => {
+        element = transport[index];
+        if (element !== null) {
+          let badge = `<br><span class="badge bg-warning" onclick="package_delivered(${element.sale.id}, this)">Marcar Entregado</span>`;
+          badge += `&nbsp;<span class="badge bg-danger" onclick="delivery_failed_process(${element.sale.id})">Entrega fallida</span>`;
+          content += `<div class="col-12 col-md-6 mb-3" id="info_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} 
+                                  ${badge}
+                                  &nbsp;<span class="badge bg-success" onclick="show_sale(${element.sale.id})">Ver Venta</span>
+                               </h5>`;
+          content += `<div>
+                         <p>Tipo de entrega: ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+    
+                         <p>Direccion de Entrega: ${element.sale.delivery_direction}</p>
+                         <p>Referencia: ${element.sale.delivery_instructions}</p>
+                         <p>Contacto de Entrega: ${element.sale.delivery_contact}</p>
+                         <p>Fecha: ${format_date(element.sale.delivery_date, false)} a las ${element.sale.delivery_time}</p>
+                         <p>Total: $${money_format(Number.parseFloat(element.sale.balance) + Number.parseFloat(element.sale.delivery_amount))}</p>
+                      </div>`;
+          content += `</div>
+                         </div>
+                      </div>`;
+        }
+      });
+      document.querySelector("#div_delivery").innerHTML = content;
+    } else {
+      createToast('rose', 'No hay mas tareas por completar');
+    }
+  }
+
+  const show_list = () => {
+    window.open('/inventory/productReserveList', '_blank').focus();
+  }
+
+  const show_reservas = () => {
+    document.querySelector("#div_reservas").style.display = 'flex';
+    document.querySelector("#div_info").style.display = 'none';
+    document.querySelector("#div_delivery").style.display = 'none';
+    on_screen = 'reservas';
+    document.querySelector("#div_reservas").innerHTML = '';
+
+
+    //cargar los controlles de las reservas
+    let keys = Object.keys(reservas);
+    if (keys.length > 0) {
+      let content = '';
+      keys.forEach(index => {
+        element = reservas[index];
+        if (element !== null) {
+          content += `<div class="col-12 col-md-6 mb-3" id="reservas_sale_${element.sale.id}">
+                         <div class="card card-round">
+                            <div class="card-body">
+                               <h5 class="mb-2">${element.client} <br>(Producto $${money_format(element.sale.balance)} + Envio $${money_format(element.sale.delivery_amount)}) <br>
+                                  &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${element.sale.id})">Paquete Listo</span>
+                                  
+                                  <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
+                               </h5>
+                               <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}<br>Referencia: ${element.sale.delivery_instructions}</p>
+                               <div class="list-group">`;
+          //recorrer los detalles de la venta
+          element.details.forEach(detail => {
+
+            content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
+                         <div class="d-flex justify-content-start">
+                            <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                            <div class="ml-3">
+                               <span>${detail.description} ($${detail.price} c/u) &nbsp;
+                                  <span class="badge bg-blue" onclick="charge_iframe('/inventory/product/view/${detail.product}')">Ver producto</span>
+                               </span>
+                               <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades Vendidas' : 'Unidad vendida'}</span>
+                               <br><span>${detail.reserved} ${detail.reserved > 1 ? 'Unidades Reservadas' : 'Unidad Reservada'} <br> ${detail.ready} ${detail.ready > 1 ? 'Unidades Revisadas' : 'Unidad Revisada'} </span>
+                            </div>
+       
+                         </div>
+                      </span>`;
+          });
+
+
+          content += `</div>
+                            </div>
+                         </div>
+                      </div>`;
+        }
+      });
+      document.querySelector("#div_reservas").innerHTML = content;
+    } else {
+      createToast('rose', 'No hay mas tareas por completar');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', event => {
+    document.querySelector("#nd_div_resend").style.display = "none";
+
+    document.querySelector("#nd_option").addEventListener('change', e => {
+      document.querySelector("#nd_div_resend").style.display = e.target.value === "resend" ? 'block' : "none";
+    });
+
+    document.querySelector("#nd_delivery_type").addEventListener('change', e => {
+      document.querySelector("#nd_direction_").disabled = false;
+
+      if (e.target.value == 'delivery') {
+        document.querySelector("#nd_delivery_provider").disabled = false;
+        document.querySelector("#nd_delivery_amount").value = 4.55;
+        document.querySelector("#nd_direction_").focus();
+      } else {
+        if (e.target.value == 'local') {
+          document.querySelector("#delivery_amount").disabled = true;
+          document.querySelector("#delivery_amount").value = 0.00;
+          document.querySelector("#nd_direction_").value = 'Retiro en Tienda';
+          document.querySelector("#nd_direction_").disabled = true;
+          document.querySelector("#nd_reference_").focus();
+        } else {
+          document.querySelector("#nd_delivery_amount").value = 3.00;
+          document.querySelector("#nd_direction_").focus();
+        }
+
+        document.querySelector("#nd_delivery_provider").disabled = true;
+      }
+    });
+
+    document.querySelector('#save_not_delivered').addEventListener('click', e => {
+
+      let reason = document.querySelector("#nd_reason").value;
+
+      if (reason.length < 5) {
+        return errorMessage('Por favor escriba una justificacion por la cual el paquete no fue entregado');
+      }
+
+      if (document.querySelector("#nd_option").value != "resend") {
+        e.target.disabled = true;
+        socket.emit('nd_package_revoke', {
+          sale: delivery_failed_id,
+          reason
+        });
+      } else {
+        let data = {
+          sale: delivery_failed_id,
+          delivery_type: document.querySelector("#nd_delivery_type").value,
+          delivery_provider: null,
+          direction: document.querySelector("#nd_direction_").value,
+          reference: document.querySelector("#nd_reference_").value,
+          phone: document.querySelector("#nd_phone_").value,
+          day: document.querySelector("#nd_day_").value,
+          time: document.querySelector("#nd_hour_").value,
+          delivery_amount: document.querySelector("#nd_delivery_amount").value,
+          reason
+        }
+
+        if (data.delivery_type == 'delivery') {
+          data.delivery_provider = document.querySelector("#nd_delivery_provider").value;
+        }
+
+        if (data.direction.length < 5) {
+          return errorMessage('Coloque una Dirección válida');
+        } else if (data.phone.length < 8) {
+          return errorMessage('Coloque el teléfono de contacto');
+        } else if (data.day.length < 10) {
+          return errorMessage('Seleccione una fecha válida');
+        } else if (data.time.length < 5) {
+          return errorMessage('Seleccione una hora valida');
+        } else if (data.day < document.querySelector("#nd_day_").dataset.min) {
+          return errorMessage('Seleccione una fecha válida');
+        }
+        e.target.disabled = true;
+        socket.emit('nd_package_resend', data);
+      }
+
+      document.querySelector('#save_not_delivered').disabled = false;
+      modalNotDelivered.toggle();
+
+    });
+  });
+</script>

@@ -565,6 +565,10 @@ const SalesStatusController = {
                             }
                         }, { transaction: t });
 
+                        let _P = await Product.findByPk(detail.product);
+                        _P.reserved = _P.reserved - detail.cant;
+                        await _P.save({ transaction: t });
+
                         let largo = reserves.length;
                         for (let a = 0; a < largo; a++) {
                             let reserve = reserves[a];

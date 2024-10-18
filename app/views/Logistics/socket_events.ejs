@@ -1,0 +1,236 @@
+<script>
+  var socket = io.connect('<%= baseURL %>/logistics', {
+    autoConnect: false
+  });
+  socket.connect();
+
+  socket.on("reconnect_failed", () => {
+    errorMessage("Se ha perdido la conexión con el Servidor, recarga la página para poder recuperarla");
+  });
+
+  socket.on("error", (error) => {
+    errorMessage("Ha Ocurrido un error, recarga pa pagina para poder continuar");
+  });
+
+  socket.on("disconnect", () => {
+
+    errorMessage("Se ha perdido la conexión con el Servidor, recagando la página para poder recuperarla");
+    socket.close();
+    setTimeout(() => {
+      window.location.reload()
+    }, 10000);
+  });
+
+  socket.on('logistics data', data => {
+    console.log(data);
+    clients = data.clients;
+    entregas = data.entregas;
+    mayor = data.mayor;
+    reservas = data.reservas;
+    sellers = data.sellers;
+    mayor_resolved = data.mayor_resolved;
+    reservas_resolved = data.reservas_resolved;
+    totals = data.totals;
+    providers = data.providers;
+    prepared = data.prepared;
+    transport = data.transport;
+    let content = ``;
+    let indexes = Object.keys(providers);
+    for (let index = 0; index < indexes.length; index++) {
+      content += `<option value="${indexes[index]}"> ${providers[indexes[index]]}</option>`;
+    }
+    document.querySelector("#nd_delivery_provider").innerHTML = content;
+    //pintar los totales
+    update_totals();
+  });
+
+  socket.on('new_sale', data => {
+    if (data.sale.sucursal == __sucursal) {
+      console.log('Recibimos esta venta')
+      totals.reservas += 1;
+      update_totals();
+      reservas[data.sale.id] = data;
+
+      if (on_screen == 'reservas') {
+        let div = document.createElement('div');
+        div.classList.add('col-12', 'col-md-6', 'mb-3');
+        div.id = `reservas_sale_${data.sale.id}`;
+        let content = `<div class="card card-round">
+                     <div class="card-body">
+                        <h5 class="mb-2">${data.client} 
+                           &nbsp;<span class="badge bg-danger" onclick="paquete_listo(${data.sale.id})">Paquete Listo</span>
+                           &nbsp;<span class="badge bg-success" onclick="show_sale(${data.sale.id})">Ver Venta</span>
+                        </h5>
+                        <p>${data.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (data.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[data.sale.delivery_provider] +')': 'Entrega (Riveras Group)')}</p>
+                        <div class="list-group">`;
+        //recorrer los detalles de la venta
+        data.details.forEach(detail => {
+
+          content += `<span class="list-group-item list-group-item-action py-3 lh-sm">
+                  <div class="d-flex justify-content-start">
+                     <img src="${detail.image}" alt="product_image" width="75px;" onclick="show_image(this.src)">
+                     <div class="ml-3">
+                        <span>${detail.description}   <a href="/inventory/product/view/${detail.product}" class="badge bg-secondary">Ver Producto</a> </span>
+                        <br><span>${detail.cant} ${detail.cant > 1 ? 'Unidades' : 'Unidad'}</span>
+                     </div>
+
+                  </div>
+               </span>`;
+        });
+
+        content += `</div>
+                     </div>
+                  </div>
+               `;
+        div.innerHTML = content;
+        document.querySelector("#div_reservas").appendChild(div);
+      }
+
+      if (mayor[data.sale.id] !== undefined) {
+        //recorrer los detalles
+        mayor[data.sale.id].details.forEach(el => {
+          document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+        });
+
+        totals.mayor_details = (totals.mayor_details - mayor[data.sale.id].details.length);
+        mayor[data.sale.id].details = [];
+        update_totals();
+      }
+    }
+  });
+
+  socket.on('package_ready_success', sale => {
+    if (reservas[sale.id] != undefined) {
+      prepared[sale.id] = {
+        sale: reservas[sale.id].sale,
+        client: reservas[sale.id].client,
+      };
+      reservas[sale.id] = null;
+      document.querySelector("#div_reservas").removeChild(document.getElementById(`reservas_sale_${sale.id}`));
+      totals.reservas -= 1;
+      totals.prepared += 1;
+      update_totals();
+      successMessage('Paquete Listo!');
+    }
+  });
+
+  socket.on('package_ready_error', data => {
+    console.log(data);
+    if (data._process == _process) {
+      return errorMessage(data.errorMessage);
+    }
+  });
+
+  socket.on('new_major_detail', data => {
+    totals.mayor_details++;
+    mayor[data.detail.sale].details.push(data.detail);
+    //agregar el detalle a los totales
+    update_totals();
+    if (on_screen == 'mayor') {
+      show_info();
+    }
+  });
+
+  socket.on('deleted_major_detail', data => {
+    console.log(data);
+    let new_details = [];
+
+
+    let restantes = new Array();
+    mayor[data.sale_id].details.forEach(el => {
+      if (el.id == data.deleted_detail) {
+        document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+      } else {
+        restantes.push(el);
+      }
+    });
+
+    if (restantes.length < 1) {
+      update_totals();
+    } else {
+      mayor[data.sale_id].details = restantes;
+    }
+
+    // errorMessage('Detalle de info Eliminado')
+  });
+
+  socket.on('mayor_detail_revised_error', data => {
+    console.log(data);
+
+  });
+
+  socket.on('package_trasnport_error', data => {
+    console.log(data);
+  });
+
+  socket.on('package_trasnport_success', data => {
+    let div = document.querySelector("#info_sale_" + data.id);
+    div.parentNode.removeChild(div);
+    transport[data.id] = data;
+    totals.transport += 1;
+
+    prepared[data.id] = null;
+    totals.prepared -= 1;
+    update_totals();
+  });
+
+
+
+  socket.on('pakage_delivered_success', data => {
+    let div = document.querySelector("#info_sale_" + data.id);
+    div.parentNode.removeChild(div);
+
+
+    //Token
+    if (on_screen == "transport") {
+      transport[data.id] = null;
+      totals.transport -= 1;
+    } else {
+      prepared[data.id] = null;
+      totals.prepared -= 1;
+
+    }
+
+    update_totals();
+  });
+
+  socket.on('nd_package_revoke_success', data => {
+    let div = document.querySelector("#info_sale_" + data.id);
+    if (div !== undefined) {
+      div.parentNode.removeChild(div);
+    }
+
+    transport[data.id] = null;
+    totals.transport -= 1;
+    update_totals();
+  });
+
+  socket.on('nd_package_resend_success', data => {
+    let div = document.querySelector("#info_sale_" + data.id);
+    if (div !== undefined) {
+      div.parentNode.removeChild(div);
+    }
+    transport[data.id] = null;
+    totals.transport -= 1;
+    prepared[data.id] = data;
+    totals.prepared += 1;
+    update_totals();
+  });
+
+  socket.on('mayor_detail_revised_success', data => {
+    if (mayor[data.sale] !== undefined) {
+      let restantes = new Array();
+
+      mayor[data.sale].details.forEach(el => {
+        if (data.details.includes(`${el.id}`) || data.details.includes(el.id)) {
+          totals.mayor_details -= 1;
+          document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
+        } else {
+          restantes.push(el);
+        }
+      });
+      mayor[data.sale].details = restantes;
+      update_totals();
+    }
+  });
+</script>

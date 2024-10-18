@@ -2,178 +2,213 @@
 <html lang="en">
 
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Print Invoice <%= sale.invoice_type %> <%= sale.invoice_number %></title>
-   <base href="<%=baseURL%>/" />
-   <style>
-      table {
-         border-collapse: collapse;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Invoice <%= sale.invoice_type %> <%= sale.invoice_number %></title>
+  <base href="<%=baseURL%>/" />
+  <style>
+    table {
+      border-collapse: collapse;
 
+    }
+
+    td {
+      border: 1px solid black;
+      border-spacing: 0;
+      line-height: .8;
+    }
+
+    .details td {
+      border-top: 0px solid #fff;
+      border-bottom: 0px solid #fff;
+      border-spacing: 0
+    }
+
+
+
+    .hidden_row td {
+      border: 0px solid #fff !important;
+      border-top: 0px solid #fff !important;
+      border-bottom: 0px solid #fff !important;
+      border-left: 0px solid #fff !important;
+      border-right: 0px solid #fff !important;
+    }
+
+    td.without_left {
+      border-left: 0px solid #fff !important;
+    }
+
+    td.without_right {
+      border-right: 0px solid #fff !important;
+    }
+
+    td.without_top {
+      border-top: 0px solid #fff !important;
+    }
+
+    td.without_bottom {
+      border-bottom: 0px solid #fff !important;
+    }
+
+    body {
+      width: 12cm;
+      font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
+      font-size: small;
+      background-image: url("/assets/images/invoice-bg.png") !important;
+      background-repeat: no-repeat;
+      background-size: 11cm;
+    }
+
+    tbody {
+      width: 100%;
+    }
+
+    th {
+      font-size: 60%;
+      border: 1px solid black;
+    }
+
+    .divisor {
+      margin-top: 10px;
+
+    }
+
+    .text-right {
+      align-items: right;
+      text-align: right;
+    }
+
+    .text-left {
+      align-items: left;
+      text-align: left;
+    }
+
+    .text-center {
+      text-align: center;
+      align-items: center;
+    }
+
+    #first_table {
+      margin-top: 2.5cm;
+      width: 100%;
+    }
+
+    #last_element {
+      margin-bottom: 0.5cm;
+      margin-top: 0;
+      font-size: 85%;
+    }
+
+    .print_div button {
+      padding: 0.4rem 0.55rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1;
+      color: #fff;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: baseline;
+      border-radius: 1rem;
+      background-color: #3245D1;
+    }
+
+    .print_div .number {
+      margin-left: 40px; color: red; font-size: 150%; font-weight: bolder;
+      margin-left: 310px;
+    }
+
+    @media print {
+      .print_div {
+        display: none;
       }
 
-      td {
-         border: 1px solid black;
-         border-spacing: 0;
-         line-height: .8;
+      @page {
+        size: landscape;
       }
-
-      .details td {
-         border-top: 0px solid #fff;
-         border-bottom: 0px solid #fff;
-         border-spacing: 0
-      }
-
-
-
-      .hidden_row td {
-         border: 0px solid #fff !important;
-         border-top: 0px solid #fff !important;
-         border-bottom: 0px solid #fff !important;
-         border-left: 0px solid #fff !important;
-         border-right: 0px solid #fff !important;
-      }
-
-      td.without_left {
-         border-left: 0px solid #fff !important;
-      }
-
-      td.without_right {
-         border-right: 0px solid #fff !important;
-      }
-
-      td.without_top {
-         border-top: 0px solid #fff !important;
-      }
-
-      td.without_bottom {
-         border-bottom: 0px solid #fff !important;
-      }
-
-      body {
-         width: 12cm;
-         font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
-         font-size: small;
-         background-image: url("/assets/images/invoice-bg.png") !important;
-         background-repeat: no-repeat;
-         background-size: 11cm;
-      }
-
-      tbody {
-         width: 100%;
-      }
-
-      th {
-         font-size: 60%;
-         border: 1px solid black;
-      }
-
-      .divisor {
-         margin-top: 10px;
-
-      }
-
-      .text-right {
-         align-items: right;
-         text-align: right;
-      }
-
-      .text-left {
-         align-items: left;
-         text-align: left;
-      }
-
-      .text-center {
-         text-align: center;
-         align-items: center;
-      }
-
-      #first_table {
-         margin-top: 2.5cm;
-         width: 100%;
-      }
-
-      #last_element {
-         margin-bottom: 0.5cm;
-         margin-top: 0;
-         font-size: 85%;
-      }
-   </style>
+    }
+  </style>
 </head>
 
 <body>
-   <table id="first_table">
-      <tbody class="head-table">
 
-         <tr class="hidden_row">
-            <td style="width: 15%;"></td>
-            <td style="width: 35%;"></td>
-            <td style="width: 15%;"></td>
-            <td style="width: 10%;"></td>
-            <td style="width: 25%;"></td>
-         </tr>
+  <div class="print_div" style="margin-top: 50px;">
 
-         <tr>
-            <td rowspan="2" class="without_right without_bottom">Cliente: </td>
-            <td rowspan="2" class="without_bottom without_left"><%= data.name %></td>
-            <td class="without_right without_bottom">Fecha: </td>
-            <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(sale.invoice_date, false) %></td>
-         </tr>
-         <tr>
-            <td class="without_right without_bottom without_top">NIT/DUI: </td>
-            <td colspan="2" class="without_left without_bottom without_top"><%= data.nit %></td>
-         </tr>
-         <tr>
-            <td class="without_right without_bottom without_top">Direccion: </td>
-            <td class="without_left without_bottom without_top"><%= data.direction %></td>
-            <!-- <td class="without_right without_bottom  without_top">N° Registro: </td>
+    
+    <span class="number"><%= sale.invoice_number %></span>
+
+  </div>
+  <table id="first_table">
+    <tbody class="head-table">
+
+      <tr class="hidden_row">
+        <td style="width: 15%;"></td>
+        <td style="width: 35%;"></td>
+        <td style="width: 15%;"></td>
+        <td style="width: 10%;"></td>
+        <td style="width: 25%;"></td>
+      </tr>
+
+      <tr>
+        <td rowspan="2" class="without_right without_bottom">Cliente: </td>
+        <td rowspan="2" class="without_bottom without_left"><%= data.name %></td>
+        <td class="without_right without_bottom">Fecha: </td>
+        <td colspan="2" class="without_left without_bottom"><%= Helper.format_date(sale.invoice_date, false) %></td>
+      </tr>
+      <tr>
+        <td class="without_right without_bottom without_top">NIT/DUI: </td>
+        <td colspan="2" class="without_left without_bottom without_top"><%= data.nit %></td>
+      </tr>
+      <tr>
+        <td class="without_right without_bottom without_top">Direccion: </td>
+        <td class="without_left without_bottom without_top"><%= data.direction %></td>
+        <!-- <td class="without_right without_bottom  without_top">N° Registro: </td>
                <td colspan="2" class="without_left without_bottom without_top"><%= data.nrc %></td> -->
-            <td class="without_right without_bottom without_top" colspan="2">N° NR Anterior: </td>
-            <td colspan="2" class="without_left without_bottom without_top"><%= data.nota_remision_anterior %></td>
-         </tr>
-         <tr>
-            <td class="without_right without_top">Giro:</td>
-            <td class="without_left without_top"><%= data.giro %></td>
-            <td colspan="2" class="without_right without_top">Venta a Cuenta de: </td>
-            <td class="without_left without_top"><%= data.cuenta_de %></td>
-         </tr>
-      </tbody>
-   </table>
+        <td class="without_right without_bottom without_top" colspan="2">N° NR Anterior: </td>
+        <td colspan="2" class="without_left without_bottom without_top"><%= data.nota_remision_anterior %></td>
+      </tr>
+      <tr>
+        <td class="without_right without_top">Giro:</td>
+        <td class="without_left without_top"><%= data.giro %></td>
+        <td colspan="2" class="without_right without_top">Venta a Cuenta de: </td>
+        <td class="without_left without_top"><%= data.cuenta_de %></td>
+      </tr>
+    </tbody>
+  </table>
 
-   <div class="divisor">
+  <div class="divisor">
 
-   </div>
+  </div>
 
-   <table>
+  <table>
 
-      <thead>
-         <tr class="hidden_row">
-            <td style="width: 7%;"></td>
-            <td style="width: 18%;"></td>
-            <td style="width: 20%;"></td>
-            <td style="width: 15%;"></td>
-            <td style="width: 13%;"></td>
-            <td style="width: 13%;"></td>
-            <td style="width: 15%;"></td>
-         </tr>
+    <thead>
+      <tr class="hidden_row">
+        <td style="width: 7%;"></td>
+        <td style="width: 18%;"></td>
+        <td style="width: 20%;"></td>
+        <td style="width: 15%;"></td>
+        <td style="width: 13%;"></td>
+        <td style="width: 13%;"></td>
+        <td style="width: 15%;"></td>
+      </tr>
 
-         <tr>
-            <th>CANT.</th>
-            <th colspan="2">DESCRIPCIÓN</th>
-            <th>PRECIO<br>UNITARIO</th>
-            <th>VENTAS NO <br>SUJETAS</th>
-            <th>VENTAS <br> EXENTAS</th>
-            <th>VENTAS<br>GRAVADAS</th>
-         </tr>
+      <tr>
+        <th>CANT.</th>
+        <th colspan="2">DESCRIPCIÓN</th>
+        <th>PRECIO<br>UNITARIO</th>
+        <th>VENTAS NO <br>SUJETAS</th>
+        <th>VENTAS <br> EXENTAS</th>
+        <th>VENTAS<br>GRAVADAS</th>
+      </tr>
 
 
-      </thead>
-      <!-- Cuerpo de la factura-->
-      <tbody class="details">
+    </thead>
+    <!-- Cuerpo de la factura-->
+    <tbody class="details">
 
-         <% var exento =  0.00 , no_sujeto = 0.00, gravadas = 0.00, largo = details.length %>
+      <% var exento =  0.00 , no_sujeto = 0.00, gravadas = 0.00, largo = details.length %>
 
-         <% if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
+      <% if (sale.invoice_resume !== undefined && sale.invoice_resume !== null) { 
             largo = 0;
          details.forEach(detail => { 
             if(detail.invoice_column == 'gravado'){ 
@@ -186,155 +221,176 @@
           
             })
          %>
-         <% if(gravadas > 0.00){ 
+      <% if(gravadas > 0.00){ 
             largo++;
          %>
       <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2)) %></td>
+        <td class="text-center">1</td>
+        <td colspan="2"><%= sale.invoice_resume %></td>
+        <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2), 3) %></td>
+        <td class="text-right"></td>
+        <td class="text-right"></td>
+        <td class="text-right">$<%= Helper.money_format(gravadas.toFixed(2)) %></td>
       </tr>
 
       <% } else if (exento > 0.00) {
          largo++;
          %>
       <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2), 3) %></td>
-         <td class="text-right"></td>
-         <td class="text-right">$<%= Helper.money_format(exento.toFixed(2)) %></td>
-         <td class="text-right"></td>
+        <td class="text-center">1</td>
+        <td colspan="2"><%= sale.invoice_resume %></td>
+        <td class="text-right">$<%= Helper.money_format(exento.toFixed(2), 3) %></td>
+        <td class="text-right"></td>
+        <td class="text-right">$<%= Helper.money_format(exento.toFixed(2)) %></td>
+        <td class="text-right"></td>
       </tr>
 
       <% } else if (no_sujeto > 0.00) { largo++;
          %>
       <tr>
-         <td class="text-center">1</td>
-         <td colspan="2"><%= sale.invoice_resume %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2), 3) %></td>
-         <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2)) %></td>
-         <td class="text-right"></td>
-         <td class="text-right"></td>
+        <td class="text-center">1</td>
+        <td colspan="2"><%= sale.invoice_resume %></td>
+        <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2), 3) %></td>
+        <td class="text-right">$<%= Helper.money_format(no_sujeto.toFixed(2)) %></td>
+        <td class="text-right"></td>
+        <td class="text-right"></td>
       </tr>
       <% } %>
-       <% } else { %>
+      <% } else { %>
 
 
 
-         <% details.forEach(detail => { %>
-         <% if(detail.invoice_column == 'gravado'){ 
+      <% details.forEach(detail => { %>
+      <% if(detail.invoice_column == 'gravado'){ 
                gravadas += detail.price * detail.cant;
             %>
-         <tr>
-            <td class="text-center"><%= detail.cant %></td>
-            <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
-         </tr>
+      <tr>
+        <td class="text-center"><%= detail.cant %></td>
+        <td colspan="2"><%= detail.description %></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
+        <td class="text-right"></td>
+        <td class="text-right"></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+      </tr>
 
-         <% } else if (detail.invoice_column == 'exento') {
+      <% } else if (detail.invoice_column == 'exento') {
                exento += detail.price * detail.cant; %>
-         <tr>
-            <td class="text-center"><%= detail.cant %></td>
-            <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
-            <td class="text-right"></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
-            <td class="text-right"></td>
-         </tr>
+      <tr>
+        <td class="text-center"><%= detail.cant %></td>
+        <td colspan="2"><%= detail.description %></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
+        <td class="text-right"></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+        <td class="text-right"></td>
+      </tr>
 
-         <% } else { no_sujeto += detail.price * detail.cant;%>
+      <% } else { no_sujeto += detail.price * detail.cant;%>
 
-         <tr>
-            <td class="text-center"><%= detail.cant %></td>
-            <td colspan="2"><%= detail.description %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
-            <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
-            <td class="text-right"></td>
-            <td class="text-right"></td>
-         </tr>
-         <% } %>
+      <tr>
+        <td class="text-center"><%= detail.cant %></td>
+        <td colspan="2"><%= detail.description %></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price, 3) %></td>
+        <td class="text-right">$<%= Helper.money_format(detail.price * detail.cant) %></td>
+        <td class="text-right"></td>
+        <td class="text-right"></td>
+      </tr>
+      <% } %>
 
-         <% }) %>
-         <% } %>
+      <% }) %>
+      <% } %>
 
-         <% if (data.leyend !== undefined) { 
+      <% if (data.leyend !== undefined) { 
             largo += 2;
             %>
-         <tr>
-            <td></td>
-            <td colspan="2"  class="text-center" style="white-space: pre-line"><br><%= data.leyend %></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-         </tr>
-         <% } %>
-         <tr>
-            <td></td>
-            <td colspan="2" class="text-center">
-               <% let _n_ = largo > 10 ? 250 : (largo < 5 ? 400 : 350)
+      <tr>
+        <td></td>
+        <td colspan="2" class="text-center" style="white-space: pre-line"><br><%= data.leyend %></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <% } %>
+      <tr>
+        <td></td>
+        <td colspan="2" class="text-center">
+          <% let _n_ = largo > 10 ? 250 : (largo < 5 ? 400 : 350)
                var spacer = 'style="height: ' + ( _n_ - (largo * 15)) +'px"'%>
-               <div id="espaciador" <%- spacer %>><b>No se Aceptan cambios ni devoluciones</b></div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-         </tr>
-      </tbody>
-      <tbody style="font-size: 80%;">
-         <% var iva_retenido = (sale.invoice_retention == true  && gravadas > 100.00) ? (gravadas / 1.13 * 0.01) : 0.00  %>
-         <% var isr_retenido = (sale.invoice_isr == true  && gravadas > 0.00) ? (gravadas / 1.13 * 0.1) : 0.00  %>
-         <tr>
-            <td rowspan="2" colspan="3">
-               SON: <span id="digits"></span>
-            </td>
-            <td colspan="2">&nbsp;SUMAS</td>
-            <td class="text-right"><%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %></td>
-            <td class="text-right"><%= gravadas > 0.00 ? `$${Helper.money_format(gravadas.toFixed(2))}` : ''  %></td>
-         </tr>
-         <tr>
-            <td colspan="3">&nbsp;(-) IVA RETENIDO</td>
-            <td class="text-right"><%= iva_retenido > 0.00 ? `$${Helper.money_format(iva_retenido.toFixed(2))}` : ''  %></td>
-         </tr>
-         <tr>
-            <td colspan="3" class="text-center">OPERACIONES MAYORES A $200.00</td>
-            <td colspan="3">&nbsp; (-)RETENCION ISR 10%</td>
-            <td class="text-right"><%= isr_retenido > 0.00 ? `$${Helper.money_format(isr_retenido.toFixed(2))}` : ''  %></td>
-         </tr>
-         <tr>
-            <td colspan="2" class="without_top without_bottom">Nombre:</td>
-            <td class="without_top without_bottom">Nombre:</td>
-            <td colspan="3">&nbsp;VENTAS NO SUJETAS</td>
-            <td class="text-right"><%= no_sujeto > 0.00 ? `$${Helper.money_format(no_sujeto.toFixed(2))}` : ''  %></td>
-         </tr>
-         <tr>
-            <td colspan="2" class="without_top without_bottom">Dui:</td>
-            <td class="without_top without_bottom">Dui:</td>
-            <td colspan="3">&nbsp;VENTAS EXENTAS</td>
-            <td class="text-right"> <%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %> </td>
-         </tr>
-         <tr>
-            <td colspan="2" class="without_top text-center">Firma quien Entrega</td>
-            <td class="without_top text-center">Firma quien recibe</td>
-            <td colspan="3"><b>&nbsp;VENTA TOTAL</b></td>
-            <% var total = (gravadas + no_sujeto + exento - isr_retenido - iva_retenido) %>
-            <td class="text-right"> <b>$<%= Helper.money_format(total.toFixed(2))  %> </b> </td>
-         </tr>
-      </tbody>
-   </table>
-   <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b>, Si este numero no coincide con el numero en la parte superior, este documento es anulado automaticamente</p>
+          <div id="espaciador" <%- spacer %>><b>No se Aceptan cambios ni devoluciones</b></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+    <tbody style="font-size: 80%;">
+      <% var iva_retenido = (sale.invoice_retention == true  && gravadas > 100.00) ? (gravadas / 1.13 * 0.01) : 0.00  %>
+      <% var isr_retenido = (sale.invoice_isr == true  && gravadas > 0.00) ? (gravadas / 1.13 * 0.1) : 0.00  %>
+      <tr>
+        <td rowspan="2" colspan="3">
+          SON: <span id="digits"></span>
+        </td>
+        <td colspan="2">&nbsp;SUMAS</td>
+        <td class="text-right"><%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %></td>
+        <td class="text-right"><%= gravadas > 0.00 ? `$${Helper.money_format(gravadas.toFixed(2))}` : ''  %></td>
+      </tr>
+      <tr>
+        <td colspan="3">&nbsp;(-) IVA RETENIDO</td>
+        <td class="text-right"><%= iva_retenido > 0.00 ? `$${Helper.money_format(iva_retenido.toFixed(2))}` : ''  %></td>
+      </tr>
+      <tr>
+        <td colspan="3" class="text-center">OPERACIONES MAYORES A $200.00</td>
+        <td colspan="3">&nbsp; (-)RETENCION ISR 10%</td>
+        <td class="text-right"><%= isr_retenido > 0.00 ? `$${Helper.money_format(isr_retenido.toFixed(2))}` : ''  %></td>
+      </tr>
+      <tr>
+        <td colspan="2" class="without_top without_bottom">Nombre:</td>
+        <td class="without_top without_bottom">Nombre:</td>
+        <td colspan="3">&nbsp;VENTAS NO SUJETAS</td>
+        <td class="text-right"><%= no_sujeto > 0.00 ? `$${Helper.money_format(no_sujeto.toFixed(2))}` : ''  %></td>
+      </tr>
+      <tr>
+        <td colspan="2" class="without_top without_bottom">Dui:</td>
+        <td class="without_top without_bottom">Dui:</td>
+        <td colspan="3">&nbsp;VENTAS EXENTAS</td>
+        <td class="text-right"> <%= exento > 0.00 ? `$${Helper.money_format(exento.toFixed(2))}` : ''  %> </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="without_top text-center">Firma quien Entrega</td>
+        <td class="without_top text-center">Firma quien recibe</td>
+        <td colspan="3"><b>&nbsp;VENTA TOTAL</b></td>
+        <% var total = (gravadas + no_sujeto + exento - isr_retenido - iva_retenido) %>
+        <td class="text-right"> <b>$<%= Helper.money_format(total.toFixed(2))  %> </b> </td>
+      </tr>
+    </tbody>
+  </table>
+  <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b>, Si este numero no coincide con el numero en la parte superior, este documento es anulado automaticamente</p>
+
+  <div class="print_div">
+     <button onclick="window.print()">Imprimir</button> &nbsp;&nbsp;
+     <button style="background-color: #c49820"  onclick="add_fill()">Mas relleno</button>&nbsp;&nbsp;
+     <button  style="background-color: #279916" onclick="window.location.reload()">Reset</button>&nbsp;&nbsp;
+     <button style="background-color: #c49820"  onclick="reduce_fill()">Menos Relleno</button>
+
+     <p>
+      Factura realizada por : <%= sale.invoice_data.createdBy %>
+     </p>
+
+  </div>
 </body>
 <script src="assets/js/main.js"></script>
 <script>
-   document.querySelector("#digits").innerHTML = money_to_string(Number.parseFloat("<%= total.toFixed(2) %>")).toUpperCase();
+   const div_spacer = document.querySelector("#espaciador");
+   const add_fill = () => {
+      div_spacer.style.height = `calc(${div_spacer.style.height} + 10px)`;
+   }
+
+   const reduce_fill = () => {
+      div_spacer.style.height = `calc(${div_spacer.style.height} - 10px)`;
+   }
+
+  document.querySelector("#digits").innerHTML = money_to_string(Number.parseFloat("<%= total.toFixed(2) %>")).toUpperCase();
 </script>
 
 </html>
