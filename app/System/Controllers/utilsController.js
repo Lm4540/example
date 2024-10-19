@@ -18,6 +18,10 @@ const Employee = require('../../HRM/Models/Employee');
 const Helper = require('../../System/Helpers');
 const sequelize = require("../../DataBase/DataBase");
 const { Op, QueryTypes } = require("sequelize");
+const path = require('path');
+const fs = require('fs');
+
+
 const UtilsController = {
 
     index: async (req, res) => {
@@ -26,7 +30,7 @@ const UtilsController = {
 
 
     revoke_order: async (req, res) => {
-        if(!req.session.userSession.permission.includes('revoke_sales')){
+        if (!req.session.userSession.permission.includes('revoke_sales')) {
             return res.json({
                 status: 'errorMessage', message: "No tienes permiso para realizar esta operación"
             });
@@ -36,7 +40,7 @@ const UtilsController = {
 
         if (invoice) {
 
-            if (invoice._status == 'process' || invoice._status == 'closed' || invoice._status == "prepared"){
+            if (invoice._status == 'process' || invoice._status == 'closed' || invoice._status == "prepared") {
 
                 try {
                     return await sequelize.transaction(async (t) => {
@@ -45,20 +49,20 @@ const UtilsController = {
                             return res.json({
                                 status: 'errorMessage', message: "No se puede anular esta venta porque tiene pagos asignados, reasigne los pagos para poder Anular esta venta"
                             });
-                        }  else if (invoice.invoice_number !== null) {
+                        } else if (invoice.invoice_number !== null) {
                             return res.json({
                                 status: 'errorMessage', message: "No se puede anular esta venta porque ya ha Facturado"
                             });
                         }
-    
+
                         //buscar el cliente y hacerle una anotacion para que quede costancia
                         let observation = await ClientObservation.create({
                             client: invoice.client,
                             createdBy: req.session.userSession.shortName,
                             observation: `Se Libero un pedido de $${Helper.money_format(Helper.fix_number(invoice.balance + invoice.delivery_amount))}`,
                         }, { transaction: t }).catch(e => next(e));
-    
-    
+
+
                         //Anular la venta
                         invoice._status = 'revoked';
                         invoice.revoked_at = new Date();
@@ -68,7 +72,7 @@ const UtilsController = {
                         invoice.payments = null;
                         invoice.in_report = false;
                         await invoice.save({ transaction: t });
-    
+
                         //Liberar los detalles
                         details = await SaleDetail.findAll({
                             where: {
@@ -83,7 +87,7 @@ const UtilsController = {
                                     saleId: detail.id
                                 }
                             }, { transaction: t });
-    
+
                             let largo = reserves.length;
                             for (let a = 0; a < largo; a++) {
                                 let reserve = reserves[a];
@@ -97,8 +101,8 @@ const UtilsController = {
                                     stock.reserved -= reserve.cant;
                                     await stock.save({ transaction: t });
                                 }
-    
-    
+
+
                                 let product = await Product.findByPk(reserve.product);
                                 if (product) {
                                     product.reserved -= reserve.cant;
@@ -107,19 +111,19 @@ const UtilsController = {
                                 await reserve.destroy({ transaction: t });
                             }
                             //actualizar el detalle
-    
+
                             detail.delivered = 0;
                             detail.reserved = 0;
                             detail.ready = 0;
                             await detail.save({ transaction: t });
                         }
-    
+
                         return res.json({
                             status: 'success', invoice: invoice,
                         });
-    
+
                     });
-    
+
                 } catch (error) {
                     return res.json({
                         status: 'error', message: "Internal Server Error", error: error.message
@@ -141,7 +145,7 @@ const UtilsController = {
 
     open_order: async (req, res) => {
 
-        if(!req.session.userSession.permission.includes('reopen_sales')){
+        if (!req.session.userSession.permission.includes('reopen_sales')) {
             return res.json({
                 status: 'errorMessage', message: "No tienes permiso para realizar esta operación"
             });
@@ -172,7 +176,7 @@ const UtilsController = {
                         return res.json({
                             status: 'success', invoice: invoice,
                         });
-                    } 
+                    }
                     return res.json({
                         status: 'errorMessage', message: "No se puede abrir esta venta"
                     });
@@ -288,6 +292,45 @@ const UtilsController = {
     },
 
 
+    //limpioando directorios de imagenes
+    cleanImagesDir: async (req, res) => {
+        let __name = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images');
+
+        console.log(__name);
+        let _files = fs.readdirSync(__name);
+        let _files_deleted = [];
+        let clean_list = [];
+        let list = await sequelize.query('SELECT DISTINCT(image) FROM `inventory_product` where 1', {
+            type: QueryTypes.SELECT
+        });
+        list.forEach(obj => clean_list.push(obj.image));
+        _files.forEach(file_name => {
+            if (!clean_list.includes(file_name)) {
+                _files_deleted.push(file_name);
+                try {
+                    fs.unlinkSync(path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', file_name));
+                } catch (err) {
+                    console.log(err)
+                }
+            }
+        })
+        return res.json(_files_deleted);
+    },
+
+    prods_to_delete: async (req, res) => {
+        let details = await sequelize.query(`SELECT * FROM inventory_product WHERE id not in(select DISTINCT(product) from inventory_product_movement where 1);`, { Type: QueryTypes.SELECT, model: Product });
+
+        return res.render('Utils/product_list_to_delete', { pageTitle: 'productos que se pueden eliminar', details });
+    },
+
+    links_reservados: async(req, res) => {
+        links = [
+            {
+                link: '',
+                name: ''
+            }
+        ]
+    }
 };
 
 module.exports = UtilsController;

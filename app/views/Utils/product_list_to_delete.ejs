@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+  <style>
+    .icon-card i {
+      font-size: 4rem;
+      padding-top: 20%;
+    }
+
+    .icon-card p {
+      padding-top: 60%;
+      font-weight: 550;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      ;
+    }
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Imagen</th>
+          <th>Opciones</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+        <% for( let index = 0; index < details.length; index++ ) {  let prod = details[index]%>
+        <tr>
+          <td><%= `${prod.name} (${prod.sku})` %></td>
+          <td>
+            <img src="<%= prod.image %>" alt="product_image" width="200px">
+          </td>
+          <td>
+            <a href="/inventory/product/view/<%= prod.id %>" class="badge bg-danger">Ver Producto</a>
+            <button class="badge bg-success" onclick="dar_baja('<%= prod.id %>')">Dar baja</button>
+          </td>
+        </tr>
+
+        <% } %>
+
+      </tbody>
+    </table>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+
+</body><%- include('../Layouts/Scripts.ejs') %>
+<script>
+  const dar_baja = (id) => {
+    fetch('/inventory/product/archive/' + id).then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        successMessage(response.message);
+        setTimeout(() => {
+          window.location.href = '/inventory/product'
+        }, 2000);
+      }
+    }).catch(response => console.log(response));
+  }
+</script>
+
+</html>

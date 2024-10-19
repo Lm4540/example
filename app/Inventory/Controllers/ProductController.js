@@ -781,17 +781,26 @@ const ProductController = {
                     message: 'No se puede Eliminar este producto, hay registros de movimientos relacionados a este',
                 });
             }
-            //si llega a ca proceder con la eliminacion del registro
+            try {
+                let __name = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', product.raw_image_name);
+
+                fs.exists(__name, (exists) => {
+                    if (exists) {
+                        fs.unlinkSync(__name);
+
+                    }
+                });
+            } catch (err) {
+                console.log(err)
+            }
             let result = await product.destroy();
             return res.json({
                 status: 'success',
                 message: 'Registro Eliminado',
+
             });
-
-
         }
         return Helper.notFound(req, res, aditional = 'Product Not Found!');
-
     }
 
 
