@@ -21,7 +21,7 @@ const StockController = {
 
     getProductReserveList: async (req, res) => {
         let product = await Product.findByPk(req.params.id);
-        let sucursal = await  Sucursal.findByPk(req.session.userSession.employee.sucursal);
+        let sucursal = await Sucursal.findByPk(req.session.userSession.employee.sucursal);
         if (product && sucursal) {
             console.log(sucursal)
             //buscar lso detalles de las ventas
@@ -2854,15 +2854,15 @@ const StockController = {
                         let prod = products[detail.product];
                         let cant = 0;
 
-                        if (detail.initial > detail.final) {
+                        if (st.cant > detail.final) {
                             //Registrar un movimeinto de salida
                             //NOTA: en este caso si o si debe de haber un stock relacionado
 
                             //determinar el costo del producto
-                            cant = detail.initial - detail.final;
+                            cant = st.cant - detail.final;
                             //registrar el movimiento
                             let move = await Movement.create({
-                                last_sucursal_stock: detail.initial,
+                                last_sucursal_stock: st.cant,
                                 last_product_stock: prod.stock,
                                 cant: cant,
                                 cost: prod.cost,
@@ -2883,7 +2883,7 @@ const StockController = {
                             prod.stock -= cant;
                             await prod.save({ transaction: t });
 
-                        } else if (detail.initial < detail.final) {
+                        } else if (st.cant < detail.final) {
                             //Registrar un movimeinto de ingreso
                             //determinar el costo del producto
                             let cost = prod.cost > 0.00 ? prod.cost : detail.cost;
@@ -2898,10 +2898,10 @@ const StockController = {
                                 }, { transaction: t });
                             }
 
-                            cant = detail.final - detail.initial;
+                            cant = detail.final - st.cant;
                             //registrar el movimiento
                             let move = await Movement.create({
-                                last_sucursal_stock: detail.initial,
+                                last_sucursal_stock: st.cant,
                                 last_product_stock: prod.stock,
                                 cant: cant,
                                 cost: cost,
@@ -2926,7 +2926,6 @@ const StockController = {
                             await prod.save({ transaction: t });
 
                         }
-
                     }
 
                     //finalizar el proceso
@@ -2951,130 +2950,7 @@ const StockController = {
 
             }
 
-            /*
-                        //iniciar try catch
-                        const t = await sequelize.transaction();
-                        try {
-            
-                            console.log('iniciando recorrido')
-                            var counter = 1;
-            
-                            details.forEach(async detail => {
-                                console.log(`detalle # ${counter}`)
-            
-                                let st = _stocks[detail.product];
-                                let prod = products[detail.product];
-                                let cant = 0;
-            
-                                if (detail.initial > detail.final) {
-                                    console.log('registro de salida')
-                                    //Registrar un movimeinto de salida
-                                    //NOTA: en este caso si o si debe de haber un stock relacionado
-            
-                                    //determinar el costo del producto
-                                    cant = detail.initial - detail.final;
-                                    //registrar el movimiento
-                                    let move = await Movement.create({
-                                        last_sucursal_stock: detail.initial,
-                                        last_product_stock: prod.stock,
-                                        cant: cant,
-                                        cost: prod.cost,
-                                        last_cost: prod.cost,
-                                        in: false,
-                                        product: prod.id,
-                                        concept: `Inventario Físico id ${recount.id}. ${detail.observation}`,
-                                        sucursal: recount.sucursal,
-                                        createdBy: req.session.userSession.shortName,
-                                    }, { transaction: t });
-            
-                                    //Actualizar el Stock
-                                    st.cant -= cant;
-                                    await st.save({ transaction: t });
-            
-                                    console.log('actualizacion de stock')
-            
-                                    //Actualizar el producto
-            
-                                    prod.stock -= cant;
-                                    await prod.save({ transaction: t });
-            
-                                    console.log('actualizacion de producto')
-            
-                                } else if (detail.initial < detail.final) {
-                                    //Registrar un movimeinto de ingreso
-                                    console.log('registro de ingreso')
-                                    //determinar el costo del producto
-                                    let cost = prod.cost > 0.00 ? prod.cost : detail.cost;
-                                    //determinar si el stock existe
-                                    console.log(st)
-                                    if (st == undefined) {
-                                        st = await Stock.create({
-                                            product: detail.product,
-                                            sucursal: recount.sucursal,
-                                            cant: 0,
-                                            reserved: 0,
-                                        }, { transaction: t });
-                                    }
-            
-                                    cant = detail.final - detail.initial;
-                                    //registrar el movimiento
-                                    let move = await Movement.create({
-                                        last_sucursal_stock: detail.initial,
-                                        last_product_stock: prod.stock,
-                                        cant: cant,
-                                        cost: cost,
-                                        last_cost: prod.cost,
-                                        in: true,
-                                        product: prod.id,
-                                        concept: `Inventario Físico id ${recount.id}. ${detail.observation}`,
-                                        sucursal: recount.sucursal,
-                                        createdBy: req.session.userSession.shortName,
-                                    }, { transaction: t });
-            
-                                    //Actualizar el Stock
-                                    st.cant += cant;
-                                    await st.save({ transaction: t });
-            
-                                    console.log('actualizacion de stock')
-            
-                                    //Actualizar el producto
-                                    let new_cost = (prod.cost * prod.stock) + (cant * cost);
-            
-                                    prod.last_cost = prod.cost;
-                                    prod.stock += cant;
-                                    prod.cost = Number.parseFloat(new_cost / prod.stock);
-            
-                                    await prod.save({ transaction: t });
-                                    console.log('actualizacion de producto')
-                                }
-            
-                                counter++;
-                            });
-            
-                            console.log('salimos del detalle')
-            
-                            //finalizar el proceso
-                            recount.endBy = 'user logued';
-                            recount.endComment = req.body.observation;
-                            let _date = new Date();
-                            recount.end_date = _date.toISOString();
-                            await recount.save({ transaction: t });
-            
-                            console.log('actualizacion del proceso')
-                            //transaction commit
-                            await t.commit();
-                            console.log('fin de la transaccion')
-            
-                            return res.json({
-                                status: 'success',
-                                data: recount.id,
-                            });
-                        } catch (error) {
-                            console.log(error);
-                            await t.rollback();
-                            return res.status(500).json({ 'error': 'Internal Server Error' });
-                        }
-                        */
+
         }
         else if (req.body.case === 'verification') {
             let detail = await RecountDetail.findByPk(req.body.detail);
@@ -3111,7 +2987,7 @@ const StockController = {
                 detail.observation = req.body.observation;
             }
             detail.revised_by = req.session.userSession.shortName;
-            detail.save();
+            await detail.save();
 
             return res.json({
                 status: 'success',
@@ -3171,6 +3047,84 @@ const StockController = {
         }
     },
 
+    cleanRecount: async (req, res) => {
+        //buscar el recount
+        let recount = await Recount.findByPk(req.body.id);
+        if (recount === null) {
+            return res.json({
+                status: 'errorMessage',
+                data: 'El proceso que intenta acutalizar no existe',
+            });
+        } else if (recount.endBy !== null) {
+            return res.json({
+                status: 'errorMessage',
+                data: 'El proceso que intenta acutalizar ya esta finalizado',
+            });
+        }
+
+        //obtener los detalles
+        let tmp = await RecountDetail.findAll({
+            where: {
+                recount: recount.id
+            }
+        });
+        let details = {};
+        tmp.forEach(detail => details[detail.product] = detail);
+
+        //obtener los stock
+        tmp = await sequelize.query(`SELECT * FROM inventory_product_stock WHERE sucursal = ${recount.sucursal}`, { model: Stock });
+        //recorrer los stock 
+
+
+        try {
+            let largo = tmp.length;
+            return await sequelize.transaction(async (t) => {
+
+                for (let index = 0; index < largo; index++) {
+                    let stock = tmp[index];
+                    let detail = details[stock.product];
+                    if (detail !== undefined && detail !== null) {
+                        if((stock.cant == 0 && detail.initial > 0)){
+                            detail.initial = 0;
+                            detail.revised_by = null;
+                            detail.observation = null;
+                            await detail.save({ transaction: t });
+                        }
+                        if ( stock.cant > 0 && stock.cant !=  detail.initial) {
+                            detail.initial = stock.cant;
+                            detail.revised_by = null;
+                            detail.observation = null;
+                            await detail.save({ transaction: t });
+                        }
+                    } else {
+                        if (stock.cant > 0) {
+
+                            let product = await Product.findByPk(stock.product);
+
+                            detail = await RecountDetail.create({
+                                recount: recount.id,
+                                product: stock.product,
+                                product_name: product.name,
+                                sku: product.internal_code,
+                                initial: stock.cant,
+                                final: stock.cant,
+                                observation: null,
+                                revised_by: null,
+                                cost: product.cost
+                            }, { transaction: t });
+
+                        }
+                    }
+                }
+
+                return res.json({ status: 'success', message: 'Detalles agregados a la solicitud en curso. ¡Redirigiendo!' });
+            });
+
+        } catch (error) {
+            console.log(error);
+            return res.json({ status: 'error', message: 'Detalles agregados a la solicitud en curso. ¡Redirigiendo!', error });
+        }
+    },
 
     pdfRecountReport: async (req, res) => {
 

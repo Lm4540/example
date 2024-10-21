@@ -2018,7 +2018,7 @@ const SaleController = {
 
 
                 }
-                
+
                 await sequelize.query(
                     "UPDATE `inventory_product_stock` SET `reserved` = reserved + :cant WHERE id = :stock_id",
                     {
@@ -2285,7 +2285,7 @@ const SaleController = {
                 data.cant = Number.parseInt(data.cant > max_liberable ? max_liberable : data.cant);
 
                 if (data.cant < 1) {
-                    return { status: 'errorMessage', message: 'Cantidad Liberable Cero, no se puede liberar por medio de esta opción', data: error.message };
+                    return { status: 'errorMessage', message: 'Cantidad Liberable Cero, no se puede liberar por medio de esta opción' };
                 }
 
 

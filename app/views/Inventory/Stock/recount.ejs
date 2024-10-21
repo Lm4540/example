@@ -45,13 +45,15 @@
           Inventario Fisico en Proceso (<%= sucursal.name%>)
           <% if (details.pending.length > 0) { %>
           <button class="btn btn-danger round" onclick="javascript:location.reload();">Recargar</button>
+          <button id="btn_clean" class="btn bg-purple round" style="color: white;"> Buscar cambios</button>
           <% } else { %>
           <button class="btn btn-success round" data-bs-toggle="modal" data-bs-target="#finalizeProcess" onclick="setInputFocus()">Finalizar</button>
+          <button id="btn_clean" class="btn bg-purple round" style="color: white;"> Buscar cambios</button>
           <% } %>
         </h3>
 
         <div class="col-lg-10">
-          <table class="table table-bordered table-sm">
+          <table class="table table-bordered table-sm table-stripped">
             <thead>
               <tr>
                 <th colspan="2">Item</th>
@@ -64,20 +66,20 @@
             <tbody>
               <tr>
                 <td colspan="2">
-                  <select name="destinoSelect" id="destinoSelect" class="form-control"></select>
+                  <select name="destinoSelect form-control-sm" id="destinoSelect" class="form-control"></select>
                   <small>Escribe el nombre o SKU del Producto</small>
                 </td>
                 <td>
-                  <input class="form-control" type="number" id="add_cant" step="1" style="max-width: 120px;">
+                  <input class="form-control form-control-sm" type="number" id="add_cant" step="1" style="max-width: 120px;">
                   <small>Escribe la cantidad</small>
                 </td>
 
                 <td>
-                  <input class="form-control" type="number" id="add_cost" step="0.01" style="max-width: 120px;">
+                  <input class="form-control form-control-sm" type="number" id="add_cost" step="0.01" style="max-width: 120px;">
                   <small>Escribe el costo</small>
                 </td>
                 <td>
-                  <input id="add_text" class="form-control" value="Inventario Inicial 12/2023">
+                  <input id="add_text" class="form-control form-control-sm" value="Inventario Inicial 12/2023">
                   <small>Justificación</small>
                 </td>
                 <td>
@@ -89,13 +91,13 @@
               <% details.pending.forEach(detail => { %>
               <tr id="tr_<%= detail.id %>">
                 <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
-                <td><%= detail.product_name %><br> #SKU <%= detail.sku %></td>
+                <td><a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a></td>
                 <td>
-                  <input class="form-control" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.initial %>" style="max-width: 120px;">
+                  <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.initial %>" style="max-width: 120px;">
                   <small>Registrado: <%= detail.initial %></small>
                 </td>
                 <td>
-                    Costo: $<%= Helper.money_format(detail.cost) %>
+                  Costo: $<%= Helper.money_format(detail.cost) %>
                 </td>
                 <td colspan="">
                   <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control">
@@ -112,9 +114,9 @@
               <% details.revised.forEach(detail => { %>
               <tr id="tr_<%= detail.id %>">
                 <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
-                <td><%= detail.product_name %><br> #SKU <%= detail.sku %></td>
+                <td><a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a></td>
                 <td>
-                  <input class="form-control" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final %>" style="max-width: 120px;">
+                  <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final %>" style="max-width: 120px;">
                   <small>Registrado: <%= detail.initial %></small>
                 </td>
                 <td>
@@ -255,11 +257,15 @@
 
           if (data.status == 'success') {
             successMessage('Proceso finalizado Exitosamente, generando Reporte');
-            setTimeout(() => {window.location.reload()}, 2000);
+            setTimeout(() => {
+              window.location.reload()
+            }, 2000);
 
           } else if (data.status == 'warning') {
             errorMessage('Aun tienes productos sin verificar');
-            setTimeout(() => {window.location.reload()}, 1500);
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500);
           } else if (data.status == 'errorMessage') {
             return errorMessage(data.message);
           } else {
@@ -268,6 +274,26 @@
         });
       }
     });
+
+
+    document.getElementById('btn_clean').addEventListener('click', e => {
+      //enviar los datos al server
+      postData('/inventory/product/recount/clean', {
+        id: '<%= recount.id %>',
+      }).then(data => {
+
+        if (data.status == 'success') {
+          window.location.reload();
+        } else if (data.status == 'error') {
+          console.log(data)
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+
+
+    });
+
 
     document.getElementById('btn_add').addEventListener('click', e => {
       let cant = document.getElementById('add_cant').value;

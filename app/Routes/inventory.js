@@ -75,6 +75,8 @@ router.get('/product/recount', StockController.getRecountView);
 router.post('/product/recount', StockController.createNewRecount);
 router.get('/product/recount/:id(\\d+)', StockController.viewRecount);
 router.post('/product/recount/update', StockController.updateRecount);
+router.post('/product/recount/clean', StockController.cleanRecount);
+
 
 router.get('/product/stock_report', StockController.general_report);
 router.get('/product/stock_report/detailed', StockController.reporte_detallado);
