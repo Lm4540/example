@@ -84,7 +84,7 @@
                   <td class="text-center"><img width="150px;" src="<%= detail.image !== null ?
                               (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) :
                               '/upload/images/image-not-found.png'; %>" alt="product image" onclick="show_image(this.src)" class="round"></td>
-                  <td><%= detail.description %></td>
+                  <td> <a href="/inventory/product/view/<%= detail.product %>"><%= detail.description %></a></td>
                   <td><%= detail.cant %></td>
                   <td><%= detail.in %></td>
                 </tr>
