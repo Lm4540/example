@@ -12,8 +12,9 @@
     totals = {},
     sellers = {},
     prepared = {},
-    on_screen = null;
-  transport = {};
+    on_screen = null,
+    transport = {},
+    info_not_renderized = false;
 
   const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
   const charge_iframe = (url) => {
@@ -251,8 +252,10 @@
         }
       });
 
-
-      document.querySelector("#div_info").innerHTML = `${content} ${envio_abriendo} ${local_abierto} ${local_abriendo}`;
+      let _extra = (info_not_renderized == true ? `<div class="col-12 ">
+                         <h4 class="text-danger">Hay productos no cargados, recarga la pagina para poder vizualizarlos</h4>
+                      </div>` : '');
+      document.querySelector("#div_info").innerHTML = `${content} ${envio_abriendo} ${local_abierto} ${local_abriendo} ${_extra}`;
     } else {
       createToast('rose', 'No hay mas tareas por completar');
     }

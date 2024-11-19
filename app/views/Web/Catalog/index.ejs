@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+<% options = `<a class="ml-5" href="/web">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container justify-content-center">
+      
+      
+      <div class="page-title">
+        <h3><%= pageTitle %> &nbsp; &nbsp; &nbsp; <a class="badge bg-success mb-5" data-bs-target="#new_catalog" data-bs-toggle="modal">Crear Nuevo Catálogo</a> </h3>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="row justify-content-center mb-4">
+            <div class="col-10 col-md-6">
+              <div class="form-group">
+                <label for="searchBox">Terminos de busqueda</label>
+                <input type="text" class="form-control" name="searchBox" id="searchBox">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <table class="table table-sm">
+            <thead>
+              <th>Nombre</th>
+              <th>Estado</th>
+            </thead>
+            <tbody>
+              <% catalogs.forEach(catalog => { %>
+
+              <tr>
+                <td><a href="/web/catalog/<%= catalog.id %>"><%= catalog.name %></a></td>
+                <% if (catalog.active) { %>
+                <td><span class="badge bg-success">activo</span></td>
+                <% } else { %>
+                <td><span class="badge bg-danger">inactivo</span></td>
+
+                <% } %>
+              </tr>
+
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal fade" id="new_catalog" tabindex="-1" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalCenterTitle">Nuevo Catálogo</h5>
+              <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="catalog_name">Nombre del Catálogo</label>
+                <input type="text" class="form-control" id="catalog_name">
+              </div>
+
+            </div>
+            <div class="modal-footer" style="display: block;">
+              <div class="text-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                <button type="button" class="btn btn-success" id="saveCatalog">Crear Catálogo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  document.addEventListener('DOMContentLoaded', event => {
+    document.querySelector('#saveCatalog').addEventListener('click', e => {
+      let name = document.querySelector("#catalog_name").value;
+      e.target.disabled = true;
+      if (name.length < 5) {
+        return errorMessage('Proporcione un nombre para el catálogo');
+        document.querySelector('#saveCatalog').disabled = false;
+
+      } else {
+        postData('/web/catalog/', {
+          name
+        }).then(data => {
+
+          if (data.status == 'success') {
+            warningMessage('guardado');
+            setTimeout(() => {
+              window.location.href = `/web/catalog/${data.catalog}`;
+            }, 1500);
+          } else if (data.status == 'exist') {
+            warningMessage('Ya hay un catálogo con este nombre exacto');
+            setTimeout(() => {
+              window.location.href = `/web/catalog/${data.catalog}`;
+            }, 1500);
+          } else if (data.status == 'errorMessage') {
+            e.target.disabled = false;
+            return errorMessage(data.message);
+            document.querySelector('#saveCatalog').disabled = false;
+
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+
+      }
+    });
+  });
+</script>
+
+</html>

@@ -5,7 +5,7 @@ const SaleDetail = require('../Models/SaleDetail');
 const Provider = require("../../Inventory/Models/Provider");
 
 const Employee = require('../../HRM/Models/Employee');
-const { Op } = require("sequelize");
+const { Op, QueryTypes } = require("sequelize");
 const Helper = require('../../System/Helpers');
 const sequelize = require('../../DataBase/DataBase');
 const Product = require('../../Inventory/Models/Product');
@@ -333,7 +333,7 @@ const ClientController = {
                 order: [['createdAt', 'DESC']],
             });
 
-            hay_mas_ventas = hay_mas_ventas > 5; 
+            hay_mas_ventas = hay_mas_ventas > 5;
 
             let in_process = await Sale.findOne({
                 where: {
@@ -377,8 +377,15 @@ const ClientController = {
             });
             let sucursals = await Sucursal.findAll();
 
+            let payments = await sequelize.query(`SELECT sum(amount) as pay, sum(asigned_amount) as asigned FROM crm_sale_payment WHERE client = ${cliente.id}`, {
+                type: QueryTypes.SELECT
+            });
+            let a_favor = 0.00;
+            if(payments !== null && payments.length > 0){
+                a_favor = Number.parseFloat(payments[0].pay) - Number.parseFloat(payments[0].asigned);
+            }
 
-            let payments = await SalePayment.findAll({
+            payments = await SalePayment.findAll({
                 limit: 5,
                 where: {
                     client: cliente.id
@@ -388,7 +395,7 @@ const ClientController = {
             });
 
 
-            let hay_mas_pagos =  await SalePayment.count({
+            let hay_mas_pagos = await SalePayment.count({
                 where: {
                     client: cliente.id
                 }, order: [
@@ -416,7 +423,8 @@ const ClientController = {
                 sucursals,
                 payments,
                 hay_mas_pagos,
-                hay_mas_ventas
+                hay_mas_ventas,
+                a_favor
             });
         }
     },
@@ -468,7 +476,7 @@ const ClientController = {
         let mas = await SalePayment.count({
             where: {
                 client: client,
-                id: { 
+                id: {
                     [Op.lt]: last_id
                 }
             }, order: [
@@ -479,7 +487,7 @@ const ClientController = {
         let details = await SalePayment.findAll({
             where: {
                 client: client,
-                id: { 
+                id: {
                     [Op.lt]: last_id
                 }
             }, order: [
@@ -491,7 +499,7 @@ const ClientController = {
         return res.json({
             details: details,
             more: mas > limit,
-            last: details.length > 0 ?  details[details.length - 1].id : 0,
+            last: details.length > 0 ? details[details.length - 1].id : 0,
         })
 
 

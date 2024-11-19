@@ -105,7 +105,7 @@ const ProviderController = {
                     isLocal: data.isLocal,
                     isRetentionAgent: data.isRetentionAgent,
                     classification: data.classification,
-                    createdBy: 'Luis Rivera',
+                    createdBy: req.session.userSession.shortName,
                     web: data.webpage,
                     phone: data.phone,
                     email: data.email,

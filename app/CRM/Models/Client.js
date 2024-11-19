@@ -22,7 +22,7 @@ const Client = sequelize.define('Client', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
-        set(value){
+        set(value) {
             this.setDataValue('name', value.replace(/['"]+/g, '').trim());
         },
     },
@@ -44,9 +44,13 @@ const Client = sequelize.define('Client', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    has_web_access: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
     classification: {
         type: DataTypes.ENUM('otro', 'mediano', 'gran', 'ninguno'),
-        set(value){
+        set(value) {
             value = String.prototype.toUpperCase.call(value);
             let vals = {
                 'OTRO': 'otro',
@@ -74,22 +78,22 @@ const Client = sequelize.define('Client', {
     email: DataTypes.STRING,
     direction: {
         type: DataTypes.STRING(500),
-        set(value){
+        set(value) {
             this.setDataValue('direction', value.replace(/['"]+/g, '').trim());
         },
     },
     balance: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('balance'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
     payments: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('payments'));
             return isNaN(_val) ? 0.00 : _val
         }

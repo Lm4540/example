@@ -107,7 +107,7 @@ router.get('/shipment', StockController.viewShipments);
 router.get('/shipment/:id(\\d+)', StockController.viewShipment);
 router.get('/shipment/print/:id(\\d+)', StockController.printShipment);
 router.get('/shipment/new', (req, res, next) => Auth.HasPermission(req, res, next, ['trasnfer_between_warehouses', 'trasnfer_between_all_warehouses']), StockController.newShipment);
-// router.post('/shipment/new', (req, res, next) => Auth.HasPermission(req, res, next, ['trasnfer_between_warehouses', 'trasnfer_between_all_warehouses']), StockController.saveShipment);
+router.post('/shipment/new', (req, res, next) => Auth.HasPermission(req, res, next, ['trasnfer_between_warehouses', 'trasnfer_between_all_warehouses']), StockController.saveShipment);
 
 router.get('/shipment/in/:id(\\d+)', (req, res, next) => Auth.HasPermission(req, res, next, ['receive_transfered_product', 'trasnfer_between_all_warehouses']), StockController.inShipment);
 router.post('/shipment/in', (req, res, next) => Auth.HasPermission(req, res, next, ['receive_transfered_product', 'trasnfer_between_all_warehouses']), StockController.inShipment);

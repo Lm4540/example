@@ -240,8 +240,7 @@ const SalesStatusController = {
             return await sequelize.transaction(async (t) => {
                 for (let index = 0; index < details.length; index++) {
                     let dt = details[index];
-
-                    dt.ready = dt.cant;
+                    dt.ready = dt.reserved;
                     await dt.save({ transaction: t });
 
                 }

@@ -682,6 +682,7 @@ const ProductController = {
                     }));
 
                 }
+
                 let products = await sequelize.query(
                     "SELECT * FROM `inventory_product` WHERE (name like :search or internal_code like :search) and stock > reserved order by name ASC Limit 0,:limit ",
                     {
@@ -692,7 +693,7 @@ const ProductController = {
 
                 return res.json(products.map(el => {
 
-                    let label = `${el.name}  #SKU(${el.internal_code})`;
+                    let label = `${el.name}  #SKU( ${el.internal_code} )`;
 
                     let html_label = `<div class="row"><img src="${el.image !== null ? (el.image.includes('http') ? el.image : `/upload/images/${el.image}`) : '/upload/images/image-not-found.png'}" alt="product" style="max-width: 100px;" class="col-4"><span class="col-8">${label}</span></div>`;
 

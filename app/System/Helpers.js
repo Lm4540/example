@@ -53,8 +53,13 @@ const Helper = {
 
     },
 
-    date_to_input: (date = null, init = null) => {
+    date_to_input: (date = null, init = null, sum = null) => {
         date = date ? new Date(date) : new Date();
+
+        if (sum) {
+            date.setDate(date.getDate() + sum);
+        }
+
         let m = date.getMonth() > 8 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;
         let d = date.getDate();
         d = d > 9 ? d : `0${d}`;

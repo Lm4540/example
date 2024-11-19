@@ -113,18 +113,26 @@ const StockController = {
             end = `${d.getFullYear()}-${m}-${day}T23:59:59`;
         }
 
+        let open = await Requisition.findAll({
+            where: {
+                _status: 'open'
+            },
+            order: [['id', 'DESC']],
+        });
+
         let requisitions = await Requisition.findAll({
             where: {
-                createdAt: { [Op.between]: [init, end], }
+                createdAt: { [Op.between]: [init, end], },
+                _status: 'closed'
             },
-            order: [['_status', 'ASC'], ['id', 'DESC']],
+            order: [['id', 'DESC']],
         });
 
         let indexed_sucursals = {};
         sucursals.forEach(e => indexed_sucursals[e.id] = e.name);
         return res.render('Inventory/Requisition/Requisitions', {
             pageTitle: 'Solicitudes de Transferencia',
-            sucursals, requisitions, init, end, indexed_sucursals
+            sucursals, requisitions, init, end, indexed_sucursals, open
         });
     },
 
@@ -780,7 +788,8 @@ const StockController = {
                             if (dt.sale_detail !== undefined && dt.sale_detail !== null) {
                                 __array.push({
                                     id: dt.sale_detail,
-                                    cant: dt.cant
+                                    cant: dt.cant,
+                                    by: dt.createdBy,
                                 });
 
                             }
@@ -1394,6 +1403,120 @@ const StockController = {
             sucursals,
         });
     },
+    saveShipment: async (req, res) => {
+        let data = req.body;
+        let session = req.session.userSession;
+        //verificar los datos
+        if (data.details.length < 1) {
+            return res.json({ status: 'error', message: 'Agregue los productos que va a trasladar' });
+        } else if (data.sucursal == data.destino) {
+            return res.json({ status: 'error', message: 'La sucursal de origen y destino deben ser diferentes' });
+        } else if (data.requestedBy.length < 5) {
+            return res.json({ status: 'error', message: 'Indique quien ha solicitado el traslado' });
+        } else if (data.trasnportedBy.length < 5) {
+            return res.json({ status: 'error', message: 'Indique quien realizara el traslado' });
+        } else {
+            var sucursal = await Sucursal.findByPk(data.sucursal);
+            var destino = await Sucursal.findByPk(data.destino);
+
+            try {
+                var ids = [], products = {}, stocks = {};
+                return await sequelize.transaction(async (t) => {
+
+                    //crear el envio
+                    let shipment = await Shipment.create({
+                        type: 'transfer',
+                        createdBy: session.shortName,
+                        transportsBy: data.trasnportedBy,
+                        requestedBy: data.requestedBy,
+                        direction: destino.location,
+                        originSucursal: sucursal.id,
+                        destinoSucursal: destino.id
+                    }, { transaction: t });
+
+                    //recorrer los detalles de y obtener los ID de los productos
+                    data.details.forEach(detail => ids.push(detail.product));
+                    //buscar los productos
+                    let tmp = await Product.findAll({
+                        where: { id: { [Op.in]: ids } }
+                    });
+
+                    tmp.forEach(prod => products[prod.id] = prod);
+
+                    //buscar los stock
+                    tmp = await Stock.findAll({
+                        where: {
+                            product: { [Op.in]: ids },
+                            sucursal: sucursal.id
+                        }
+                    });
+
+                    tmp.forEach(prod => stocks[prod.product] = prod);
+
+                    //recorrer los detalles
+
+                    var len = data.details.length;
+                    var concept = `Transferencia desde ${sucursal.name} hacia ${destino.name} ENVIO N° TR-${sucursal.id}-${destino.id}-${shipment.id}`;
+
+                    for (let index = 0; index < len; index++) {
+                        let dt = data.details[index],
+                            product = products[dt.product],
+                            stock = stocks[dt.product];
+
+                        if (product == undefined || stock == undefined) {
+                            throw "Product or Stock not Found";
+                        }
+
+                        let max = stock.cant - stock.reserved;
+
+                        if (dt.cant > max) {
+                            dt.cant = max;
+                        }
+                        //redactar el cuerpo del detalle
+                        //guardar el cuerpo del detalle
+                        let detail = await ShipmentDetail.create({
+                            shipment: shipment.id,
+                            product: dt.product,
+                            cant: dt.cant,
+                            cost: product.cost,
+                            description: `${product.name} (SKU#${product.sku})`,
+                        }, { transaction: t });
+                        //agregar a los detaLLES
+
+
+                        //generar el movimiento de salida
+                        let movement = await Movement.create({
+                            product: stock.product,
+                            sucursal: stock.sucursal,
+                            cant: dt.cant,
+                            last_sucursal_stock: stock.cant,
+                            last_product_stock: product.stock,
+                            cost: product.cost,
+                            last_cost: product.cost,
+                            sale_detail: detail.id,
+                            concept: concept,
+                            in: false,
+                            createdBy: session.shortName,
+                        }, { transaction: t });
+
+                        //Actualizar el producto descontando la cantidad
+                        product.stock -= dt.cant;
+                        await product.save({ transaction: t });
+
+                        stock.cant -= dt.cant;
+                        await stock.save({ transaction: t });
+
+                    }
+
+                    return res.json({ status: 'success', message: 'Guardado', shipment })
+                });
+            } catch (error) {
+                console.error(error);
+                return res.json({ status: 'error', message: error.message })
+            }
+        }
+
+    },
     //saving via socket
     saveTransferShipment: async (data, session) => {
         //verificar los datos
@@ -1704,7 +1827,7 @@ const StockController = {
 
                                     let reserve = await StockReserve.create({
                                         cant: detail.sale_detail[_f].cant,
-                                        createdBy: req.session.userSession.shortName,
+                                        createdBy: detail.sale_detail[_f].by ?? req.session.userSession.shortName,
                                         concept: `Reserva por venta id ${_sale_detail.sale}`,
                                         type: 'sale',
                                         saleId: _sale_detail.id,
@@ -3084,13 +3207,13 @@ const StockController = {
                     let stock = tmp[index];
                     let detail = details[stock.product];
                     if (detail !== undefined && detail !== null) {
-                        if((stock.cant == 0 && detail.initial > 0)){
+                        if ((stock.cant == 0 && detail.initial > 0)) {
                             detail.initial = 0;
                             detail.revised_by = null;
                             detail.observation = null;
                             await detail.save({ transaction: t });
                         }
-                        if ( stock.cant > 0 && stock.cant !=  detail.initial) {
+                        if (stock.cant > 0 && stock.cant != detail.initial) {
                             detail.initial = stock.cant;
                             detail.revised_by = null;
                             detail.observation = null;

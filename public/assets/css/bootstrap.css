@@ -4553,6 +4553,7 @@ progress {
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: 1rem;
+  cursor: pointer;
 }
 .badge:empty {
   display: none;

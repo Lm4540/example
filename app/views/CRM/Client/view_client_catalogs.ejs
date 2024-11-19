@@ -1,0 +1,166 @@
+<% if (cliente.has_web_access) { %>
+<script>
+  var catalogs = null,
+    access = null,
+    web_access = () => {
+      postData('/web/catalog/client', {
+        case: 'grant_access',
+        client: '<%= cliente.id %>',
+      }, 'PUT').then(data => {
+
+        if (data.status == 'success') {
+          createToast('success', 'Actualizado!', 'es-MX');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000)
+        } else if (data.status == 'errorMessage') {
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+    }
+
+
+  add_access = (element, catalog) => {
+    postData('/web/catalog/client', {
+      case: 'add_access',
+      client: '<%= cliente.id %>',
+      catalog
+    }, 'PUT').then(data => {
+
+      if (data.status == 'success') {
+        createToast('success', 'Actualizado!', 'es-MX');
+        element.parentNode.innerHTML = `<input class="form-check-input" type="checkbox" onclick="quit_access(this, ${catalog})" checked="checked">`;
+      } else if (data.status == 'errorMessage') {
+        return errorMessage(data.message);
+      } else {
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+
+
+  quit_access = (element, catalog) => {
+    postData('/web/catalog/client', {
+      case: 'quit_access',
+      client: '<%= cliente.id %>',
+      catalog
+    }, 'PUT').then(data => {
+
+      if (data.status == 'success') {
+        createToast('success', 'Actualizado!', 'es-MX');
+
+        element.parentNode.innerHTML = `<input class="form-check-input" type="checkbox" onclick="add_access(this, ${catalog})">`;
+
+      } else if (data.status == 'errorMessage') {
+        return errorMessage(data.message);
+      } else {
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+
+
+  searchCatalogs = async () => {
+    series = await fetch('/web/catalog?cliente=<%= cliente.id %>', {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    }).then(d => d.json());
+
+    catalogs = series.catalogs;
+    access = series.access;
+
+
+    let active = ``;
+    let inactive = ``;
+
+    catalogs.forEach(catalog => {
+      let selectivo = catalog.selective ? `<span class="text-danger">(Selectivo)</span>` : `<span class="text-warning">(Cualquiera)</span>`;
+
+
+      if (catalog.active) {
+        active += `<tr><td>${catalog.name}${selectivo}</td><td><div class="form-check form-switch">`;
+        if (catalog.selective) {
+          if (access[catalog.id] !== undefined && access[catalog.id] !== null && access[catalog.id] == true) {
+            active += ` <input class="form-check-input" type="checkbox" onclick="quit_access(this, ${catalog.id})" checked="true">`
+          } else {
+            active += ` <input class="form-check-input" type="checkbox" onclick="add_access(this, ${catalog.id})">`
+          }
+        } else {
+          if (access[catalog.id] !== undefined && access[catalog.id] !== null && access[catalog.id] == false) {
+            active += ` <input class="form-check-input" type="checkbox" onclick="add_access(this, ${catalog.id})" >`
+          } else {
+            active += ` <input class="form-check-input" type="checkbox" onclick="quit_access(this, ${catalog.id})" checked="true">`
+          }
+        }
+        active += `</div></td></tr>`;
+      } else {
+        inactive += `<tr><td>${catalog.name}${selectivo}</td><td><div class="form-check form-switch">`;
+        if (catalog.selective) {
+          if (access[catalog.id] !== undefined && access[catalog.id] !== null && access[catalog.id] == true) {
+            inactive += ` <input class="form-check-input" type="checkbox" onclick="quit_access(this, ${catalog.id})" checked="true">`
+          } else {
+            inactive += ` <input class="form-check-input" type="checkbox" onclick="add_access(this, ${catalog.id})">`
+          }
+        } else {
+          if (access[catalog.id] !== undefined && access[catalog.id] !== null && access[catalog.id] == false) {
+            inactive += ` <input class="form-check-input" type="checkbox" onclick="add_access(this, ${catalog.id})" >`
+          } else {
+            inactive += ` <input class="form-check-input" type="checkbox" onclick="quit_access(this, ${catalog.id})" checked="true">`
+          }
+        }
+        inactive += `</div></td></tr>`;
+      }
+    });
+
+    document.querySelector("#catalogs_list").innerHTML = `
+                  <tr>
+                    <th colspan="2">
+                      Catálogos Activos
+                    </th>
+                  </tr>
+                  ${active} 
+                  <tr>
+                    <th colspan="2">
+                      Catálogos Inactivos
+                    </th>
+                  </tr>
+                  ${inactive}
+                  
+                `;
+  }
+
+  searchCatalogs();
+</script>
+
+<% } else { %>
+
+<script>
+  var web_access = () => {
+    postData('/web/catalog/client', {
+      case: 'grant_access',
+      client: '<%= cliente.id %>',
+    }, 'PUT').then(data => {
+
+      if (data.status == 'success') {
+        createToast('success', 'Actualizado!', 'es-MX');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000)
+      } else if (data.status == 'errorMessage') {
+        return errorMessage(data.message);
+      } else {
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+</script>
+
+<% } %>

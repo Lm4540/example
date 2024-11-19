@@ -38,10 +38,10 @@ window.onload = function () {
 }
 
 // Ejemplo implementando el metodo POST:
-const postData = async (url = '', data = {}) => {
+const postData = async (url = '', data = {}, method = null) => {
     // Opciones por defecto estan marcadas con un *
     const response = await fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        method: method ?? 'POST', // *GET, POST, PUT, DELETE, etc.
         mode: 'cors', // no-cors, *cors, same-origin
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         credentials: 'same-origin', // include, *same-origin, omit
