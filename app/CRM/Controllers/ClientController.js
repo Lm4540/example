@@ -13,11 +13,12 @@ const Sucursal = require('../../Inventory/Models/Sucursal');
 const SalePayment = require('../Models/SalePayment');
 
 
+
 const ClientController = {
 
 
     getClientsView: (req, res) => {
-        res.render('CRM/Client/clients', { pageTitle: 'Cliente Registrados' });
+        return res.render('CRM/Client/clients', { pageTitle: 'Cliente Registrados' });
     },
 
     clientsToDataTable: async (req, res) => {
@@ -65,92 +66,107 @@ const ClientController = {
 
     getCreationView: async (req, res, next) => {
         let sellers = await Employee.findAll({ where: { isSeller: 1 } }).catch(e => next(e));
-        res.render('CRM/Client/create', { pageTitle: 'Registrar un nuevo Cliente', sellers });
+        return res.render('CRM/Client/create', { pageTitle: 'Registrar un nuevo Cliente', sellers });
     },
 
     createClient: async (req, res) => {
         let data = req.body;
-        let message = null;
-
+        let existe = null;
         if (data.name.length < 2) {
-            message = 'Por favor, proporcione el nombre del Cliente';
-        } else if (data.phone.length < 8) {
-            message = 'Debe proporcionar un numero Telefónico del Cliente';
-        }
-
-        let occurency = null;
-        if (message === null) {
-            occurency = await Client.findAll({ where: { name: data.name } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay un Cliente registrado con este nombre exacto, Por favor utilice el buscador de la sección Clientes antes de intentar duplicar un registro' : null;
-        }
-
-        //Validar el numero telefonico
-        if (message === null) {
-            occurency = await Client.findAll({ where: { phone: data.phone } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay un cliente registrado con este número Telefónico' : null;
-        }
-
-        // Verificar el numero de DUI
-        if (message === null && data.dui.length > 0) {
-            occurency = await Client.findAll({ where: { NIT_DUI: data.dui } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay un cliente registrado con este número de DUI o NIT' : null;
-        }
-
-        //Verificar el numero de NRC
-        if (message === null && data.nrc.length > 0) {
-            occurency = await Client.findAll({ where: { NRC: data.nrc } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay un cliente registrado con este número de Registro (NRC)' : null;
-        }
-
-
-        //Verificar el Correo electronico
-        if (message === null && data.mail.length > 0) {
-            occurency = await Client.findAll({ where: { email: data.mail } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay un cliente registrado con este correo electrónico' : null;
-        }
-
-
-        if (message !== null) {
-            res.json({
+            return res.json({
                 status: 'errorMessage',
-                message: message,
+                message: 'Por favor, proporcione el nombre del Cliente',
             });
-        } else {
-            try {
+        } else if (data.phone.length < 8) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'Debe proporcionar un numero Telefónico del Cliente',
+            });
+        }
 
-                const client = await Client.create({
-                    name: data.name,
-                    type: data.type,
-                    NIT_DUI: data.dui.length > 0 ? data.dui : null,
-                    NRC: data.nrc.length > 0 ? data.nrc : null,
-                    isLocal: data.isLocal,
-                    isRetentionAgent: data.classification === 'gran',
-                    classification: data.classification,
-                    createdBy: req.session.userSession.employee.shortName,
-                    phone: data.phone,
-                    email: data.mail.length > 0 ? data.mail : null,
-                    direction: data.direction.length > 0 ? data.direction : null,
-                    balance: 0.00,
-                    seller: data.seller
-                }).catch(err => next(err));;
-                res.json({
-                    status: 'success',
-                    data: client.id,
-                });
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    status: 'error',
-                    message: error.message,
+        existe = await Client.findOne({ where: { name: data.name } });
+        if (existe) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'Ya hay un Cliente registrado con este nombre exacto, Por favor utilice el buscador de la sección Clientes antes de intentar duplicar un registro',
+            });
+        }
+
+        existe = await Client.findOne({ where: { phone: data.phone } });
+        if (existe) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'Ya hay un Cliente registrado con este número de teléfono exacto',
+            });
+        }
+
+        if (data.dui.length > 0) {
+            existe = await Client.findOne({ where: { NIT_DUI: data.dui } });
+            if (existe) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Ya hay un cliente registrado con este número de DUI o NIT',
                 });
             }
         }
 
+        if (data.nrc.length > 0) {
+            existe = await Client.findOne({ where: { NRC: data.nrc } });
+            if (existe) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Ya hay un cliente registrado con este número de Registro (NRC)',
+                });
+            }
+        }
+
+        //Verificar el Correo electronico
+        if (data.mail.length > 0) {
+            existe = await Client.findOne({ where: { email: data.mail } });
+            if (existe) {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'Ya hay un cliente registrado con este correo electrónico',
+                });
+            }
+        }
+
+
+        try {
+
+            const client = await Client.create({
+                name: data.name,
+                type: data.type,
+                NIT_DUI: data.dui.length > 0 ? data.dui : null,
+                NRC: data.nrc.length > 0 ? data.nrc : null,
+                isLocal: data.isLocal,
+                isRetentionAgent: data.classification === 'gran',
+                classification: data.classification,
+                createdBy: req.session.userSession.employee.shortName,
+                phone: data.phone,
+                email: data.mail.length > 0 ? data.mail : '',
+                direction: data.direction.length > 0 ? data.direction : 'No Registrado',
+                balance: 0.00,
+                seller: data.seller ?? req.session.userSession.employee.id,
+            });
+
+
+            return res.json({
+                status: 'success',
+                data: client.id,
+            });
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({
+                status: 'error',
+                message: error.message,
+            });
+        }
     },
 
     updateClient: async (req, res) => {
         let data = req.body;
-        let client = await Client.findByPk(data.client).catch(err => next(err));
+        let client = await Client.findByPk(data.client);
 
         if (client) {
             let for_update = {}
@@ -165,7 +181,7 @@ const ClientController = {
                             { name: data.name },
                         ],
                     }
-                }).catch(err => next(err));
+                });
 
                 if (other > 0) {
                     return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este nombre' });
@@ -183,7 +199,7 @@ const ClientController = {
                             { phone: data.phone },
                         ],
                     }
-                }).catch(err => next(err));
+                });
 
                 if (other > 0) {
                     return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este numero Telefonico' });
@@ -201,7 +217,7 @@ const ClientController = {
                             { email: data.email },
                         ],
                     }
-                }).catch(err => next(err));
+                });
 
                 if (other > 0) {
                     return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este Email' });
@@ -221,7 +237,7 @@ const ClientController = {
                             { NRC: data.nrc },
                         ],
                     }
-                }).catch(err => next(err));
+                });
 
                 if (other > 0) {
                     return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este Numero de Registro' });
@@ -239,7 +255,7 @@ const ClientController = {
                             { NIT_DUI: data.dui },
                         ],
                     }
-                }).catch(err => next(err));
+                });
 
                 if (other > 0) {
                     return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este numero de DUI' });
@@ -274,7 +290,7 @@ const ClientController = {
             let message = 'Nada que actualizar';
             if (Object.keys(for_update).length > 0) {
                 client.set(for_update);
-                await client.save().catch(err => next(err));
+                await client.save();
 
                 let observation = await ClientObservation.create({
                     client: client.id,
@@ -308,7 +324,7 @@ const ClientController = {
             }).catch(e => next(e));
 
             let seller = cliente.seller !== null ? await Employee.findByPk(cliente.seller).catch(err => next(err)) : { name: 'Ningun Vendedor asignado' };
-            let sellers = await Employee.findAll({ where: { isSeller: 1 } }).catch(err => next(err));
+            let sellers = await Employee.findAll({ where: { isSeller: 1 } });
 
             //buscar las ordenes finalizadas
 
@@ -359,10 +375,10 @@ const ClientController = {
             let in_process_details = [];
             let indexed_details = {};
             if (in_process !== null) {
-                in_process_details = await SaleDetail.findAll({ where: { sale: in_process.id } }).catch(err => next(err));
+                in_process_details = await SaleDetail.findAll({ where: { sale: in_process.id } });
                 for (let index = 0; index < in_process_details.length; index++) {
                     if (in_process_details[index].product != null) {
-                        in_process_details[index].product = await Product.findByPk(in_process_details[index].product, { raw: true, attributes: ['id', 'name', 'image'] }).catch(err => next(err));
+                        in_process_details[index].product = await Product.findByPk(in_process_details[index].product, { raw: true, attributes: ['id', 'name', 'image'] });
                     }
                     indexed_details[in_process_details[index].id] = in_process_details[index];
                 }
@@ -381,7 +397,7 @@ const ClientController = {
                 type: QueryTypes.SELECT
             });
             let a_favor = 0.00;
-            if(payments !== null && payments.length > 0){
+            if (payments !== null && payments.length > 0) {
                 a_favor = Number.parseFloat(payments[0].pay) - Number.parseFloat(payments[0].asigned);
             }
 

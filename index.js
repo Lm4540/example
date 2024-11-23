@@ -6,6 +6,7 @@ const sequelize = require("./app/DataBase/DataBase");
 const session = require("./app/System/Session");
 const Helper = require('./app/System/Helpers');
 const Auth = require('./app/System/Middleware/Auth');
+const Cleaner = require('./app/System/Middleware/Cleaner');
 
 const app = express()
 
@@ -15,7 +16,7 @@ app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false, limit: '150mb' }));
 app.use(express.json({ limit: '150mb' }));
-app.use(express.static('public', {etag: true, maxAge:86400000*30}));
+app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
 
 
 app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
@@ -26,17 +27,18 @@ app.post('/login', Auth.Login);
 app.get('/loginValidate', Auth.Authenticated, Auth.setUserSessionRegister);
 app.get('/logout', Auth.LogOut);
 app.get('/', Auth.Authenticated, async (req, res) => {
-    // console.log(req.session.id)
-    try {
-        const Sale = require('./app/CRM/Models/Sale');
-        const SaleDetail = require('./app/CRM/Models/SaleDetail');
-        // await sequelize.sync({ force: false });
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
+    // // console.log(req.session.id)
+    // try {
+    //     const Sale = require('./app/CRM/Models/Sale');
+    //     const SaleDetail = require('./app/CRM/Models/SaleDetail');
+    //     // await sequelize.sync({ force: false });
+    // } catch (error) {
+    //     console.error('Unable to connect to the database:', error);
+    // }
     res.render('master', { pageTitle: 'Dashboard' })
 });
 
+app.use(Cleaner.clean);
 app.use(Auth.Authenticated, require('./app/Routes'));
 app.use((err, req, res, next) => {
     console.error(err);

@@ -8,6 +8,7 @@
   <%# custom styles %>
 </head>
 <% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
+
 <body class="<%= darkMode %>">
   <%- include('../../Layouts/SideBar.ejs') %>
   <div id="main">
@@ -42,7 +43,7 @@
                 <label for="clientDirection">Dirección del Cliente</label>
               </div>
 
-              
+
 
               <div class=" mb-3 col-md-6">
                 <label for="clientType">Tipo de Compras</label>
@@ -87,7 +88,7 @@
                 <select name="clientSeller" id="clientSeller" class="form-control">
                   <option value="none" selected>Ninguno</option>
                   <% sellers.forEach(employee => { %>
-                    <option value="<%= employee.id %>"><%= employee.name %></option>
+                  <option value="<%= employee.id %>"><%= employee.name %></option>
                   <% }) %>
                 </select>
               </div>
@@ -118,11 +119,10 @@
       document.getElementById("clientDUI").disabled = !a;
       document.getElementById("clientNRC").disabled = !a;
       document.getElementById("clientClassification").disabled = !a;
-
     });
     //form controls validation
     document.getElementById('saveClient').addEventListener('click', async (e) => {
-      // e.target.disabled = true;
+      e.target.disabled = true;
       let data = {
         name: document.getElementById("clientName").value.trim(),
         phone: document.getElementById("clientPhone").value.trim(),
@@ -142,7 +142,7 @@
       } else if (data.phone.length < 8) {
         e.target.disabled = false;
         return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
-      }else{
+      } else {
         /** Enviar Informacion al Servidor y volver a Validar*/
         postData('/sales/client/create', data)
           .then(data => {
@@ -160,11 +160,8 @@
               return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
             }
           });
-
       }
     });
-
-
   });
 </script>
 

@@ -79,7 +79,7 @@ const Client = sequelize.define('Client', {
     direction: {
         type: DataTypes.STRING(500),
         set(value) {
-            this.setDataValue('direction', value.replace(/['"]+/g, '').trim());
+            this.setDataValue('direction', value.replace(/['"*]+/g, '').trim());
         },
     },
     balance: {

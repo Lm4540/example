@@ -132,10 +132,13 @@
         show_info();
       }
     } else {
-      info_not_renderized = true;
-      document.querySelector("#div_info").innerHTML = `${document.querySelector("#div_info").innerHTML} <div class="col-12 ">
-                         <h4 class="text-danger">Hay productos no cargados, recarga la pagina para poder vizualizarlos</h4>
-                      </div>`;
+      if (!info_not_renderized) {
+
+        info_not_renderized = true;
+        document.querySelector("#div_info").innerHTML = `${document.querySelector("#div_info").innerHTML} <div class="col-12 ">
+          <h4 class="text-danger" id="hay_mas_productos">Hay productos no cargados, recarga la pagina para poder vizualizarlos</h4>
+          </div>`;
+      }
     }
 
 
