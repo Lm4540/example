@@ -47,25 +47,27 @@
                 <th style="min-width:185px;">Origen y Destino</th>
                 <th>Estado</th>
                 <th>Solicita</th>
-                <th>#</th>
+                <th colspan="2">#</th>
               </tr>
             </thead>
             <tbody>
               <% open.forEach(requisition => { %>
               <tr>
-                <td class="text-center" onclick="redir('<%= requisition.id %>')"><%= indexed_sucursals[requisition.origin] %> <i class="fas fa-arrow-alt-right text-success" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %></td>
+                <td class="text-center"><%= indexed_sucursals[requisition.origin] %><a href="/inventory/requisition/<%= requisition.id %>"> <i class="fas fa-arrow-alt-right text-success" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %> </a></td>
                 <td class="text-center"><%= requisition.createdBy %></td>
                 <td class="text-center">EN PROCESO</td>
                 <td class="text-center"><%= requisition.id %></td>
+                <td><span class="badge bg-success" onclick="redir('<%= requisition.id %>')">Ver</span></td>
               </tr>
 
               <% }) %>
               <% requisitions.forEach(requisition => { %>
               <tr>
-                <td class="text-center" onclick="redir('<%= requisition.id %>')"><%= indexed_sucursals[requisition.origin] %> <i class="fas fa-arrow-alt-right text-warning" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %></td>
+                <td class="text-center"><a href="/inventory/requisition/<%= requisition.id %>"><%= indexed_sucursals[requisition.origin] %> <i class="fas fa-arrow-alt-right text-warning" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %></a></td>
                 <td class="text-center"><%= requisition.createdBy %></td>
                 <td class="text-center">CERRADO</td>
                 <td class="text-center"><%= requisition.id %></td>
+                <td><span class="badge bg-success" onclick="redir('<%= requisition.id %>')">Ver</span></td>
               </tr>
 
               <% }) %>

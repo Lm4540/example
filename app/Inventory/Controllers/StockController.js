@@ -1348,7 +1348,14 @@ const StockController = {
 
         let shipments = await Shipment.findAll({
             where: {
+                isIn: true,
                 createdAt: { [Op.between]: [init, end], }
+            }
+        });
+
+        let shipments_not_in = await Shipment.findAll({
+            where: {
+                isIn: false,
             }
         });
 
@@ -1362,7 +1369,7 @@ const StockController = {
         return res.render('Inventory/Stock/shipments', {
             pageTitle: 'Envios generados',
             sucursals,
-            init, end, shipments
+            init, end, shipments,shipments_not_in
         });
     },
     viewShipment: async (req, res) => {

@@ -123,6 +123,9 @@ router.get('/product/test', (req, res) => {
     console.log('hash en la app', encrypted);
     const palabraSecretaValida = bcrypt.compareSync(plainPassword, encrypted);
     console.log(palabraSecretaValida);*/
+    return res.json({
+        'message': 'nada por aca'
+    })
 }); //pendiente
 
 router.get('/test/test', ProductController.testTest2);
