@@ -561,9 +561,10 @@ const StockController = {
                 try {
                     //buscar la requisition
                     let requisition = await Requisition.findByPk(data.requisition);
-                    if (requisition && requisition._status == 'open') {
+                    let detail = await RequisitionDetail.findByPk(data.detail);
+                    if (detail && requisition && requisition._status == 'open') {
                         //buscar el producto
-                        let detail = await RequisitionDetail.findByPk(data.detail);
+                        
                         //buscar el stock
                         let product = await Product.findByPk(detail.product);
                         let stock = await Stock.findOne({
@@ -658,7 +659,7 @@ const StockController = {
                         });
 
                     }
-                    return Helper.notFound(req, res, 'Requisition not Found');
+                    return Helper.notFound(req, res, 'Requisition or detail not Found');
                 } catch (error) {
                     console.error(error);
                     return { status: 'error', message: error.message }

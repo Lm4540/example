@@ -35,6 +35,14 @@
     body.dark .product_item .product_stock {
       color: #39da8a;
     }
+
+    @media print {
+      .product_item {
+        border: none;
+        page-break-inside: avoid;
+      }
+
+    }
   </style>
 </head>
 <% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
@@ -43,19 +51,22 @@
   <%- include('../../Layouts/SideBar.ejs') %>
   <div id="main">
     <%- include('../../Layouts/NavBar.ejs') %>
-    <div class="main-content container-fluid">
+    <div class="main-content container">
       <div class="row justify-content-center">
 
-        <div class="col-8 col-md-6">
+        <div class="col-12 col-md-8 mt-4">
           <div class="form-group">
             <label for="searchBox">Terminos de busqueda</label>
             <input type="text" class="form-control" name="searchBox" id="searchBox">
             <small>Write the SKU or Name to search</small>
           </div>
         </div>
+        <div class="col-12 col-md-4 mt-4 text-center">
+          <button class="badge bg-primary mt-4" onclick="print_div()">Imprimir Elementos Actuales</button>
+        </div>
       </div>
-      <div class="row justify-content-center">
-        <div class="col-md-10 col-12">
+      <div class="row justify-content-center" id="printing_div">
+        <div class="col-12">
           <div class="row" id="product_div"></div>
         </div>
       </div>
@@ -115,6 +126,18 @@
     last_product,
     details = {},
     showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {});
+
+  var last_html = null;
+
+  const print_div = () => {
+    let div = document.querySelector('#printing_div');
+    let last_html = document.body.innerHTML;
+    let html = div.innerHTML;
+    document.body.innerHTML = html;
+    window.print();
+    document.body.innerHTML = last_html;
+  }
+
   const show_image = src => {
     document.getElementById('galery_image').src = src;
     showImageModal.toggle();
