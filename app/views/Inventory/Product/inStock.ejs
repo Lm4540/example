@@ -244,7 +244,7 @@
             details[element.id] = element.stocks;
 
             let div = document.createElement('div');
-            div.classList.add('col-6', 'col-md-3', 'product_item');
+            div.classList.add('col-6', 'col-sm-4', 'col-md-3', 'product_item');
             div.innerHTML = `<div class="card">
             <div class="card-body">
               <img src="${element.image}" alt="Image" class="product_image" style="width: 100%; " onclick="show_image(this.src)"><br>
