@@ -130,12 +130,7 @@
   var last_html = null;
 
   const print_div = () => {
-    let div = document.querySelector('#printing_div');
-    let last_html = document.body.innerHTML;
-    let html = div.innerHTML;
-    document.body.innerHTML = html;
     window.print();
-    document.body.innerHTML = last_html;
   }
 
   const show_image = src => {
@@ -279,6 +274,15 @@
   document.addEventListener("DOMContentLoaded", (event) => {
     charge_sucursals();
     getproducts();
+
+    window.onbeforeprint = () => {
+      last_html = document.body.innerHTML;
+      document.body.innerHTML = document.querySelector('#printing_div').innerHTML;
+    }
+
+    window.onafterprint = () => {
+      document.body.innerHTML = last_html;
+    }
 
     var timer_search;
     document.querySelector('#searchBox').addEventListener('input', async (e) => {
