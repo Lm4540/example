@@ -53,7 +53,7 @@
             <tbody>
               <% open.forEach(requisition => { %>
               <tr>
-                <td class="text-center"><%= indexed_sucursals[requisition.origin] %><a href="/inventory/requisition/<%= requisition.id %>"> <i class="fas fa-arrow-alt-right text-success" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %> </a></td>
+                <td class="text-center"><a href="/inventory/requisition/<%= requisition.id %>"><%= indexed_sucursals[requisition.origin] %> <i class="fas fa-arrow-alt-right text-success" style="font-size: 125%;"></i> <%= indexed_sucursals[requisition.destino] %> </a></td>
                 <td class="text-center"><%= requisition.createdBy %></td>
                 <td class="text-center">EN PROCESO</td>
                 <td class="text-center"><%= requisition.id %></td>
