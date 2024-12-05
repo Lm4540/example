@@ -339,15 +339,14 @@
         }
 
         if (order.invoice_number == null) {
-          let content = `<span class="badge bg-secondary" onclick="create_invoice('${ order.id }');"> Realizar la Factura</span>`;
+          content += `<span class="badge bg-secondary" onclick="create_invoice('${ order.id }');"> Realizar la Factura</span>`;
         } else {
-          let content = `<a href="/sales/view_invoice/${ order.id }" class="badge bg-secondary">Ver factura</a>`;
+          content += `<a href="/sales/view_invoice/${ order.id }" class="badge bg-secondary">Ver factura</a>`;
         }
-        content += `<br>
-                      <a href="/sales/view/${ order.id }" class="badge bg-blue mt-2">Ver Venta</a>`;
-
-        if (order.collected < fix_number(order.balance + order.delivery_amount)) {
-          content += `<a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('${ order.id}', '${ fix_number(order.balance + order.delivery_amount - order.collected) }' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>`;
+        content += `<br><a href="/sales/view/${ order.id }" class="badge bg-blue mt-2">Ver Venta</a>`;
+        let _balance = fix_number(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount) - Number.parseFloat(order.collected));
+        if (_balance > 0) {
+          content += `<a class="badge bg-success mt-2" href="javascript:void(0)" onclick="create_payment2('${ order.id}', '${ _balance }' )"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>`;
         } else {
           if (new Date(order.createdAt).getTime() > new Date('2024-01-01').getTime()) {
             content += ` <a href="/sales/view_pays/${ order.id }" class="badge bg-purple mt-2" target="_blank">Ver Pagos</a>`;
