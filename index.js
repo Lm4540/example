@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors')
 
 const path = require('path');
 require('dotenv').config();
@@ -13,6 +14,7 @@ const app = express()
 
 
 app.use(session);
+app.use(cors);
 app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false, limit: '150mb' }));
