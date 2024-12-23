@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const ApiAuth = {
 
       applicationLogin: async (req, res, next) => {
+            console.log('logueando app');
             const { identification, secret } = req.body;
             try {
                   const app = await AplicationAccess.findOne({

@@ -47,6 +47,8 @@ const ApiController = {
 
       // funciones para que se conecten los clientes
       clientAutentication: async (req, res) => {
+
+            console.log('recibiendo una solicitud en la clietn autorization')
             //buscar el cliente y verificar que exista
             let client = await Client.findByPk(req.body.pin);
             if (client) {
