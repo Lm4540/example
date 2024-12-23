@@ -45,6 +45,10 @@ const Product = sequelize.define('Product', {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 10,
     },
+    damaged:{
+        type: DataTypes.INTEGER.UNSIGNED,
+        defaultValue: 0,
+    },
     stock: {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 0,
@@ -78,33 +82,33 @@ const Product = sequelize.define('Product', {
         },
     },
     cost: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('cost'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
     last_cost: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('last_cost'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
     base_price: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('base_price'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
     major_price: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('major_price'));
             return isNaN(_val) ? 0.00 : _val
         }
@@ -135,6 +139,11 @@ const Product = sequelize.define('Product', {
         allowNull: true
     },
     color: DataTypes.STRING(25),
+    in_web: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+
 }, {
     tableName: 'inventory_product',
 });

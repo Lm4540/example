@@ -125,7 +125,7 @@
                       <input type="number" id="detail_<%= detail.id %>_discount" data-original="<%= detail.discount_price %>" class="form-control" value="<%= detail.discount_price %>">
                     </div>
 
-                    <span class="text-danger">Minimo: $<%= (prod.cost * 1.20).toFixed(2) %></span><br>
+                    <span class="text-danger">Minimo: $<%= (prod.cost * 1.35).toFixed(2) %></span><br>
 
 
                   </td>
@@ -136,7 +136,7 @@
                     </div>
 
                     <span>
-                      <% if (detail.revised &&  (prod.stock - prod.reserved) >= detail.umbral ) { %>
+                      <% if (prod.in_web   && detail.revised &&  (prod.stock - prod.reserved) >= detail.umbral ) { %>
                       <span class="text-success">MOSTRANDO EN CATÁLOGO</span>
                       <% } else { %>
                       <span class="text-danger">NO SE MUESTRA EN CATÁLOGO</span>
@@ -263,9 +263,6 @@
     document.querySelector('#searchBox').value = "";
     buscarCliente('', 3)
   }
-
-
-
 
   const change_access = (element) => {
     element.parentNode.removeChild(element);

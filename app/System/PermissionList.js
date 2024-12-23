@@ -341,5 +341,12 @@ module.exports = [
         "explication": "Permite administrar la caja chica de cualquier sucursal",
         "group": "Finanzas",
         "permission": "admin_all_petty_cash"
+    },
+
+    {
+        "name": "Administrar Catálogos web",
+        "explication": "Administrar Catalogos",
+        "group": "Web",
+        "permission": "admin_web_catalogs"
     }
 ]

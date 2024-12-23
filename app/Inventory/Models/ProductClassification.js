@@ -24,6 +24,7 @@ const ProductClassification = sequelize.define('Clasification', {
                 : null;
         }
     },
+    in_web: DataTypes.BOOLEAN,
     _group: {
         type: DataTypes.ENUM,
         values: ['Carteras', 'Mochilas', 'Relojes', 'Electrodomesticos', 'Tecnologia', 'Productos para el Hogar', 'Productos y accesorios para niños', 'Accesorios para dama'],

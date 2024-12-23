@@ -286,7 +286,7 @@ const addingImageCroppNow = (filePreview, ratio = null, result) => {
         autoCropArea: 1,
         aspectRatio: ratio ? ratio : 1 / 1,
         crop(event) {
-            var canvas = cropper.getCroppedCanvas({ fillColor: ' #fff ', });
+            var canvas = cropper.getCroppedCanvas({ fillColor: ' #fff ', width: 800, height: 800 });
             var base64 = canvas.toDataURL("image/jpeg");
             result.value = base64;
         },

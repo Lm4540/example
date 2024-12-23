@@ -564,7 +564,7 @@ const StockController = {
                     let detail = await RequisitionDetail.findByPk(data.detail);
                     if (detail && requisition && requisition._status == 'open') {
                         //buscar el producto
-                        
+
                         //buscar el stock
                         let product = await Product.findByPk(detail.product);
                         let stock = await Stock.findOne({
@@ -1370,7 +1370,7 @@ const StockController = {
         return res.render('Inventory/Stock/shipments', {
             pageTitle: 'Envios generados',
             sucursals,
-            init, end, shipments,shipments_not_in
+            init, end, shipments, shipments_not_in
         });
     },
     viewShipment: async (req, res) => {
@@ -1864,8 +1864,8 @@ const StockController = {
 
                         } else {
                             last_sucursal_stock = stock.cant;
-                            stock.cant += _cant;
-                            stock.reserved += reserved;
+                            stock.cant = (stock.cant + _cant);
+                            stock.reserved = (stock.reserved + reserved);
                             await stock.save({ 'transaction': t });
 
                         }
@@ -1875,8 +1875,8 @@ const StockController = {
                         let last_stock = product.stock;
 
                         product.cost = ((last_cost * last_stock) + (detail.cost * _cant)) / (_cant + last_stock);
-                        product.stock += _cant;
-                        product.reserved += reserved;
+                        product.stock = (product.stock + _cant);
+                        product.reserved = (product.reserved + reserved);
                         product.last_cost = last_cost;
 
                         //Actualizar cantidad y costo del producto

@@ -22,9 +22,11 @@
     <span class="list-group-item" onclick="dar_baja()"><i class="fas fa-long-arrow-down mr-3"></i>Dar de Baja</span>
     <a class="list-group-item" href="/inventory/product/edit/${product.id}"><i class="fas fa-edit mr-3"></i>Editar</a>
     <a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
+    <span class="list-group-item" data-bs-toggle="modal" data-bs-target="#damagedModal"><i class="fas fa-long-arrow-down mr-3"></i>Dañados o Perdidos</span>
     </div>
     </li>
     `; %>
+
 
 <body class="<%= darkMode %>">
   <%- include('../../Layouts/SideBar.ejs') %>
@@ -36,11 +38,7 @@
         <section class="section col-8">
           <div class="row">
             <div class="col-12 col-md-5">
-              <% if(product.image !== null && product.image.length > 0) {%>
               <img src="<%= product.image %>" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
-              <% }else{ %>
-              <img src="/upload/images/image-not-found.png" class="shadow-4-strong" alt="<%= product.name %>" style="max-width: 100%; border-radius: 1rem;">
-              <% } %>
             </div>
             <div class="col-12 col-md-6 ml-3">
               <h2>
@@ -53,6 +51,11 @@
               <b>
                 <% if (stock > 0) { %>
                 <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
+                <% if (product.damaged > 0) { %>
+                  <p style="font-size: 130%;" class="text-danger"><%= product.damaged %> Unidades Dañadas o Desaparecidas</p>
+                <% }
+
+                %>
 
                 <% } else { %>
                 <p style="font-size: 125%;" class="text-danger">No hay Existencias disponibles</p>
@@ -63,12 +66,24 @@
               <p>
                 <%= product.description %>
               </p>
+
+              <table class="table table-sm table-borderless mt-5" style="max-width: 400px;">
+                <tr>
+                  <td>Mostrar en la Web</td>
+                  <td>
+                    <div class="form-check form-switch col-2">
+                      <input class="form-check-input fs-3 text" type="checkbox" onclick="web_access()" <%= product.in_web? 'checked="checked"': '' %>>
+                    </div>
+                  </td>
+                </tr>
+
+              </table>
             </div>
           </div>
         </section>
 
         <div class="row">
-          <div class="col-12">
+          <div class="col-12 mt-5">
 
             <div class="">
               <ul class="nav nav-underline flex-nowrap mb-3 pb-1" id="myTab" role="tablist">
@@ -80,6 +95,12 @@
                 <li class="nav-item me-3" role="presentation">
                   <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-reviews" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
                     <i class="far fa-adjust"></i>Existencias
+                  </a>
+                </li>
+
+                <li class="nav-item me-3" role="presentation">
+                  <a class="nav-link text-nowrap" id="reviews-tab" data-bs-toggle="tab" href="#tab-catalogs" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
+                    <i class="fas fa-book-spells"></i>Catalogos
                   </a>
                 </li>
                 <!-- <li class="nav-item me-3" role="presentation">
@@ -187,15 +208,18 @@
                     </tbody>
                   </table>
                 </div>
-                <div class="tab-pane fade" id="tab-wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
-                  Tercer panel
+                <div class="tab-pane fade" id="tab-catalogs" role="tabpanel" aria-labelledby="wishlist-tab">
+                  <table class="table table-hover" style="max-width: 400px;">
+
+                    <% catalogs.forEach(cat => { %>
+                    <tr>
+                      <td colspan="2"><a href="/web/catalog/<%= cat.id %>"><%= cat.name %></a></td>
+                    </tr>
+                    <% }) %>
+                  </table>
+
                 </div>
-                <div class="tab-pane fade" id="tab-stores" role="tabpanel" aria-labelledby="wishlist-tab">
-                  Cuarto panel
-                </div>
-                <div class="tab-pane fade" id="tab-personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
-                  Ultimo Panel
-                </div>
+
               </div>
             </div>
 
@@ -244,6 +268,29 @@
   </div>
 
 
+
+  <div class="modal fade" id="damagedModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Escriba la Cantidad de Producto dañado o desaparecido</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="damagedinput">Cantidad</label>
+            <input class="form-control" type="number" min="0" step="1" value="<%= product.damaged %>" id="InputDamaged">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary" onclick="damaged()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
@@ -263,6 +310,49 @@
         }, 2000);
       }
     }).catch(response => console.log(response));
+  }
+
+
+  const web_access = () => {
+    fetch('/inventory/product/updateProductforWeb/<%= product.id %>').then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        successMessage('Actualizado');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    }).catch(response => console.log(response));
+  }
+
+
+  const damaged = () => {
+    let cant = document.querySelector("#InputDamaged").value;
+    if (cant == "") {
+      return errorMessage('Escriba una cantidad');
+    }
+    postData('/inventory/product/updateDamaged', {
+      product: '<%= product.id %>',
+      cant
+    }).then(data => {
+      if (data.status == 'success') {
+        successMessage('Guardado con Exito, redirigiendo');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+
+
+
   }
 </script>
 

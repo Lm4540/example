@@ -48,6 +48,10 @@ const Client = sequelize.define('Client', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    web_products : {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
     classification: {
         type: DataTypes.ENUM('otro', 'mediano', 'gran', 'ninguno'),
         set(value) {

@@ -15,6 +15,7 @@ const path = require('path');
 const fs = require('fs');
 const StockReserve = require('../Models/StockReserve');
 const Sale = require('../../CRM/Models/Sale');
+const CatalogDetail = require('../../Web/Models/CatalogDetail');
 
 
 
@@ -490,11 +491,19 @@ const ProductController = {
             type: QueryTypes.SELECT
         });
 
+        //buscar los catalogos donde este agregado
+        let catalogs = await sequelize.query('select * from web_catalog where id in(SELECT catalog FROM `web_catalog_details` WHERE product = :product);', {
+            replacements: { product: product.id },
+            type: QueryTypes.SELECT
+        });
+
+        //
+
         res.render('Inventory/Product/view', {
             product,
             pageTitle: product.name,
             stock, almacen, classification,
-            in_reserve, transfers
+            in_reserve, transfers, catalogs
         });
 
     },
@@ -626,6 +635,50 @@ const ProductController = {
             }
         }
     },
+
+    updateProductforWeb: async (req, res) => {
+        try {
+            let product = await Product.findByPk(req.params.id);
+            if (product === null) {
+                return res.status(404);
+            }
+
+            product.in_web = !product.in_web;
+            await product.save();
+
+            return res.json({
+                status: 'success',
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: error.message,
+            });
+        }
+    },
+
+    
+    updateDamaged: async (req, res) => {
+        try {
+            let product = await Product.findByPk(req.body.product);
+            if (product === null) {
+                return res.status(404);
+            }
+
+            product.damaged = req.body.cant;
+            await product.save();
+
+            return res.json({
+                status: 'success',
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: error.message,
+            });
+        }
+    },
+
     getProductsToSelect2: async (req, res) => {
         let searchLimit = 15;
         let search = req.query.search;

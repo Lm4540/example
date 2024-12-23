@@ -12,8 +12,8 @@
   <div id="main">
     <%- include('../../Layouts/NavBar.ejs') %>
     <div class="main-content container justify-content-center">
-      
-      
+
+
       <div class="page-title">
         <h3><%= pageTitle %> &nbsp; &nbsp; &nbsp; <a class="badge bg-success mb-5" data-bs-target="#new_catalog" data-bs-toggle="modal">Crear Nuevo Catálogo</a> </h3>
       </div>
@@ -68,6 +68,38 @@
                 <input type="text" class="form-control" id="catalog_name">
               </div>
 
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="col-md-12">
+                    <div class="form-group text-center">
+                      <label for="fake_image_input" class="subir" style="font-size: x-large;">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <b>Subir</b>
+                        Imagen
+                      </label>
+                      <input type="file" accept="image/*" name="add_image" id="fake_image_input" style="display: none;">
+                    </div>
+                  </div>
+                  <div class="col-md-12 text-center">
+                    Ó
+                  </div>
+
+                  <div class="col-md-12 text-center">
+                    <div class="form-group">
+                      <label style="font-size: large;" for="add-image-fake_text ">
+                        Pega una imagen o URL Aca
+                      </label>
+                      <textarea class="form-control" id="add-image-fake_text" onload="" rows="1">...paste here...</textarea>
+                    </div>
+                  </div>
+
+                </div>
+                <div class="col-md-6">
+                  <div id="add_image_preview"></div>
+                  <input type="hidden" id="add_image_real" name="add_image_real">
+                </div>
+              </div>
+
             </div>
             <div class="modal-footer" style="display: block;">
               <div class="text-center">
@@ -85,17 +117,37 @@
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+   var previewimagezone = document.getElementById("add_image_preview");
+  var realImage = document.getElementById("add_image_real");
+  captureImagePasted(document.getElementById("add-image-fake_text"), previewimagezone, realImage);
+
+  document.getElementById('fake_image_input').onchange = function(e) {
+    if (addingImageValidateImage(this)) {
+      AddingImageChargeFromFile(e.srcElement, previewimagezone, 1 / 1, realImage);
+    } else {
+      document.getElementById("add_image_preview").innerHTML = "";
+      realImage.value = "";
+      return errorMessage('Tipo de Archivo no Admitido. Por favor seleccione un archivo de imagen');
+    }
+  };
+
+
   document.addEventListener('DOMContentLoaded', event => {
     document.querySelector('#saveCatalog').addEventListener('click', e => {
       let name = document.querySelector("#catalog_name").value;
       e.target.disabled = true;
+      
       if (name.length < 5) {
-        return errorMessage('Proporcione un nombre para el catálogo');
         document.querySelector('#saveCatalog').disabled = false;
+        return errorMessage('Proporcione un nombre para el catálogo');
 
+      }else if(realImage.value == ""){
+        document.querySelector('#saveCatalog').disabled = false;
+        return errorMessage('Proporcione un nombre para el catálogo');
       } else {
         postData('/web/catalog/', {
-          name
+          name,
+          image: realImage.value
         }).then(data => {
 
           if (data.status == 'success') {

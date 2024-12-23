@@ -57,12 +57,35 @@ const CatalogController = {
                         status: 'exist',
                         catalog: catalog.id
                   });
-            } else {
+            }
+
+            try {
+
+                  let image_name = null;
+                  if (req.body.image.length > 1) {
+                        image_name = 'catalog_' + Helper.generateNameForUploadedFile() + '.jpg';
+                        let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
+                        // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
+                        let image_data = req.body.image.slice(23);
+                        //Almacenar la imagen
+                        fs.writeFile(location, image_data, 'base64', (err) => {
+                              if (err) {
+                                    console.log(err);
+                                    res.status(500).json({
+                                          status: 'errorMessage',
+                                          message: message,
+                                    });
+                              } else {
+                                    console.log('La imagen se guardó correctamente en el servidor.');
+                              }
+                        });
+                  }
+
                   catalog = await Catalog.create({
                         name,
                         expires: new Date('2030-01-01'),
                         active: false,
-                        image: null,
+                        image: image_name,
                         createdBy: req.session.userSession.shortName,
                         updatedBy: req.session.userSession.shortName,
                   });
@@ -71,7 +94,15 @@ const CatalogController = {
                         status: 'success',
                         catalog: catalog.id
                   });
+
+            } catch (error) {
+                  res.status(500).json({
+                        status: 'error',
+                        message: error.message,
+                  });
             }
+
+
       },
 
       viewCatalog: async (req, res) => {
@@ -507,6 +538,32 @@ const CatalogController = {
             }
             return Helper.notFound(req, res, 'Client not Found');
       },
+
+      freeSearch: async (req, res) => {
+
+
+            try {
+                  let client = await Client.findByPk(req.params.id);
+                  if (client === null) {
+                        return res.json({
+                              status: 'errorMessage',
+                              message: 'Cliente no encontrado',
+                        });
+                  }
+
+                  client.web_products = !client.web_products;
+                  await client.save();
+
+                  return res.json({
+                        status: 'success',
+                  });
+            } catch (error) {
+                  return res.status(500).json({
+                        status: 'error',
+                        message: error.message,
+                  });
+            }
+      }
 };
 
 module.exports = CatalogController;

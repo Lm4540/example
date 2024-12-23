@@ -560,6 +560,23 @@
                 <button class="btn btn-soft-warning me-1 mb-1" onclick="copyNumber()">Copiar Numero: <%= cliente.phone %></button>
                 <a class="btn btn-soft-danger me-1 mb-1" href="tel:<%= cliente.phone %>"> <i class="fas fa-phone-square"></i> Llamar </a>
                 <a href="https://wa.me/<%= Helper.cleanNumber(cliente.phone) %>" class="btn btn-soft-success me-1 mb-1" style="font-weight: bolder;">Chat en WhatsApp</a>
+
+
+
+                <div class="mt-5">
+                  <% 
+                  let pin = cliente.id;
+                  if(pin < 10){
+                    pin = `000${pin}`;
+                  }else if(pin < 100){
+                    pin = `00${pin}`;
+                  }else if(pin < 1000){
+                    pin = `0${pin}`;
+                  }
+                  %>
+                  <p class="text-800" onclick="copy_text_('<%= pin%>')">PIN: <%= pin%></p>
+                  <p class="text-800">DUI Registrado: <%= cliente.NIT_DUI%></p>
+                </div>
               </div>
             </div>
           </div>
@@ -568,13 +585,26 @@
             <div class="card-body">
               <table class="table table-borderless table-hover table-sm">
                 <tbody>
-                  <tr>
-                    <td class="pb-5">
+
+
+                  <tr data-bs-toggle="tooltip" data-bs-placement="bottom" title="Permite el acceso a los catálogos y productos en la web" style="cursor:pointer">
+                    <td class="">
                       Acceso a los catálogs Web
+                    </td>
+                    <td class="">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input fs-3 text" type="checkbox" onclick="web_access()" <% if (cliente.has_web_access) { %> checked="" <% } %>>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr data-bs-toggle="tooltip" data-bs-placement="bottom" title="Si se activa, el cliente tendrá acceso a una lista completa de todos los productos, estén o no estén en algún catálogo, tengan o no existencias" style="cursor:pointer">
+                    <td class="pb-5">
+                      Acceso a todos los productos
                     </td>
                     <td class="pb-5">
                       <div class="form-check form-switch">
-                        <input class="form-check-input fs-3 text" type="checkbox" onclick="web_access()" <% if (cliente.has_web_access) { %> checked="" <% } %>>
+                        <input class="form-check-input fs-3 text" type="checkbox" onclick="toggle_free_search()" <%= cliente.web_products ? 'checked="checked"' : '' %>>
                       </div>
                     </td>
                   </tr>

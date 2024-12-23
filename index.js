@@ -6,6 +6,7 @@ const sequelize = require("./app/DataBase/DataBase");
 const session = require("./app/System/Session");
 const Helper = require('./app/System/Helpers');
 const Auth = require('./app/System/Middleware/Auth');
+
 const Cleaner = require('./app/System/Middleware/Cleaner');
 
 const app = express()
@@ -38,8 +39,15 @@ app.get('/', Auth.Authenticated, async (req, res) => {
     res.render('master', { pageTitle: 'Dashboard' })
 });
 
+app.use("/api/v1", require('./app/ApiRoutes'));
 app.use(Cleaner.clean);
 app.use(Auth.Authenticated, require('./app/Routes'));
+
+
+//poner aca 
+
+
+
 app.use((err, req, res, next) => {
     console.error(err);
     if (res.headersSent) {

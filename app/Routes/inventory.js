@@ -22,6 +22,8 @@ router.post('/provider/create', ProviderController.createProvider);
 router.get('/provider/view/:id(\\d+)', ProviderController.viewProvider);
 router.get('/provider/:id(\\d+)', ProviderController.getProvider);
 router.post('/provider/update', ProviderController.updateProvider);
+router.get('/product/updateProductforWeb/:id(\\d+)', ProductController.updateProductforWeb);
+router.post('/product/updateDamaged', ProductController.updateDamaged);
 router.get('/provider/select2', ProviderController.getProviderToSelect2);
 
 
