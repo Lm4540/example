@@ -1,21 +1,13 @@
 const express = require('express');
-const cors = require('cors')
-
 const path = require('path');
 require('dotenv').config();
 const sequelize = require("./app/DataBase/DataBase");
 const session = require("./app/System/Session");
 const Helper = require('./app/System/Helpers');
 const Auth = require('./app/System/Middleware/Auth');
-
 const Cleaner = require('./app/System/Middleware/Cleaner');
 
 const app = express();
-const corsOptions = {
-    origin: ['https://riverasgroup.com','https://serviciosrivera.com','http://localhost:8000','http://localhost:8080'],
-    optionsSuccessStatus: 200,
-  };
-
 
 app.use(session);
 // app.use(cors);
@@ -24,7 +16,6 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false, limit: '150mb' }));
 app.use(express.json({ limit: '150mb' }));
 app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
-app.use(cors(corsOptions));
 
 app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
 app.locals.options = '';
@@ -45,14 +36,8 @@ app.get('/', Auth.Authenticated, async (req, res) => {
     res.render('master', { pageTitle: 'Dashboard' })
 });
 
-app.use("/api/v1",  require('./app/ApiRoutes'));
 app.use(Cleaner.clean);
 app.use(Auth.Authenticated, require('./app/Routes'));
-
-
-//poner aca 
-
-
 
 app.use((err, req, res, next) => {
     console.error(err);
