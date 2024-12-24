@@ -365,6 +365,7 @@
    document.addEventListener('DOMContentLoaded', event => {
 
       document.querySelector('#save_purchase').addEventListener('click', e => {
+         e.target.disabled = true;
          console.log(post_data);
          postData('/purchase/in', post_data)
           .then(data => {

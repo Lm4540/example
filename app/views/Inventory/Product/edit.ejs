@@ -265,6 +265,7 @@
               successMessage('Actualizado con Exito, redirigiendo');
               /**Redirigir a la pagina del Proveedor*/
               setTimeout(() => {
+                fetch('riverasgroup.com/rm_image?img=<%= product.image %>');
                 location.href = `/inventory/product/view/<%= product.id %>`;
               }, 1500);
 
