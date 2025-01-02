@@ -13,6 +13,7 @@ const Movement = require("../../Inventory/Models/Movement");
 const Provider = require("../../Inventory/Models/Provider");
 const PettyCashMoves = require('../../Financial/Models/PettyCashMoves');
 const Employee = require('../../HRM/Models/Employee');
+const RequisitionDetail = require('../../Inventory/Models/RequisitionDetail');
 
 
 const Helper = require('../../System/Helpers');
@@ -125,6 +126,201 @@ const UtilsController = {
                     });
 
                 } catch (error) {
+                    return res.json({
+                        status: 'error', message: "Internal Server Error", error: error.message
+                    });
+                }
+            }
+
+            return res.json({
+                status: 'errorMessage', message: "No se puede anular esta venta porque ya ha anulado, ya ha sido entregado el producto o recolectado el pago, por favor anule unicamente la factura"
+            });
+
+
+        }
+        return res.json({
+            status: 'errorMessage', message: "Order not Found"
+        });
+
+    },
+
+    revoke_order_new: async (req, res) => {
+        if (!req.session.userSession.permission.includes('revoke_sales')) {
+            return res.json({
+                status: 'errorMessage', message: "No tienes permiso para realizar esta operación"
+            });
+        }
+
+        let invoice = await Sale.findByPk(req.body.sale);
+
+        if (invoice) {
+
+            if (invoice._status == 'process' || invoice._status == 'closed' || invoice._status == "prepared") {
+                if (invoice.collected > 0.00) {
+                    return res.json({
+                        status: 'errorMessage', message: "No se puede anular esta venta porque tiene pagos asignados, reasigne los pagos para poder Anular esta venta"
+                    });
+                } else if (invoice.invoice_number !== null) {
+                    return res.json({
+                        status: 'errorMessage', message: "No se puede anular esta venta porque ya ha Facturado"
+                    });
+                }
+
+                /*
+
+                let requisition_detail = await RequisitionDetail.count({
+                    where: {
+                        sale_detail: {
+                            [Op.in]: sequelize.literal(`(select id from crm_sale_detail where sale = ${invoice.id})`)
+                        },
+                        requisition: {
+                            [Op.in]: sequelize.literal(`(SELECT id FROM inventory_requisition WHERE _status = 'open')`)
+                        },
+                    }
+                });
+
+                console.log(requisition_detail);
+
+                if (requisition_detail > 0) {
+                    return res.json({
+                        status: 'errorMessage', message: "Antes de Anular Libera los detalles solicitados en traslado"
+                    });
+                }
+
+                */
+                try {
+                    let reserves = await StockReserve.findAll({
+                        where: {
+                            saleId: {
+                                [Op.in]: sequelize.literal(`(select id from crm_sale_detail where sale = ${invoice.id})`)
+                            }
+                        }
+                    });
+
+                    console.log(reserves)
+
+                    let prods = {};
+                    let sucursals = {}
+
+                    reserves.forEach(reserve => {
+                        prods[reserve.product] = prods[reserve.product] != undefined
+                            ? (prods[reserve.product] + reserve.cant)
+                            : reserve.cant;
+
+                        if (sucursals[reserve.sucursal] == null || sucursals[reserve.sucursal] == undefined) {
+                            sucursals[reserve.sucursal] = {};
+                            sucursals[reserve.sucursal][reserve.product] = reserve.cant;
+
+                        }else{
+                            sucursals[reserve.sucursal][reserve.product] = sucursals[reserve.sucursal][reserve.product] != undefined
+                                ? (sucursals[reserve.sucursal][reserve.product] + reserve.cant)
+                                : reserve.cant;
+                        }
+                    });
+
+
+
+                    console.log(prods, sucursals)
+
+                    /*
+                                        return await sequelize.transaction(async (t) => {
+                    
+                                            //buscar el cliente y hacerle una anotacion para que quede costancia
+                                            let observation = await ClientObservation.create({
+                                                client: invoice.client,
+                                                createdBy: req.session.userSession.shortName,
+                                                observation: `Se Libero un pedido de $${Helper.money_format(Helper.fix_number(invoice.balance + invoice.delivery_amount))}`,
+                                            }, { transaction: t });
+                    
+                                            //Anular la venta
+                                            invoice._status = 'revoked';
+                                            invoice.revoked_at = new Date();
+                                            invoice.revoked_reason = req.body.reason;
+                                            invoice.collected = 0.00;
+                                            invoice.cost = 0.00;
+                                            invoice.payments = null;
+                                            invoice.in_report = false;
+                                            await invoice.save({ transaction: t });
+                    
+                                            //Actualizar los detalles
+                                            await sequelize.query(
+                                                "UPDATE `crm_sale_detail` SET `ready` = 0,`delivered` = 0,`reserved` = 0 WHERE sale = :sale_id;",
+                                                {
+                                                    replacements: {
+                                                        sale_id: invoice.id
+                                                    },
+                                                    type: QueryTypes.UPDATE,
+                                                    transaction: t
+                                                }
+                                            );
+                    
+                                            await sequelize.query(
+                                                "DELETE FROM `inventory_product_stock_reserve` WHERE saleId in (select id from crm_sale_detail where sale = :sale_id);",
+                                                {
+                                                    replacements: {
+                                                        sale_id: invoice.id
+                                                    },
+                                                    type: QueryTypes.DELETE,
+                                                    transaction: t
+                                                }
+                                            );
+                    
+                                            await sequelize.query(
+                                                `DELETE FROM inventory_requisition_detail WHERE sale_detail in (select id from crm_sale_detail where sale = :sale_id) and requisition in (SELECT id FROM inventory_requisition WHERE _status = 'open');`,
+                                                {
+                                                    replacements: {
+                                                        sale_id: invoice.id
+                                                    },
+                                                    type: QueryTypes.DELETE,
+                                                    transaction: t
+                                                }
+                                            );
+                    
+                                            // 
+                    
+                                            let _tmp = Object.keys(stocks_);
+                                            for (let index = 0; index < _tmp.length; index++) {
+                                                await sequelize.query(
+                                                    "UPDATE `inventory_product_stock` SET `reserved` = reserved - :cant WHERE `inventory_product_stock`.`id` = :stock_id;",
+                                                    {
+                                                        replacements: {
+                                                            cant: stocks_[_tmp[index]],
+                                                            stock_id: _tmp[index]
+                                                        },
+                                                        type: QueryTypes.UPDATE,
+                                                        transaction: t
+                                                    }
+                                                );
+                                            }
+                    
+                                            //actualizar los productos    
+                    
+                                            _tmp = Object.keys(products_);
+                                            for (let index = 0; index < _tmp.length; index++) {
+                                                await sequelize.query(
+                                                    "UPDATE `inventory_product` SET `reserved` = reserved - :cant WHERE id = :product_id",
+                                                    {
+                                                        replacements: {
+                                                            cant: products_[_tmp[index]],
+                                                            product_id: _tmp[index]
+                                                        },
+                                                        type: QueryTypes.UPDATE,
+                                                        transaction: t
+                                                    }
+                                                );
+                                            }
+                    
+                                            return res.json({
+                                                status: 'success', invoice: invoice,
+                                            });
+                    
+                                        });
+                    
+                                        */
+
+                } catch (error) {
+
+                    console.log(error)
                     return res.json({
                         status: 'error', message: "Internal Server Error", error: error.message
                     });
@@ -323,7 +519,7 @@ const UtilsController = {
         return res.render('Utils/product_list_to_delete', { pageTitle: 'productos que se pueden eliminar', details });
     },
 
-    links_reservados: async(req, res) => {
+    links_reservados: async (req, res) => {
         links = [
             {
                 link: '',

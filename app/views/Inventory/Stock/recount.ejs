@@ -43,6 +43,10 @@
       <div class="row justify-content-center">
         <h3 class="text-center">
           Inventario Fisico en Proceso (<%= sucursal.name%>)
+
+        </h3>
+
+        <div class="col-12 text-center">
           <% if (details.pending.length > 0) { %>
           <button class="btn btn-danger round" onclick="javascript:location.reload();">Recargar</button>
           <button id="btn_clean" class="btn bg-purple round" style="color: white;"> Buscar cambios</button>
@@ -50,9 +54,12 @@
           <button class="btn btn-success round" data-bs-toggle="modal" data-bs-target="#finalizeProcess" onclick="setInputFocus()">Finalizar</button>
           <button id="btn_clean" class="btn bg-purple round" style="color: white;"> Buscar cambios</button>
           <% } %>
-        </h3>
 
-        <div class="col-lg-10">
+          <button class="btn btn-sm round btn-outline-primary ml-2" data-bs-toggle="modal" data-bs-target="#viewAreas">Areas</button>
+
+        </div>
+
+        <div class="COL-12 col-lg-10 mt-5">
           <table class="table table-bordered table-sm table-stripped">
             <thead>
               <tr>
@@ -93,14 +100,14 @@
                 <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
                 <td><a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a></td>
                 <td>
-                  <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.initial %>" style="max-width: 120px;">
+                  <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final ?? 0 %>" style="max-width: 120px;">
                   <small>Registrado: <%= detail.initial %></small>
                 </td>
                 <td>
                   Costo: $<%= Helper.money_format(detail.cost) %>
                 </td>
                 <td colspan="">
-                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control">
+                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control" value="<%=  detail.observation !== null && detail.observation !== "" ? detail.observation : 'Perdidas o Mermas'%>">
                   <small>Justificación</small>
                 </td>
                 <td>
@@ -123,7 +130,7 @@
                   Costo: $<%= Helper.money_format(detail.cost) %>
                 </td>
                 <td>
-                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control" value="<%= detail.observation %>">
+                  <input name="textarea_<%= detail.id %>" id="textarea_<%= detail.id %>" class="form-control" value="<%=  detail.observation %>">
                   <small>Justificación</small>
                 </td>
                 <td>
@@ -135,6 +142,68 @@
             </tbody>
 
           </table>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="viewAreas" tabindex="-1" aria-labelledby="Finalize Recount Process" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Areas de la Bodega</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>opt</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% areas.forEach(area => { %>
+
+                <tr>
+                  <td><%= area.name %></td>
+                  <td><a class="btn btn-outline-danger round btn-sm" href="/inventory/product/recountArea/<%= area.id %>">Ir al area</a></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+
+          </div>
+          <div class="modal-footer text-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+            <button type="button" class="btn btn-primary" data-bs-target="#addArera" data-bs-toggle="modal">Agregar Area</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addArera" tabindex="-1" style="display: none;">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Agregar Area</h5>
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="areaName">Nombre del area</label>
+              <input type="text" id="areaName" class="form-control">
+            </div>
+
+          </div>
+          <div class="modal-footer text-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="addAreaButton">Guardar</button>
+          </div>
+
+
         </div>
       </div>
     </div>
@@ -245,10 +314,38 @@
 
   document.addEventListener("DOMContentLoaded", (event) => {
 
+    document.querySelector("#addAreaButton").addEventListener('click', e => {
+      e.target.disabled = true;
+
+      let name = document.querySelector('#areaName').value.trim();
+      if (name.length < 3) {
+        return errorMessage('Escriba el nombre del area a crear')
+      }
+
+      postData('/inventory/product/recount/area', {
+        id: '<%= recount.id %>',
+        name,
+      }).then(data => {
+
+        if (data.status == 'success') {
+          successMessage('Agregado');
+          setTimeout(() => {
+            window.location.reload()
+          }, 2000);
+        } else if (data.status == 'errorMessage') {
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+
+    });
+
     document.getElementById('processConfirmation').addEventListener('input', (e) => document.querySelector('#finalizeProcessButton').disabled = e.target.value != 'CONFIRMAR');
     document.querySelector('#finalizeProcessButton').addEventListener('click', e => {
       if (document.getElementById('processConfirmation').value == 'CONFIRMAR') {
         //enviar los datos al server
+        
         postData('/inventory/product/recount/update', {
           id: '<%= recount.id %>',
           case: 'finish',

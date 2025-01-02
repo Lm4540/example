@@ -73,9 +73,13 @@ router.get('/product/divide', StockController.divideProductView);
 router.post('/product/divide', StockController.divideProduct);
 router.get('/product/join', StockController.joinProductView);
 router.post('/product/join', StockController.joinProduct);
+
 router.get('/product/recount', StockController.getRecountView);
 router.post('/product/recount', StockController.createNewRecount);
 router.get('/product/recount/:id(\\d+)', StockController.viewRecount);
+router.post('/product/recount/area', StockController.addAreas);
+router.get('/product/recountArea/:id(\\d+)', StockController.viewArea);
+router.post('/product/recountArea', StockController.addDetailToArea);
 router.post('/product/recount/update', StockController.updateRecount);
 router.post('/product/recount/clean', StockController.cleanRecount);
 

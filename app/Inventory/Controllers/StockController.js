@@ -4,6 +4,8 @@ const Stock = require('../Models/Stock');
 const Movement = require('../Models/Movement');
 const Recount = require('../Models/Recount');
 const RecountDetail = require('../Models/RecountDetail');
+const RecountArea = require('../Models/RecountArea');
+const RecountAreaDetail = require('../Models/RecountAreaDetail');
 const Shipment = require('../Models/Shipment');
 const ShipmentDetail = require('../Models/ShipmentDetail');
 const StockReserve = require('../Models/StockReserve');
@@ -16,6 +18,7 @@ const Money = require('../../System/Money');
 const sequelize = require("../../DataBase/DataBase");
 const { Op, QueryTypes } = require("sequelize");
 const SaleDetail = require('../../CRM/Models/SaleDetail');
+
 
 const StockController = {
 
@@ -2774,6 +2777,10 @@ const StockController = {
             return res.status(500).json({ 'error': 'Internal Server Error' });
         }
     },
+
+
+
+
     getRecountView: async (req, res) => {
         //buscar a ver si hay procesos de Inventario Fisico e indexarlos para separar abiertos de cerrados
         let finished = [], in_process = [], sucursal = [], indexedSucursal = {};
@@ -2794,37 +2801,33 @@ const StockController = {
             in_process
         });
     },
+
     createNewRecount: async (req, res) => {
-        //devolver el numero de prioceso abierto
+        let data = req.body;
+        let exist = await Recount.findOne({
+            where: {
+                endBy: { [Op.is]: null },
+                sucursal: data.sucursal
+            }
+        });
+
+        if (exist !== null) {
+            return res.json({
+                status: 'success',
+                data: exist.id,
+            });
+        }
+
         const t = await sequelize.transaction();
         try {
-            //obtener el cuerpo de la solicitud
-            let data = req.body;
 
-            //buscar si ya hay un proceso abierto
-            let exist = await Recount.findOne({
-                where: {
-                    endBy: { [Op.is]: null },
-                    sucursal: data.sucursal
-                }
-            });
-
-            if (exist !== null) {
-                return res.json({
-                    status: 'success',
-                    data: exist.id,
-                });
-            }
-
-            //Si no hay uno existente crear el nuevo proceso de inventario fisico
             var process = await Recount.create({
                 sucursal: data.sucursal,
                 createdBy: req.session.userSession.shortName,
             }, { transaction: t });
 
-            console.log(process)
 
-            //obtener todos los stock que hayan existencias en la sucursal a inventariar
+            //crear las areas
             let stocks = await Stock.findAll({
                 where: {
                     sucursal: data.sucursal,
@@ -2832,11 +2835,7 @@ const StockController = {
                 }
             });
 
-            console.log(stocks.length)
-
-            //Si hay Stocks entonces crear los detalles
             if (stocks.length > 0) {
-                //buscar los productos
                 let products = {};
                 let tmp = await sequelize.query(
                     'SELECT * FROM `inventory_product` WHERE id in (SELECT DISTINCT(product) FROM `inventory_product_stock` where cant > 0 and sucursal = :sucursal)',
@@ -2845,11 +2844,7 @@ const StockController = {
                         type: QueryTypes.SELECT
                     }
                 );
-                //Indexar los productos
                 tmp.forEach(prod => products[prod.id] = prod);
-
-                // recorrer los stock y crear los detalles del recuento
-                // guardar los detalles
                 let details = stocks.map(el => {
                     return {
                         recount: process.id,
@@ -2875,15 +2870,15 @@ const StockController = {
             await t.rollback();
             return res.status(500).json({ 'error': 'Internal Server Error' });
         }
-
     },
+
     viewRecount: async (req, res) => {
         //Buscar el proceso
         let recount = await Recount.findByPk(req.params.id);
         if (recount === null) {
             return res.status(404).send('Not Found');
         }
-
+        let areas = await RecountArea.findAll({ where: { recount: req.params.id } });
         let tmp = await RecountDetail.findAll({ where: { recount: req.params.id } });
         let sucursal = await Sucursal.findByPk(recount.sucursal);
 
@@ -2892,7 +2887,8 @@ const StockController = {
             return res.render('Inventory/Stock/recountReport', {
                 recount,
                 pageTitle: 'Inventario Fisico',
-                sucursal, details
+                sucursal,
+                details,
             });
         }
         let details = { revised: [], pending: [] };
@@ -2900,13 +2896,10 @@ const StockController = {
         return res.render('Inventory/Stock/recount', {
             recount,
             pageTitle: 'Inventario Fisico',
-            sucursal, details
+            sucursal,
+            details,
+            areas
         });
-
-
-        //buscar la sucursal
-        //verificar el estado del proceso y devolver las vista correspondiente
-
 
     },
 
@@ -2982,6 +2975,14 @@ const StockController = {
                         console.log(`detalle # ${index}`)
 
                         let st = _stocks[detail.product];
+                        if (st == undefined || st == null) {
+                            st = await Stock.create({
+                                product: detail.product,
+                                sucursal: recount.sucursal,
+                                cant: 0,
+                                reserved: 0,
+                            });
+                        }
                         let prod = products[detail.product];
                         let cant = 0;
 
@@ -3203,7 +3204,10 @@ const StockController = {
         tmp.forEach(detail => details[detail.product] = detail);
 
         //obtener los stock
-        tmp = await sequelize.query(`SELECT * FROM inventory_product_stock WHERE sucursal = ${recount.sucursal}`, { model: Stock });
+        tmp = await sequelize.query(
+            `SELECT * FROM inventory_product_stock WHERE sucursal = ${recount.sucursal}`,
+            { model: Stock }
+        );
         //recorrer los stock 
 
 
@@ -3256,6 +3260,310 @@ const StockController = {
             return res.json({ status: 'error', message: 'Detalles agregados a la solicitud en curso. ¡Redirigiendo!', error });
         }
     },
+
+
+    addAreas: async (req, res) => {
+        let recount = await Recount.findByPk(req.body.id);
+        if (recount === null) {
+            return res.json({
+                status: 'errorMessage',
+                data: 'El proceso que intenta acutalizar no existe',
+            });
+        } else if (recount.endBy !== null) {
+            return res.json({
+                status: 'errorMessage',
+                data: 'El proceso que intenta acutalizar ya esta finalizado',
+            });
+        }
+
+
+        let area = await RecountArea.create({
+            recount: recount.id, name: req.body.name
+        });
+
+        return res.json({
+            status: 'success',
+            data: area.id,
+        });
+    },
+
+    viewArea: async (req, res) => {
+        let area = await RecountArea.findByPk(req.params.id);
+        let recount = await Recount.findByPk(area.recount);
+
+        if (area === null) {
+            return res.status(404).send('Not Found');
+        }
+
+        let details = await RecountAreaDetail.findAll({ where: { area: req.params.id } });
+        let sucursal = await Sucursal.findByPk(recount.sucursal);
+        let tmp = await Product.findAll({ where: { id: { [Op.in]: sequelize.literal(`(SELECT product FROM inventory_recount_area_detail WHERE area = ${area.id})`) } } });
+
+        let products = {};
+        tmp.forEach(element => products[element.id] = element);
+
+        return res.render(recount.endBy != null || area._status == true ? 'Inventory/Stock/closedRecountArea' : 'Inventory/Stock/recountArea', {
+            area,
+            pageTitle: 'Inventario Fisico',
+            sucursal,
+            details,
+            recount,
+            products
+        });
+    },
+
+    addDetailToArea: async (req, res) => {
+
+        try {
+            return await sequelize.transaction(async (t) => {
+                let _cant = Number.parseInt(req.body.cant);
+                if (req.body.case == 'add') {
+                    let area = await RecountArea.findByPk(req.body.area);
+                    if (area == null) {
+                        return res.json({
+                            status: 'errorMessage',
+                            message: 'El area seleccionada no existe'
+                        });
+                    }
+
+                    let detail = await RecountAreaDetail.findOne({
+                        where: {
+                            area: req.body.area,
+                            product: req.body.product
+                        }
+                    });
+
+                    if (detail != null) {
+
+                        detail.cant = detail.cant + _cant;
+                        await detail.save({ transaction: t });
+
+
+                        let recountDetail = await RecountDetail.findOne({
+                            where: {
+                                recount: area.recount,
+                                product: req.body.product
+                            }
+                        });
+
+                        recountDetail.final = recountDetail.final + _cant;
+                        if (recountDetail.final == recountDetail.initial) {
+                            recountDetail.revised_by = "Sumatoria Sistema";
+                        } else {
+                            recountDetail.revised_by = null;
+                        }
+                        await recountDetail.save({ transaction: t });
+
+
+
+
+                    } else {
+
+                        detail = await RecountAreaDetail.create({
+                            area: req.body.area,
+                            product: req.body.product,
+                            cant: _cant,
+                            createdBy: req.session.userSession.shortName,
+                        }, { transaction: t });
+
+                        let recountDetail = await RecountDetail.findOne({
+                            where: {
+                                recount: area.recount,
+                                product: req.body.product
+                            }
+                        });
+
+                        if (recountDetail == null) {
+                            let recount = await Recount.findByPk(area.recount);
+                            let stock = await Stock.findOne({
+                                where: {
+                                    sucursal: recount.sucursal,
+                                    product: req.body.product
+                                }
+                            });
+
+                            let product = await Product.findByPk(req.body.product);
+
+                            if (stock) {
+                                recountDetail = await RecountDetail.create({
+                                    recount: area.recount,
+                                    product: stock.product,
+                                    product_name: product.name,
+                                    sku: product.internal_code,
+                                    initial: stock.cant,
+                                    final: _cant,
+                                    observation: null,
+                                    revised_by: stock.cant == _cant ? 'Sumatoria Sistema' : null,
+                                    cost: product.cost
+                                }, { transaction: t });
+                            } else {
+                                recountDetail = await RecountDetail.create({
+                                    recount: area.recount,
+                                    product: product.id,
+                                    product_name: product.name,
+                                    sku: product.internal_code,
+                                    initial: 0,
+                                    final: _cant,
+                                    observation: null,
+                                    revised_by: null,
+                                    cost: product.cost
+                                }, { transaction: t });
+                            }
+
+                        } else {
+                            recountDetail.final = recountDetail.final + _cant;
+                            if (recountDetail.final == recountDetail.initial) {
+                                recountDetail.revised_by = "Sumatoria Sistema";
+                            }
+                            await recountDetail.save({ transaction: t });
+                        }
+
+                    }
+
+
+
+                    return res.json({
+                        status: 'success',
+                        data: detail
+                    });
+
+                } else if (req.body.case == 'update') {
+                    let detail = await RecountAreaDetail.findByPk(req.body.detail);
+                    if (detail == null) {
+                        return res.json({
+                            status: 'errorMessage',
+                            message: 'Detalle no encontrado'
+                        });
+                    }
+
+                    let area = await RecountArea.findByPk(detail.area);
+                    let recountDetail = await RecountDetail.findOne({
+                        where: {
+                            recount: area.recount,
+                            product: detail.product
+                        }
+                    });
+
+
+                    if (detail.cant > _cant) {
+                        recountDetail.final = (recountDetail.final - _cant > 0) ? (recountDetail.final - _cant) : 0;
+                    } else if (detail.cant < _cant) {
+                        recountDetail.final = recountDetail.final + _cant;
+                    }
+
+
+                    if (recountDetail.final == recountDetail.initial) {
+                        recountDetail.revised_by = "Sumatoria Sistema";
+                    } else {
+                        recountDetail.revised_by = null;
+                    }
+                    await recountDetail.save({ transaction: t });
+
+                    detail.cant = _cant;
+                    await detail.save({ transaction: t });
+
+                    return res.json({
+                        status: 'success',
+                        data: detail
+                    });
+
+                } else if (req.body.case == 'delete') {
+                    let detail = await RecountAreaDetail.findByPk(req.body.detail);
+                    if (detail == null) {
+                        return res.json({
+                            status: 'errorMessage',
+                            message: 'Detalle no encontrado'
+                        });
+                    }
+
+                    let area = await RecountArea.findByPk(detail.area);
+                    let recountDetail = await RecountDetail.findOne({
+                        where: {
+                            recount: area.recount,
+                            product: detail.product
+                        }
+                    });
+
+                    recountDetail.final = (recountDetail.final - detail.cant) > 0 ? (recountDetail.final - detail.cant) : 0;
+                    if (recountDetail.final == recountDetail.initial) {
+                        recountDetail.revised_by = "Sumatoria Sistema";
+                    } else {
+                        recountDetail.revised_by = null;
+                    }
+                    await recountDetail.save({ transaction: t });
+                    await detail.destroy({ transaction: t });
+
+                    return res.json({
+                        status: 'success',
+                        data: detail
+                    });
+                } else if (req.body.case == 'close') {
+                    let area = await RecountArea.findByPk(req.body.area);
+                    if (area == null) {
+                        return res.json({
+                            status: 'errorMessage',
+                            message: 'El area seleccionada no existe'
+                        });
+                    }
+
+                    let detail = await RecountAreaDetail.count({
+                        where: {
+                            area: req.body.area,
+                        }
+                    });
+
+
+                    if (detail > 0) {
+                        area._status = true;
+                        await area.save({ transaction: t });
+                    } else {
+                        await area.destroy({ transaction: t });
+                    }
+
+
+                    return res.json({
+                        status: 'success',
+                        data: area
+                    });
+
+                } else if (req.body.case == 'reopen') {
+                    let area = await RecountArea.findByPk(req.body.area);
+                    if (area == null) {
+                        return res.json({
+                            status: 'errorMessage',
+                            message: 'El area seleccionada no existe'
+                        });
+                    }
+
+
+                    area._status = false;
+                    await area.save({ transaction: t });
+
+
+                    return res.json({
+                        status: 'success',
+                        data: area
+                    });
+
+                }
+
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'opcion desconocida'
+                });
+
+            });
+        } catch (error) {
+            console.log(error);
+
+            return res.json({
+                status: 'error',
+                message: 'Error del Servidor'
+            });
+        }
+
+    },
+
 
     pdfRecountReport: async (req, res) => {
 

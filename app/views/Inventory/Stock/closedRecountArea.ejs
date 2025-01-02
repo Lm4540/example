@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+    .pulse {
+      color: #f80d18;
+      margin-right: 1rem;
+      /* animation-name: _pulse; */
+      animation-duration: .5s;
+      animation-timing-function: ease;
+      animation-iteration-count: infinite;
+    }
+
+    .choices {
+      margin-bottom: 2px;
+    }
+
+    #revised .pulse {
+      color: #078f1e;
+    }
+
+    @keyframes _pulse {
+      from {
+        font-size: 100%;
+      }
+
+      to {
+        font-size: 125%;
+      }
+    }
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory/product/recount">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <h3 class="text-center">
+          Area: <%= area.name%>
+        </h3>
+
+
+
+        <div class="col-12 text-center">
+          <% if (recount.endBy == null) { %>
+          <button class="btn btn-outline-warning round" onclick="reopen_area();">Reabrir Area</button>
+
+          <% } %>
+
+        </div>
+
+        <div class="col-12 mt-5" id="added_zone">
+          <table class="table table-bordered table-sm table-stripped">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% details.forEach(detail => { %>
+              <tr>
+                <td><img src="<%= products[detail.product].image %>" style="width: 150px;"></td>
+                <td>
+                  <%= products[detail.product].name %><br> #SKU <%= products[detail.product].sku %>
+                  <br><br>
+                  <%= detail.createdBy %>
+                </td>
+                <td>
+                  <%= detail.cant ?? 0 %>
+                </td>
+                
+              </tr>
+
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+
+
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  const reopen_area = async (id) => {
+
+    postData('/inventory/product/recountArea', {
+      area: '<%= area.id %>',
+      case: 'reopen',
+    }).then(data => {
+      if (data.status == 'success') {
+        successMessage('Area Cerrada');
+        window.location.reload();
+
+      } else if (data.status == 'errorMessage') {
+        return errorMessage(data.message);
+      } else {
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+</script>
+
+</html>

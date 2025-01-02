@@ -19,9 +19,7 @@ const RecountDetail = sequelize.define('RecountDetail', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    sku: {
-        type: DataTypes.STRING(20)
-    },
+    sku: DataTypes.STRING(20),
     initial: {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 0
@@ -30,13 +28,9 @@ const RecountDetail = sequelize.define('RecountDetail', {
         type: DataTypes.INTEGER.UNSIGNED,
         defaultValue: 0
     },
-    observation: {
-        type: DataTypes.STRING(300)
-    },
-    revised_by: {
-        type: DataTypes.STRING
-    },
-    cost: DataTypes.DECIMAL(10,2),
+    observation: DataTypes.STRING(300),
+    revised_by: DataTypes.STRING,
+    cost: DataTypes.DECIMAL(10, 2),
 }, {
     tableName: 'inventory_recount_detail',
 });

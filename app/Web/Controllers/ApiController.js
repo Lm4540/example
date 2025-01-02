@@ -369,7 +369,7 @@ const ApiController = {
                   if (req.query.keyword) {
                         sql += ` and (name like :search or internal_code like :search)`;
                         details = await sequelize.query(
-                              sql,
+                              sql + ' order by id DESC',
                               {
                                     replacements: { search: `%${req.query.keyword}%`, },
                                     type: QueryTypes.SELECT
@@ -377,7 +377,7 @@ const ApiController = {
                         );
                   } else {
                         details = await sequelize.query(
-                              sql,
+                              sql+ ' order by id DESC',
                               {
                                     type: QueryTypes.SELECT
                               }
@@ -422,7 +422,7 @@ const ApiController = {
             if (req.query.keyword) {
                   sql += ` and (name like :search or internal_code like :search) order by id DESC`;
                   details = await sequelize.query(
-                        sql,
+                        sql + ' order by id DESC',
                         {
                               replacements: { search: `%${req.query.keyword}%`, },
                               type: QueryTypes.SELECT
