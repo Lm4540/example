@@ -2868,7 +2868,7 @@ const StockController = {
         } catch (error) {
             console.log(error);
             await t.rollback();
-            return res.status(500).json({ 'error': 'Internal Server Error' });
+            return res.status(500).json({ data: error, 'error': 'Internal Server Error' });
         }
     },
 
