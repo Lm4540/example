@@ -3444,9 +3444,9 @@ const StockController = {
                         }
                     });
 
+                    recountDetail.final = recountDetail.final - detail.cant + _cant;
 
                     if (detail.cant > _cant) {
-                        recountDetail.final = (recountDetail.final - _cant > 0) ? (recountDetail.final - _cant) : 0;
                     } else if (detail.cant < _cant) {
                         recountDetail.final = recountDetail.final + _cant;
                     }
