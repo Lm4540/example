@@ -36,7 +36,7 @@
 
               <% details.forEach(detail => { %>
               <tr>
-                <td><%= detail.product_name %> <br>SKU# (<%= detail.sku %>) <small>id: <%= detail.product %> </small></td>
+                <td><%= detail.product_name %> <br>SKU# (<%= detail.sku %>) <small><a target="_blank" href="/inventory/product/view/<%= detail.product %>"></a> id: <%= detail.product %> </small></td>
                 <td class="text-center"><%= detail.initial %></td>
                 <td class="text-center"><%= detail.final %></td>
                 <% if (detail.initial > detail.final) { %>
