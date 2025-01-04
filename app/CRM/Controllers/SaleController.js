@@ -2121,8 +2121,7 @@ const SaleController = {
 
 
             if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) {
-
-                throw 'No hay suficientes ecistencias en tu sucursal asignada para poder agregar este producto';
+                return { status: 'errorMessage', message: 'No hay suficientes Existencias en tu sucursal asignada para poder agregar este producto' };
             }
 
             //buscar a ver si ya hay un detalle existente
