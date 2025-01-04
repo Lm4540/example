@@ -77,6 +77,7 @@ router.post('/product/join', StockController.joinProduct);
 router.get('/product/recount', StockController.getRecountView);
 router.post('/product/recount', StockController.createNewRecount);
 router.get('/product/recount/:id(\\d+)', StockController.viewRecount);
+router.get('/product/recount/:id(\\d+)/:product(\\d+)', StockController.productInArea);
 router.post('/product/recount/area', StockController.addAreas);
 router.get('/product/recountArea/:id(\\d+)', StockController.viewArea);
 router.post('/product/recountArea', StockController.addDetailToArea);

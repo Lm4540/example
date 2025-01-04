@@ -98,7 +98,14 @@
               <% details.pending.forEach(detail => { %>
               <tr id="tr_<%= detail.id %>">
                 <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
-                <td><a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a></td>
+                <td>
+                  <a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a>
+                  <% if (detail.final > 0) { %>
+
+                  <span class="badge bg-success ml-2 mr-2" onclick="viewProductInArea('<%= detail.product %>')">Ver en Area</span>
+
+                  <% } %>
+                </td>
                 <td>
                   <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final ?? 0 %>" style="max-width: 120px;">
                   <small>Registrado: <%= detail.initial %></small>
@@ -121,7 +128,16 @@
               <% details.revised.forEach(detail => { %>
               <tr id="tr_<%= detail.id %>">
                 <td style="width: 100px;" class="text-center"><i class="fas fa-circle pulse"></i></td>
-                <td><a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a></td>
+                <td>
+                  <a target="_blank" href="/inventory/product/view/<%= detail.product %>"><%= detail.product_name %><br> #SKU <%= detail.sku %></a>
+
+                  <% if (detail.final > 0) { %>
+
+                  <span class="badge bg-success ml-2 mr-2" onclick="viewProductInArea('<%= detail.product %>')">Ver en Area</span>
+
+                  <% } %>
+
+                </td>
                 <td>
                   <input class="form-control form-control-sm" type="number" id="input_<%= detail.id %>" step="1" value="<%= detail.final %>" style="max-width: 120px;">
                   <small>Registrado: <%= detail.initial %></small>
@@ -239,6 +255,35 @@
       </div>
     </div>
 
+    <div class="modal fade" id="VerEnArea" tabindex="-1" style="display: none;">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+          </div>
+          <div class="modal-body">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Cantidad</th>
+                  <th>Revisado por</th>
+                </tr>
+              </thead>
+              <tbody id="InareaDetails">
+              </tbody>
+            </table>
+
+          </div>
+          <div class="modal-footer text-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
     <%- include('../../Layouts/Footer.ejs') %>
   </div>
 </body>
@@ -250,6 +295,7 @@
   var timerDestino;
   var destino_last_val = "";
   var destinoSearchResult = {};
+  const VerEnAreaModal = new bootstrap.Modal(document.getElementById('VerEnArea'), {});
 
 
 
@@ -267,6 +313,34 @@
       referrerPolicy: 'no-referrer',
     });
     return response.json();
+  }
+
+
+  const viewProductInArea = async (product) => {
+    const response = await fetch(`/inventory/product/recount/<%= recount.id %>/${product}`, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    });
+    let data = await response.json();
+    let tbdoy = document.getElementById('InareaDetails');
+    tbdoy.innerHTML = '';
+
+    data.forEach(detail => {
+      let tr = document.createElement('tr');
+      tr.innerHTML = `<td>${detail.area}</td>
+      <td>${detail.cant}</td>
+      <td>${detail.by}</td>`;
+      tbdoy.appendChild(tr);
+
+    });
+
+    VerEnAreaModal.toggle();
   }
 
   const choices_destino = new Choices(destinoSelect, {
@@ -345,7 +419,7 @@
     document.querySelector('#finalizeProcessButton').addEventListener('click', e => {
       if (document.getElementById('processConfirmation').value == 'CONFIRMAR') {
         //enviar los datos al server
-        
+
         postData('/inventory/product/recount/update', {
           id: '<%= recount.id %>',
           case: 'finish',

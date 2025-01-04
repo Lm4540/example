@@ -3444,12 +3444,7 @@ const StockController = {
                         }
                     });
 
-                    recountDetail.final = recountDetail.final - detail.cant + _cant;
-
-                    if (detail.cant > _cant) {
-                    } else if (detail.cant < _cant) {
-                        recountDetail.final = recountDetail.final + _cant;
-                    }
+                    recountDetail.final = (recountDetail.final - detail.cant) + _cant;
 
 
                     if (recountDetail.final == recountDetail.initial) {
@@ -3561,6 +3556,33 @@ const StockController = {
                 message: 'Error del Servidor'
             });
         }
+
+    },
+
+    productInArea: async (req, res) => {
+        let details = await RecountArea.findAll({
+            where: {
+                recount: req.params.id,
+            }
+        });
+
+        let areas = {};
+        details.forEach(area => areas[area.id] = area.name);
+
+
+        details = await RecountAreaDetail.findAll({
+            where: {
+                product: req.params.product,
+                area: {
+                    [Op.in]: sequelize.literal(`(SELECT id FROM inventory_recount_area WHERE recount = ${req.params.id})`),
+                }
+            }
+        });
+
+
+        return res.json(details.map(detail => { return { area: areas[detail.area], cant: detail.cant, by: detail.createdBy } }));
+
+
 
     },
 
