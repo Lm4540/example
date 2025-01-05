@@ -3103,9 +3103,14 @@ const StockController = {
                     }
                 });
 
-                let disponible = _stock.cant - _stock.reserved;
-                if (disponible < cant) {
+                let disponible = (_stock.cant - _stock.reserved);
+                if (disponible < (detail.initial - cant)) {
                     return res.json({
+                        _data: {
+                            disponible,
+                            _stock,
+                            dif: detail.initial - cant,
+                        },
                         status: 'errorMessage',
                         data: 'Tienes reservada una cantidad mayor, por favor resuelve las reservas antes de ajustar el inventario',
                     });
