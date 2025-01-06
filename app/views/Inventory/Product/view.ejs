@@ -52,7 +52,7 @@
                 <% if (stock > 0) { %>
                 <p style="font-size: 125%; cursor: pointer;" class="text-success" data-bs-toggle="modal" data-bs-target="#Stock_detail">En Stock (<%= stock %> Disponibles)</p>
                 <% if (product.damaged > 0) { %>
-                  <p style="font-size: 130%;" class="text-danger"><%= product.damaged %> Unidades Dañadas o Desaparecidas</p>
+                <p style="font-size: 130%;" class="text-danger"><%= product.damaged %> Unidades Dañadas o Desaparecidas</p>
                 <% }
 
                 %>
@@ -76,6 +76,16 @@
                     </div>
                   </td>
                 </tr>
+
+                <% if (user.sucursal == 1) { %>
+                
+                <tr>
+                  <td>Consultar ultima ubicación </td>
+                  <td>
+                    <a class="badge bg-warning mt-1" href="/inventory/product/recount/12/<%= product.id %>" target="_blank"> Ultima Ubicación</a><br>
+                  </td>
+                </tr>
+                <% } %>
 
               </table>
             </div>
