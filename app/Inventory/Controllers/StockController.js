@@ -865,7 +865,7 @@ const StockController = {
             return Helper.notFound(req, res, 'Requisition not Found');
         } catch (error) {
             console.error(error);
-            return res.json({ status: 'error', message: error.message });
+            return res.json({ status: 'error', message: error.message, error: error });
         }
     },
 
