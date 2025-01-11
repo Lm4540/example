@@ -782,7 +782,7 @@ const StockController = {
                             reserve = reserves[dt.id];
                         console.log(product, stock, reserve);
                         if (product == undefined || stock == undefined || reserve == undefined) {
-                            throw  `Product or Stock not Found ${product.id} ${stock.id} ${reserve.id}`;
+                            throw  `Product or Stock not Found ${dt.id}`;
                         }
 
                         //Recopilar aqui la informacion para consolidarla
