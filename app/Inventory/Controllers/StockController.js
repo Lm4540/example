@@ -2355,10 +2355,12 @@ const StockController = {
         })
     },
     viewInStock: async (req, res) => {
-        res.render('Inventory/Product/inStock', { pageTitle: 'Productos disponibles', limit: 10 });
+        let sucursals = await Sucursal.findAll();
+        res.render('Inventory/Product/inStock', { pageTitle: 'Productos disponibles', limit: 10, sucursals });
     },
     productInStock: async (req, res) => {
         let search = req.query.search;
+        let sucursal = req.query.sucursal;
         let offset = Number.parseInt(req.query.offset);
         let limit = 10;
         let products = [];
@@ -2371,9 +2373,10 @@ const StockController = {
             //         type: QueryTypes.SELECT
             //     }
             // );
+            let sql = sucursal !== undefined ? `SELECT * FROM inventory_product WHERE id in (SELECT DISTINCT(product) FROM inventory_product_stock where cant > 0 and cant > reserved and sucursal = ${sucursal}) order by name ASC Limit :offset,:limit ` : `SELECT * FROM inventory_product WHERE id in (SELECT DISTINCT(product) FROM inventory_product_stock where cant > 0 and cant > reserved) order by name ASC Limit :offset,:limit`;
 
             products = await sequelize.query(
-                'SELECT * FROM `inventory_product` WHERE id in (SELECT DISTINCT(product) FROM `inventory_product_stock` where cant > 0 and cant > reserved) order by name ASC Limit :offset,:limit ',
+                sql,
                 {
                     replacements: { offset: offset, limit: limit },
                     type: QueryTypes.SELECT
@@ -2388,9 +2391,10 @@ const StockController = {
             //         type: QueryTypes.SELECT
             //     }
             // );
+            let sql = sucursal !== undefined ? `SELECT * FROM inventory_product WHERE (name like :search or internal_code like :search) and id in (SELECT DISTINCT(product) FROM inventory_product_stock where cant > 0 and cant > reserved and sucursal = ${sucursal}) order by name ASC Limit :offset,:limit` : "SELECT * FROM `inventory_product` WHERE (name like :search or internal_code like :search) and id in (SELECT DISTINCT(product) FROM `inventory_product_stock` where cant > 0 and cant > reserved) order by name ASC Limit :offset,:limit";
 
             products = await sequelize.query(
-                "SELECT * FROM `inventory_product` WHERE (name like :search or internal_code like :search) and id in (SELECT DISTINCT(product) FROM `inventory_product_stock` where cant > 0 and cant > reserved) order by name ASC Limit :offset,:limit ",
+                sql,
                 {
                     replacements: { search: `%${search}%`, offset: offset, limit: limit, },
                     type: QueryTypes.SELECT
@@ -2404,23 +2408,38 @@ const StockController = {
         });
 
         //obtener los stock
-        let tmp = await Stock.findAll({
-            where: {
-                [Op.and]: {
-                    product: { [Op.in]: ids },
-                    cant: { [Op.gt]: 0 }
+        let tmp = [];
+        if (sucursal !== undefined) {
+            tmp = await Stock.findAll({
+                where: {
+                    [Op.and]: {
+                        product: { [Op.in]: ids },
+                        cant: { [Op.gt]: 0 },
+                        sucursal: sucursal
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            tmp = await Stock.findAll({
+                where: {
+                    [Op.and]: {
+                        product: { [Op.in]: ids },
+                        cant: { [Op.gt]: 0 }
+                    }
+                }
+            });
+        }
+
 
         //indexar los resultados
         let stocks = {};
         tmp.forEach(stock => {
             if (stocks[stock.product] === undefined) {
-                stocks[stock.product] = { 'reserved': 0, stock: [] };
+                stocks[stock.product] = { 'reserved': 0, stock: [], sum:0 };
             }
             stocks[stock.product].stock.push(stock);
             stocks[stock.product].reserved += stock.reserved;
+            stocks[stock.product].sum += stock.cant;
         })
 
         //Indexar los productos
@@ -2431,6 +2450,7 @@ const StockController = {
                     id: prod.id,
                     cant: prod.stock,
                     sku: prod.internal_code,
+                    sum:0,
                     reserved: 0,
                     stocks: [],
                     name: prod.name,
@@ -2442,6 +2462,7 @@ const StockController = {
                     cant: prod.stock,
                     sku: prod.internal_code,
                     reserved: stocks[prod.id].reserved,
+                    sum: stocks[prod.id].sum,
                     stocks: stocks[prod.id].stock,
                     name: prod.name,
                     price: prod.base_price,

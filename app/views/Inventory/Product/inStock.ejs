@@ -54,14 +54,25 @@
     <div class="main-content container">
       <div class="row justify-content-center">
 
-        <div class="col-12 col-md-8 mt-4">
+        <div class="col-12 col-md-6 mt-4">
           <div class="form-group">
             <label for="searchBox">Terminos de busqueda</label>
-            <input type="text" class="form-control" name="searchBox" id="searchBox">
+            <input type="search" class="form-control" name="searchBox" id="searchBox">
             <small>Write the SKU or Name to search</small>
           </div>
         </div>
-        <div class="col-12 col-md-4 mt-4 text-center">
+        <div class="col-12 col-md-3 mt-4">
+          <div class="form-group">
+            <label for="Selectsucursal">Sucursal</label>
+            <select class="form-control" name="Selectsucursal" id="Selectsucursal">
+              <option value="0">Todas</option>
+              <% sucursals.forEach(suc => { %>
+              <option value="<%= suc.id %>"><%= suc.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="col-12 col-md-3 mt-4 text-center">
           <button class="badge bg-primary mt-4" onclick="print_div()">Imprimir Elementos Actuales</button>
         </div>
       </div>
@@ -212,6 +223,11 @@
       `/inventory/product/stock?search=${encodeURIComponent(search_last_val)}&offset=${query_offset}` :
       `/inventory/product/stock?offset=${query_offset}`;
 
+    let _sucursal = document.querySelector('#Selectsucursal');
+    if (_sucursal.value > 0) {
+      query += `&sucursal=${_sucursal.value}`;
+    }
+
     if (last_query == query) {
       return false;
     } else {
@@ -233,6 +249,8 @@
       })
       .then(response => response.json())
       .then(data => {
+
+        console.log(data);
         let len = data.length;
         if (len > 0) {
           data.forEach(element => {
@@ -246,7 +264,7 @@
               <span class="product_name" style="cursor:pointer;"><a href="/inventory/product/view/${element.id}">${element.name} </a></span> <br> <span style="cursor:pointer"  onclick="copy('${element.sku}')">#SKU ${element.sku}</span><br>
               <span class="product_price">$${element.price}</span><br>
               <span class="product_major">Mayor $${element.major}</span><br>
-              <span class="product_stock" onclick="stock_detail(${element.id}, '${element.name}')">${element.cant - element.reserved} en Existencias</span>
+              <span class="product_stock" onclick="stock_detail(${element.id}, '${element.name}')">${element.sum - element.reserved} en Existencias</span>
             </div>
           </div>`;
             parent.appendChild(div);
@@ -274,6 +292,10 @@
   document.addEventListener("DOMContentLoaded", (event) => {
     charge_sucursals();
     getproducts();
+
+    document.querySelector('#Selectsucursal').addEventListener('change', e =>{
+      getproducts(true);
+    });
 
     window.onbeforeprint = () => {
       last_html = document.body.innerHTML;
