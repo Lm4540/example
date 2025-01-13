@@ -53,10 +53,14 @@ const ApiController = {
             let client = await Client.findByPk(req.body.pin);
             if (client) {
                   //verificar el segundoi dato del cliente
-                  if ((client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null)) || (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null))) {
+                  if (client.NIT_DUI != req.body.document || client.NIT_DUI == null) {
+                 /* if ((client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null)) || (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null))) {*/
                         return res.json({
                               status: 'error',
-                              message: 'Datos del cliente incompletos, por favor pida a un asesor que actualize sus datos'
+                              message: 'Datos del cliente incompletos, por favor pida a un asesor que actualize sus datos',
+                              data: {client, nrc: (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null)), dui: (client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null))
+
+                              }
                         });
                   }
 
