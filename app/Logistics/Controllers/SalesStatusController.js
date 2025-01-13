@@ -101,14 +101,24 @@ const SalesStatusController = {
         //bloque nuevo
 
         tmp = await sequelize.query(
-            "SELECT * FROM `crm_sale_detail` WHERE  sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process')",
+            "SELECT * FROM `crm_sale_detail` WHERE reserved > ready and sale in(SELECT id FROM `crm_sale` WHERE sucursal = " + _sucursal_id + " and _status = 'process')",
             { type: QueryTypes.SELECT }
         );
         totals.mayor_details = tmp.length;
-
+        let sum_mayor_details = 0;
         tmp.forEach(detail => {
 
+
+            sum_mayor_details += (detail.reserved - detail.ready);
+            detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
+            mayor[detail.sale].details.push(detail);
+            if (mayor[detail.sale].open == false) {
+                mayor[detail.sale].open = (detail.ready > 0);
+            }
+
+            /*
             if (detail.reserved > detail.ready) {
+                sum_mayor_details += (detail.reserved - detail.ready);
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
                 mayor[detail.sale].details.push(detail);
                 if (mayor[detail.sale].open == false) {
@@ -116,13 +126,15 @@ const SalesStatusController = {
                 }
 
             } else {
-                totals.mayor_details -= 1;
+                // totals.mayor_details -= 1;
                 if (mayor[detail.sale] !== undefined && detail.reserved > 0) {
                     mayor[detail.sale].open = true;
                 }
-            }
+            }*/
             // detail.image = (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`);
         });
+
+        totals.mayor_details = sum_mayor_details;
 
 
         //buscar los paquetes listos para ser entregados

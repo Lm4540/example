@@ -236,7 +236,7 @@
 
       mayor[data.sale].details.forEach(el => {
         if (data.details.includes(`${el.id}`) || data.details.includes(el.id)) {
-          totals.mayor_details -= 1;
+          totals.mayor_details -= el.cant;
           document.querySelector(`#info_detail_div_${el.id}`).parentNode.removeChild(document.querySelector(`#info_detail_div_${el.id}`));
         } else {
           restantes.push(el);
