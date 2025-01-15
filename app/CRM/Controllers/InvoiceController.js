@@ -302,7 +302,7 @@ const InvoiceController = {
                             invoice.dte = null;
                             invoice.invoice_retention = data.invoice_retention;
                             invoice.invoice_isr = data.invoice_isr;
-                            invoice.invoice_date = new Date(data.invoice_date);
+                            invoice.invoice_date = new Date(data.invoice_date+"T06:00:00");
 
 
                             //Actualizar los taxes segun las opciones seleccionadas
