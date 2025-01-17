@@ -1749,6 +1749,8 @@ const SaleController = {
                         });
 
 
+                        let _stocks_to_discount = [];
+                        let __stocks = {};
 
                         for (let index = 0; index < reserves.length; index++) {
                             //Buscar el Stock
@@ -1760,15 +1762,24 @@ const SaleController = {
                                 }
                             });
 
+                            __stocks[stock.id] = stock;
 
-                            stock.reserved -= reserves[index].cant;
-                            product.reserved -= reserves[index].cant;
 
-                            await product.save({ transaction: t });
-                            await stock.save({ transaction: t });
+                            _stocks_to_discount[stock.id] = _stocks_to_discount[stock.id] == undefined ? reserves[index].cant : (_stocks_to_discount[stock.id] + reserves[index].cant);
+
                             await reserves[index].destroy({ transaction: t });
                         }
 
+                        let _keys = Object.keys(_stocks_to_discount);
+                        for (let i = 0; i < _keys.length; i++) {
+                            let stock = __stocks[_keys[i]];
+                            stock.reserved -= _stocks_to_discount[_keys[i]];
+                            await stock.save({ transaction: t });
+                        }
+
+
+                        product.reserved -= detail.cant;
+                        await product.save({ transaction: t });
                         await detail.destroy({ transaction: t });
 
 
