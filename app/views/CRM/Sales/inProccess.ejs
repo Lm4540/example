@@ -2,166 +2,178 @@
 <html lang="en">
 
 <head>
-   <%- include('../../Layouts/Head.ejs') %>
-   <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
-   <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
-   <style>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/grid/mermaid.css">
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <style>
 
-   </style>
+  </style>
 </head>
 
 <body class="<%= darkMode %>">
-   <%- include('../../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <h3 class="text-center mb-4">Ventas en Proceso</h3>
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <h3 class="text-center mb-4">Ventas en Proceso</h3>
 
-         <div class="row mt-4 mb-5 justify-content-center">
-            <div class="col">
-               <div class="form-group">
-                  <label for="status">Status</label>
-                  <select name="status_select" id="status_select" class="form-control">
-                     <option value="all">Todos</option>
-                     <% _options.forEach(el => { %>
-                     <option value="<%= el.id %>"><%= el.name.toUpperCase() %></option>
-                     <% }) %>
-                  </select>
-               </div>
-            </div>
-            <div class="col">
-               <div class="form-group">
-                  <label for="seller_select">Vendedor / Sucursal</label>
-                  <select name="seller_select" id="seller_select" class="form-control">
-                     <option value="all">Todos</option>
-                     <% employees.forEach(el => { %>
-                     <option value="<%= el.id %>"><%= el.name %></option>
-                     <% }) %>
-                  </select>
-               </div>
-            </div>
-            <div class="col">
-               <button class="btn round btn-warning mt-4" onclick="filtrar()">Filtrar</button>
-            </div>
-         </div>
-
-
-         <div class="row mt-4 mb-5 justify-content-center">
-            <div class="col-12 col-md-6 text-center">
-               <input type="search" class="form-control" id="searchBox">
-               <small>Escribe el nombre de un Cliente para buscar</small>
-            </div>
-         </div>
-
-         <div class="table-responsive">
-            <table class="table table-sm table-hover table-bordered">
-               <thead>
-                  <tr>
-                     <th>Cliente</th>
-                     <th>Fecha de Apertura</th>
-                     <th>Monto</th>
-                     <th>Vendedor</th>
-                     <th>Sucursal</th>
-                     <th>Estado</th>
-                     <th>opt</th>
-                  </tr>
-               </thead>
-               <tbody id="tabla-parcial" style="display:none;">
-               </tbody>
-               <tbody id="tabla-completa">
-                  <% sales.forEach(sale => { %>
-                  <tr class="text-center">
-                     <td data-name="<%= clients[sale.client] %>">
-                        <a href="/sales/client/view/<%= sale.client %>">
-                           <%= clients[sale.client] %>
-                        </a>
-                     </td>
-                     <td>
-                        <% if (limit_date > sale.createdAt) { %>
-                        <span class="<%= sale._status == "transport" || sale._status == "closed" ? 'text-success' :  'text-danger'  %>">
-                           <%= Helper.date_to_spanish(sale.createdAt) %>
-                        </span>
-                        <% } else { %>
-                        <span class="<%= sale._status == "transport" || sale._status == "closed" ? 'text-success' :  ''  %>">
-                           <%= Helper.date_to_spanish(sale.createdAt) %>
-                        </span>
-
-                        <% } %>
-                     </td>
-                     <td>$<%= Helper.money_format(sale.balance) %></td>
-                     <td><%= sellers[sale.seller] %></td>
-                     <td><%= sucursals[sale.sucursal] %></td>
-                     <td>
-                        <%= status[sale._status] %>
-                     </td>
-                     <td>
-                        <a href="/sales/view/<%= sale.id %>" class="badge bg-red">Ver</a>
-                     </td>
-                  </tr>
-                  <% }) %>
-               </tbody>
-            </table>
-         </div>
-
+      <div class="row mt-4 mb-5 justify-content-center">
+        <div class="col">
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select name="status_select" id="status_select" class="form-control">
+              <option value="all">Todos</option>
+              <% _options.forEach(el => { %>
+              <option value="<%= el.id %>"><%= el.name.toUpperCase() %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label for="seller_select">Vendedor / Sucursal</label>
+            <select name="seller_select" id="seller_select" class="form-control">
+              <option value="all">Todos</option>
+              <% employees.forEach(el => { %>
+              <option value="<%= el.id %>"><%= el.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="col">
+          <button class="btn round btn-warning mt-4" onclick="filtrar()">Filtrar</button>
+        </div>
       </div>
-      <%- include('../../Layouts/Footer.ejs') %>
-   </div>
+
+
+      <div class="row mt-4 mb-5 justify-content-center">
+        <div class="col-12 col-md-6 text-center">
+          <input type="search" class="form-control" id="searchBox">
+          <small>Escribe el nombre de un Cliente para buscar</small>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover table-bordered">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Fecha de Apertura</th>
+              <th>Monto</th>
+              <th>Vendedor</th>
+              <th>Sucursal</th>
+              <th>Estado</th>
+              <th>opt</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-parcial" style="display:none;">
+          </tbody>
+          <tbody id="tabla-completa">
+            <% sales.forEach(sale => { %>
+            <tr class="text-center">
+              <td data-name="<%= clients[sale.client] %>">
+                <a href="/sales/client/view/<%= sale.client %>">
+                  <%= clients[sale.client] %>
+                </a>
+              </td>
+              <td>
+
+                <% if (sale._status == "transport") { %>
+                <span class="text-success">
+                  <%= Helper.date_to_spanish(sale.createdAt) %>
+                </span>
+                <% } else { %>
+                  <% if (limit_date_2 > sale.createdAt) { %>
+                  <span class="<%= limit_date > sale.createdAt ? 'text-danger': 'text-warning' %>">
+                     <%= Helper.date_to_spanish(sale.createdAt) %>
+                  </span>
+                  
+                  <% } else { %>
+                  <span class="">
+                     <%= Helper.date_to_spanish(sale.createdAt) %>
+                  </span>
+
+                  <% } %>
+
+                <% } %>
+
+
+               
+              </td>
+              <td>$<%= Helper.money_format(sale.balance) %></td>
+              <td><%= sellers[sale.seller] %></td>
+              <td><%= sucursals[sale.sucursal] %></td>
+              <td>
+                <%= status[sale._status] %>
+              </td>
+              <td>
+                <a href="/sales/view/<%= sale.id %>" class="badge bg-red">Ver</a>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
-   const filtrar = () => {
-      let seller = document.querySelector("#seller_select").value;
-      let status = document.querySelector("#status_select").value;
-      window.location.href = `/sales/inProccess?_status=${status}&seller=${seller}`;
-   }
+  const filtrar = () => {
+    let seller = document.querySelector("#seller_select").value;
+    let status = document.querySelector("#status_select").value;
+    window.location.href = `/sales/inProccess?_status=${status}&seller=${seller}`;
+  }
 
-   var timer_search;
-   var search_last_val = "";
-   
-   const clean_search = () => {
-      
-   }
+  var timer_search;
+  var search_last_val = "";
 
-   const buscarCliente = (text, min) => {
-      let content = "";
-      if(text.length >= min){
-         let body = document.querySelector('#tabla-completa').querySelectorAll('tr');
-         body.forEach(tr => {
-            text = text.toLowerCase();
-            let name = tr.cells[0].dataset.name.toLowerCase()
-            if(name.includes(text)){
-               content += `<tr class="text-center">${tr.innerHTML}</tr>`;
-            }
-            
-         })
+  const clean_search = () => {
 
-         document.querySelector('#tabla-parcial').style.display = 'table-row-group';
-         document.querySelector('#tabla-completa').style.display = 'none';
-      }else{
-         document.querySelector('#tabla-parcial').style.display = 'none';
-         document.querySelector('#tabla-completa').style.display = 'table-row-group';
+  }
+
+  const buscarCliente = (text, min) => {
+    let content = "";
+    if (text.length >= min) {
+      let body = document.querySelector('#tabla-completa').querySelectorAll('tr');
+      body.forEach(tr => {
+        text = text.toLowerCase();
+        let name = tr.cells[0].dataset.name.toLowerCase()
+        if (name.includes(text)) {
+          content += `<tr class="text-center">${tr.innerHTML}</tr>`;
+        }
+
+      })
+
+      document.querySelector('#tabla-parcial').style.display = 'table-row-group';
+      document.querySelector('#tabla-completa').style.display = 'none';
+    } else {
+      document.querySelector('#tabla-parcial').style.display = 'none';
+      document.querySelector('#tabla-completa').style.display = 'table-row-group';
+    }
+    document.querySelector('#tabla-parcial').innerHTML = content;
+    return false;
+  }
+
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+
+    document.querySelector('#searchBox').addEventListener('input', async (e) => {
+      let val = e.target.value;
+      if (search_last_val !== val) {
+        search_last_val = val;
+        clearTimeout(timer_search);
+        timer_search = setTimeout(async () => {
+          buscarCliente(search_last_val.trim(), 3);
+        }, 500);
       }
-      document.querySelector('#tabla-parcial').innerHTML = content;
-      return false;
-   }
 
+    });
 
-   document.addEventListener('DOMContentLoaded', event => {
-
-
-      document.querySelector('#searchBox').addEventListener('input', async (e) => {
-         let val = e.target.value;
-         if (search_last_val !== val) {
-            search_last_val = val;
-            clearTimeout(timer_search);
-            timer_search = setTimeout(async () => {
-               buscarCliente(search_last_val.trim(), 3);
-            }, 500);
-         }
-
-      });
-
-   });
+  });
 </script>
 
 </html>

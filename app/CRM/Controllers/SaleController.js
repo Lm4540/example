@@ -1078,6 +1078,11 @@ const SaleController = {
 
         let limit_date = new Date();
         limit_date.setDate(limit_date.getDate() - 7);
+
+
+        let limit_date_2 = new Date();
+        limit_date_2.setDate(limit_date_2.getDate() - 4);
+
         //Buscar las ventas que no esten finalizadas
         let sales = await Sale.findAll({
             where: where
@@ -1112,7 +1117,7 @@ const SaleController = {
         tmp.forEach(el => sucursals[el.id] = el.abreviation);
 
         //pasar los datos
-        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, employees, _options });
+        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, limit_date_2, employees, _options });
     },
 
     addDetail: async (req, res) => {
