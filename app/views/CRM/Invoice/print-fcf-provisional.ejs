@@ -51,7 +51,7 @@
          width: 12cm;
          font-family: 'sans-serif', 'Arial Narrow', Arial, sans-serif;
          font-size: small;
-         background-image: url("/assets/images/invoice-bg.png") !important;
+         background-image: url("/assets/images/invoice-provisional-bg.png") !important;
          background-repeat: no-repeat;
          background-size: 11cm;
       }
@@ -101,8 +101,8 @@
          color: red;
          font-size: 200%;
          font-family: monospace;
-         margin-top: -1.4cm;
-         margin-left: 8.2cm;
+         margin-top: -1.2cm;
+         margin-left: 8.7cm;
          font-weight: bolder;
       }
 
@@ -352,7 +352,9 @@
          </tr>
       </tbody>
    </table>
-   <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b>, Si este numero no coincide con el numero en la parte superior, este documento es anulado automaticamente</p>
+   <!-- <p id="last_element">Registro ID: <%= sale.id %>. <b><%= sale.invoice_type.toUpperCase() %><small>(<%= serie.serie %>)</small> N° <%= sale.invoice_number %></b>, Si este numero no coincide con el numero en la parte superior, este documento es anulado automaticamente</p> -->
+
+   <p id="last_element">Registro ID: <%= sale.id %>. <b>Orden de entrega N° <%= sale.invoice_number %></b> Santa Ana.</p>
 </body>
 <script src="assets/js/main.js"></script>
 <script>
