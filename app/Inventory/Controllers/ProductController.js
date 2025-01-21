@@ -4,9 +4,9 @@ const Provider = require('../Models/Provider');
 const Sucursal = require('../Models/Sucursal');
 const Stock = require('../Models/Stock');
 const SaleDetail = require('../../CRM/Models/SaleDetail');
-
 const Movement = require('../Models/Movement');
 
+const axios = require('axios').default;
 const Helper = require('../../System/Helpers');
 const Money = require('../../System/Money');
 const sequelize = require("../../DataBase/DataBase");
@@ -592,7 +592,7 @@ const ProductController = {
                     // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
                     let image_data = data.image.slice(23);
                     //Almacenar la imagen
-                    fs.writeFile(location, image_data, 'base64', (err) => {
+                    fs.writeFile(location, image_data, 'base64', async (err) => {
                         if (err) {
                             console.log(err);
                             res.status(500).json({
@@ -601,6 +601,9 @@ const ProductController = {
                             });
                         } else {
                             console.log('La imagen se guardó correctamente en el servidor.');
+                            //enviar la solicitu a la imagen con el link de actualizacion
+
+                            let png = await axios.get(`https://riverasgroup.com/image?renew=true&img=${image_name}`, { responseType: 'arraybuffer' });
                         }
                     });
 
