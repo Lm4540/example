@@ -509,6 +509,7 @@ const ApiController = {
 
       getProductImage2: async (req, res) => {
             let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', req.query.img);
+            console.log('solicitud de imagen');
             if (fs.existsSync(location)) {
                   try {
                         return await fs.readFile(location, async (err, data) => {
