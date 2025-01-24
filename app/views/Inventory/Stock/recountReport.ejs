@@ -23,36 +23,61 @@
           <table class="table table-bordered table-sm">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Inicial</th>
-                <th>Final</th>
+                <th>sku</th>
+                <th>Nombre</th>
+                <th>Costo</th>
+                <th>Inventario Inicial</th>
+                <th>Valor Inicial</th>
                 <th>Diferencia</th>
+                <th>Inventario Final</th>
+                <th>Valor Final</th>
                 <th>Justificación</th>
                 <th>Revisado por</th>
               </tr>
             </thead>
             <tbody>
-
-
-              <% details.forEach(detail => { %>
+              <% 
+              var sum_total = 0;
+              var sum_inicial = 0;
+              
+              details.forEach(detail => { 
+                if(detail.initial !== 0 && 0!== detail.final){
+                  
+                let inicial =  Helper.fix_number(detail.initial * detail.cost);
+                let final = Helper.fix_number(detail.final * detail.cost);
+                sum_total += final;
+                sum_inicial += inicial;
+                
+                               
+                %>
               <tr>
-                <td><%= detail.product_name %> <br>SKU# (<%= detail.sku %>) <small><a target="_blank" href="/inventory/product/view/<%= detail.product %>"> id: <%= detail.product %> </a> </small></td>
+                <td><%= detail.sku %> <small><a target="_blank" href="/inventory/product/view/<%= detail.product %>"> id: <%= detail.product %> </a> </small></td>
+                <td><%= detail.product_name %>  </td>
+                <td class="text-center">$<%= Helper.money_format(detail.cost) %></td>
                 <td class="text-center"><%= detail.initial %></td>
+                <td>$<%= Helper.money_format(inicial) %></td>
+                <td><%= detail.final - detail.initial %></td>
                 <td class="text-center"><%= detail.final %></td>
-                <% if (detail.initial > detail.final) { %>
-                <td class="text-center"><b style="font-size: 125%;"> - </b> <%= detail.initial - detail.final %> U</td>
+                <td>$<%= Helper.money_format(final) %></td>
                 <td><%= detail.observation %></td>
-                <% } else if (detail.initial < detail.final) { %>
-                <td class="text-center"><b style="font-size: 125%;"> + </b> <%= detail.final - detail.initial %> U</td>
-                <td><%= detail.observation %></td>
-                <% } else { %>
-                <td class="text-center">- - </td>
-                <td class="text-center"> - -</td>
-                <% } %>
                 <td class="text-center"><%= detail.revised_by %></td>
               </tr>
 
-              <% }) %>
+              <% }}) %>
+
+              <tr>
+                <td>--</td>
+                <td>TOTALES</td>
+                <td>--</td>
+                <td>--</td>
+                <td>$<%= Helper.money_format(sum_inicial) %></td>
+                <td>--</td>
+                <td>--</td>
+                <td>$<%= Helper.money_format(sum_total) %></td>
+                <td>--</td>
+                <td>--</td>
+                
+              </tr>
             </tbody>
           </table>
         </div>
