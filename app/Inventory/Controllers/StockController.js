@@ -356,7 +356,8 @@ const StockController = {
                                     let detail = await RequisitionDetail.findOne({
                                         where: {
                                             requisition: requisition.id,
-                                            product: dt.product
+                                            product: dt.product,
+                                            sale_detail: {[Op.is]: null}
                                         }
                                     });
 
