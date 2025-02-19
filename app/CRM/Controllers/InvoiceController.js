@@ -822,7 +822,7 @@ const InvoiceController = {
         //Buscar la venta
         let sale = await Sale.findByPk(req.params.id);
 
-        if (sale && sale.invoice_number !== null && sale.invoice_type == "fcf" && sale.invoce_serie  == 9) {
+        if (sale && sale.invoice_number !== null && sale.invoice_type == "fcf" && sale.invoce_serie  == 10) {
             if (sale._status == "revoked") {
                 ref = `/sales/view_invoice/${sale.id}`;
                 res.redirect(301, ref);

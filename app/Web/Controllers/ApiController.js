@@ -13,6 +13,8 @@ const CatalogAccess = require("../Models/CatalogAccess");
 const CatalogDetail = require("../Models/CatalogDetail");
 const Employee = require('../../HRM/Models/Employee');
 const ProductClassification = require('../../Inventory/Models/ProductClassification');
+const Stock = require('../../Inventory/Models/Stock');
+const Sucursal = require('../../Inventory/Models/Sucursal');
 
 const client_has_access = async (client, catalog) => {
       if (client.has_web_access === false || catalog.active === false) {
@@ -484,6 +486,20 @@ const ApiController = {
             let product = await Product.findByPk(req.params.id);
             if (product) {
 
+                  let tmp = await Stock.findAll({
+                        where: {
+                              product: product.id
+                        }
+                  });
+
+                  let stocks = {};
+
+                  tmp.forEach(stock => {
+                        stocks[stock.sucursal] = stock.cant - stock.reserved;
+                  });
+                  
+                  
+                  tmp = await Sucursal.findAll();
                   product = {
                         id: product.id,
                         name: product.name,
@@ -493,7 +509,14 @@ const ApiController = {
                         price: product.price,
                         classification: product.classification,
                         cant: (product.stock - product.reserved),
-                        description: product.description
+                        description: product.description,
+                        stocks: tmp.map(sucursal => {
+                              return {
+                                    id: sucursal.id,
+                                    name: sucursal.name,
+                                    cant : stocks[sucursal.id] || 0,
+                              }
+                        })
                   };
 
                   return res.json({
