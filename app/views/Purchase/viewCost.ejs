@@ -2,96 +2,111 @@
 <html lang="es">
 
 <head>
-   <%- include('../Layouts/Head.ejs') %>
+  <%- include('../Layouts/Head.ejs') %>
 </head>
 
 <body class="<%= darkMode %>">
-   <%- include('../Layouts/SideBar.ejs') %>
-   <div id="main">
-      <%- include('../Layouts/NavBar.ejs') %>
-      <div class="main-content container-fluid">
-         <div class="card">
-            <div class="card-body">
-               <ul class="list-group">
-                  <li class="list-group-item">
-                     <div class="row">
-                        <div class="col">Proveedor:</div>
-                        <div class="col"><%= provider.name %></div>
-                     </div>
-                  </li>
-                  <li class="list-group-item">
-                     <div class="row">
-                        <div class="col">Documento:</div>
-                        <div class="col"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></div>
-                     </div>
-                  </li>
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="card">
+        <div class="card-body">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col">Proveedor:</div>
+                <div class="col"><%= provider.name %></div>
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col">Documento:</div>
+                <div class="col"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></div>
+              </div>
+            </li>
 
-                  <li class="list-group-item">
-                     <div class="row">
-                        <div class="col">Fecha de la Factura:</div>
-                        <div class="col"><%= Helper.format_date(purchase.invoice_date, false) %></div>
-                     </div>
-                  </li>
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col">Fecha de la Factura:</div>
+                <div class="col"><%= Helper.format_date(purchase.invoice_date, false) %></div>
+              </div>
+            </li>
 
-                  <li class="list-group-item">
-                     <div class="row">
-                        <div class="col">Registrado:</div>
-                        <div class="col"><%= purchase.createdBy %><br><%= Helper.format_date(purchase.createdAt, true) %></div>
-                     </div>
-                  </li>
-                 
-               </ul>
-               <% var total_cost = 0.00 %>
-               <table class="table table-sm table-bordered table-hover text-center mt-5">
-                  <thead>
-                     <tr>
-                        <th style="width: 35%; max-width: 35%;">Descripcion</th>
-                        <th style="width: 7%; max-width: 7%;">Cantidad</th>
-                        <th style="width: 10%; max-width: 10%;">Precio<br>Unitario</th>
-                        <th style="width: 10%; max-width: 10%;">Valor del <br>Equipo</th>
-                        <% costs.forEach(cost => { 
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col">Registrado:</div>
+                <div class="col"><%= purchase.createdBy %><br><%= Helper.format_date(purchase.createdAt, true) %></div>
+              </div>
+            </li>
+
+          </ul>
+          <% var total_cost = 0.00 %>
+          <table class="table table-sm table-bordered table-hover text-center mt-5">
+            <thead>
+               <tr>
+                  <th colspan="4"><%= invoice_types[purchase.invoice_type] %> N° <%= purchase.invoice_number %></th>
+                  <% if (costs.length > 0) { %>
+                   
+                     <th colspan="<%= costs.length%>">Costos</th>
+                  <% } %>
+                  <th colspan="3">Resultado</th>
+               </tr>
+              <tr>
+                <th style="width: 35%; max-width: 35%;">Descripcion</th>
+                <th style="width: 7%; max-width: 7%;">Cantidad</th>
+                <th style="width: 10%; max-width: 10%;">Precio<br>Unitario</th>
+                <th style="width: 10%; max-width: 10%;">Valor del <br>Equipo</th>
+                <% costs.forEach(cost => { 
                            total_cost = Helper.fix_number(total_cost + Number.parseFloat(cost.price)) %>
-                           <th style="width: 10%; max-width: 10%;"><%= cost.description %></th>
-                        <% }) %>
-                        <th>Costo total del <br> Equipo</th>
-                        <th>Costo Unitario</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     <% details.forEach(detail => {
+                <th style="width: 10%; max-width: 10%;"><%= cost.description %></th>
+                <% }) %>
+                <th>Cantidad Recibida</th>
+                <th>Costo total del <br> Equipo</th>
+                <th>Costo Unitario</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% details.forEach(detail => {
                         let percent = (detail.cant * detail.price) / purchase.subtotal %>
-                        
-                     <tr>
-                        <td><%= detail.description %> (<%= detail.code !== null && detail.code !== "" ? detail.code : 'Sin Codigo' %>)</td>
-                        <td><%= detail.cant %></td>
-                        <td>$<%= Helper.money_format(detail.price, 4) %></td>
-                        <td>$<%= Helper.money_format(Helper.fix_number(detail.cant *  detail.price), 2) %></td>
-                        <% costs.forEach(cost => { %>
-                           <td>$<%= Helper.money_format(Helper.fix_number(cost.price * percent), 2) %></td>
-                        <% }) %>
-                        <td>$<%= Helper.money_format(detail.cost * detail.cant) %></td>
-                        <td>$<%= Helper.money_format(detail.cost) %></td>
-                     </tr>
-                     <% }) %>
-                  </tbody>
-                  <tbody>
-                     <tr>
-                        <td colspan="3" class="text-right">SUMAS</td>
-                        <td>$<%= Helper.money_format(purchase.subtotal) %></td>
-                        <% costs.forEach(cost => { %>
-                           <td>$<%= Helper.money_format(cost.price ) %></td>
-                        <% }) %>
-                        <td>$<%= Helper.money_format(Number.parseFloat(total_cost) + parseFloat(purchase.subtotal)) %>
-                        </td>
-                        <td>--</td>
-                     </tr>
-                  </tbody>
-               </table>
-            </div>
-         </div>
+
+              <tr>
+                <td><%= detail.description %> (<%= detail.code !== null && detail.code !== "" ? detail.code : 'Sin Codigo' %>)</td>
+                <td><%= detail.cant %></td>
+                <td>$<%= Helper.money_format(detail.price, 4) %></td>
+                <td>$<%= Helper.money_format(Helper.fix_number(detail.cant *  detail.price), 2) %></td>
+                <% 
+                        let sub_costs  = 0.00;
+                        costs.forEach(cost => { 
+                           sub_costs += (cost.price * percent);
+                           %>
+                <td>$<%= Helper.money_format(Helper.fix_number(cost.price * percent), 2) %></td>
+                <% }) %>
+                <td><%= detail.identified %></td>
+                <td>$<%= Helper.money_format(((detail.cant * detail.price) + sub_costs), 2) %></td>
+                <td>$<%= Helper.money_format(detail.cost) %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+            <tbody>
+              <tr>
+                <td colspan="3" class="text-right">SUMAS</td>
+                <td>$<%= Helper.money_format(purchase.subtotal) %></td>
+                <% costs.forEach(cost => { %>
+                <td>$<%= Helper.money_format(cost.price ) %></td>
+                <% }) %>
+                <td>--</td>
+                <td>$<%= Helper.money_format(Number.parseFloat(total_cost) + parseFloat(purchase.subtotal)) %>
+                </td>
+                <td>--</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <%- include('../Layouts/Footer.ejs') %>
-   </div>
+    </div>
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
 </body>
 <%- include('../Layouts/Scripts.ejs') %>
 <script>
