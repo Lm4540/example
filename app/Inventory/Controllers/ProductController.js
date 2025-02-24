@@ -194,6 +194,8 @@ const ProductController = {
             message = 'Debe proporcionar un numero identificador del producto para el Inventario';
         } else if (data.description.length < 10) {
             message = 'Proporcione una descripción';
+        }else if (data.description.length > 255) {
+            message = 'descripción máxima de 255 caracteres';
         } else if (data.classification.length < 1 || data.classification == "") {
             message = 'Seleccione una Clasificación';
         } else if (data.color.length < 3 || data.color == "") {
@@ -538,6 +540,8 @@ const ProductController = {
             message = 'Por favor, proporcione el nombre de este producto';
         } else if (data.description.length < 10) {
             message = 'Proporcione una descripción';
+        }else if (data.description.length > 255) {
+            message = 'Descripcion máxima de 255 caracteres';
         } else if (data.classification.length < 1 || data.classification == "") {
             message = 'Seleccione una Clasificación';
         } /*else if (data.provider.length < 1 || data.provider == "") {
