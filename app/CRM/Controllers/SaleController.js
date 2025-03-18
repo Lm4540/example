@@ -1049,6 +1049,7 @@ const SaleController = {
         ];
         let seller = req.query.seller !== undefined && req.query.seller !== "all" ? req.query.seller : null;
         let _status = req.query._status !== undefined && req.query._status !== "all" ? req.query._status : null;
+        let _sucursal = req.query.sucursal !== undefined && req.query.sucursal !== "all" ? req.query.sucursal : null;
 
         let where = {
             _status: {
@@ -1057,7 +1058,14 @@ const SaleController = {
         };
 
         if (_status) {
-            if (seller) {
+
+            if(_sucursal){
+                where = {
+                    _status: _status,
+                    sucursal: _sucursal
+                };
+            }
+            else if (seller) {
                 where = {
                     _status: _status,
                     seller: seller
@@ -1070,6 +1078,13 @@ const SaleController = {
         } else if (seller) {
             where = {
                 seller: seller,
+                _status: {
+                    [Op.notIn]: ['collected', 'revoked'],
+                }
+            };
+        }else if(_sucursal){
+            where = {
+                sucursal: _sucursal,
                 _status: {
                     [Op.notIn]: ['collected', 'revoked'],
                 }
@@ -1112,12 +1127,12 @@ const SaleController = {
             sellers[e.id] = name.length == 4 ? `${name[0]} ${name[2]}` : e.name;
         });
 
-        tmp = await Sucursal.findAll();
+        let all_sucursals = await Sucursal.findAll();
         let sucursals = {};
-        tmp.forEach(el => sucursals[el.id] = el.abreviation);
+        all_sucursals.forEach(el => sucursals[el.id] = el.abreviation);
 
         //pasar los datos
-        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, sellers, clients, sales, status, limit_date, limit_date_2, employees, _options });
+        return res.render('CRM/Sales/inProccess', { pageTitle: 'Venta en Sala', sucursals, all_sucursals, sellers, clients, sales, status, limit_date, limit_date_2, employees, _options });
     },
 
     addDetail: async (req, res) => {
@@ -1402,7 +1417,6 @@ const SaleController = {
                 }
 
                 return res.json({ status: 'success', message: 'Guardado', data: { detail, balance: sale.balance } });
-                //throw new Error();
 
             });
         } catch (error) {
@@ -1855,12 +1869,18 @@ const SaleController = {
             });
 
             let product = await Product.findByPk(data.product);
-            if (product == null) { throw 'Producto no encontrado'; }
+            if (product == null) {
+
+                return res.json({ status: 'errorMessage', message: 'producto no encontrado' });
+            }
 
             let detail_count = 0;
             let detail = null;
             if (sale !== null && sale !== undefined) {
-                if (sale.sucursal !== session.employee.sucursal) { throw 'No puedes agregar productos a una venta de otra sucursal'; }
+                if (sale.sucursal !== session.employee.sucursal) {
+                    return res.json({ status: 'errorMessage', message: 'No puedes agregar productos a una venta de otra sucursal' });
+
+                }
                 detail_count = await SaleDetail.count({ where: { sale: sale.id } });
             }
 
@@ -1873,7 +1893,10 @@ const SaleController = {
             });
 
 
-            if (stock == null || stock == undefined || (stock.cant - stock.reserved < cantidad)) { throw 'No hay suficientes existencias para poder agregar este producto'; }
+            if (stock == null || stock == undefined || (stock.cant - stock.reserved < cantidad)) {
+                return res.json({ status: 'errorMessage', message: 'No hay suficientes existencias para poder agregar este producto' });
+
+            }
 
             //buscar a ver si ya hay un detalle existente
             if (detail_count > 0) {
@@ -2114,7 +2137,8 @@ const SaleController = {
             if (sale !== null && sale !== undefined) {
                 if (sale.sucursal !== session.employee.sucursal) {
                     // Eliminado el permiso && !session.permission.includes('update_sales_of_another_sucursal') porque reservaba cosas de la sucursal incorrecta
-                    throw 'No puedes agregar productos a una venta de otra sucursal';
+                    return { status: 'errorMessage', message: 'No puedes agregar productos a una venta de otra sucursal' };
+
                 }
                 //token
                 detail_count = await SaleDetail.count({ where: { sale: sale.id } });
@@ -2122,7 +2146,8 @@ const SaleController = {
 
             let product = await Product.findByPk(data.product);
             if (product == null) {
-                throw 'Producto no encontrado';
+                return { status: 'errorMessage', message: 'Producto no encontrado' };
+
             }
 
             //buscar el stock que pertenece a la sucursal seleccionada

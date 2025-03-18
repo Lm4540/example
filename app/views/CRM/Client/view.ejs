@@ -72,12 +72,15 @@
               <% if (in_process !== null) { %>
               <h3>ID: <%= in_process.id %> Monto Actual: <span id="span_sale_balance">($<%= Helper.money_format(in_process.balance) %>)</span></h3>
               <div class="text-center mb-3 mt-3">
+
+                <% if (in_process.sucursal == user.sucursal) { %>
                 <% if (cliente.seller == user.employee || permission.includes('update_sales_of_another_user')) { %>
                 <span class="badge bg-danger" style="cursor:pointer" id="show_to_add">Agregar producto</span>
                 <span class="badge bg-warning" style="cursor:pointer" onclick="modalRequesTrasnfer.toggle()">Solicitar Traslado</span>
 
                 <span class="badge bg-success" style="cursor:pointer" id="close_order">Cerrar Pedido</span>
 
+                <% } %>
                 <% } %>
               </div>
 

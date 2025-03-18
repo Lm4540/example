@@ -17,6 +17,12 @@ const sequelize = new Sequelize(
             collate: 'utf8mb4_spanish_ci',
             timestamps: true
         },
+        pool: {
+            max:10,
+            min: 0,
+            acquire: 60000,
+            idle: 10000
+          }
     }
 );
 

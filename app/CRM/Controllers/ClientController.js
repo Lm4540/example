@@ -324,7 +324,9 @@ const ClientController = {
             }).catch(e => next(e));
 
             let seller = cliente.seller !== null ? await Employee.findByPk(cliente.seller).catch(err => next(err)) : { name: 'Ningun Vendedor asignado' };
-            let sellers = await Employee.findAll({ where: { isSeller: 1 } });
+            let sellers = await Employee.findAll({ 
+                where: { isSeller: true } 
+            });
 
             //buscar las ordenes finalizadas
 

@@ -26,6 +26,8 @@
               <% _options.forEach(el => { %>
               <option value="<%= el.id %>"><%= el.name.toUpperCase() %></option>
               <% }) %>
+
+
             </select>
           </div>
         </div>
@@ -37,6 +39,12 @@
               <% employees.forEach(el => { %>
               <option value="<%= el.id %>"><%= el.name %></option>
               <% }) %>
+
+              <optgroup label="Por Sucursal">
+                <% all_sucursals.forEach(sucursal => { %>
+                <option data-value="<%= sucursal.id %>" value="s_<%= sucursal.id %>"><%= sucursal.name %></option>
+                <% }) %>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -83,22 +91,22 @@
                   <%= Helper.date_to_spanish(sale.createdAt) %>
                 </span>
                 <% } else { %>
-                  <% if (limit_date_2 > sale.createdAt) { %>
-                  <span class="<%= limit_date > sale.createdAt ? 'text-danger': 'text-warning' %>">
-                     <%= Helper.date_to_spanish(sale.createdAt) %>
-                  </span>
-                  
-                  <% } else { %>
-                  <span class="">
-                     <%= Helper.date_to_spanish(sale.createdAt) %>
-                  </span>
+                <% if (limit_date_2 > sale.createdAt) { %>
+                <span class="<%= limit_date > sale.createdAt ? 'text-danger': 'text-warning' %>">
+                  <%= Helper.date_to_spanish(sale.createdAt) %>
+                </span>
 
-                  <% } %>
+                <% } else { %>
+                <span class="">
+                  <%= Helper.date_to_spanish(sale.createdAt) %>
+                </span>
+
+                <% } %>
 
                 <% } %>
 
 
-               
+
               </td>
               <td>$<%= Helper.money_format(sale.balance) %></td>
               <td><%= sellers[sale.seller] %></td>
@@ -123,8 +131,16 @@
 <script>
   const filtrar = () => {
     let seller = document.querySelector("#seller_select").value;
+    if (seller.includes("s_")) {
+      let opt = document.querySelector("#seller_select").options[document.querySelector("#seller_select").selectedIndex].dataset.value;
+
+      seller = `&seller=all&sucursal=${opt}`;
+
+    } else {
+      seller = `&seller=${seller}`;
+    }
     let status = document.querySelector("#status_select").value;
-    window.location.href = `/sales/inProccess?_status=${status}&seller=${seller}`;
+    window.location.href = `/sales/inProccess?_status=${status}${seller}`;
   }
 
   var timer_search;
