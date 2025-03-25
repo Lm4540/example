@@ -1,0 +1,17 @@
+{
+  "nombre": "Condicion de la Operación",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Contado"
+    },
+    {
+      "codigo": 2,
+      "Valor": "A Credito"
+    },
+    {
+      "codigo": 3,
+      "Valor": "Otro"
+    }
+  ]
+}

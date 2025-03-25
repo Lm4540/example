@@ -1,0 +1,21 @@
+{
+  "nombre": "Tipo de Establecimiento",
+  "items": [
+    {
+      "codigo": "01",
+      "Valor": "Sucursal"
+    },
+    {
+      "codigo": "02",
+      "Valor": "Casa Matriz"
+    },
+    {
+      "codigo": "04",
+      "Valor": "Bodega"
+    },
+    {
+      "codigo": "07",
+      "Valor": "Patio"
+    }
+  ]
+}

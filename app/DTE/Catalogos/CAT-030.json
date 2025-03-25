@@ -1,0 +1,29 @@
+{
+  "nombre": "Transporte",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "TERRESTRE"
+    },
+    {
+      "codigo": 2,
+      "Valor": "AËREO"
+    },
+    {
+      "codigo": 3,
+      "Valor": "MARITIMO"
+    },
+    {
+      "codigo": 4,
+      "Valor": "FERREO"
+    },
+    {
+      "codigo": 5,
+      "Valor": "MULTIMODAL"
+    },
+    {
+      "codigo": 6,
+      "Valor": "CORREO"
+    }
+  ]
+}

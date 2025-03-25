@@ -1,0 +1,15 @@
+{
+  "nombre": "Otros Documentos Asociados",
+  "items": [
+    { "codigo": 1, "Valor": "Emisor" },
+    { "codigo": 2, "Valor": "Receptor" },
+    {
+      "codigo": 3,
+      "Valor": "Medico (solo aplica para contribuyentes obligados a la presentación de F-958)"
+    },
+    {
+      "codigo": 4,
+      "Valor": "Transporte (Solo aplica para Factura de Exportación)"
+    }
+  ]
+}

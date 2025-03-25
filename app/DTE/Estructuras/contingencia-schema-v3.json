@@ -1,0 +1,42 @@
+{
+  "identificacion": {
+    "version": 3,
+    "ambiente": "Ambiente de destino: 00 - Pruebas, 01 - Produccion",
+    "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+    "fTransmision": "yyyy-mm-dd",
+    "hTransmision": "23:59:59"
+  },
+  "emisor": {
+    "nit": "^([0-9]{14}|[0-9]{9})$",
+    "nombre": "string",
+    "nombreResponsable": "string",
+    "tipoDocResponsable": "Tipo documento de identificación del responsable CAT-22: 36 - NIT, 13 - DUI, 02 - Carnet de residente, 03 - PASAPORTE, 37 - OTRO",
+    "numeroDocResponsable": "NUMERO DE DOCUMENTO DE IDENTIFICACION DEL RESPONSABLE.",
+    "tipoEstablecimiento": "string",
+    "codEstableMH": ["string", "null"],
+    "codPuntoVenta": ["string", "null"],
+    "telefono": "string",
+    "correo": "string"
+  },
+  "detalleDTE": [
+    {
+      "noItem": 1,
+      "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+      "tipoDoc": "^0[1-9]|1[0-5]$"
+    },
+    {
+      "noItem": 2,
+      "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+      "tipoDoc": "^0[1-9]|1[0-5]$"
+    }
+  ],
+  "motivo": {
+    "fInicio": "date",
+    "fFin": "date",
+    "hInicio": "23:59:59",
+    "hFin": "23:59:59",
+
+    "tipoContingencia": [1, 2, 3, 4, 5],
+    "motivoContingencia": ["string", "null"]
+  }
+}

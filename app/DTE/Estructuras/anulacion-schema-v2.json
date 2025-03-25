@@ -1,0 +1,45 @@
+{
+  "identificacion": {
+    "version": 2,
+    "ambiente": "00",
+    "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+    "fecAnula": "yyyy-mm-dd",
+    "horAnula": "23:59:59"
+  },
+  "emisor": {
+    "nit": "^([0-9]{14}|[0-9]{9})$",
+    "nombre": "string",
+    "tipoEstablecimiento": ["01", "02", "04", "07", "20"],
+    "nomEstablecimiento": "string",
+    "codEstableMH": "string",
+    "codEstable": "string",
+    "codPuntoVentaMH": "string",
+    "codPuntoVenta": "string",
+    "telefono": "string",
+    "correo": "Correo electrónico (Emisor)"
+  },
+  "documento": {
+    "tipoDte": "01",
+    "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+    "selloRecibido": "^[A-Z0-9]{40}$",
+    "numeroControl": "^DTE-0[0-9]|1[0-2]-[A-Z0-9]{8}-[0-9]{15}$",
+    "fecEmi": "yyyy-mm-dd",
+    "montoIva": 13.0,
+    "codigoGeneracionR": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+    "tipoDocumento": "Tipo documento de identificación CAT-22: 36 - NIT, 13 - DUI, 02 - Carnet de residente, 03 - PASAPORTE, 37 - OTRO",
+    "numDocumento": "string",
+    "nombre": "string",
+    "telefono": "string",
+    "correo": "string"
+  },
+  "motivo": {
+    "tipoAnulacion": [1, 2, 3],
+    "motivoAnulacion": "string",
+    "nombreResponsable": "string",
+    "tipDocResponsable": ["36", "13", "02", "03", "37"],
+    "numDocResponsable": "string",
+    "nombreSolicita": "string",
+    "tipDocSolicita": "Tipo documento de identificación solicitante CAT-22: 36 - NIT, 13 - DUI, 02 - Carnet de residente, 03 - PASAPORTE, 37 - OTRO",
+    "numDocSolicita": "string"
+  }
+}

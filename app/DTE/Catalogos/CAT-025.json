@@ -1,0 +1,10 @@
+{
+  "nombre": "Título a que se remiten los bienes",
+  "items": [
+    { "codigo": "01", "Valor": "Depósito" },
+    { "codigo": "02", "Valor": "Propiedad" },
+    { "codigo": "03", "Valor": "Consignación" },
+    { "codigo": "04", "Valor": "Traslado" },
+    { "codigo": "05", "Valor": "Otros" }
+  ]
+}

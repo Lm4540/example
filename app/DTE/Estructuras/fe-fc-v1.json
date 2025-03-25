@@ -1,0 +1,122 @@
+{
+  "identificacion": {
+    "version": 3,
+    "ambiente": "00",
+    "tipoDte": "01",
+    "numeroControl": "^DTE-01-[A-Z0-9]{8}-[0-9]{15}$",
+    "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+    "tipoModelo": 2,
+    "tipoOperacion": 1,
+    "tipoContingencia": null,
+    "motivoContin": "null",
+    "fecEmi": "2023-04-01",
+    "horEmi": "12:00:00",
+    "tipoMoneda": "USD"
+  },
+  "documentoRelacionado": "null",
+  "emisor": {
+    "nit": "^([0-9]{14}|[0-9]{9})$",
+    "nrc": "^[0-9]{1,8}$",
+    "nombre": "Nombre, denominación o razón social del contribuyente (Emisor)",
+    "codActividad": "^[0-9]{2,6}$",
+    "descActividad": "Actividad Económica (Emisor)",
+    "nombreComercial": "Nombre Comercial (Emisor)",
+    "tipoEstablecimiento": "Tipo de establecimiento (Emisor)",
+    "direccion": {
+      "departamento": "^0[1-9]|1[0-4]$",
+      "municipio": "^[0-9]{2}$",
+      "complemento": "string 200"
+    },
+    "telefono": "string 8",
+    "correo": "Correo electrónico (Emisor)",
+    "codEstableMH": "string 4 null",
+    "codEstable": "null",
+    "codPuntoVentaMH": "null",
+    "codPuntoVenta": "null"
+  },
+  "receptor": {
+    "tipoDocumento": [null, "36", "13", "02", "03", "37"],
+    "numDocumento": ["string", "null"],
+    "nrc": ["string", "null"],
+    "nombre": ["string", "null"],
+    "codActividad": ["string", "null"],
+    "descActividad": ["string", "null"],
+    "direccion": {
+      "departamento": "string ^0[1-9]|1[0-4]$",
+      "municipio": "string ^[0-9]{2}$",
+      "complemento": "string 200"
+    },
+    "telefono": ["string", "null"],
+    "correo": ["string", "null"]
+  },
+  "otrosDocumentos": ["array", "null"],
+
+  "ventaTercero": ["object", "null"],
+  "cuerpoDocumento": [
+    {
+      "numItem": 1,
+      "tipoItem": [1, 2, 3, 4],
+      "numeroDocumento": null,
+      "cantidad": 1,
+      "codigo": "SKU",
+      "codTributo": [null, "A8", "57", "90", "D4", "D5", "25", "A6"],
+      "uniMedida": 59,
+      "descripcion": "string",
+      "precioUni": 10.0,
+      "montoDescu": 0.0,
+      "ventaNoSuj": 0.0,
+      "ventaExenta": 0.0,
+      "ventaGravada": 0.0,
+      "tributos": ["13"],
+      "psv": 10.0,
+      "noGravado": 0.0,
+      "ivaItem": 13.0
+    }
+  ],
+  "resumen": {
+    "totalNoSuj": 0.0,
+    "totalExenta": 0.0,
+    "totalGravada": 100.0,
+    "subTotalVentas": 99.0,
+    "descuNoSuj": 0.0,
+    "descuExenta": 0.0,
+    "descuGravada": 0.0,
+    "porcentajeDescuento": 0.0,
+    "totalDescu": 0.0,
+    "tributos": [
+      {
+        "codigo": ["C3"],
+        "descripcion": "IVA",
+        "valor": 13.0
+      }
+    ],
+    "subTotal": 99.0,
+    "ivaRete1": 0.0,
+    "reteRenta": 10.0,
+    "montoTotalOperacion": 100.0,
+    "totalNoGravado": 0.0,
+    "totalPagar": 100.0,
+    "totalLetras": "Numeros a Letras",
+    "totalIva": 13.0,
+    "saldoFavor": 0.0,
+    "condicionOperacion": [1, 2, 3],
+    "pagos": null,
+    "numPagoElectronico": null
+  },
+
+  "extension": {
+    "nombEntrega": "Nombre del responsable que Genera el DTE",
+    "docuEntrega": null,
+    "nombRecibe": null,
+    "docuRecibe": null,
+    "observaciones": null,
+    "placaVehiculo": null
+  },
+  "apendice": [
+    {
+      "campo": "string",
+      "etiqueta": "string",
+      "valor": "string"
+    }
+  ]
+}

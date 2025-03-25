@@ -1,0 +1,10 @@
+{
+  "nombre": "Tipo de documento de identificacion del Receptor",
+  "items": [
+    { "codigo": "36", "Valor": "NIT" },
+    { "codigo": "13", "Valor": "DUI" },
+    { "codigo": "37", "Valor": "Otro" },
+    { "codigo": "03", "Valor": "Pasaporte" },
+    { "codigo": "02", "Valor": "Carnet de Residente" }
+  ]
+}

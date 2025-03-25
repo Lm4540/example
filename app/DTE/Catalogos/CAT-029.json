@@ -1,0 +1,13 @@
+{
+  "nombre": "Tipo de persona",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Persona Natural"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Persona Juridica"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "nombre": "Tipo de Donación",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Efectivo"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Bien"
+    },
+    {
+      "codigo": 3,
+      "Valor": "Servicio"
+    }
+  ]
+}

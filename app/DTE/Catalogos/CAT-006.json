@@ -1,0 +1,17 @@
+{
+  "nombre": "Retención IVA MH",
+  "items": [
+    {
+      "codigo": "22",
+      "Valor": "Retencion IVA 1%"
+    },
+    {
+      "codigo": "C4",
+      "Valor": "Retencion IVA 13%"
+    },
+    {
+      "codigo": "C9",
+      "Valor": "Otras retenciones IVA casos especiales"
+    }
+  ]
+}

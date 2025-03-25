@@ -1,0 +1,13 @@
+{
+  "nombre": "Ambiente de destino",
+  "items": [
+    {
+      "codigo": "00",
+      "Valor": "Modo prueba"
+    },
+    {
+      "codigo": "01",
+      "Valor": "Modo producción"
+    }
+  ]
+}

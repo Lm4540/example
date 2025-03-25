@@ -1,0 +1,50 @@
+{
+  "nombre": "Tipo de Documento",
+  "items": [
+    {
+      "codigo": "01",
+      "Valor": "Factura"
+    },
+    {
+      "codigo": "03",
+      "Valor": "Comprobante de crédito fiscal"
+    },
+    {
+      "codigo": "04",
+      "Valor": "Nota de remisión"
+    },
+    {
+      "codigo": "05",
+      "Valor": "Nota de crédito"
+    },
+    {
+      "codigo": "06",
+      "Valor": "Nota de débito"
+    },
+    {
+      "codigo": "07",
+      "Valor": "Comprobante de retención"
+    },
+
+    {
+      "codigo": "08",
+      "Valor": "Comprobante de Liquidación"
+    },
+    {
+      "codigo": "09",
+      "Valor": "Documento contable de liquidación"
+    },
+    {
+      "codigo": "11",
+      "Valor": "Factura de exportación"
+    },
+    {
+      "codigo": "14",
+      "Valor": "Factura de sujeto excluido"
+    },
+    {
+      "codigo": "15",
+      "Valor": "Comprobante de donación"
+    }
+  ]
+}

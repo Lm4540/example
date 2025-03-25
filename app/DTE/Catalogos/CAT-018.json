@@ -1,0 +1,17 @@
+{
+  "nombre": "Plazo",
+  "items": [
+    {
+      "codigo": "01",
+      "Valor": "Dias"
+    },
+    {
+      "codigo": "02",
+      "Valor": "Meses"
+    },
+    {
+      "codigo": "03",
+      "Valor": "Años"
+    }
+  ]
+}

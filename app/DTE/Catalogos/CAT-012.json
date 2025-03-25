@@ -1,0 +1,20 @@
+{
+  "nombre": "Departamento",
+  "items": [
+    { "codigo": "00", "Valor": "Otro(Extranjeros)" },
+    { "codigo": "01", "Valor": "Ahuachapan" },
+    { "codigo": "02", "Valor": "Santa Ana" },
+    { "codigo": "03", "Valor": "Sonsonate" },
+    { "codigo": "04", "Valor": "Chalatenango" },
+    { "codigo": "05", "Valor": "La Libertad" },
+    { "codigo": "06", "Valor": "San Salvador" },
+    { "codigo": "07", "Valor": "Cuscatlán" },
+    { "codigo": "08", "Valor": "La Paz" },
+    { "codigo": "09", "Valor": "Cabañas" },
+    { "codigo": "10", "Valor": "San Vicente" },
+    { "codigo": "11", "Valor": "Usulután" },
+    { "codigo": "12", "Valor": "San Miguel" },
+    { "codigo": "13", "Valor": "Morazan" },
+    { "codigo": "14", "Valor": "La Unión" }
+  ]
+}

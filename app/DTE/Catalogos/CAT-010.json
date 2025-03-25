@@ -1,0 +1,29 @@
+{
+  "nombre": "Código tipo de Servicio (Médico)",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Cirugia"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Operación"
+    },
+    {
+      "codigo": 3,
+      "Valor": "Tratamiento médico"
+    },
+    {
+      "codigo": 4,
+      "Valor": "Cirugia Instituto Salvadoreño de Bienestar Magisterial"
+    },
+    {
+      "codigo": 5,
+      "Valor": "Operación Instituto Salvadoreño de Bienestar Magisterial"
+    },
+    {
+      "codigo": 6,
+      "Valor": "Tratamiento médico Instituto Salvadoreño de Bienestar Magisterial"
+    }
+  ]
+}

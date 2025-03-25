@@ -1,0 +1,16 @@
+{
+  "nombre": "INCOTERMS",
+  "items": [
+    { "codigo": "01", "Valor": "EXW-En fabrica" },
+    { "codigo": "02", "Valor": "FCA-Libre transportista" },
+    { "codigo": "03", "Valor": "CPT-Transporte pagado hasta" },
+    { "codigo": "04", "Valor": "CIP-Transporte y seguro pagado hasta" },
+    { "codigo": "05", "Valor": "DAP-Entrega en el lugar" },
+    { "codigo": "06", "Valor": "DPU-Entregado en el lugar descargado" },
+    { "codigo": "07", "Valor": "DDP-Entrega con impuestos pagados" },
+    { "codigo": "08", "Valor": "FAS-Libre al costado del buque" },
+    { "codigo": "09", "Valor": "FOB-Libre a bordo" },
+    { "codigo": "10", "Valor": "CFR-Costo y flete" },
+    { "codigo": "11", "Valor": "CIF- Costo seguro y flete " }
+  ]
+}

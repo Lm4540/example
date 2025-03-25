@@ -1,0 +1,21 @@
+{
+  "nombre": "Tipo de Item",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Bienes"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Servicios"
+    },
+    {
+      "codigo": 3,
+      "Valor": "Ambos (incluye bienes y servicios, incluye los dos inherente a los Productos o Servicios"
+    },
+    {
+      "codigo": 4,
+      "Valor": "Otros Tributos por Item"
+    }
+  ]
+}

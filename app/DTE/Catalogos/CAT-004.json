@@ -1,0 +1,13 @@
+{
+  "nombre": "Tipo de Transmisión",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Transmisión normal"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Transmisión en contingencia"
+    }
+  ]
+}

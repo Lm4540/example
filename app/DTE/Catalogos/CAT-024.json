@@ -1,0 +1,17 @@
+{
+  "nombre": "Tipo de Invalidación",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Error en la Información del Documento Tributario Electrónico a invalidar."
+    },
+    {
+      "codigo": 2,
+      "Valor": "Rescindir de la operación realizada."
+    },
+    {
+      "codigo": 3,
+      "Valor": "Otro"
+    }
+  ]
+}

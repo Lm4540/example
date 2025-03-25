@@ -1,0 +1,13 @@
+{
+  "nombre": "Tipo de Generación del Documento",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Físico"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Electrónico"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "nombre": "Forma de Pago",
+  "items": [
+    {
+      "codigo": "01",
+      "Valor": "Billetes y monedas"
+    },
+    {
+      "codigo": "02",
+      "Valor": "Tarjeta de Débito"
+    },
+    {
+      "codigo": "03",
+      "Valor": "Tarjeta de Crédito"
+    },
+    {
+      "codigo": "04",
+      "Valor": "Cheque"
+    },
+    {
+      "codigo": "05",
+      "Valor": "Transferencia Depósito Bancario"
+    },
+    {
+      "codigo": "08",
+      "Valor": "Dinero Electrónico"
+    },
+    {
+      "codigo": "09",
+      "Valor": "Monedero Electrónico"
+    },
+    {"codigo": "11", "Valor": "Bitcoin"},
+    {"codigo": "12", "Valor": "Otras Criptomonedas"},
+    {"codigo": "13", "Valor": "Cuentas por pagar al Receptor"},
+    {"codigo": "14", "Valor": "Giro Bancario"},
+    {"codigo": "99", "Valor": "Otros"}
+  ]
+}

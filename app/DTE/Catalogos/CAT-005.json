@@ -1,0 +1,25 @@
+{
+  "nombre": "Tipo de Contingencia",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "No disponibilidad de sistema del MH"
+    },
+    {
+      "codigo": 2,
+      "Valor": "No disponibilidad de sistema del emisor"
+    },
+    {
+      "codigo": 3,
+      "Valor": "Falla en el suministro de servicio de Internet del Emisor"
+    },
+    {
+      "codigo": 4,
+      "Valor": "Falla en el suministro de servicio de energia eléctrica del emisor que impida la transmisión de los DTE"
+    },
+    {
+      "codigo": 5,
+      "Valor": "Otro (deberá digitar un máximo de 500 caracteres)"
+    }
+  ]
+}

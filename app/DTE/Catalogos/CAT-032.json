@@ -1,0 +1,13 @@
+{
+  "nombre": "Domicilio Fiscal",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Domiciliado"
+    },
+    {
+      "codigo": 2,
+      "Valor": "No Domiciliado"
+    }
+  ]
+}

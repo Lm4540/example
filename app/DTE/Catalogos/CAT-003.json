@@ -1,0 +1,13 @@
+{
+  "nombre": "Modelo de Facturación",
+  "items": [
+    {
+      "codigo": 1,
+      "Valor": "Modelo de Facturación previo"
+    },
+    {
+      "codigo": 2,
+      "Valor": "Modelo de Facturación diferido"
+    }
+  ]
+}
