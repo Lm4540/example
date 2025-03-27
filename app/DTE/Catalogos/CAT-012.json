@@ -1,7 +1,7 @@
 {
   "nombre": "Departamento",
   "items": [
-    { "codigo": "00", "Valor": "Otro(Extranjeros)" },
+    { "codigo": "00", "Valor": "Otro (Para extranjeros)" },
     { "codigo": "01", "Valor": "Ahuachapan" },
     { "codigo": "02", "Valor": "Santa Ana" },
     { "codigo": "03", "Valor": "Sonsonate" },

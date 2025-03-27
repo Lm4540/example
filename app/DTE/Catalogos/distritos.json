@@ -1,0 +1,1576 @@
+{
+  "values": [
+    {
+      "departamento": "01",
+      "municipio": "13",
+      "label": "Atiquizaya (Ahuachapán Norte)",
+      "value": "Atiquizaya"
+    },
+    {
+      "departamento": "01",
+      "municipio": "13",
+      "label": "El Refugio (Ahuachapán Norte)",
+      "value": "El Refugio"
+    },
+    {
+      "departamento": "01",
+      "municipio": "13",
+      "label": "San Lorenzo (Ahuachapán Norte)",
+      "value": "San Lorenzo"
+    },
+    {
+      "departamento": "01",
+      "municipio": "13",
+      "label": "Turín (Ahuachapán Norte)",
+      "value": "Turín"
+    },
+    {
+      "departamento": "01",
+      "municipio": "14",
+      "label": "Ahuachapán (Ahuachapán Centro)",
+      "value": "Ahuachapán"
+    },
+    {
+      "departamento": "01",
+      "municipio": "14",
+      "label": "Apaneca (Ahuachapán Centro)",
+      "value": "Apaneca"
+    },
+    {
+      "departamento": "01",
+      "municipio": "14",
+      "label": "Concepción de Ataco (Ahuachapán Centro)",
+      "value": "Concepción de Ataco"
+    },
+    {
+      "departamento": "01",
+      "municipio": "14",
+      "label": "Tacuba (Ahuachapán Centro)",
+      "value": "Tacuba"
+    },
+    {
+      "departamento": "01",
+      "municipio": "15",
+      "label": "Guaymango (Ahuachapán Sur)",
+      "value": "Guaymango"
+    },
+    {
+      "departamento": "01",
+      "municipio": "15",
+      "label": "Jujutla (Ahuachapán Sur)",
+      "value": "Jujutla"
+    },
+    {
+      "departamento": "01",
+      "municipio": "15",
+      "label": "San Francisco Menéndez (Ahuachapán Sur)",
+      "value": "San Francisco Menéndez"
+    },
+    {
+      "departamento": "01",
+      "municipio": "15",
+      "label": "San Pedro Puxtla (Ahuachapán Sur)",
+      "value": "San Pedro Puxtla"
+    },
+    {
+      "departamento": "02",
+      "municipio": "14",
+      "label": "Masahuat (Santa Ana Norte)",
+      "value": "Masahuat"
+    },
+    {
+      "departamento": "02",
+      "municipio": "14",
+      "label": "Metapán (Santa Ana Norte)",
+      "value": "Metapán"
+    },
+    {
+      "departamento": "02",
+      "municipio": "14",
+      "label": "Santa Rosa Guachipilín (Santa Ana Norte)",
+      "value": "Santa Rosa Guachipilín"
+    },
+    {
+      "departamento": "02",
+      "municipio": "14",
+      "label": "Texistepeque (Santa Ana Norte)",
+      "value": "Texistepeque"
+    },
+    {
+      "departamento": "02",
+      "municipio": "15",
+      "label": "Santa Ana (Santa Ana Centro)",
+      "value": "Santa Ana"
+    },
+    {
+      "departamento": "02",
+      "municipio": "16",
+      "label": "Coatepeque (Santa Ana Este)",
+      "value": "Coatepeque"
+    },
+    {
+      "departamento": "02",
+      "municipio": "16",
+      "label": "El Congo (Santa Ana Este)",
+      "value": "El Congo"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "Candelaria de la Frontera (Santa Ana Oeste)",
+      "value": "Candelaria de la Frontera"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "Chalchuapa (Santa Ana Oeste)",
+      "value": "Chalchuapa"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "El Porvenir (Santa Ana Oeste)",
+      "value": "El Porvenir"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "San Antonio Pajonal (Santa Ana Oeste)",
+      "value": "San Antonio Pajonal"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "San Sebastián Salitrillo (Santa Ana Oeste)",
+      "value": "San Sebastián Salitrillo"
+    },
+    {
+      "departamento": "02",
+      "municipio": "17",
+      "label": "Santiago de la Frontera (Santa Ana Oeste)",
+      "value": "Santiago de la Frontera"
+    },
+    {
+      "departamento": "03",
+      "municipio": "17",
+      "label": "Juayúa (Sonsonate Norte)",
+      "value": "Juayúa"
+    },
+    {
+      "departamento": "03",
+      "municipio": "17",
+      "label": "Nahuizalco (Sonsonate Norte)",
+      "value": "Nahuizalco"
+    },
+    {
+      "departamento": "03",
+      "municipio": "17",
+      "label": "Salcoatitán (Sonsonate Norte)",
+      "value": "Salcoatitán"
+    },
+    {
+      "departamento": "03",
+      "municipio": "17",
+      "label": "Santa Catarina Masahuat (Sonsonate Norte)",
+      "value": "Santa Catarina Masahuat"
+    },
+    {
+      "departamento": "03",
+      "municipio": "18",
+      "label": "Sonsonate (Sonsonate Centro)",
+      "value": "Sonsonate"
+    },
+    {
+      "departamento": "03",
+      "municipio": "18",
+      "label": "Sonzacate (Sonsonate Centro)",
+      "value": "Sonzacate"
+    },
+    {
+      "departamento": "03",
+      "municipio": "18",
+      "label": "Nahulingo (Sonsonate Centro)",
+      "value": "Nahulingo"
+    },
+    {
+      "departamento": "03",
+      "municipio": "18",
+      "label": "San Antonio del Monte (Sonsonate Centro)",
+      "value": "San Antonio del Monte"
+    },
+    {
+      "departamento": "03",
+      "municipio": "18",
+      "label": "Santo Domingo de Guzmán (Sonsonate Centro)",
+      "value": "Santo Domingo de Guzmán"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "Armenia (Sonsonate Este)",
+      "value": "Armenia"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "Caluco (Sonsonate Este)",
+      "value": "Caluco"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "Cuisnahuat (Sonsonate Este)",
+      "value": "Cuisnahuat"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "Izalco (Sonsonate Este)",
+      "value": "Izalco"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "San Julián (Sonsonate Este)",
+      "value": "San Julián"
+    },
+    {
+      "departamento": "03",
+      "municipio": "19",
+      "label": "Santa Isabel Ishuatán (Sonsonate Este)",
+      "value": "Santa Isabel Ishuatán"
+    },
+    {
+      "departamento": "03",
+      "municipio": "20",
+      "label": "Acajutla (Sonsonate Oeste)",
+      "value": "Acajutla"
+    },
+    {
+      "departamento": "04",
+      "municipio": "34",
+      "label": "Citalá (Chalatenango Norte)",
+      "value": "Citalá"
+    },
+    {
+      "departamento": "04",
+      "municipio": "34",
+      "label": "La Palma (Chalatenango Norte)",
+      "value": "La Palma"
+    },
+    {
+      "departamento": "04",
+      "municipio": "34",
+      "label": "San Ignacio (Chalatenango Norte)",
+      "value": "San Ignacio"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "Agua Caliente (Chalatenango Centro)",
+      "value": "Agua Caliente"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "Dulce Nombre de María (Chalatenango Centro)",
+      "value": "Dulce Nombre de María"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "El Paraíso (Chalatenango Centro)",
+      "value": "El Paraíso"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "La Reina (Chalatenango Centro)",
+      "value": "La Reina"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "Nueva Concepción (Chalatenango Centro)",
+      "value": "Nueva Concepción"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "San Fernando (Chalatenango Centro)",
+      "value": "San Fernando"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "San Francisco Morazán (Chalatenango Centro)",
+      "value": "San Francisco Morazán"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "San Rafael (Chalatenango Centro)",
+      "value": "San Rafael"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "Santa Rita (Chalatenango Centro)",
+      "value": "Santa Rita"
+    },
+    {
+      "departamento": "04",
+      "municipio": "35",
+      "label": "Tejutla (Chalatenango Centro)",
+      "value": "Tejutla"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Arcatao (Chalatenango Sur)",
+      "value": "Arcatao"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Azacualpa (Chalatenango Sur)",
+      "value": "Azacualpa"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Cancasque (Chalatenango Sur)",
+      "value": "Cancasque"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Chalatenango (Chalatenango Sur)",
+      "value": "Chalatenango"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Comalapa (Chalatenango Sur)",
+      "value": "Comalapa"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Concepción Quezaltepeque (Chalatenango Sur)",
+      "value": "Concepción Quezaltepeque"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "El Carrizal (Chalatenango Sur)",
+      "value": "El Carrizal"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "La Laguna (Chalatenango Sur)",
+      "value": "La Laguna"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Las Vueltas (Chalatenango Sur)",
+      "value": "Las Vueltas"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Las Flores (Chalatenango Sur)",
+      "value": "Las Flores"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Nombre de Jesús (Chalatenango Sur)",
+      "value": "Nombre de Jesús"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Nueva Trinidad (Chalatenango Sur)",
+      "value": "Nueva Trinidad"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Ojos de Agua (Chalatenango Sur)",
+      "value": "Ojos de Agua"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "Potonico (Chalatenango Sur)",
+      "value": "Potonico"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Antonio de la Cruz (Chalatenango Sur)",
+      "value": "San Antonio de la Cruz"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Antonio Los Ranchos (Chalatenango Sur)",
+      "value": "San Antonio Los Ranchos"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Francisco Lempa (Chalatenango Sur)",
+      "value": "San Francisco Lempa"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Isidro Labrador (Chalatenango Sur)",
+      "value": "San Isidro Labrador"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Luis del Carmen (Chalatenango Sur)",
+      "value": "San Luis del Carmen"
+    },
+    {
+      "departamento": "04",
+      "municipio": "36",
+      "label": "San Miguel de Mercedes (Chalatenango Sur)",
+      "value": "San Miguel de Mercedes"
+    },
+    {
+      "departamento": "05",
+      "municipio": "23",
+      "label": "Quezaltepeque (La Libertad Norte)",
+      "value": "Quezaltepeque"
+    },
+    {
+      "departamento": "05",
+      "municipio": "23",
+      "label": "San Matías (La Libertad Norte)",
+      "value": "San Matías"
+    },
+    {
+      "departamento": "05",
+      "municipio": "23",
+      "label": "San Pablo Tacachico (La Libertad Norte)",
+      "value": "San Pablo Tacachico"
+    },
+    {
+      "departamento": "05",
+      "municipio": "24",
+      "label": "San Juan Opico (La Libertad Centro)",
+      "value": "San Juan Opico"
+    },
+    {
+      "departamento": "05",
+      "municipio": "24",
+      "label": "Ciudad Arce (La Libertad Centro)",
+      "value": "Ciudad Arce"
+    },
+    {
+      "departamento": "05",
+      "municipio": "25",
+      "label": "Colón (La Libertad Oeste)",
+      "value": "Colón"
+    },
+    {
+      "departamento": "05",
+      "municipio": "25",
+      "label": "Jayaque (La Libertad Oeste)",
+      "value": "Jayaque"
+    },
+    {
+      "departamento": "05",
+      "municipio": "25",
+      "label": "Sacacoyo (La Libertad Oeste)",
+      "value": "Sacacoyo"
+    },
+    {
+      "departamento": "05",
+      "municipio": "25",
+      "label": "Tepecoyo (La Libertad Oeste)",
+      "value": "Tepecoyo"
+    },
+    {
+      "departamento": "05",
+      "municipio": "25",
+      "label": "Talnique (La Libertad Oeste)",
+      "value": "Talnique"
+    },
+    {
+      "departamento": "05",
+      "municipio": "26",
+      "label": "Antiguo Cuscatlán (La Libertad Este)",
+      "value": "Antiguo Cuscatlán"
+    },
+    {
+      "departamento": "05",
+      "municipio": "26",
+      "label": "Huizúcar (La Libertad Este)",
+      "value": "Huizúcar"
+    },
+    {
+      "departamento": "05",
+      "municipio": "26",
+      "label": "Nuevo Cuscatlán (La Libertad Este)",
+      "value": "Nuevo Cuscatlán"
+    },
+    {
+      "departamento": "05",
+      "municipio": "26",
+      "label": "San José Villanueva (La Libertad Este)",
+      "value": "San José Villanueva"
+    },
+    {
+      "departamento": "05",
+      "municipio": "26",
+      "label": "Zaragoza (La Libertad Este)",
+      "value": "Zaragoza"
+    },
+    {
+      "departamento": "05",
+      "municipio": "27",
+      "label": "Chiltiupán (La Libertad Costa)",
+      "value": "Chiltiupán"
+    },
+    {
+      "departamento": "05",
+      "municipio": "27",
+      "label": "Jicalapa (La Libertad Costa)",
+      "value": "Jicalapa"
+    },
+    {
+      "departamento": "05",
+      "municipio": "27",
+      "label": "La Libertad (La Libertad Costa)",
+      "value": "La Libertad"
+    },
+    {
+      "departamento": "05",
+      "municipio": "27",
+      "label": "Tamanique (La Libertad Costa)",
+      "value": "Tamanique"
+    },
+    {
+      "departamento": "05",
+      "municipio": "27",
+      "label": "Teotepeque (La Libertad Costa)",
+      "value": "Teotepeque"
+    },
+    {
+      "departamento": "05",
+      "municipio": "28",
+      "label": "Santa Tecla (La Libertad Sur)",
+      "value": "Santa Tecla"
+    },
+    {
+      "departamento": "05",
+      "municipio": "28",
+      "label": "Comasagua (La Libertad Sur)",
+      "value": "Comasagua"
+    },
+    {
+      "departamento": "06",
+      "municipio": "20",
+      "label": "Aguilares (San Salvador Norte)",
+      "value": "Aguilares"
+    },
+    {
+      "departamento": "06",
+      "municipio": "20",
+      "label": "El Paisnal (San Salvador Norte)",
+      "value": "El Paisnal"
+    },
+    {
+      "departamento": "06",
+      "municipio": "20",
+      "label": "Guazapa (San Salvador Norte)",
+      "value": "Guazapa"
+    },
+    {
+      "departamento": "06",
+      "municipio": "21",
+      "label": "Apopa (San Salvador Oeste)",
+      "value": "Apopa"
+    },
+    {
+      "departamento": "06",
+      "municipio": "21",
+      "label": "Nejapa (San Salvador Oeste)",
+      "value": "Nejapa"
+    },
+    {
+      "departamento": "06",
+      "municipio": "22",
+      "label": "Ilopango (San Salvador Este)",
+      "value": "Ilopango"
+    },
+    {
+      "departamento": "06",
+      "municipio": "22",
+      "label": "San Martín (San Salvador Este)",
+      "value": "San Martín"
+    },
+    {
+      "departamento": "06",
+      "municipio": "22",
+      "label": "Soyapango (San Salvador Este)",
+      "value": "Soyapango"
+    },
+    {
+      "departamento": "06",
+      "municipio": "22",
+      "label": "Tonacatepeque (San Salvador Este)",
+      "value": "Tonacatepeque"
+    },
+    {
+      "departamento": "06",
+      "municipio": "23",
+      "label": "Ayutuxtepeque (San Salvador Centro)",
+      "value": "Ayutuxtepeque"
+    },
+    {
+      "departamento": "06",
+      "municipio": "23",
+      "label": "Mejicanos (San Salvador Centro)",
+      "value": "Mejicanos"
+    },
+    {
+      "departamento": "06",
+      "municipio": "23",
+      "label": "Cuscatancingo (San Salvador Centro)",
+      "value": "Cuscatancingo"
+    },
+    {
+      "departamento": "06",
+      "municipio": "23",
+      "label": "Ciudad Delgado (San Salvador Centro)",
+      "value": "Ciudad Delgado"
+    },
+    {
+      "departamento": "06",
+      "municipio": "23",
+      "label": "San Salvador (San Salvador Centro)",
+      "value": "San Salvador"
+    },
+    {
+      "departamento": "06",
+      "municipio": "24",
+      "label": "San Marcos (San Salvador Sur)",
+      "value": "San Marcos"
+    },
+    {
+      "departamento": "06",
+      "municipio": "24",
+      "label": "Santo Tomás (San Salvador Sur)",
+      "value": "Santo Tomás"
+    },
+    {
+      "departamento": "06",
+      "municipio": "24",
+      "label": "Santiago Texacuangos (San Salvador Sur)",
+      "value": "Santiago Texacuangos"
+    },
+    {
+      "departamento": "06",
+      "municipio": "24",
+      "label": "Panchimalco (San Salvador Sur)",
+      "value": "Panchimalco"
+    },
+    {
+      "departamento": "06",
+      "municipio": "24",
+      "label": "Rosario de Mora (San Salvador Sur)",
+      "value": "Rosario de Mora"
+    },
+    {
+      "departamento": "07",
+      "municipio": "17",
+      "label": "Suchitoto (Cuscatlán Norte)",
+      "value": "Suchitoto"
+    },
+    {
+      "departamento": "07",
+      "municipio": "17",
+      "label": "San José Guayabal (Cuscatlán Norte)",
+      "value": "San José Guayabal"
+    },
+    {
+      "departamento": "07",
+      "municipio": "17",
+      "label": "Oratorio de Concepción (Cuscatlán Norte)",
+      "value": "Oratorio de Concepción"
+    },
+    {
+      "departamento": "07",
+      "municipio": "17",
+      "label": "San Bartolomé Perulapía (Cuscatlán Norte)",
+      "value": "San Bartolomé Perulapía"
+    },
+    {
+      "departamento": "07",
+      "municipio": "17",
+      "label": "San Pedro Perulapán (Cuscatlán Norte)",
+      "value": "San Pedro Perulapán"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Cojutepeque (Cuscatlán Sur)",
+      "value": "Cojutepeque"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Candelaria (Cuscatlán Sur)",
+      "value": "Candelaria"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "El Carmen (Cuscatlán Sur)",
+      "value": "El Carmen"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "El Rosario (Cuscatlán Sur)",
+      "value": "El Rosario"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Monte San Juan (Cuscatlán Sur)",
+      "value": "Monte San Juan"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "San Cristóbal (Cuscatlán Sur)",
+      "value": "San Cristóbal"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "San Rafael Cedros (Cuscatlán Sur)",
+      "value": "San Rafael Cedros"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "San Ramón (Cuscatlán Sur)",
+      "value": "San Ramón"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Santa Cruz Analquito (Cuscatlán Sur)",
+      "value": "Santa Cruz Analquito"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Santa Cruz Michapa (Cuscatlán Sur)",
+      "value": "Santa Cruz Michapa"
+    },
+    {
+      "departamento": "07",
+      "municipio": "18",
+      "label": "Tenancingo (Cuscatlán Sur)",
+      "value": "Tenancingo"
+    },
+    {
+      "departamento": "09",
+      "municipio": "10",
+      "label": "Guacotecti (Cabañas Este)",
+      "value": "Guacotecti"
+    },
+    {
+      "departamento": "09",
+      "municipio": "10",
+      "label": "San Isidro (Cabañas Este)",
+      "value": "San Isidro"
+    },
+    {
+      "departamento": "09",
+      "municipio": "10",
+      "label": "Sensuntepeque (Cabañas Este)",
+      "value": "Sensuntepeque"
+    },
+    {
+      "departamento": "09",
+      "municipio": "10",
+      "label": "Victoria (Cabañas Este)",
+      "value": "Victoria"
+    },
+    {
+      "departamento": "09",
+      "municipio": "10",
+      "label": "Dolores (Cabañas Este)",
+      "value": "Dolores"
+    },
+    {
+      "departamento": "09",
+      "municipio": "11",
+      "label": "Cinquera (Cabañas Oeste)",
+      "value": "Cinquera"
+    },
+    {
+      "departamento": "09",
+      "municipio": "11",
+      "label": "Ilobasco (Cabañas Oeste)",
+      "value": "Ilobasco"
+    },
+    {
+      "departamento": "09",
+      "municipio": "11",
+      "label": "Jutiapa (Cabañas Oeste)",
+      "value": "Jutiapa"
+    },
+    {
+      "departamento": "09",
+      "municipio": "11",
+      "label": "Tejutepeque (Cabañas Oeste)",
+      "value": "Tejutepeque"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "Cuyultitán (La Paz Oeste)",
+      "value": "Cuyultitán"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "Olocuilta (La Paz Oeste)",
+      "value": "Olocuilta"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "San Juan Talpa (La Paz Oeste)",
+      "value": "San Juan Talpa"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "San Luis Talpa (La Paz Oeste)",
+      "value": "San Luis Talpa"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "San Pedro Masahuat (La Paz Oeste)",
+      "value": "San Pedro Masahuat"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "Tapalhuaca (La Paz Oeste)",
+      "value": "Tapalhuaca"
+    },
+    {
+      "departamento": "08",
+      "municipio": "23",
+      "label": "San Francisco Chinameca (La Paz Oeste)",
+      "value": "San Francisco Chinameca"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "El Rosario (La Paz Centro)",
+      "value": "El Rosario"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "Jerusalén (La Paz Centro)",
+      "value": "Jerusalén"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "Mercedes La Ceiba (La Paz Centro)",
+      "value": "Mercedes La Ceiba"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "Paraíso de Osorio (La Paz Centro)",
+      "value": "Paraíso de Osorio"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Antonio Masahuat (La Paz Centro)",
+      "value": "San Antonio Masahuat"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Emigdio (La Paz Centro)",
+      "value": "San Emigdio"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Juan Tepezontes (La Paz Centro)",
+      "value": "San Juan Tepezontes"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Luis La Herradura (La Paz Centro)",
+      "value": "San Luis La Herradura"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Miguel Tepezontes (La Paz Centro)",
+      "value": "San Miguel Tepezontes"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "San Pedro Nonualco (La Paz Centro)",
+      "value": "San Pedro Nonualco"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "Santa María Ostuma (La Paz Centro)",
+      "value": "Santa María Ostuma"
+    },
+    {
+      "departamento": "08",
+      "municipio": "24",
+      "label": "Santiago Nonualco (La Paz Centro)",
+      "value": "Santiago Nonualco"
+    },
+    {
+      "departamento": "08",
+      "municipio": "25",
+      "label": "San Juan Nonualco (La Paz Este)",
+      "value": "San Juan Nonualco"
+    },
+    {
+      "departamento": "08",
+      "municipio": "25",
+      "label": "San Rafael Obrajuelo (La Paz Este)",
+      "value": "San Rafael Obrajuelo"
+    },
+    {
+      "departamento": "08",
+      "municipio": "25",
+      "label": "Zacatecoluca (La Paz Este)",
+      "value": "Zacatecoluca"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "Apastepeque (San Vicente Norte)",
+      "value": "Apastepeque"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "Santa Clara (San Vicente Norte)",
+      "value": "Santa Clara"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "San Ildefonso (San Vicente Norte)",
+      "value": "San Ildefonso"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "San Esteban Catarina (San Vicente Norte)",
+      "value": "San Esteban Catarina"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "San Sebastián (San Vicente Norte)",
+      "value": "San Sebastián"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "San Lorenzo (San Vicente Norte)",
+      "value": "San Lorenzo"
+    },
+    {
+      "departamento": "10",
+      "municipio": "14",
+      "label": "Santo Domingo (San Vicente Norte)",
+      "value": "Santo Domingo"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "San Vicente (San Vicente Sur)",
+      "value": "San Vicente"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "Guadalupe (San Vicente Sur)",
+      "value": "Guadalupe"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "San Cayetano Istepeque (San Vicente Sur)",
+      "value": "San Cayetano Istepeque"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "Tecoluca (San Vicente Sur)",
+      "value": "Tecoluca"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "Tepetitán (San Vicente Sur)",
+      "value": "Tepetitán"
+    },
+    {
+      "departamento": "10",
+      "municipio": "15",
+      "label": "Verapaz (San Vicente Sur)",
+      "value": "Verapaz"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Alegría (Usulután Norte)",
+      "value": "Alegría"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Berlín (Usulután Norte)",
+      "value": "Berlín"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "El Triunfo (Usulután Norte)",
+      "value": "El Triunfo"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Estanzuelas (Usulután Norte)",
+      "value": "Estanzuelas"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Jucuapa (Usulután Norte)",
+      "value": "Jucuapa"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Mercedes Umaña (Usulután Norte)",
+      "value": "Mercedes Umaña"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Nueva Granada (Usulután Norte)",
+      "value": "Nueva Granada"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "San Buenaventura (Usulután Norte)",
+      "value": "San Buenaventura"
+    },
+    {
+      "departamento": "11",
+      "municipio": "24",
+      "label": "Santiago de María (Usulután Norte)",
+      "value": "Santiago de María"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "California (Usulután Este)",
+      "value": "California"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Concepción Batres (Usulután Este)",
+      "value": "Concepción Batres"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Ereguayquín (Usulután Este)",
+      "value": "Ereguayquín"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Jucuarán (Usulután Este)",
+      "value": "Jucuarán"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Ozatlán (Usulután Este)",
+      "value": "Ozatlán"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Santa Elena (Usulután Este)",
+      "value": "Santa Elena"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "San Dionisio (Usulután Este)",
+      "value": "San Dionisio"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Santa María (Usulután Este)",
+      "value": "Santa María"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Tecapán (Usulután Este)",
+      "value": "Tecapán"
+    },
+    {
+      "departamento": "11",
+      "municipio": "25",
+      "label": "Usulután (Usulután Este)",
+      "value": "Usulután"
+    },
+    {
+      "departamento": "11",
+      "municipio": "26",
+      "label": "Jiquilisco (Usulután Oeste)",
+      "value": "Jiquilisco"
+    },
+    {
+      "departamento": "11",
+      "municipio": "26",
+      "label": "Puerto El Triunfo (Usulután Oeste)",
+      "value": "Puerto El Triunfo"
+    },
+    {
+      "departamento": "11",
+      "municipio": "26",
+      "label": "San Agustín (Usulután Oeste)",
+      "value": "San Agustín"
+    },
+    {
+      "departamento": "11",
+      "municipio": "26",
+      "label": "San Francisco Javier (Usulután Oeste)",
+      "value": "San Francisco Javier"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "Ciudad Barrios (San Miguel Norte)",
+      "value": "Ciudad Barrios"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "Sesori (San Miguel Norte)",
+      "value": "Sesori"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "Nuevo Edén de San Juan (San Miguel Norte)",
+      "value": "Nuevo Edén de San Juan"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "San Gerardo (San Miguel Norte)",
+      "value": "San Gerardo"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "San Luis de la Reina (San Miguel Norte)",
+      "value": "San Luis de la Reina"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "Carolina (San Miguel Norte)",
+      "value": "Carolina"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "San Antonio (San Miguel Norte)",
+      "value": "San Antonio"
+    },
+    {
+      "departamento": "12",
+      "municipio": "21",
+      "label": "Chapeltique (San Miguel Norte)",
+      "value": "Chapeltique"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "San Miguel (San Miguel Centro)",
+      "value": "San Miguel"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "Comacarán (San Miguel Centro)",
+      "value": "Comacarán"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "Uluazapa (San Miguel Centro)",
+      "value": "Uluazapa"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "Moncagua (San Miguel Centro)",
+      "value": "Moncagua"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "Quelepa (San Miguel Centro)",
+      "value": "Quelepa"
+    },
+    {
+      "departamento": "12",
+      "municipio": "22",
+      "label": "Chirilagua (San Miguel Centro)",
+      "value": "Chirilagua"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "Chinameca (San Miguel Oeste)",
+      "value": "Chinameca"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "El Tránsito (San Miguel Oeste)",
+      "value": "El Tránsito"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "Lolotique (San Miguel Oeste)",
+      "value": "Lolotique"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "Nueva Guadalupe (San Miguel Oeste)",
+      "value": "Nueva Guadalupe"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "San Jorge (San Miguel Oeste)",
+      "value": "San Jorge"
+    },
+    {
+      "departamento": "12",
+      "municipio": "23",
+      "label": "San Rafael Oriente (San Miguel Oeste)",
+      "value": "San Rafael Oriente"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Arambala (Morazán Norte)",
+      "value": "Arambala"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Cacaopera (Morazán Norte)",
+      "value": "Cacaopera"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Corinto (Morazán Norte)",
+      "value": "Corinto"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "El Rosario (Morazán Norte)",
+      "value": "El Rosario"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Joateca (Morazán Norte)",
+      "value": "Joateca"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Jocoaitique (Morazán Norte)",
+      "value": "Jocoaitique"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Meanguera (Morazán Norte)",
+      "value": "Meanguera"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Perquín (Morazán Norte)",
+      "value": "Perquín"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "San Fernando (Morazán Norte)",
+      "value": "San Fernando"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "San Isidro (Morazán Norte)",
+      "value": "San Isidro"
+    },
+    {
+      "departamento": "13",
+      "municipio": "27",
+      "label": "Torola (Morazán Norte)",
+      "value": "Torola"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Chilanga (Morazán Sur)",
+      "value": "Chilanga"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Delicias de Concepción (Morazán Sur)",
+      "value": "Delicias de Concepción"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "El Divisadero (Morazán Sur)",
+      "value": "El Divisadero"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Gualococti (Morazán Sur)",
+      "value": "Gualococti"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Guatajiagua (Morazán Sur)",
+      "value": "Guatajiagua"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Jocoro (Morazán Sur)",
+      "value": "Jocoro"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Lolotiquillo (Morazán Sur)",
+      "value": "Lolotiquillo"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Osicala (Morazán Sur)",
+      "value": "Osicala"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "San Carlos (Morazán Sur)",
+      "value": "San Carlos"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "San Francisco Gotera (Morazán Sur)",
+      "value": "San Francisco Gotera"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "San Simón (Morazán Sur)",
+      "value": "San Simón"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Sensembra (Morazán Sur)",
+      "value": "Sensembra"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Sociedad (Morazán Sur)",
+      "value": "Sociedad"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Yamabal (Morazán Sur)",
+      "value": "Yamabal"
+    },
+    {
+      "departamento": "13",
+      "municipio": "28",
+      "label": "Yoloaiquín (Morazán Sur)",
+      "value": "Yoloaiquín"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Anamorós (La Unión Norte)",
+      "value": "Anamorós"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Bolívar (La Unión Norte)",
+      "value": "Bolívar"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Concepción de Oriente (La Unión Norte)",
+      "value": "Concepción de Oriente"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "El Sauce (La Unión Norte)",
+      "value": "El Sauce"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Lislique (La Unión Norte)",
+      "value": "Lislique"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Nueva Esparta (La Unión Norte)",
+      "value": "Nueva Esparta"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Pasaquina (La Unión Norte)",
+      "value": "Pasaquina"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Polorós (La Unión Norte)",
+      "value": "Polorós"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "San José (La Unión Norte)",
+      "value": "San José"
+    },
+    {
+      "departamento": "14",
+      "municipio": "19",
+      "label": "Santa Rosa de Lima (La Unión Norte)",
+      "value": "Santa Rosa de Lima"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "Conchagua (La Unión Sur)",
+      "value": "Conchagua"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "El Carmen (La Unión Sur)",
+      "value": "El Carmen"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "Intipucá (La Unión Sur)",
+      "value": "Intipucá"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "La Unión (La Unión Sur)",
+      "value": "La Unión"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "Meanguera del Golfo (La Unión Sur)",
+      "value": "Meanguera del Golfo"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "San Alejo (La Unión Sur)",
+      "value": "San Alejo"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "Yayantique (La Unión Sur)",
+      "value": "Yayantique"
+    },
+    {
+      "departamento": "14",
+      "municipio": "20",
+      "label": "Yucuaiquín (La Unión Sur)",
+      "value": "Yucuaiquín"
+    }
+  ]
+}

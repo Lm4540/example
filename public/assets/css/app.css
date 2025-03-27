@@ -2753,7 +2753,7 @@ body.dark .btn-phoenix-primary:active {
 .dark .table-secondary {
   --bs-table-bg: #202330 !important;
   --bs-table-hover-bg: #c8cbce;
-  --bs-table-hover-color: #202330!important;
+  --bs-table-hover-color: #202330 !important;
 }
 
 /*dark Mode*/
@@ -3068,7 +3068,7 @@ body.dark .btn-phoenix-primary:active {
 
 .btn-soft-primary {
   color: #003cc7;
-  background-color: #f5f8ff;
+  background-color: #cadaff;
   border-color: #f5f8ff;
 }
 
@@ -3117,11 +3117,23 @@ body.dark .btn-phoenix-primary:active {
   border-color: #f5f7fa
 }
 
+.btn-orange{
+  color: #ffffff;
+  background-color: #ff762d;
+  border-color: #cdeb56;
+  font-weight: bold;
+}
 
+.btn-orange:hover{
+  color: #ffffff;
+  background-color:  #ffa16c;
+  border-color: #cdeb56;
+  font-weight: bolder;
+}
 
 .btn-soft-success {
   color: #1c6c09;
-  background-color: #f0fdec;
+  background-color: #d9facf;
   border-color: #f0fdec;
 }
 
@@ -3462,4 +3474,19 @@ pre[class*=language-] {
 
 .br-2rem {
   border-radius: 2rem !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(96, 96, 99);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(37, 36, 36, 0.7);
+  border-radius: 10px;
+  border: rgba(41, 37, 37, 0.8);
 }

@@ -1,0 +1,1312 @@
+[
+  {
+    "value": "Atiquizaya",
+    "label": "Atiquizaya (Ahuachapán Norte)",
+    "customProperties": { "departamento": "01", "municipio": "13" }
+  },
+  {
+    "value": "El Refugio",
+    "label": "El Refugio (Ahuachapán Norte)",
+    "customProperties": { "departamento": "01", "municipio": "13" }
+  },
+  {
+    "value": "San Lorenzo",
+    "label": "San Lorenzo (Ahuachapán Norte)",
+    "customProperties": { "departamento": "01", "municipio": "13" }
+  },
+  {
+    "value": "Turín",
+    "label": "Turín (Ahuachapán Norte)",
+    "customProperties": { "departamento": "01", "municipio": "13" }
+  },
+  {
+    "value": "Ahuachapán",
+    "label": "Ahuachapán (Ahuachapán Centro)",
+    "customProperties": { "departamento": "01", "municipio": "14" }
+  },
+  {
+    "value": "Apaneca",
+    "label": "Apaneca (Ahuachapán Centro)",
+    "customProperties": { "departamento": "01", "municipio": "14" }
+  },
+  {
+    "value": "Concepción de Ataco",
+    "label": "Concepción de Ataco (Ahuachapán Centro)",
+    "customProperties": { "departamento": "01", "municipio": "14" }
+  },
+  {
+    "value": "Tacuba",
+    "label": "Tacuba (Ahuachapán Centro)",
+    "customProperties": { "departamento": "01", "municipio": "14" }
+  },
+  {
+    "value": "Guaymango",
+    "label": "Guaymango (Ahuachapán Sur)",
+    "customProperties": { "departamento": "01", "municipio": "15" }
+  },
+  {
+    "value": "Jujutla",
+    "label": "Jujutla (Ahuachapán Sur)",
+    "customProperties": { "departamento": "01", "municipio": "15" }
+  },
+  {
+    "value": "San Francisco Menéndez",
+    "label": "San Francisco Menéndez (Ahuachapán Sur)",
+    "customProperties": { "departamento": "01", "municipio": "15" }
+  },
+  {
+    "value": "San Pedro Puxtla",
+    "label": "San Pedro Puxtla (Ahuachapán Sur)",
+    "customProperties": { "departamento": "01", "municipio": "15" }
+  },
+  {
+    "value": "Masahuat",
+    "label": "Masahuat (Santa Ana Norte)",
+    "customProperties": { "departamento": "02", "municipio": "14" }
+  },
+  {
+    "value": "Metapán",
+    "label": "Metapán (Santa Ana Norte)",
+    "customProperties": { "departamento": "02", "municipio": "14" }
+  },
+  {
+    "value": "Santa Rosa Guachipilín",
+    "label": "Santa Rosa Guachipilín (Santa Ana Norte)",
+    "customProperties": { "departamento": "02", "municipio": "14" }
+  },
+  {
+    "value": "Texistepeque",
+    "label": "Texistepeque (Santa Ana Norte)",
+    "customProperties": { "departamento": "02", "municipio": "14" }
+  },
+  {
+    "value": "Santa Ana",
+    "label": "Santa Ana (Santa Ana Centro)",
+    "customProperties": { "departamento": "02", "municipio": "15" }
+  },
+  {
+    "value": "Coatepeque",
+    "label": "Coatepeque (Santa Ana Este)",
+    "customProperties": { "departamento": "02", "municipio": "16" }
+  },
+  {
+    "value": "El Congo",
+    "label": "El Congo (Santa Ana Este)",
+    "customProperties": { "departamento": "02", "municipio": "16" }
+  },
+  {
+    "value": "Candelaria de la Frontera",
+    "label": "Candelaria de la Frontera (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "Chalchuapa",
+    "label": "Chalchuapa (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "El Porvenir",
+    "label": "El Porvenir (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "San Antonio Pajonal",
+    "label": "San Antonio Pajonal (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "San Sebastián Salitrillo",
+    "label": "San Sebastián Salitrillo (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "Santiago de la Frontera",
+    "label": "Santiago de la Frontera (Santa Ana Oeste)",
+    "customProperties": { "departamento": "02", "municipio": "17" }
+  },
+  {
+    "value": "Juayúa",
+    "label": "Juayúa (Sonsonate Norte)",
+    "customProperties": { "departamento": "03", "municipio": "17" }
+  },
+  {
+    "value": "Nahuizalco",
+    "label": "Nahuizalco (Sonsonate Norte)",
+    "customProperties": { "departamento": "03", "municipio": "17" }
+  },
+  {
+    "value": "Salcoatitán",
+    "label": "Salcoatitán (Sonsonate Norte)",
+    "customProperties": { "departamento": "03", "municipio": "17" }
+  },
+  {
+    "value": "Santa Catarina Masahuat",
+    "label": "Santa Catarina Masahuat (Sonsonate Norte)",
+    "customProperties": { "departamento": "03", "municipio": "17" }
+  },
+  {
+    "value": "Sonsonate",
+    "label": "Sonsonate (Sonsonate Centro)",
+    "customProperties": { "departamento": "03", "municipio": "18" }
+  },
+  {
+    "value": "Sonzacate",
+    "label": "Sonzacate (Sonsonate Centro)",
+    "customProperties": { "departamento": "03", "municipio": "18" }
+  },
+  {
+    "value": "Nahulingo",
+    "label": "Nahulingo (Sonsonate Centro)",
+    "customProperties": { "departamento": "03", "municipio": "18" }
+  },
+  {
+    "value": "San Antonio del Monte",
+    "label": "San Antonio del Monte (Sonsonate Centro)",
+    "customProperties": { "departamento": "03", "municipio": "18" }
+  },
+  {
+    "value": "Santo Domingo de Guzmán",
+    "label": "Santo Domingo de Guzmán (Sonsonate Centro)",
+    "customProperties": { "departamento": "03", "municipio": "18" }
+  },
+  {
+    "value": "Armenia",
+    "label": "Armenia (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "Caluco",
+    "label": "Caluco (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "Cuisnahuat",
+    "label": "Cuisnahuat (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "Izalco",
+    "label": "Izalco (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "San Julián",
+    "label": "San Julián (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "Santa Isabel Ishuatán",
+    "label": "Santa Isabel Ishuatán (Sonsonate Este)",
+    "customProperties": { "departamento": "03", "municipio": "19" }
+  },
+  {
+    "value": "Acajutla",
+    "label": "Acajutla (Sonsonate Oeste)",
+    "customProperties": { "departamento": "03", "municipio": "20" }
+  },
+  {
+    "value": "Citalá",
+    "label": "Citalá (Chalatenango Norte)",
+    "customProperties": { "departamento": "04", "municipio": "34" }
+  },
+  {
+    "value": "La Palma",
+    "label": "La Palma (Chalatenango Norte)",
+    "customProperties": { "departamento": "04", "municipio": "34" }
+  },
+  {
+    "value": "San Ignacio",
+    "label": "San Ignacio (Chalatenango Norte)",
+    "customProperties": { "departamento": "04", "municipio": "34" }
+  },
+  {
+    "value": "Agua Caliente",
+    "label": "Agua Caliente (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "Dulce Nombre de María",
+    "label": "Dulce Nombre de María (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "El Paraíso",
+    "label": "El Paraíso (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "La Reina",
+    "label": "La Reina (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "Nueva Concepción",
+    "label": "Nueva Concepción (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "San Fernando",
+    "label": "San Fernando (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "San Francisco Morazán",
+    "label": "San Francisco Morazán (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "San Rafael",
+    "label": "San Rafael (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "Santa Rita",
+    "label": "Santa Rita (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "Tejutla",
+    "label": "Tejutla (Chalatenango Centro)",
+    "customProperties": { "departamento": "04", "municipio": "35" }
+  },
+  {
+    "value": "Arcatao",
+    "label": "Arcatao (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Azacualpa",
+    "label": "Azacualpa (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Cancasque",
+    "label": "Cancasque (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Chalatenango",
+    "label": "Chalatenango (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Comalapa",
+    "label": "Comalapa (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Concepción Quezaltepeque",
+    "label": "Concepción Quezaltepeque (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "El Carrizal",
+    "label": "El Carrizal (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "La Laguna",
+    "label": "La Laguna (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Las Vueltas",
+    "label": "Las Vueltas (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Las Flores",
+    "label": "Las Flores (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Nombre de Jesús",
+    "label": "Nombre de Jesús (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Nueva Trinidad",
+    "label": "Nueva Trinidad (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Ojos de Agua",
+    "label": "Ojos de Agua (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Potonico",
+    "label": "Potonico (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Antonio de la Cruz",
+    "label": "San Antonio de la Cruz (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Antonio Los Ranchos",
+    "label": "San Antonio Los Ranchos (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Francisco Lempa",
+    "label": "San Francisco Lempa (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Isidro Labrador",
+    "label": "San Isidro Labrador (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Luis del Carmen",
+    "label": "San Luis del Carmen (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "San Miguel de Mercedes",
+    "label": "San Miguel de Mercedes (Chalatenango Sur)",
+    "customProperties": { "departamento": "04", "municipio": "36" }
+  },
+  {
+    "value": "Quezaltepeque",
+    "label": "Quezaltepeque (La Libertad Norte)",
+    "customProperties": { "departamento": "05", "municipio": "23" }
+  },
+  {
+    "value": "San Matías",
+    "label": "San Matías (La Libertad Norte)",
+    "customProperties": { "departamento": "05", "municipio": "23" }
+  },
+  {
+    "value": "San Pablo Tacachico",
+    "label": "San Pablo Tacachico (La Libertad Norte)",
+    "customProperties": { "departamento": "05", "municipio": "23" }
+  },
+  {
+    "value": "San Juan Opico",
+    "label": "San Juan Opico (La Libertad Centro)",
+    "customProperties": { "departamento": "05", "municipio": "24" }
+  },
+  {
+    "value": "Ciudad Arce",
+    "label": "Ciudad Arce (La Libertad Centro)",
+    "customProperties": { "departamento": "05", "municipio": "24" }
+  },
+  {
+    "value": "Colón",
+    "label": "Colón (La Libertad Oeste)",
+    "customProperties": { "departamento": "05", "municipio": "25" }
+  },
+  {
+    "value": "Jayaque",
+    "label": "Jayaque (La Libertad Oeste)",
+    "customProperties": { "departamento": "05", "municipio": "25" }
+  },
+  {
+    "value": "Sacacoyo",
+    "label": "Sacacoyo (La Libertad Oeste)",
+    "customProperties": { "departamento": "05", "municipio": "25" }
+  },
+  {
+    "value": "Tepecoyo",
+    "label": "Tepecoyo (La Libertad Oeste)",
+    "customProperties": { "departamento": "05", "municipio": "25" }
+  },
+  {
+    "value": "Talnique",
+    "label": "Talnique (La Libertad Oeste)",
+    "customProperties": { "departamento": "05", "municipio": "25" }
+  },
+  {
+    "value": "Antiguo Cuscatlán",
+    "label": "Antiguo Cuscatlán (La Libertad Este)",
+    "customProperties": { "departamento": "05", "municipio": "26" }
+  },
+  {
+    "value": "Huizúcar",
+    "label": "Huizúcar (La Libertad Este)",
+    "customProperties": { "departamento": "05", "municipio": "26" }
+  },
+  {
+    "value": "Nuevo Cuscatlán",
+    "label": "Nuevo Cuscatlán (La Libertad Este)",
+    "customProperties": { "departamento": "05", "municipio": "26" }
+  },
+  {
+    "value": "San José Villanueva",
+    "label": "San José Villanueva (La Libertad Este)",
+    "customProperties": { "departamento": "05", "municipio": "26" }
+  },
+  {
+    "value": "Zaragoza",
+    "label": "Zaragoza (La Libertad Este)",
+    "customProperties": { "departamento": "05", "municipio": "26" }
+  },
+  {
+    "value": "Chiltiupán",
+    "label": "Chiltiupán (La Libertad Costa)",
+    "customProperties": { "departamento": "05", "municipio": "27" }
+  },
+  {
+    "value": "Jicalapa",
+    "label": "Jicalapa (La Libertad Costa)",
+    "customProperties": { "departamento": "05", "municipio": "27" }
+  },
+  {
+    "value": "La Libertad",
+    "label": "La Libertad (La Libertad Costa)",
+    "customProperties": { "departamento": "05", "municipio": "27" }
+  },
+  {
+    "value": "Tamanique",
+    "label": "Tamanique (La Libertad Costa)",
+    "customProperties": { "departamento": "05", "municipio": "27" }
+  },
+  {
+    "value": "Teotepeque",
+    "label": "Teotepeque (La Libertad Costa)",
+    "customProperties": { "departamento": "05", "municipio": "27" }
+  },
+  {
+    "value": "Santa Tecla",
+    "label": "Santa Tecla (La Libertad Sur)",
+    "customProperties": { "departamento": "05", "municipio": "28" }
+  },
+  {
+    "value": "Comasagua",
+    "label": "Comasagua (La Libertad Sur)",
+    "customProperties": { "departamento": "05", "municipio": "28" }
+  },
+  {
+    "value": "Aguilares",
+    "label": "Aguilares (San Salvador Norte)",
+    "customProperties": { "departamento": "06", "municipio": "20" }
+  },
+  {
+    "value": "El Paisnal",
+    "label": "El Paisnal (San Salvador Norte)",
+    "customProperties": { "departamento": "06", "municipio": "20" }
+  },
+  {
+    "value": "Guazapa",
+    "label": "Guazapa (San Salvador Norte)",
+    "customProperties": { "departamento": "06", "municipio": "20" }
+  },
+  {
+    "value": "Apopa",
+    "label": "Apopa (San Salvador Oeste)",
+    "customProperties": { "departamento": "06", "municipio": "21" }
+  },
+  {
+    "value": "Nejapa",
+    "label": "Nejapa (San Salvador Oeste)",
+    "customProperties": { "departamento": "06", "municipio": "21" }
+  },
+  {
+    "value": "Ilopango",
+    "label": "Ilopango (San Salvador Este)",
+    "customProperties": { "departamento": "06", "municipio": "22" }
+  },
+  {
+    "value": "San Martín",
+    "label": "San Martín (San Salvador Este)",
+    "customProperties": { "departamento": "06", "municipio": "22" }
+  },
+  {
+    "value": "Soyapango",
+    "label": "Soyapango (San Salvador Este)",
+    "customProperties": { "departamento": "06", "municipio": "22" }
+  },
+  {
+    "value": "Tonacatepeque",
+    "label": "Tonacatepeque (San Salvador Este)",
+    "customProperties": { "departamento": "06", "municipio": "22" }
+  },
+  {
+    "value": "Ayutuxtepeque",
+    "label": "Ayutuxtepeque (San Salvador Centro)",
+    "customProperties": { "departamento": "06", "municipio": "23" }
+  },
+  {
+    "value": "Mejicanos",
+    "label": "Mejicanos (San Salvador Centro)",
+    "customProperties": { "departamento": "06", "municipio": "23" }
+  },
+  {
+    "value": "Cuscatancingo",
+    "label": "Cuscatancingo (San Salvador Centro)",
+    "customProperties": { "departamento": "06", "municipio": "23" }
+  },
+  {
+    "value": "Ciudad Delgado",
+    "label": "Ciudad Delgado (San Salvador Centro)",
+    "customProperties": { "departamento": "06", "municipio": "23" }
+  },
+  {
+    "value": "San Salvador",
+    "label": "San Salvador (San Salvador Centro)",
+    "customProperties": { "departamento": "06", "municipio": "23" }
+  },
+  {
+    "value": "San Marcos",
+    "label": "San Marcos (San Salvador Sur)",
+    "customProperties": { "departamento": "06", "municipio": "24" }
+  },
+  {
+    "value": "Santo Tomás",
+    "label": "Santo Tomás (San Salvador Sur)",
+    "customProperties": { "departamento": "06", "municipio": "24" }
+  },
+  {
+    "value": "Santiago Texacuangos",
+    "label": "Santiago Texacuangos (San Salvador Sur)",
+    "customProperties": { "departamento": "06", "municipio": "24" }
+  },
+  {
+    "value": "Panchimalco",
+    "label": "Panchimalco (San Salvador Sur)",
+    "customProperties": { "departamento": "06", "municipio": "24" }
+  },
+  {
+    "value": "Rosario de Mora",
+    "label": "Rosario de Mora (San Salvador Sur)",
+    "customProperties": { "departamento": "06", "municipio": "24" }
+  },
+  {
+    "value": "Suchitoto",
+    "label": "Suchitoto (Cuscatlán Norte)",
+    "customProperties": { "departamento": "07", "municipio": "17" }
+  },
+  {
+    "value": "San José Guayabal",
+    "label": "San José Guayabal (Cuscatlán Norte)",
+    "customProperties": { "departamento": "07", "municipio": "17" }
+  },
+  {
+    "value": "Oratorio de Concepción",
+    "label": "Oratorio de Concepción (Cuscatlán Norte)",
+    "customProperties": { "departamento": "07", "municipio": "17" }
+  },
+  {
+    "value": "San Bartolomé Perulapía",
+    "label": "San Bartolomé Perulapía (Cuscatlán Norte)",
+    "customProperties": { "departamento": "07", "municipio": "17" }
+  },
+  {
+    "value": "San Pedro Perulapán",
+    "label": "San Pedro Perulapán (Cuscatlán Norte)",
+    "customProperties": { "departamento": "07", "municipio": "17" }
+  },
+  {
+    "value": "Cojutepeque",
+    "label": "Cojutepeque (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Candelaria",
+    "label": "Candelaria (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "El Carmen",
+    "label": "El Carmen (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "El Rosario",
+    "label": "El Rosario (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Monte San Juan",
+    "label": "Monte San Juan (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "San Cristóbal",
+    "label": "San Cristóbal (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "San Rafael Cedros",
+    "label": "San Rafael Cedros (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "San Ramón",
+    "label": "San Ramón (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Santa Cruz Analquito",
+    "label": "Santa Cruz Analquito (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Santa Cruz Michapa",
+    "label": "Santa Cruz Michapa (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Tenancingo",
+    "label": "Tenancingo (Cuscatlán Sur)",
+    "customProperties": { "departamento": "07", "municipio": "18" }
+  },
+  {
+    "value": "Guacotecti",
+    "label": "Guacotecti (Cabañas Este)",
+    "customProperties": { "departamento": "09", "municipio": "10" }
+  },
+  {
+    "value": "San Isidro",
+    "label": "San Isidro (Cabañas Este)",
+    "customProperties": { "departamento": "09", "municipio": "10" }
+  },
+  {
+    "value": "Sensuntepeque",
+    "label": "Sensuntepeque (Cabañas Este)",
+    "customProperties": { "departamento": "09", "municipio": "10" }
+  },
+  {
+    "value": "Victoria",
+    "label": "Victoria (Cabañas Este)",
+    "customProperties": { "departamento": "09", "municipio": "10" }
+  },
+  {
+    "value": "Dolores",
+    "label": "Dolores (Cabañas Este)",
+    "customProperties": { "departamento": "09", "municipio": "10" }
+  },
+  {
+    "value": "Cinquera",
+    "label": "Cinquera (Cabañas Oeste)",
+    "customProperties": { "departamento": "09", "municipio": "11" }
+  },
+  {
+    "value": "Ilobasco",
+    "label": "Ilobasco (Cabañas Oeste)",
+    "customProperties": { "departamento": "09", "municipio": "11" }
+  },
+  {
+    "value": "Jutiapa",
+    "label": "Jutiapa (Cabañas Oeste)",
+    "customProperties": { "departamento": "09", "municipio": "11" }
+  },
+  {
+    "value": "Tejutepeque",
+    "label": "Tejutepeque (Cabañas Oeste)",
+    "customProperties": { "departamento": "09", "municipio": "11" }
+  },
+  {
+    "value": "Cuyultitán",
+    "label": "Cuyultitán (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "Olocuilta",
+    "label": "Olocuilta (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "San Juan Talpa",
+    "label": "San Juan Talpa (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "San Luis Talpa",
+    "label": "San Luis Talpa (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "San Pedro Masahuat",
+    "label": "San Pedro Masahuat (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "Tapalhuaca",
+    "label": "Tapalhuaca (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "San Francisco Chinameca",
+    "label": "San Francisco Chinameca (La Paz Oeste)",
+    "customProperties": { "departamento": "08", "municipio": "23" }
+  },
+  {
+    "value": "El Rosario",
+    "label": "El Rosario (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "Jerusalén",
+    "label": "Jerusalén (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "Mercedes La Ceiba",
+    "label": "Mercedes La Ceiba (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "Paraíso de Osorio",
+    "label": "Paraíso de Osorio (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Antonio Masahuat",
+    "label": "San Antonio Masahuat (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Emigdio",
+    "label": "San Emigdio (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Juan Tepezontes",
+    "label": "San Juan Tepezontes (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Luis La Herradura",
+    "label": "San Luis La Herradura (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Miguel Tepezontes",
+    "label": "San Miguel Tepezontes (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Pedro Nonualco",
+    "label": "San Pedro Nonualco (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "Santa María Ostuma",
+    "label": "Santa María Ostuma (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "Santiago Nonualco",
+    "label": "Santiago Nonualco (La Paz Centro)",
+    "customProperties": { "departamento": "08", "municipio": "24" }
+  },
+  {
+    "value": "San Juan Nonualco",
+    "label": "San Juan Nonualco (La Paz Este)",
+    "customProperties": { "departamento": "08", "municipio": "25" }
+  },
+  {
+    "value": "San Rafael Obrajuelo",
+    "label": "San Rafael Obrajuelo (La Paz Este)",
+    "customProperties": { "departamento": "08", "municipio": "25" }
+  },
+  {
+    "value": "Zacatecoluca",
+    "label": "Zacatecoluca (La Paz Este)",
+    "customProperties": { "departamento": "08", "municipio": "25" }
+  },
+  {
+    "value": "Apastepeque",
+    "label": "Apastepeque (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "Santa Clara",
+    "label": "Santa Clara (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "San Ildefonso",
+    "label": "San Ildefonso (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "San Esteban Catarina",
+    "label": "San Esteban Catarina (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "San Sebastián",
+    "label": "San Sebastián (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "San Lorenzo",
+    "label": "San Lorenzo (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "Santo Domingo",
+    "label": "Santo Domingo (San Vicente Norte)",
+    "customProperties": { "departamento": "10", "municipio": "14" }
+  },
+  {
+    "value": "San Vicente",
+    "label": "San Vicente (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "Guadalupe",
+    "label": "Guadalupe (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "San Cayetano Istepeque",
+    "label": "San Cayetano Istepeque (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "Tecoluca",
+    "label": "Tecoluca (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "Tepetitán",
+    "label": "Tepetitán (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "Verapaz",
+    "label": "Verapaz (San Vicente Sur)",
+    "customProperties": { "departamento": "10", "municipio": "15" }
+  },
+  {
+    "value": "Alegría",
+    "label": "Alegría (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Berlín",
+    "label": "Berlín (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "El Triunfo",
+    "label": "El Triunfo (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Estanzuelas",
+    "label": "Estanzuelas (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Jucuapa",
+    "label": "Jucuapa (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Mercedes Umaña",
+    "label": "Mercedes Umaña (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Nueva Granada",
+    "label": "Nueva Granada (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "San Buenaventura",
+    "label": "San Buenaventura (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "Santiago de María",
+    "label": "Santiago de María (Usulután Norte)",
+    "customProperties": { "departamento": "11", "municipio": "24" }
+  },
+  {
+    "value": "California",
+    "label": "California (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Concepción Batres",
+    "label": "Concepción Batres (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Ereguayquín",
+    "label": "Ereguayquín (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Jucuarán",
+    "label": "Jucuarán (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Ozatlán",
+    "label": "Ozatlán (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Santa Elena",
+    "label": "Santa Elena (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "San Dionisio",
+    "label": "San Dionisio (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Santa María",
+    "label": "Santa María (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Tecapán",
+    "label": "Tecapán (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Usulután",
+    "label": "Usulután (Usulután Este)",
+    "customProperties": { "departamento": "11", "municipio": "25" }
+  },
+  {
+    "value": "Jiquilisco",
+    "label": "Jiquilisco (Usulután Oeste)",
+    "customProperties": { "departamento": "11", "municipio": "26" }
+  },
+  {
+    "value": "Puerto El Triunfo",
+    "label": "Puerto El Triunfo (Usulután Oeste)",
+    "customProperties": { "departamento": "11", "municipio": "26" }
+  },
+  {
+    "value": "San Agustín",
+    "label": "San Agustín (Usulután Oeste)",
+    "customProperties": { "departamento": "11", "municipio": "26" }
+  },
+  {
+    "value": "San Francisco Javier",
+    "label": "San Francisco Javier (Usulután Oeste)",
+    "customProperties": { "departamento": "11", "municipio": "26" }
+  },
+  {
+    "value": "Ciudad Barrios",
+    "label": "Ciudad Barrios (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "Sesori",
+    "label": "Sesori (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "Nuevo Edén de San Juan",
+    "label": "Nuevo Edén de San Juan (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "San Gerardo",
+    "label": "San Gerardo (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "San Luis de la Reina",
+    "label": "San Luis de la Reina (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "Carolina",
+    "label": "Carolina (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "San Antonio",
+    "label": "San Antonio (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "Chapeltique",
+    "label": "Chapeltique (San Miguel Norte)",
+    "customProperties": { "departamento": "12", "municipio": "21" }
+  },
+  {
+    "value": "San Miguel",
+    "label": "San Miguel (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Comacarán",
+    "label": "Comacarán (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Uluazapa",
+    "label": "Uluazapa (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Moncagua",
+    "label": "Moncagua (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Quelepa",
+    "label": "Quelepa (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Chirilagua",
+    "label": "Chirilagua (San Miguel Centro)",
+    "customProperties": { "departamento": "12", "municipio": "22" }
+  },
+  {
+    "value": "Chinameca",
+    "label": "Chinameca (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "El Tránsito",
+    "label": "El Tránsito (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "Lolotique",
+    "label": "Lolotique (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "Nueva Guadalupe",
+    "label": "Nueva Guadalupe (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "San Jorge",
+    "label": "San Jorge (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "San Rafael Oriente",
+    "label": "San Rafael Oriente (San Miguel Oeste)",
+    "customProperties": { "departamento": "12", "municipio": "23" }
+  },
+  {
+    "value": "Arambala",
+    "label": "Arambala (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Cacaopera",
+    "label": "Cacaopera (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Corinto",
+    "label": "Corinto (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "El Rosario",
+    "label": "El Rosario (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Joateca",
+    "label": "Joateca (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Jocoaitique",
+    "label": "Jocoaitique (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Meanguera",
+    "label": "Meanguera (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Perquín",
+    "label": "Perquín (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "San Fernando",
+    "label": "San Fernando (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "San Isidro",
+    "label": "San Isidro (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Torola",
+    "label": "Torola (Morazán Norte)",
+    "customProperties": { "departamento": "13", "municipio": "27" }
+  },
+  {
+    "value": "Chilanga",
+    "label": "Chilanga (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Delicias de Concepción",
+    "label": "Delicias de Concepción (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "El Divisadero",
+    "label": "El Divisadero (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Gualococti",
+    "label": "Gualococti (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Guatajiagua",
+    "label": "Guatajiagua (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Jocoro",
+    "label": "Jocoro (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Lolotiquillo",
+    "label": "Lolotiquillo (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Osicala",
+    "label": "Osicala (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "San Carlos",
+    "label": "San Carlos (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "San Francisco Gotera",
+    "label": "San Francisco Gotera (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "San Simón",
+    "label": "San Simón (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Sensembra",
+    "label": "Sensembra (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Sociedad",
+    "label": "Sociedad (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Yamabal",
+    "label": "Yamabal (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Yoloaiquín",
+    "label": "Yoloaiquín (Morazán Sur)",
+    "customProperties": { "departamento": "13", "municipio": "28" }
+  },
+  {
+    "value": "Anamorós",
+    "label": "Anamorós (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Bolívar",
+    "label": "Bolívar (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Concepción de Oriente",
+    "label": "Concepción de Oriente (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "El Sauce",
+    "label": "El Sauce (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Lislique",
+    "label": "Lislique (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Nueva Esparta",
+    "label": "Nueva Esparta (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Pasaquina",
+    "label": "Pasaquina (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Polorós",
+    "label": "Polorós (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "San José",
+    "label": "San José (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Santa Rosa de Lima",
+    "label": "Santa Rosa de Lima (La Unión Norte)",
+    "customProperties": { "departamento": "14", "municipio": "19" }
+  },
+  {
+    "value": "Conchagua",
+    "label": "Conchagua (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "El Carmen",
+    "label": "El Carmen (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "Intipucá",
+    "label": "Intipucá (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "La Unión",
+    "label": "La Unión (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "Meanguera del Golfo",
+    "label": "Meanguera del Golfo (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "San Alejo",
+    "label": "San Alejo (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "Yayantique",
+    "label": "Yayantique (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  },
+  {
+    "value": "Yucuaiquín",
+    "label": "Yucuaiquín (La Unión Sur)",
+    "customProperties": { "departamento": "14", "municipio": "20" }
+  }
+]

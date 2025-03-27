@@ -24,15 +24,12 @@ for (var i = 0; i < sidebarToggler.length; i++) {
 }
 
 // Perfect Scrollbar INit
-if (typeof PerfectScrollbar == 'function') {
-    const container = document.querySelector(".sidebar-wrapper");
-    const ps = new PerfectScrollbar(container);
-}
+
 
 window.onload = function () {
 
     var w = window.innerWidth;
-    if (w < 768) {
+    if (w < 768 && document.getElementById('sidebar') !== null && document.getElementById('sidebar') !== undefined) {
         document.getElementById('sidebar').classList.remove('active');
     }
 }
