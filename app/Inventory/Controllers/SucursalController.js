@@ -4,6 +4,13 @@ const { Op, QueryTypes } = require("sequelize");
 const sequelize = require("../../DataBase/DataBase");
 const Sale = require('../../CRM/Models/Sale');
 const Product = require('../Models/Product');
+const CajaChica = require('../../Financial/Models/PettyCash');
+const tipoEstablecieminto = require('../../DTE/Catalogos/CAT-009.json').items;
+
+let tipoEstablecieminto_ = {};
+tipoEstablecieminto.forEach(element => {
+    tipoEstablecieminto_[element.codigo] = element.Valor;
+});
 
 
 
@@ -14,50 +21,83 @@ const SucursalController = {
         let data = req.body;
         let message = null;
 
-        if (data.name.length < 2) {
-            message = 'Por favor, proporcione el nombre para la nueva Sucursal';
-        } else if (data.location < 3) {
-            message = 'Proporcione la dirección de la nueva sucursal';
-        }
-
-        if (message === null) {
-            //validar que el nombre no este registrado
-            let occurency = await Sucursal.findAll({ where: { name: data.name } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay una Sucursal registrada con este nombre' : message;
-        }
-
-        //Validar el correo de contacto
-        if (message === null) {
-            occurency = await Sucursal.findAll({ where: { location: data.location } });
-            message = Object.keys(occurency).length > 0 ? 'Ya hay una sucursal registrada con esta dirección, por favor verifique los datos' : null;
-        }
-
-        if (message !== null) {
+        if (data.name === '' || data.name === null || data.name.length < 3) {
             res.json({
-                status: 'errorMessage',
+                status: 'Por favor Proporcione un nombre para la nueva Sucursal',
+                message: message,
+            });
+        } else if (data.clientDirection === '' || data.clientDirection === null || data.clientDirection.length < 3) {
+            res.json({
+                status: 'Por favor Proporcione la direccion de la sucursal',
+                message: message,
+            });
+        } else if (data.distrito == "" || data.distrito == "00") {
+            res.json({
+                status: 'Por favor Seleccione el Distrito',
+                message: message,
+            });
+        } else if (data.municipio == "" || data.municipio == "00") {
+            res.json({
+                status: 'Por favor Seleccione el Municipio',
+                message: message,
+            });
+        } else if (data.departamento == "" || data.departamento == "00") {
+            res.json({
+                status: 'Por favor Seleccione el Tipo de Establecimiento',
+                message: message,
+            });
+        } else if (data.abreviation == "" || data.abreviation == null) {
+            res.json({
+                status: 'Por favor Escriba la abreviación del Establecimiento',
                 message: message,
             });
         } else {
-            try {
-                const sucursal = await Sucursal.create({
-                    name: data.name,
-                    location: data.location,
-                    mapLink: data.mapLink,
-                    hasAreas: false,
-                    isWharehouse: true,
-                    isSalesRoom: data.isSalesRoom
-                });
+
+            let sucursal = await Sucursal.findOne({ where: { name: data.name } });
+            if (sucursal) {
                 res.json({
                     status: 'success',
                     data: sucursal.id,
                 });
-            } catch (error) {
-                res.status(500).json({
-                    status: 'error',
-                    message: error.message,
-                });
+            } else {
+                try {
+                    sucursal = await Sucursal.create({
+                        name: data.name,
+                        location: data.distrito + ", " + data.clientDirection,
+                        abreviation: data.abreviation,
+                        departamento: data.departamento,
+                        municipio: data.municipio,
+                        tipoEstablecimiento: data.tipoEstablecieminto,
+                        codEstableMH: data.CodeMh,
+                        codEstable: data.CodeEstable,
+                    });
+
+                    // crear la caja chica
+
+                    let caja = await CajaChica.create({
+                        name: data.name + ' - Caja 01',
+                        sucursal: sucursal.id,
+                        balance: 0.00,
+                    });
+
+                    res.json({
+                        status: 'success',
+                        data: sucursal.id,
+                    });
+                } catch (error) {
+                    res.status(500).json({
+                        status: 'error',
+                        message: error.message,
+                    });
+                }
             }
+
+
         }
+
+
+
+
     },
     getSucursalsView: async (req, res) => {
         //buscar todas las sucursales
@@ -65,8 +105,12 @@ const SucursalController = {
         let sucursals = await Sucursal.findAll({
             attributes: ['name', 'location', 'mapLink', 'id']
         });
-        console.log(sucursals.length);
-        res.render('Inventory/Sucursal/sucursals', { pageTitle: 'Sucursales Registradas', sucursals });
+
+        let municipios = require('../../DTE/Catalogos/CAT-013.json').items;
+        let departamentos = require('../../DTE/Catalogos/CAT-012.json').items;
+        let dptos = JSON.stringify(require('../../DTE/Catalogos/direction.json'));
+        let dis = JSON.stringify(require('../../DTE/Catalogos/distritos_.json'));
+        res.render('Inventory/Sucursal/sucursals', { pageTitle: 'Sucursales Registradas', sucursals, tipoEstablecieminto, municipios, departamentos, dptos, dis });
     },
 
     getSucursal: async (req, res) => {
@@ -75,17 +119,11 @@ const SucursalController = {
         if (sucursal === null) {
             return res.status(404);
         }
-
-
-
-
         res.json({
             sucursal,
-
         });
-
-
     },
+
     viewSucursal: async (req, res) => {
         let sucursal = await Sucursal.findByPk(req.params.id);
         if (sucursal === null) {
@@ -95,9 +133,8 @@ const SucursalController = {
         let sales = await Sale.findAll({
             where: {
                 [Op.and]: [
-                    { _status: { [Op.ne]: 'closed' } },
-                    { _status: { [Op.ne]: 'revoked' } },
-                    {sucursal: sucursal.id},
+                    { _status: { [Op.in]: ['process', 'prepared', 'transport', 'closed'] } },
+                    { sucursal: sucursal.id },
                 ],
             }
         });
@@ -132,10 +169,17 @@ const SucursalController = {
         let products = await Product.findAll({
             where: {
                 id: {
-                    [Op.in]: sequelize.literal(`(SELECT product FROM inventory_product_stock WHERE sucursal = ${sucursal.id}) and stock - reserved > 0`), 
+                    [Op.in]: sequelize.literal(`(SELECT product FROM inventory_product_stock WHERE sucursal = ${sucursal.id}) and stock - reserved > 0`),
                 }
             }
-        })
+        });
+
+
+        let cajas = await CajaChica.findAll({
+                where: {
+                    sucursal: sucursal.id,
+                }
+            });
 
         res.render('Inventory/Sucursal/sucursal', {
             sucursal,
@@ -145,7 +189,8 @@ const SucursalController = {
             sellers,
             SellersLen,
             ClientsLen,
-            products
+            products,
+            cajas
         });
 
 
@@ -157,170 +202,7 @@ const SucursalController = {
 
     },
     updateSucursal: async (req, res) => {
-        let data = req.body;
-        let message = null;
 
-
-
-        if (!data.isLocal) {
-            data.nit = "";
-            data.nrc = "";
-            data.isRetentionAgent = false;
-            data.classification = 'ninguno';
-        }
-
-        if (data.name.length < 2) {
-            message = 'Por favor, proporcione el nombre del proveedor';
-        } else if (data.classification != 'ninguno' && !Helper.verify_NRC(data.nrc)) {
-            message = 'No ha proporcionado el número de registro de contribuyente';
-        } else if (data.isLocal && data.classification == 'ninguno' && !Helper.verify_DUI(data.nit)) {
-            message = 'Si el proveedor es local y no está clasificado, debe proporcionar como mínimo el número de DUI';
-        } else if (data.phone.length < 5 && data.email.length < 5) {
-            message = 'Proporcione el numero de contacto del proveedor';
-        }
-
-        try {
-            //Buscar el proveedor
-            var provider = await Provider.findByPk(data.id);
-            if (provider) {
-                console.log(provider);
-                //validar que el nombre no este registrado
-                let occurency = await Provider.findAll({
-                    where: {
-                        [Op.and]: {
-                            name: data.name,
-                            [Op.not]: { id: data.id }
-                        }
-                    },
-                    col: 'id',
-                });
-                message = Object.keys(occurency).length > 0 ? 'Ya hay un Proveedor registrado con este nombre' : message;
-
-                //Validar el numero del contacto
-                if (message === null && data.phone.length > 5) {
-                    // occurency = await Provider.findAll({ where: { phone: data.phone } });
-                    let occurency = await Provider.findAll({
-                        where: {
-                            [Op.and]: {
-                                phone: data.phone,
-                                [Op.not]: { id: data.id }
-                            }
-                        },
-                        col: 'id',
-                    });
-                    message = Object.keys(occurency).length > 0 ? 'Ya hay un Proveedor registrado con este numero de contacto, por favor verifique los datos' : null;
-                }
-
-                //Validar el correo de contacto
-                if (message === null && data.email.length > 5) {
-                    // occurency = await Provider.findAll({ where: { email: data.email } });
-                    let occurency = await Provider.findAll({
-                        where: {
-                            [Op.and]: {
-                                email: data.email,
-                                [Op.not]: { id: data.id }
-                            }
-                        },
-                        col: 'id',
-                    });
-                    message = Object.keys(occurency).length > 0 ? 'Ya hay un Proveedor registrado con este correo, por favor verifique los datos' : null;
-                }
-
-                //validar que no haya ningun registro con el mismo numero de registro
-                if (message === null && Helper.verify_NRC(data.nrc)) {
-                    // occurency = await Provider.findAll({ where: { NRC: data.nrc } });
-                    let occurency = await Provider.findAll({
-                        where: {
-                            [Op.and]: {
-                                NRC: data.nrc,
-                                [Op.not]: { id: data.id }
-                            }
-                        },
-                        col: 'id',
-                    });
-                    message = Object.keys(occurency).length > 0 ? 'Ya hay un Proveedor registrado con este numero de Registro, por favor verifique los datos' : null;
-                }
-
-                //validar que no haya ningun registro con el mismo numero de DUI
-                if (message === null && Helper.verify_DUI(data.nit)) {
-                    // occurency = await Provider.findAll({ where: { NIT_DUI: data.nit } });
-                    let occurency = await Provider.findAll({
-                        where: {
-                            [Op.and]: {
-                                NIT_DUI: data.nit,
-                                [Op.not]: { id: data.id }
-                            }
-                        },
-                        col: 'id',
-                    });
-                    message = Object.keys(occurency).length > 0 ? 'Ya hay un Proveedor registrado con este numero de DUI, por favor verifique los datos' : null;
-                }
-
-
-                if (message !== null) {
-                    res.json({
-                        status: 'errorMessage',
-                        message: message,
-                    });
-                } else {
-
-                    /**Guardar la imagen si es que ha sido enviada */
-                    let image_name = provider.image;
-                    if (data.image.length > 1) {
-                        image_name = Helper.generateNameForUploadedFile() + '.jpg';
-                        let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', image_name);
-                        // obtener la data de la imagen sin el inicio 'data:image/jpeg;base64,'
-                        let image_data = data.image.slice(23);
-                        //Almacenar la imagen
-                        fs.writeFile(location, image_data, 'base64', (err) => {
-                            if (err) {
-                                console.log(err);
-                                res.status(500).json({
-                                    status: 'errorMessage',
-                                    message: message,
-                                });
-                            } else {
-                                console.log('La imagen se guardó correctamente en el servidor.');
-                            }
-                        });
-                    }
-                    /**
-                     * Despues de todas las verificaciones, guardar el proveedor
-                     */
-                    provider.name = data.name;
-                    provider.type = data.type;
-                    provider.NIT_DUI = data.nit;
-                    provider.NRC = data.nrc;
-                    provider.image = image_name;
-                    provider.isLocal = data.isLocal;
-                    provider.isRetentionAgent = data.isRetentionAgent;
-                    provider.classification = data.classification;
-                    provider.web = data.webpage;
-                    provider.phone = data.phone;
-                    provider.email = data.email;
-                    provider.direction = data.direction;
-                    // As above, the database still has "Jane" and "green"
-                    await provider.save();
-
-                    res.json({
-                        status: 'success',
-                        data: 'saved!',
-                    });
-
-                }
-            } else {
-                return res.json({
-                    status: 'errorMessage',
-                    message: 'Provider not Found',
-                });
-            }
-
-        } catch (error) {
-            res.status(500).json({
-                status: 'error',
-                message: error.message,
-            });
-        }
 
 
     },

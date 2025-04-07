@@ -73,44 +73,7 @@
       }
     });
 
-    document.getElementById('saveClient').addEventListener('click', async (e) => {
-      e.target.disabled = true;
-      let data = {
-        client: '<%= cliente.id %>',
-        name: document.getElementById("clientName").value,
-        phone: document.getElementById("clientPhone").value,
-        email: document.getElementById("clientMail").value,
-        type: document.getElementById("clientType").value,
-        isLocal: document.getElementById("isLocal").value === 'true',
-        dui: document.getElementById("clientDUI").value,
-        nrc: document.getElementById("clientNRC").value,
-        classification: document.getElementById("clientClassification").value,
-        direction: document.getElementById("clientDirection").value,
-        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
-      }
-      if (data.name.length < 2) {
-        e.target.disabled = false;
-        return errorMessage('Por favor, registre el nombre del Cliente');
-      } else if (data.phone.length < 8) {
-        e.target.disabled = false;
-        return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
-      } else {
-        postData('/sales/client/update', data).then(data => {
-          if (data.status == 'success') {
-            successMessage('Actualizado');
-            setTimeout(() => {
-              document.location.reload();
-            }, 1500);
-          } else if (data.status == 'errorMessage') {
-            e.target.disabled = false;
-            return errorMessage(data.message);
-          } else {
-            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-          }
-        });
-      }
-    });
-
+    
     document.getElementById('addPayment').addEventListener('click', async (e) => {
       let data = {
         method: document.querySelector("#payment_method").value,

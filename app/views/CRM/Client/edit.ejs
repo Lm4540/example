@@ -3,9 +3,6 @@
 
 <head>
   <%- include('../../Layouts/Head.ejs') %>
-  <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
-  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
-  <%# custom styles %>
 </head>
 <% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
 
@@ -26,88 +23,70 @@
               <h5>Identificación del Cliente</h5>
               <div class="form-group col-12">
                 <label for="clientName">Nombre del cliente</label>
-                <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente">
+                <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente" value="<%= cliente.name %>">
               </div>
 
-              <div class="form-group col-6">
+              <div class="form-group col-md-6">
                 <label for="clientPhone">Numero Telefonico</label>
-                <input class="form-control" id="clientPhone" type="number" placeholder="77665544">
+                <input class="form-control" id="clientPhone" type="number" placeholder="77665544" value="<%= cliente.phone %>">
               </div>
 
               <div class="form-group col-md-6">
                 <label for="clientMail">E-Mial</label>
-                <input class="form-control" id="clientMail" type="text" placeholder="email@email.com">
+                <input class="form-control" id="clientMail" type="text" placeholder="email@email.com" value="<%= cliente.correo %>">
               </div>
 
               <h5>Dirección del Cliente</h5>
 
               <div class="form-group">
-                <label for="distrito">Seleccione el Distrito</label>
-                <select name="distrito" id="distrito" class="form-control">
-                  <option value="">Ninguno</option>
-                </select>
-              </div>
-
-              <div class="form-group">
                 <label for="departamento">Departamento</label>
-                <select name="departamento" id="departamento" class="form-control" disabled>
-                  <option value="" selected>Sin Dirección</option>
-
+                <select name="departamento" id="departamento" class="form-control">
+                  <option value="">No registrado</option>
                   <% departamentos.forEach(element => { %>
                   <option value="<%= element.codigo %>"><%= element.Valor %></option>
-
                   <% }) %>
                 </select>
               </div>
 
               <div class="form-group">
                 <label for="municipio">Municipio</label>
-                <select name="municipio" id="municipio" class="form-control" disabled>
-                  <option value="" selected>Sin Dirección</option>
+                <select name="municipio" id="municipio" class="form-control">
+                  <option value="">No registrado</option>
+                  <% municipios.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                  <% }) %>
                 </select>
               </div>
 
-
-
-
               <div class="form-group mb-3 col-md-12">
                 <label for="clientDirection">Complemento Dirección</label>
-                <input class="form-control" id="clientDirection" type="text" placeholder="Av. Las Palmeras #528">
+                <input class="form-control" id="clientDirection" type="text" placeholder="Av. Las Palmeras #528" value="<%= cliente.direction %>">
               </div>
 
               <h5>Datos de Clasificación y Facturación</h5>
               <div class=" form col-md-12">
                 <label for="isLocal">¿Cliente Local?</label>
                 <select name="isLocal" id="isLocal" class="form-control">
-                  <option value="true">Si, es cliente local</option>
-                  <option value="false">No, es cliente Internacional</option>
+                  <option value="true" <%= cliente.isLocal ? 'selected' : '' %>>Si, es cliente local</option>
+                  <option value="false" <%= !cliente.isLocal ? 'selected' : '' %>>No, es cliente Internacional</option>
                 </select>
               </div>
 
               <div class="form-group mb-3 col-md-6">
                 <label for="clientDocumentType">Tipo de Documento</label>
                 <select name="clientDocumentType" id="clientDocumentType" class="form-control">
-                  <option value="ninguno">Ninguno</option>
-                  <option value="13">DUI</option>
-                  <option value="36">NIT</option>
-                  <option value="37">Otro</option>
-                  <option value="03">Pasaporte</option>
-                  <option value="02">Carnet de Residente</option>
+                  <option value="ninguno" <%= cliente.tipoDocumento == "ninguno" ? 'selected' : '' %>>Ninguno</option>
+                  <option value="13" <%= cliente.tipoDocumento == "13" ? 'selected' : '' %>>DUI</option>
+                  <option value="36" <%= cliente.tipoDocumento == "36" ? 'selected' : '' %>>NIT</option>
+                  <option value="37" <%= cliente.tipoDocumento == "37" ? 'selected' : '' %>>Otro</option>
+                  <option value="03" <%= cliente.tipoDocumento == "03" ? 'selected' : '' %>>Pasaporte</option>
+                  <option value="02" <%= cliente.tipoDocumento == "02" ? 'selected' : '' %>>Carnet de Residente</option>
                 </select>
               </div>
 
               <div class="form-group mb-3 col-md-6">
                 <label for="clientDUI">Numero de Documento (Normalmente NIT/DUI)</label>
-                <input class="form-control" id="clientDUI" type="text" placeholder="05507306-7">
-              </div>
-
-
-              <div class=" form-group col-md-6">
-                <label for="clientType">Tipo de Compras</label>
-                <select name="clientType" id="clientType" class="form-control">
-                  <option value="major">Comprador por Mayor</option>
-                  <option value="minor">Comprador al Detalle</option>
-                </select>
+                <input class="form-control" id="clientDUI" type="text" placeholder="05507306-7" value="<%= cliente.NIT_DUI %>">
               </div>
 
               <div class=" form-group col-md-6">
@@ -122,25 +101,26 @@
 
               <div class="form-group mb-3 col-md-6">
                 <label for="clientNRC">NRC</label>
-                <input class="form-control" id="clientNRC" type="text" placeholder="1525-8" disabled>
+                <input class="form-control" id="clientNRC" type="text" placeholder="1525-8">
               </div>
 
-              <div class="form-group mb-3 col-md-6">
+              <div class="form-group mb-3 col-md-4">
                 <label for="clientCodActividad">Giro, Actividad Economica del Contribuyente</label>
                 <select class="form-control" id="clientCodActividad" type="text" placeholder="">
                   <option value="">Seleccione la Actividad Economica del Contribuyente</option>
                   <% giros.forEach(element => { %>
-                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+
+                  <option value="<%= element.codigo %>" <%= (cliente.codActividad == element.codigo ? 'selected' : '') %>><%= element.Valor %></option>
                   <% }) %>
                 </select>
               </div>
 
-              <div class="form-group mb-3 col-md-12">
+              <div class="form-group mb-3 col-md-4">
                 <label for="clientNombreComercial">Nombre Comercial</label>
-                <input class="form-control" id="clientNombreComercial" type="text" placeholder="" disabled>
+                <input class="form-control" id="clientNombreComercial" type="text" value="<%= cliente.nombreComercial %>">
               </div>
 
-              <div class="form-group col-md-12">
+              <div class="form-group col-md-4">
                 <label for="clientSeller">Vendedor Asignado</label>
                 <select name="clientSeller" id="clientSeller" class="form-control">
                   <option value="none" selected>Ninguno</option>
@@ -153,7 +133,7 @@
           </div>
           <div class="card-footer text-right">
             <button type="button" class="btn btn-secondary" onclick="window.history.back()">Atrás</button>
-            <button type="button" class="btn btn-primary" id="saveClient">Guardar</button>
+            <button type="button" class="btn btn-primary" id="saveClient">Actualizar</button>
           </div>
         </div>
 
@@ -165,7 +145,6 @@
   </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
-<script src="assets/libs/choices/choices.min.js"></script>
 <script>
   var distritos = '<%- dptos %>';
   const departamentos = JSON.parse(distritos);
@@ -173,8 +152,7 @@
   let selected_municipio = null;
 
 
-  distritos = '<%- dis %>';
-  distritos = JSON.parse(distritos);
+
 
   const cargarMunicipios = (index) => {
     let muni = departamentos[index];
@@ -189,41 +167,11 @@
   //document ready
   document.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("clientName").focus();
-    document.getElementById("clientSeller").value = '<%= user.employee %>';
+    document.getElementById("clientSeller").value = '<%= cliente.seller %>';
 
 
     document.querySelector("#departamento").addEventListener('change', e => {
       cargarMunicipios(document.querySelector("#departamento").value);
-    });
-
-    document.querySelector("#distrito").addEventListener('choice', e => {
-      let option = e.detail.choice;
-      if (option.value == '') {
-        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
-        document.querySelector("#departamento").value = '00';
-        selected_departamento = null;
-        selected_municipio = null;
-      } else if (option.value == '00') {
-        selected_departamento = '00';
-        selected_municipio = '00';
-        cargarMunicipios('00');
-        document.querySelector("#municipio").value = '00';
-        document.querySelector("#departamento").value = '00';
-      } else {
-        selected_departamento = option.customProperties.departamento;
-        selected_municipio = option.customProperties.municipio;
-        cargarMunicipios(option.customProperties.departamento);
-        document.querySelector("#municipio").value = option.customProperties.municipio;
-        document.querySelector("#departamento").value = option.customProperties.departamento;
-      }
-    });
-
-    const choices_distrito = new Choices(document.querySelector('#distrito'), {
-      'searchChoices': true,
-    }).setChoices(distritos);
-
-    const choices_actividad = new Choices(document.querySelector('#clientCodActividad'), {
-      'searchChoices': true,
     });
 
     document.querySelector("#clientClassification").addEventListener('change', e => {
@@ -231,9 +179,11 @@
       if (e.target.value == "ninguno") {
         document.querySelector("#clientNRC").disabled = true;
         document.querySelector("#clientNombreComercial").disabled = true;
+        document.querySelector("#clientCodActividad").disabled = true;
       } else {
         document.querySelector("#clientNRC").disabled = false;
         document.querySelector("#clientNombreComercial").disabled = false;
+        document.querySelector("#clientCodActividad").disabled = false;
       }
     });
 
@@ -250,24 +200,25 @@
     document.getElementById('saveClient').addEventListener('click', async (e) => {
       // e.target.disabled = true;
       let data = {
+        client: '<%= cliente.id %>',
         name: document.getElementById("clientName").value.trim(),
         phone: document.getElementById("clientPhone").value.trim(),
-        mail: document.getElementById("clientMail").value.trim(),
-        distrito: document.querySelector("#distrito").value,
-        departamento: selected_departamento,
-        municipio: selected_municipio,
-        direction: document.getElementById("clientDirection").value.trim(),
-        type: 'major',
-        isLocal: document.getElementById("isLocal").value === 'true',
-        documentType: document.getElementById("clientDocumentType").value == 'ninguno' ? null : document.getElementById("clientDocumentType").value.trim(),
-        dui: document.getElementById("clientDUI").value.trim(),
+        email: document.getElementById("clientMail").value.trim(),
         nrc: document.getElementById("clientNRC").value.trim(),
-        classification: document.getElementById("clientClassification").value == 'ninguno' ? null : document.getElementById("clientClassification").value,
-        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
+        documentType: document.getElementById("clientDocumentType").value == 'ninguno' ? null : document.getElementById("clientDocumentType").value,
+        dui: document.getElementById("clientDUI").value.trim(),
+        isLocal: document.getElementById("isLocal").value === 'true',
+        departamento: document.getElementById("departamento").value,
+        direction: document.getElementById("clientDirection").value.trim(),
+        municipio: document.querySelector("#municipio").value,
+        classification: document.getElementById("clientClassification").value,
         codActividad: document.getElementById("clientCodActividad").value,
         giro: document.getElementById("clientCodActividad").options[document.getElementById("clientCodActividad").selectedIndex].text,
+        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
         nombreComercial: document.getElementById("clientNombreComercial").value.trim(),
       }
+
+      console.log(data);
 
       data.phone = data.phone.replace(/[^0-9]/g, '');
 
@@ -286,12 +237,11 @@
         }
 
         if (data.classification !== null) {
-          if (data.isLocal && data.distrito == null || data.departamento == null || data.municipio == null || data.distrito == '' || data.departamento == '00' || data.municipio == '00') {
+          if (data.isLocal && (data.departamento == null || data.municipio == null || data.departamento == '00' || data.municipio == '00')) {
             e.target.disabled = false;
             return errorMessage('Debe seleccionar el distrito, departamento y municipio para este Cliente');
 
-          }
-          else if (!data.isLocal && data.departamento !== "00" && data.municipio !== "00") {
+          } else if (!data.isLocal && data.departamento !== "00" && data.municipio !== "00") {
             e.target.disabled = false;
             return errorMessage('Debe seleccionar "Otro (Para extranjeros)" para el departamento y municipio de clientes no Locales');
           }
@@ -322,18 +272,17 @@
         }
 
         if (data.isLocal == false) {
-          data.distrito = null;
           data.departamento = '00';
           data.municipio = '00';
         }
 
         /** Enviar Informacion al Servidor y volver a Validar*/
-        postData('/sales/client/create', data).then(data => {
+        postData('/sales/client/update', data).then(data => {
           if (data.status == 'success') {
             successMessage('Guardado con Exito, redirigiendo');
             /**Redirigir a la pagina del Proveedor*/
             setTimeout(() => {
-              location.href = `/sales/client/view/${data.data}`;
+              // history.back();
             }, 1500);
 
           } else if (data.status == 'errorMessage') {
@@ -346,8 +295,32 @@
       }
     });
 
+    document.querySelector("#clientClassification").value = '<%= cliente.classification == null ? "ninguno" : cliente.classification %>';
 
   });
 </script>
+<% if (cliente.departamento != null) { %>
+<script>
+  document.querySelector("#departamento").value = '<%= cliente.departamento %>';
+  cargarMunicipios('<%= cliente.departamento %>');
+  document.querySelector("#municipio").value = '<%= cliente.municipio %>';
+</script>
+
+<% } 
+if(cliente.classification == null ||cliente.classification == "ninguno"){ %>
+<script>
+  document.querySelector("#clientNRC").disabled = true;
+  document.querySelector("#clientNombreComercial").disabled = true;
+  document.querySelector("#clientCodActividad").disabled = true;
+</script>
+<% } else { %>
+<script>
+  document.querySelector("#clientNRC").value = '<%= cliente.NRC %>';
+  document.querySelector("#clientNombreComercial").value = '<%= cliente.nombreComercial %>';
+  document.querySelector("#clientCodActividad").value = '<%= cliente.codActividad %>';
+</script>
+
+<% }%>
+
 
 </html>

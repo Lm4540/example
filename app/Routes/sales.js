@@ -26,6 +26,7 @@ router.post('/client/updateData', ClientController.updateClientData);
 router.get('/client/:id(\\d+)', ClientController.getClient);
 router.get('/client/:id(\\d+)/orders', ClientController.getClientOrders);
 router.get('/client/view/:id(\\d+)', ClientController.viewClient);
+router.get('/client/edit/:id(\\d+)', ClientController.editClient);
 router.get('/client/view/:id(\\d+)/sales/:last(\\d+)/:limit(\\d+)', ClientController.viewClientSales);
 router.get('/client/view/:id(\\d+)/payments/:last(\\d+)/:limit(\\d+)', ClientController.viewClientPayments);
 router.get('/client/select2', ClientController.getClientToSelect2);

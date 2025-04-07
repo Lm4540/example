@@ -28,6 +28,7 @@ const InvoiceDetail = require('../Models/InvoiceDetail');
 
 const Money = require('../../System/Money');
 const { type } = require('os');
+const PettyCash = require('../../Financial/Models/PettyCash');
 
 
 const status = {
@@ -557,6 +558,9 @@ const SaleController = {
                     });
                 }
 
+                let caja = await PettyCash.findByPk(data.sucursal);
+
+
                 let sale = await Sale.findByPk(data.sale);
                 if (data.amount > Helper.fix_number(sale.balance + sale.delivery_amount - sale.collected)) {
                     return res.json({
@@ -575,9 +579,9 @@ const SaleController = {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
                                 amount: data.amount,
-                                last_amount: sucursal.balance,
+                                last_amount: caja.balance,
                                 concept: `Pago Recibido ${client.name} ID(${client.id}) ${sale.invoice_number !== "" && sale.invoice_number !== null ? sale.invoice_type.toUpperCase() + ' N° ' + sale.invoice_number : ''}`,
-                                petty_cash: sucursal.id,
+                                petty_cash: caja.id,
                                 type: 'payment',
                                 isin: true,
                                 createdBy: req.session.userSession.shortName,
@@ -594,8 +598,8 @@ const SaleController = {
                                 createdBy: req.session.userSession.shortName,
                             }, { transaction: t });
 
-                            sucursal.balance = Helper.fix_number(sucursal.balance + data.amount);
-                            await sucursal.save({ transaction: t });
+                            caja.balance = Helper.fix_number(caja.balance + data.amount);
+                            await caja.save({ transaction: t });
                         } else {
                             registered_payment = await SalePayment.create({
                                 client: client.id,
@@ -686,6 +690,8 @@ const SaleController = {
                     });
                 }
 
+                let caja = await PettyCash.findByPk(data.sucursal);
+
                 try {
                     return await sequelize.transaction(async (t) => {
                         let registered_payment = null;
@@ -696,9 +702,9 @@ const SaleController = {
                             //generar el Ingreso a la caja Chica
                             let _move = await PettyCashMoves.create({
                                 amount: data.amount,
-                                last_amount: sucursal.balance,
+                                last_amount: caja.balance,
                                 concept: `Pago Recibido Cliente ${client.name} `,
-                                petty_cash: sucursal.id,
+                                petty_cash: caja.id,
                                 type: 'payment',
                                 isin: true,
                                 createdBy: req.session.userSession.shortName,
@@ -715,8 +721,8 @@ const SaleController = {
                                 createdBy: req.session.userSession.shortName,
                             }, { transaction: t });
 
-                            sucursal.balance += data.amount;
-                            await sucursal.save({ transaction: t });
+                            caja.balance += data.amount;
+                            await caja.save({ transaction: t });
                         } else {
                             registered_payment = await SalePayment.create({
                                 client: client.id,
@@ -1059,7 +1065,7 @@ const SaleController = {
 
         if (_status) {
 
-            if(_sucursal){
+            if (_sucursal) {
                 where = {
                     _status: _status,
                     sucursal: _sucursal
@@ -1082,7 +1088,7 @@ const SaleController = {
                     [Op.notIn]: ['collected', 'revoked'],
                 }
             };
-        }else if(_sucursal){
+        } else if (_sucursal) {
             where = {
                 sucursal: _sucursal,
                 _status: {
@@ -2446,6 +2452,7 @@ const SaleController = {
             }
 
             var sucursal = await Sucursal.findByPk(session.employee.sucursal);
+            var caja = await PettyCash.findByPk(session.employee.sucursal);
 
             //verificar los datos de facturacion
             //buscar la serie
@@ -2622,10 +2629,10 @@ const SaleController = {
                         //generar el Ingreso a la caja Chica
                         let _move = await PettyCashMoves.create({
                             amount: data.payment.money,
-                            last_amount: sucursal.balance,
+                            last_amount: caja.balance,
                             concept: `Ingreso por Venta en Sala, cliente ${client.name} venta ID: ${sale.id} (${sale.invoice_type} N°
                                 ${sale.invoice_number})`,
-                            petty_cash: sucursal.id,
+                            petty_cash: caja.id,
                             type: 'payment',
                             isin: true,
                             createdBy: session.shortName,
@@ -2644,8 +2651,8 @@ const SaleController = {
 
                         payments_ids.push({ id: id.id, amount: data.payment.money })
 
-                        sucursal.balance += Number.parseFloat(data.payment.money);
-                        await sucursal.save({ transaction: t });
+                        caja.balance += Number.parseFloat(data.payment.money);
+                        await caja.save({ transaction: t });
 
                     }
 

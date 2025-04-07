@@ -17,7 +17,7 @@
    <div id="main">
       <%- include('../../Layouts/NavBar.ejs') %>
       <div class="main-content container-fluid">
-         <h2 class="text-center">Caja Chica <%= sucursal.name %> (<span id="total_amount">$<%= Helper.money_format(sucursal.balance) %></span>)</h2>
+         <h2 class="text-center">Caja de Efectivo <br> <%= sucursal.name %> (<span id="total_amount">$<%= Helper.money_format(sucursal.balance) %></span>)</h2>
          <div class="row" id="move_controls" style="display: none;">
             <div class="col form-group">
                <label for="init_date">Desde la Fecha</label>

@@ -3,7 +3,7 @@ const sequelize = require("../../DataBase/DataBase");
 
 // import { Task } from "./Task.js";
 
-const Sucursal = sequelize.define('Sucursal', {
+module.exports = sequelize.define('Sucursal', {
     id: {
         type: DataTypes.INTEGER.UNSIGNED,
         primaryKey: true,
@@ -17,35 +17,58 @@ const Sucursal = sequelize.define('Sucursal', {
         type: DataTypes.STRING(255),
     },
     mapLink: {
-        type: DataTypes.TEXT,
+        type: DataTypes.VIRTUAL,
+        get() {
+            return null;
+        }
     },
     balance: {
-        type: DataTypes.DECIMAL(10,2), 
-        defaultValue:0.00, 
-        get(){
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+        get() {
             let _val = Number.parseFloat(this.getDataValue('balance'));
             return isNaN(_val) ? 0.00 : _val
         }
     },
-    hasAreas: DataTypes.BOOLEAN,
-    isWharehouse: DataTypes.BOOLEAN,
-    isSalesRoom: DataTypes.BOOLEAN,
+    hasAreas: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return true;
+        }
+    },
+    isWharehouse: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return true;
+        }
+    },
+    isSalesRoom: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return true;
+        }
+    },
     abreviation: DataTypes.STRING(10),
+    departamento: DataTypes.STRING(10),
+    municipio: DataTypes.STRING(10),
+    tipoEstablecimiento: DataTypes.STRING(10),
+    codEstableMH: DataTypes.STRING(10),
+    codEstable: DataTypes.STRING(10),
+    direccion: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return {
+                "departamento": this.departamento,
+                "municipio": this.municipio,
+                "complemento": this.direccion
+            };
+        }
+
+    },
+
 }, {
     tableName: 'system_sucursal',
 });
 
-// Stock.hasMany(Movement);
-// Movement.belongsTo(Stock);
 
-// Product.hasMany(Task, {
-//     foreignKey: 'projectId',
-//     sourceKey: 'id'
-// });
 
-// Task.belongsTo(Project, {
-//     foreignKey: 'projectId',
-//     targetId: 'id'
-// })
-
-module.exports = Sucursal;

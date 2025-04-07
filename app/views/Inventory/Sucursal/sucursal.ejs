@@ -14,7 +14,7 @@
     <%- include('../../Layouts/NavBar.ejs') %>
     <div class="main-content container-fluid">
       <div class="page-title">
-        <h3><%= pageTitle %>  </h3>
+        <h3><%= pageTitle %> </h3>
       </div>
       <section class="section">
         <div class="row justify-content-center">
@@ -33,11 +33,15 @@
               Clientes Registrados <span class="badge bg-transparent"><%= ClientsLen %></span>
             </button>
 
+            <button type="button" class="btn btn-success mt-2 ml-2" onclick="show('#cajas');">
+              Cajas de Cobro
+            </button>
+
           </div>
 
           <div id="sales">
             <h4 class="text-center mt-4">Ventas en Proceso</h4>
-            <div class="col-12 table-responsive" >
+            <div class="col-12 table-responsive">
               <table class="table table-sm table-hover table-bordered">
                 <thead>
                   <th>Cliente</th>
@@ -47,14 +51,14 @@
                 </thead>
                 <tbody>
                   <% sales.forEach(sale => { %>
-                   
-                    <tr>
-                      <td><%= clients.indexes[sale.client] %></td>
-                      <td><%= Helper.format_date(sale.createdAt) %></td>
-                      <td><%= sellers.indexes[sale.seller] %></td>
-                      <td><a href="/sales/view/<%= sale.id %>" class="badge circle bg-danger">Ver</a></td>
-                    </tr>
-                    <% }) %>
+
+                  <tr>
+                    <td><%= clients.indexes[sale.client] %></td>
+                    <td><%= Helper.format_date(sale.createdAt) %></td>
+                    <td><%= sellers.indexes[sale.seller] %></td>
+                    <td><a href="/sales/view/<%= sale.id %>" class="badge circle bg-danger">Ver</a></td>
+                  </tr>
+                  <% }) %>
                 </tbody>
               </table>
             </div>
@@ -62,7 +66,7 @@
 
           <div id="clients">
             <h4 class="text-center mt-4">Clientes Registrados</h4>
-            <div class="col-12 table-responsive" >
+            <div class="col-12 table-responsive">
               <table class="table table-sm table-hover table-bordered">
                 <thead>
                   <th>Cliente</th>
@@ -70,12 +74,12 @@
                 </thead>
                 <tbody>
                   <% clients.forEach((client) => { %>
-                   
-                    <tr>
-                      <td><%= client.name %></td>
-                      <td><a href="/sales/client/view/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
-                    </tr>
-                    <% }) %>
+
+                  <tr>
+                    <td><%= client.name %></td>
+                    <td><a href="/sales/client/view/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
+                  </tr>
+                  <% }) %>
                 </tbody>
               </table>
             </div>
@@ -84,7 +88,7 @@
 
           <div id="sellers">
             <h4 class="text-center mt-4">Vendedores Registrados</h4>
-            <div class="col-12 table-responsive" >
+            <div class="col-12 table-responsive">
               <table class="table table-sm table-hover table-bordered">
                 <thead>
                   <th>Empleado</th>
@@ -92,12 +96,12 @@
                 </thead>
                 <tbody>
                   <% sellers.forEach((client) => { %>
-                   
-                    <tr>
-                      <td><%= client.name %></td>
-                      <td><a href="/hrm/employee/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
-                    </tr>
-                    <% }) %>
+
+                  <tr>
+                    <td><%= client.name %></td>
+                    <td><a href="/hrm/employee/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
+                  </tr>
+                  <% }) %>
                 </tbody>
               </table>
             </div>
@@ -106,7 +110,7 @@
 
           <div id="products">
             <h4 class="text-center mt-4">Productos en Stock</h4>
-            <div class="col-12 table-responsive" >
+            <div class="col-12 table-responsive">
               <table class="table table-sm table-hover table-bordered">
                 <thead>
                   <th>Producto</th>
@@ -114,42 +118,211 @@
                 </thead>
                 <tbody>
                   <% products.forEach((client) => { %>
-                   
-                    <tr>
-                      <td><%= client.name %></td>
-                      <td><a href="/inventory/product/view/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
-                    </tr>
-                    <% }) %>
+
+                  <tr>
+                    <td><%= client.name %></td>
+                    <td><a href="/inventory/product/view/<%= client.id %>" class="badge circle bg-danger">Ver</a></td>
+                  </tr>
+                  <% }) %>
                 </tbody>
               </table>
             </div>
           </div>
-          
+
+
+          <div id="cajas">
+            <h4 class="text-center mt-4">
+              Cajas Registrada
+              <span class="badge bg-purple" data-bs-toggle="modal" data-bs-target="#CreateCaja" style="cursor:pointer">Nueva Caja</span>
+            </h4>
+            <div class="col-12 table-responsive">
+              <table class="table table-sm table-hover table-bordered">
+                <thead>
+                  <th>Caja</th>
+                  <th>Opcion</th>
+                </thead>
+                <tbody>
+                  <% cajas.forEach(caja => { %>
+
+                  <tr>
+                    <td><%= caja.name %></td>
+                    <td>
+                      <a href="/financial/pettycash/<%= caja.id %>" class="badge circle bg-danger">Ver</a>
+                      <span data-bs-target="#UpdateCaja" data-bs-toggle="modal" class="badge circle bg-warning" onclick="updatePettyCash('<%= caja.id %>', '<%= caja.name %>', '<%= caja.codPuntoVenta %>', '<%= caja.codPuntoVentaMH %>')">Editar</span>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
 
-        
+
       </section>
     </div>
     <%- include('../../Layouts/Footer.ejs') %>
   </div>
 
-  
+  <div class="modal fade" id="UpdateCaja" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered " role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Editar caja de Efectivo</h5>
+          <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+        </div>
+        <div class="modal-body">
+
+          <div class="row">
+            <div class="form-group col-12">
+              <label for="updateCajaName" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="updateCajaName">
+            </div>
+            <div class="form-group col-6">
+              <label for="updateCajaCodPuntoVentaMH" class="form-label">Codigo punto de Venta MH</label>
+              <input type="text" class="form-control" id="updateCajaCodPuntoVentaMH">
+            </div>
+            <div class="form-group col-6">
+              <label for="updateCajaCodPuntoVenta" class="form-label">Codigo punto de Venta (Propio)</label>
+              <input type="text" class="form-control" id="updateCajaCodPuntoVenta">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="updatePettyCash">Actualizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="CreateCaja" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered " role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Caja de Efectivo</h5>
+          <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+        </div>
+        <div class="modal-body">
+
+          <div class="row">
+            <div class="form-group col-12">
+              <label for="CajaName" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="CajaName">
+            </div>
+            <div class="form-group col-6">
+              <label for="CajaCodPuntoVentaMH" class="form-label">Codigo punto de Venta MH</label>
+              <input type="text" class="form-control" id="CajaCodPuntoVentaMH">
+            </div>
+            <div class="form-group col-6">
+              <label for="CajaCodPuntoVenta" class="form-label">Codigo punto de Venta (Propio)</label>
+              <input type="text" class="form-control" id="CajaCodPuntoVenta">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="SavePettyCash">Actualizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
-  document.querySelector("#sales").style.display = 'block';
-    document.querySelector("#clients").style.display = 'none';
-    document.querySelector("#sellers").style.display = 'none';
-    document.querySelector("#products").style.display = 'none';
+  var CajaSeleccionada = null;
+
+
+  document.addEventListener("DOMContentLoaded", function(event) {
+
+    show('#sales');
+
+    document.querySelector("#updatePettyCash").addEventListener('click', (e) => {
+      let data = {
+        name: document.getElementById('updateCajaName').value.trim(),
+        codPuntoVentaMH: document.getElementById('updateCajaCodPuntoVentaMH').value.trim(),
+        codPuntoVenta: document.getElementById('updateCajaCodPuntoVenta').value.trim(),
+        id: CajaSeleccionada
+      }
+
+
+      if (data.name == "" || data.name == null || data.codPuntoVentaMH == null || data.codPuntoVentaMH == "" || data.codPuntoVenta == null || data.codPuntoVenta == "") {
+        return errorMessage('Por favor complete los datos');
+      }
+
+      postData('/financial/pettycash/update', data).then(data => {
+        if (data.status == 'success') {
+          successMessage('Guardado con Exito, redirigiendo');
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+    });
+
+
+    document.querySelector("#SavePettyCash").addEventListener('click', (e) => {
+      let data = {
+        name: document.getElementById('CajaName').value.trim(),
+        codPuntoVentaMH: document.getElementById('CajaCodPuntoVentaMH').value.trim(),
+        codPuntoVenta: document.getElementById('CajaCodPuntoVenta').value.trim(),
+        sucursal: "<%= sucursal.id %>"
+      }
+
+      if (data.name == "" || data.name == null || data.codPuntoVentaMH == null || data.codPuntoVentaMH == "" || data.codPuntoVenta == null || data.codPuntoVenta == "") {
+        return errorMessage('Por favor complete los datos');
+      }
+
+      postData('/financial/pettycash/create', data).then(data => {
+        if (data.status == 'success') {
+          successMessage('Guardado con Exito, redirigiendo');
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+    });
+
+
+  });
+
 
   const show = (element) => {
     document.querySelector("#sales").style.display = 'none';
     document.querySelector("#clients").style.display = 'none';
     document.querySelector("#sellers").style.display = 'none';
     document.querySelector("#products").style.display = 'none';
-    
+    document.querySelector("#cajas").style.display = 'none';
+
     document.querySelector(element).style.display = 'block';
 
+  }
+
+  const updatePettyCash = (id, name, codPuntoVenta, codPuntoVentaMH) => {
+    CajaSeleccionada = id;
+
+    document.querySelector("#updateCajaName").value = name;
+    document.querySelector("#updateCajaCodPuntoVentaMH").value = codPuntoVentaMH;
+    document.querySelector("#updateCajaCodPuntoVenta").value = codPuntoVenta;
   }
 </script>
 

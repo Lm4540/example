@@ -3,6 +3,7 @@
 
 <head>
   <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
   <%# custom styles %>
 </head>
 
@@ -57,7 +58,7 @@
 
   <!-- modal -->
   <div class="modal fade" id="AddSucursal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" style="display: none;" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-xl" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-centered " role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalCenterTitle">Registrar Sucursal</h5>
@@ -66,26 +67,79 @@
         <div class="modal-body">
           <form class="row g-3">
             <div class="col-12">
-              <label for="sucursalName" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="sucursalName">
+              <div class="form-group">
+                <label for="sucursalName" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="sucursalName">
+              </div>
+            </div>
+            <h5>Dirección del Cliente</h5>
+
+            <div class="form-group">
+              <label for="distrito">Seleccione el Distrito</label>
+              <select name="distrito" id="distrito" class="form-control">
+                <option value="">Ninguno</option>
+              </select>
             </div>
 
-            <div class="col-md-12">
-              <label for="Ubication" class="form-label">Ubicación</label>
-              <input type="text" class="form-control" id="Ubication">
+            <div class="form-group">
+              <label for="departamento">Departamento</label>
+              <select name="departamento" id="departamento" class="form-control" disabled>
+                <option value="" selected>Sin Dirección</option>
+
+                <% departamentos.forEach(element => { %>
+                <option value="<%= element.codigo %>"><%= element.Valor %></option>
+
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="municipio">Municipio</label>
+              <select name="municipio" id="municipio" class="form-control" disabled>
+                <option value="" selected>Sin Dirección</option>
+              </select>
+            </div>
+
+
+
+
+            <div class="form-group mb-3 col-md-12">
+              <label for="clientDirection">Complemento Dirección</label>
+              <input class="form-control" id="clientDirection" type="text" placeholder="Av. Las Palmeras #528">
             </div>
 
             <div class="col-md-6">
-              <label for="mapUrl" class="form-label">URL del Mapa</label>
-              <input type="text" class="form-control" id="mapUrl">
+              <div class="form-group">
+                <label for="tipoEstablecieminto">Tipo de Establecimiento</label>
+                <select name="tipoEstablecieminto" id="tipoEstablecieminto" class="form-control">
+                  <% tipoEstablecieminto.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                  <% }) %>
+                </select>
+
+              </div>
             </div>
 
             <div class="col-md-6">
-              <div class="form-check mt-4">
-                <input class="form-check-input pt-2" type="checkbox" id="isSalesRoom">
-                <label class="form-check-label" for="isSalesRoom">
-                  ¿Es sala de ventas?
-                </label>
+              <div class="form-group">
+                <label for="CodeMh" class="form-label">Codigo de Establecimiento MH</label>
+                <input type="text" class="form-control" id="CodeMh">
+              </div>
+            </div>
+
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="CodeEstable" class="form-label">Codigo de Establecimiento (Propio)</label>
+                <input type="text" class="form-control" id="CodeEstable">
+              </div>
+            </div>
+
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="abreviation" class="form-label">Abreviacion de la Sucursal</label>
+                <input type="text" class="form-control" id="abreviation" placeholder="SS-SS ó LL-ST">
               </div>
             </div>
 
@@ -102,37 +156,104 @@
   </div>
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
 <script>
+  var distritos = '<%- dptos %>';
+  const departamentos = JSON.parse(distritos);
+  let selected_departamento = null;
+  let selected_municipio = null;
+
+
+  distritos = '<%- dis %>';
+  distritos = JSON.parse(distritos);
+
+  const cargarMunicipios = (index) => {
+    let muni = departamentos[index];
+    document.querySelector("#municipio").innerHTML = '';
+    muni.forEach(element => {
+      document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
+    });
+
+  }
+
+
+
   document.addEventListener("DOMContentLoaded", function(event) {
+    document.querySelector("#departamento").addEventListener('change', e => {
+      cargarMunicipios(document.querySelector("#departamento").value);
+    });
+
+    document.querySelector("#distrito").addEventListener('choice', e => {
+      let option = e.detail.choice;
+      if (option.value == '') {
+        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
+        document.querySelector("#departamento").value = '00';
+        selected_departamento = null;
+        selected_municipio = null;
+      } else if (option.value == '00') {
+        selected_departamento = '00';
+        selected_municipio = '00';
+        cargarMunicipios('00');
+        document.querySelector("#municipio").value = '00';
+        document.querySelector("#departamento").value = '00';
+      } else {
+        selected_departamento = option.customProperties.departamento;
+        selected_municipio = option.customProperties.municipio;
+        cargarMunicipios(option.customProperties.departamento);
+        document.querySelector("#municipio").value = option.customProperties.municipio;
+        document.querySelector("#departamento").value = option.customProperties.departamento;
+      }
+    });
+
+    const choices_distrito = new Choices(document.querySelector('#distrito'), {
+      'searchChoices': true,
+    }).setChoices(distritos);
+
+
+
+
     document.getElementById('saveSucursal').addEventListener('click', (e) => {
       let data = {
         name: document.getElementById('sucursalName').value,
-        location: document.getElementById('Ubication').value,
-        mapLink: document.getElementById('mapUrl').value,
-        isSalesRoom: document.getElementById('isSalesRoom').checked,
+        distrito: document.getElementById('distrito').value,
+        departamento: selected_departamento,
+        municipio: selected_municipio,
+        clientDirection: document.getElementById('clientDirection').value.trim(),
+        tipoEstablecieminto: document.getElementById('tipoEstablecieminto').value,
+        CodeMh: document.getElementById('CodeMh').value.trim(),
+        CodeEstable: document.getElementById('CodeEstable').value.trim(),
+        abreviation: document.getElementById('abreviation').value.trim(),
       };
 
       if (data.name === '' || data.name === null || data.name.length < 3) {
         return errorMessage('Por favor Proporcione un nombre para la nueva Sucursal');
-      } else if (data.location === '' || data.location === null || data.location.length < 3) {
+      } else if (data.clientDirection === '' || data.clientDirection === null || data.clientDirection.length < 3) {
         return errorMessage('Por favor Proporcione la direccion de la sucursal');
+      } else if (data.distrito == "" || data.distrito == "00") {
+        return errorMessage('Por favor Seleccione el Distrito');
+      } else if (data.municipio == "" || data.municipio == "00") {
+        return errorMessage('Por favor Seleccione el Municipio');
+      } else if (data.departamento == "" || data.departamento == "00") {
+        return errorMessage('Por favor Seleccione el Tipo de Establecimiento');
+      } else if (data.abreviation == "" || data.abreviation == null) {
+        return errorMessage('Por favor Escriba la abreviación del Establecimiento');
       } else {
-        postData('/inventory/sucursal/create', data)
-          .then(data => {
-            if (data.status == 'success') {
-              successMessage('Guardado con Exito, redirigiendo');
-              /**Redirigir a la pagina del Proveedor*/
-              setTimeout(() => {
-                location.href = `/inventory/sucursal/view/${data.data}`;
-              }, 1500);
 
-            } else if (data.status == 'errorMessage') {
-              e.target.disabled = false;
-              return errorMessage(data.message);
-            } else {
-              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
-            }
-          });
+        postData('/inventory/sucursal/create', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('Guardado con Exito, redirigiendo');
+            /**Redirigir a la pagina del Proveedor*/
+            setTimeout(() => {
+              location.href = `/inventory/sucursal/view/${data.data}`;
+            }, 1500);
+
+          } else if (data.status == 'errorMessage') {
+            e.target.disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
       }
     });
   });

@@ -1,5 +1,10 @@
 [
   {
+    "value": "00",
+    "label": "Otro (para extranjeros)",
+    "customProperties": { "departamento": "00", "municipio": "00" }
+  },
+  {
     "value": "Atiquizaya",
     "label": "Atiquizaya (Ahuachapán Norte)",
     "customProperties": { "departamento": "01", "municipio": "13" }

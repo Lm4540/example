@@ -547,7 +547,7 @@
 
 
                 </h3>
-                <button class="btn btn-soft-secondary ml-3" data-bs-toggle="modal" data-bs-target="#editClient" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %>>Editar</button>
+                <a href="/sales/client/edit/<%= cliente.id %>" class="btn btn-soft-secondary ml-3" <%= permission.includes('update_client') || cliente.seller == user.employee ? '' : 'disabled' %>>Editar</a>
               </div>
               <h5 class="text-800">Vendedor Asignado</h5>
               <p class="text-800"><%= seller.name %></p>
@@ -650,13 +650,12 @@
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
-<script src="assets/libs/grid/gridjs.js"></script>
 <script src="assets/libs/choices/choices.min.js"></script>
 <%- include('view_client_add_invoice.ejs') %>
 <%- include('view_client_sale_option.ejs') %>
 <%- include('view_client_payments.ejs') %>
-<%- include('view_client_catalogs.ejs') %>
 <% if (cliente.has_web_access) { %>
+  <%- include('view_client_catalogs.ejs') %>
 <% } %>
 
 </html>

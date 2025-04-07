@@ -46,36 +46,15 @@ const Client = sequelize.define('Client', {
     },
     has_web_access: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
     },
-    web_products : {
+    web_products: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
     },
     classification: {
         type: DataTypes.ENUM('otro', 'mediano', 'gran', 'ninguno'),
-        set(value) {
-            value = String.prototype.toUpperCase.call(value);
-            let vals = {
-                'OTRO': 'otro',
-                'OTRO CONTRIBUYENTE': 'otro',
-                'PEQUEÑO': 'otro',
-                'PEQUEÑO CONTRIBUYENTE': 'otro',
-                'PEQUENIO CONTRIBUYENTE': 'otro',
-                'PEQUENIO': 'otro',
-                'MEDIANO': 'mediano',
-                'MEDIO': 'mediano',
-                'MEDIO CONTRIBUYENTE': 'mediano',
-                'MEDIANO CONTRIBUYENTE': 'mediano',
-                'GRANDE': 'gran',
-                'GRAN': 'gran',
-                'GRANDE CONTRIBUYENTE': 'gran',
-                'GRAN CONTRIBUYENTE': 'gran',
-                'NINGUNO': 'ninguno',
-                'NO CLASIFICADO': 'ninguno',
-            }
-            this.setDataValue('classification', vals[value] !== undefined ? vals[value] : 'ninguno');
-        },
+
     },
     createdBy: DataTypes.STRING,
     phone: DataTypes.STRING,
@@ -83,7 +62,10 @@ const Client = sequelize.define('Client', {
     direction: {
         type: DataTypes.STRING(500),
         set(value) {
-            this.setDataValue('direction', value.replace(/['"*]+/g, '').trim());
+            if (value) {
+
+                this.setDataValue('direction', value.replace(/['"*]+/g, '').trim());
+            }
         },
     },
     balance: {
@@ -105,9 +87,126 @@ const Client = sequelize.define('Client', {
     seller: DataTypes.INTEGER.UNSIGNED,
     sucursal: DataTypes.INTEGER,
     giro: DataTypes.STRING(255),
+    codActividad: DataTypes.STRING(6),
+    departamento: DataTypes.STRING(4),
+    municipio: DataTypes.STRING(2),
+    nombreComercial: DataTypes.STRING(200),
+    tipoDocumento: DataTypes.STRING(2),
+    nit: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.tipoDocumento == "36" ? this.NIT_DUI : null;
+        },
+        set(value) {
+            this.tipoDocumento = "36";
+            this.NIT_DUI = value;
+        },
+    },
+
+    nrc: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.NRC;
+        },
+        set(value) {
+            this.NRC = value;
+        },
+    },
+
+    nombre: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.name;
+        },
+    },
+
+    descActividad: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.giro;
+        },
+        set(value) {
+            this.giro = value;
+        },
+    },
+    direccion: {
+        type: DataTypes.VIRTUAL,
+        get() {
+
+            return this.departamento != null ? {
+                'departamento': this.departamento,
+                'municipio': this.municipio,
+                'complemento': this.direction
+            } : null;
+
+        }
+    },
+    telefono: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.phone;
+        },
+        set(value) {
+            this.phone = value;
+        },
+    },
+    correo: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.email;
+        },
+        set(value) {
+            this.email = value;
+        },
+    },
+
+    for_ccf_dte: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return {
+                "nit": this.nit ? this.nit.replace(/[^0-9]/g, '') : null,
+                "nrc": this.nrc ? this.nrc.replace(/[^0-9]/g, '') : null,
+                "nombre": this.name,
+                "codActividad": this.codActividad,
+                "descActividad": this.giro,
+                "nombreComercial": this.nombreComercial,
+                "direccion": this.direccion,
+                "telefono": this.telefono ? this.telefono.replace(/[^0-9]/g, '') : null,
+                "correo": this.email
+            }
+        }
+    },
+    for_fc_dte: {
+        type: DataTypes.VIRTUAL,
+        get() {
+
+            let data = {
+                'tipoDocumento': null,
+                'numDocumento': null,
+                "nrc": null,
+                "nombre": this.name,
+                "codActividad": this.codActividad,
+                "descActividad": this.giro,
+                "direccion": this.direccion,
+                "telefono": this.telefono ? this.telefono.replace(/[^0-9]/g, '') : null,
+                "correo": this.email
+            }
+
+            if (["36", "13", "02", "03", "37"].includes(this.tipoDocumento)) {
+                data.tipoDocumento = this.tipoDocumento;
+                data.numeroDocumento = this.NIT_DUI ? this.NIT_DUI.replace(/[^0-9]/g, '') : null;
+            }
+
+
+            return data;
+        }
+    }
 }, {
     tableName: 'crm_client',
 });
 
 
 module.exports = Client;
+
+
+// alter table `crm_client` add codActividad varchar(6) null, add departamento varchar(4) null, add municipio varchar(2) null, add nombreComercial varchar(200) null, add tipoDocumento varchar(2) null;
