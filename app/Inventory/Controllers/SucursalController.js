@@ -166,13 +166,22 @@ const SucursalController = {
             sellers.indexes[element.id] = element.name;
         });
 
-        let products = await Product.findAll({
-            where: {
-                id: {
-                    [Op.in]: sequelize.literal(`(SELECT product FROM inventory_product_stock WHERE sucursal = ${sucursal.id}) and stock - reserved > 0`),
-                }
+        // let products = await Product.findAll({
+        //     where: {
+        //         id: {
+        //             [Op.in]: sequelize.literal(`(SELECT product FROM inventory_product_stock WHERE sucursal = ${sucursal.id}) and stock - reserved > 0`),
+        //         }
+        //     }
+        // });
+
+        let products = await  sequelize.query(
+            'SELECT * FROM inventory_product where id in (SELECT product FROM inventory_product_stock WHERE sucursal = :sucursal and cant > 0)',
+            {
+                replacements: { sucursal: sucursal.id },
+                type: QueryTypes.SELECT,
+                model: Product,
             }
-        });
+        );
 
 
         let cajas = await CajaChica.findAll({

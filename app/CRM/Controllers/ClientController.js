@@ -186,7 +186,7 @@ const ClientController = {
                 NRC: data.nrc !== null && data.nrc.length > 0 ? data.nrc : null,
                 isLocal: data.isLocal,
                 isRetentionAgent: data.classification === 'gran',
-                classification: data.classification,
+                classification: data.classification == null ? 'ninguno' : data.classification,
                 createdBy: req.session.userSession.employee.shortName,
                 phone: data.phone,
                 email: data.mail.length > 0 ? data.mail : '',
@@ -203,7 +203,7 @@ const ClientController = {
 
             return res.json({
                 status: 'success',
-                data: client.id,
+                data: client,
             });
         } catch (error) {
             console.log(error)
@@ -370,7 +370,11 @@ const ClientController = {
                     comment += `<p>Se actualizo el vendedor asignado</p>`;
                 }
 
-                if (client.classification !== data.classification) {
+                if (data.classification == null) {
+                    data.classification == 'ninguno';
+                }
+
+                if (client.classification !== 'ninguno' || 'ninguno' !== data.classification) {
                     for_update.classification = data.classification;
                     comment += `<p>Se actualizo la Classificación del Cliente</p>`;
 

@@ -1,0 +1,440 @@
+<!-- Modal -->
+<div class="modal fade" id="registrarClienteModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Registrar Cliente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="row g-3">
+          <h5>Identificación del Cliente</h5>
+          <div class="form-group col-12">
+            <label for="clientName">Nombre del cliente</label>
+            <input class="form-control" id="clientName" type="text" placeholder="Nombre del Cliente">
+          </div>
+
+          <div class="form-group col-6">
+            <label for="clientPhone">Numero Telefonico</label>
+            <input class="form-control" id="clientPhone" type="number" placeholder="77665544">
+          </div>
+
+          <div class="form-group col-md-6">
+            <label for="clientMail">E-Mial</label>
+            <input class="form-control" id="clientMail" type="text" placeholder="email@email.com">
+          </div>
+
+          <h5>Dirección del Cliente</h5>
+
+          <div class="form-group">
+            <label for="distrito">Seleccione el Distrito</label>
+            <select name="distrito" id="distrito" class="form-control">
+              <option value="">Ninguno</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="departamento">Departamento</label>
+            <select name="departamento" id="departamento" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+
+              <% departamentos.forEach(element => { %>
+              <option value="<%= element.codigo %>"><%= element.Valor %></option>
+
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="municipio">Municipio</label>
+            <select name="municipio" id="municipio" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+            </select>
+          </div>
+
+
+
+
+          <div class="form-group mb-3 col-md-12">
+            <label for="clientDirection">Complemento Dirección</label>
+            <input class="form-control" id="clientDirection" type="text" placeholder="Av. Las Palmeras #528">
+          </div>
+
+          <h5>Datos de Clasificación y Facturación</h5>
+          <div class=" form col-md-12">
+            <label for="isLocal">¿Cliente Local?</label>
+            <select name="isLocal" id="isLocal" class="form-control">
+              <option value="true">Si, es cliente local</option>
+              <option value="false">No, es cliente Internacional</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3 col-md-6">
+            <label for="clientDocumentType">Tipo de Documento</label>
+            <select name="clientDocumentType" id="clientDocumentType" class="form-control">
+              <option value="ninguno">Ninguno</option>
+              <option value="13">DUI</option>
+              <option value="36">NIT</option>
+              <option value="37">Otro</option>
+              <option value="03">Pasaporte</option>
+              <option value="02">Carnet de Residente</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3 col-md-6">
+            <label for="clientDUI">Numero de Documento (Normalmente NIT/DUI)</label>
+            <input class="form-control" id="clientDUI" type="text" placeholder="05507306-7">
+          </div>
+
+
+          <div class=" form-group col-md-6">
+            <label for="clientType">Tipo de Compras</label>
+            <select name="clientType" id="clientType" class="form-control">
+              <option value="major">Comprador por Mayor</option>
+              <option value="minor">Comprador al Detalle</option>
+            </select>
+          </div>
+
+          <div class=" form-group col-md-6">
+            <label for="clientClassification">Clasificación del Contribuyente</label>
+            <select name="clientClassification" id="clientClassification" class="form-control">
+              <option value="ninguno">No Clasificado</option>
+              <option value="otro">Otro Contribuyente</option>
+              <option value="mediano">Mediano Contribuyente</option>
+              <option value="gran">Gran Contribuyente</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3 col-md-6">
+            <label for="clientNRC">NRC</label>
+            <input class="form-control" id="clientNRC" type="text" placeholder="1525-8" disabled>
+          </div>
+
+          <div class="form-group mb-3 col-md-6">
+            <label for="clientCodActividad">Giro, Actividad Economica del Contribuyente</label>
+            <select class="form-control" id="clientCodActividad" type="text" placeholder="">
+              <option value="">Seleccione la Actividad Economica del Contribuyente</option>
+              <% giros.forEach(element => { %>
+              <option value="<%= element.codigo %>"><%= element.Valor %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group mb-3 col-md-12">
+            <label for="clientNombreComercial">Nombre Comercial</label>
+            <input class="form-control" id="clientNombreComercial" type="text" placeholder="" disabled>
+          </div>
+
+          <div class="form-group col-md-12">
+            <label for="clientSeller">Vendedor Asignado</label>
+            <select name="clientSeller" id="clientSeller" class="form-control">
+              <option value="none" selected>Ninguno</option>
+              <% sellers.forEach(employee => { %>
+              <option value="<%= employee.id %>"><%= employee.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="saveClient">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="iframeModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        <iframe src="about:blank" style="width: 100%; height: 400px; border: none;" id="aux_iframe"></iframe>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="search_client" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Buscar Cliente</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="clientSelect" style="font-size: 120%;">Escribe el nombre, DUI/NCR o Telefono del Cliente</label>
+          <select name="clientSelect" id="clientSelect" class="form-control"></select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="SelectedClientButton" data-bs-dismiss="modal"> Aceptar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="search_order" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Cargar Orden</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="orderSearch" style="font-size: 120%;">Escribe el numero de orden</label>
+          <input type="number" id="orderSearch" class="form-control">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="searchOrderButton" data-bs-dismiss="modal"> Buscar y Cargar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ordertobeBilledModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Ventas Pendientes de Facturar</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Cliente</th>
+              <th>vendedor</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="ordertobeBilledTable">
+
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="guidesModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Guias/viñetas por elaborar</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row" id="guidesModaldiv">
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addPaysModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Registrar pagos</h4>
+      </div>
+      <div class="modal-body table-responsive">
+        <div class="alert alert-danger" role="alert">
+          <strong>Nota:</strong> Asegurece de ingresar el monto correcto, ya que el sistema no le permitira editarlo posteriormente.
+          <br> Asegurece que el pago NO haya sido registrado previamente.
+
+        </div>
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Monto</th>
+              <th scope="col">Banco</th>
+              <th scope="col">Referencia</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Acciones</th>
+            </tr>
+            <tr class="small-table-header">
+              <td>
+                <small for="payment_amount">Tipo de Transacción</small>
+                <select name="payment_method" id="payment_method" class="form-control">
+                  <option value="05">Transferencias y Depósitos</option>
+                  <option value="02" disabled>Tarjeta de Credito</option>
+                  <option value="03" disabled>Trajeta de Debito</option>
+                  <option value="11" disabled>Bitcoin</option>
+                </select>
+              </td>
+              <td>
+                <small for="payment_amount">Monto Recibido</small>
+                <input class="form-control" id="payment_amount" type="text" name="payment_amount" placeholder="0.00">
+              </td>
+              <td>
+                <small for="payment_bank">Banco que recibe (RG)</small>
+                <input class="form-control" id="payment_bank" type="text" name="payment_bank" placeholder="Banco">
+              </td>
+              <td>
+                <small for="payment_reference">Numero de Referencia / Numero de Voucher </small>
+                <input class="form-control" id="payment_reference" type="text" placeholder="1525-8">
+              </td>
+              <td>
+                <small for="payment_reference">Fecha de la Transacción</small>
+                <input class="form-control" id="payment_date" type="date" value="<%= Helper.date_to_input() %>">
+              </td>
+              <td>
+                <button class="badge bg-success btn-sm" id="addPayButton">Agregar</button>
+              </td>
+            </tr>
+          </thead>
+          <tbody id="paysTbody">
+
+
+
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Forma de uso, descripciones y restricciones</h4>
+      </div>
+      <div class="modal-body">
+        <ol class="accordion" id="helpAccordion">
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingDescriptions">
+              <a href="#collapseDescriptions" class="accordion-trigger" data-bs-toggle="collapse" aria-expanded="true" aria-controls="collapseDescriptions">
+                Descripciones
+              </a>
+            </h2>
+            <div id="collapseDescriptions" class="accordion-collapse collapse show" aria-labelledby="headingDescriptions" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Descripciones -->
+                Aquí puedes encontrar información detallada sobre las descripciones.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingLoadOrderClient">
+              <a href="#collapseLoadOrderClient" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseLoadOrderClient">
+                Cargar una Orden o cliente
+              </a>
+            </h2>
+            <div id="collapseLoadOrderClient" class="accordion-collapse collapse" aria-labelledby="headingLoadOrderClient" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Cargar una Orden o cliente -->
+                Instrucciones para cargar una orden o cliente.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingUpdateData">
+              <a href="#collapseUpdateData" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseUpdateData">
+                Actualización de datos
+              </a>
+            </h2>
+            <div id="collapseUpdateData" class="accordion-collapse collapse" aria-labelledby="headingUpdateData" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Actualización de datos -->
+                Pasos para actualizar los datos del cliente o del sistema.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingRegisterPayments">
+              <a href="#collapseRegisterPayments" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseRegisterPayments">
+                Registro de Pagos
+              </a>
+            </h2>
+            <div id="collapseRegisterPayments" class="accordion-collapse collapse" aria-labelledby="headingRegisterPayments" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Registro de Pagos -->
+                Guía para registrar pagos correctamente.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingDTE">
+              <a href="#collapseDTE" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseDTE">
+                Tipos de DTE
+              </a>
+            </h2>
+            <div id="collapseDTE" class="accordion-collapse collapse" aria-labelledby="headingDTE" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Tipos de DTE -->
+                Información sobre los diferentes tipos de DTE disponibles.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingWarnings">
+              <a href="#collapseWarnings" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseWarnings">
+                Advertencias
+              </a>
+            </h2>
+            <div id="collapseWarnings" class="accordion-collapse collapse" aria-labelledby="headingWarnings" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Advertencias -->
+                Precauciones y advertencias importantes a tener en cuenta.
+              </div>
+            </div>
+          </li>
+
+          <li class="accordion-item">
+            <h2 class="accordion-header" id="headingShortcuts">
+              <a href="#collapseShortcuts" class="accordion-trigger collapsed" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseShortcuts">
+                Atajos de Teclado
+              </a>
+            </h2>
+            <div id="collapseShortcuts" class="accordion-collapse collapse" aria-labelledby="headingShortcuts" data-bs-parent="#helpAccordion">
+              <div class="accordion-body">
+                <!-- Contenido para Atajos de Teclado -->
+                Lista de atajos de teclado para agilizar el uso del sistema.
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+

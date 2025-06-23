@@ -36,7 +36,6 @@ const SaleDetail = sequelize.define('SaleDetail', {
     },
     _order: {
         type: DataTypes.INTEGER.UNSIGNED,
-        defaultValue: false,
     },
     cant: {
         type: DataTypes.INTEGER.UNSIGNED,

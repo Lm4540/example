@@ -126,7 +126,6 @@ const Sale = sequelize.define('Sale', {
             this.setDataValue('payments', JSON.stringify(param == null ? [] : param));
         }
     },
-    dte: DataTypes.TEXT,
     invoice_retention: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -173,15 +172,7 @@ const Sale = sequelize.define('Sale', {
     }
 });
 
-Sale.hasMany(SaleDetail, {
-    foreignKey: 'sale',
-    sourceKey: 'id'
-});
 
-SaleDetail.belongsTo(Sale, {
-    foreignKey: 'product',
-    targetId: 'id'
-})
 
 
 

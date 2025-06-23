@@ -67,7 +67,7 @@ const InvoiceController = {
                 }
                 return res.json({
                     status: 'success',
-                    message: 'Chingadera ha funcionado con exito',
+                    message: 'Operacion realizada con exito',
                 })
             });
         } catch (error) {

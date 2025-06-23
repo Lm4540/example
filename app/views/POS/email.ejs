@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificación Factura Electrónica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .email-header {
+      background-color: #007bff;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .email-body {
+      padding: 20px;
+      color: #333333;
+      line-height: 1.6;
+    }
+
+    .email-footer {
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: #888888;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+
+    .text-center {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="email-container">
+    <div class="email-header">
+      <h1>Notificación Factura Electrónica</h1>
+    </div>
+    <div class="email-body">
+      <p>Hola,</p>
+      <p>Este es un mensaje de notificación para informarte sobre un evento importante relacionado con tu cuenta.</p>
+      <p>Por favor, haz clic en el botón de abajo para más detalles:</p>
+
+
+    </div>
+    <div class="email-body">
+      <p>
+        <strong>Detalles de la Factura:</strong><br>
+        <strong>Nombre del Cliente:</strong> ${customerName}<br>
+        <strong>NIT del Cliente:</strong> ${customerNIT}<br>
+        <strong>Número de Factura:</strong> ${invoiceNumber}<br>
+        <strong>Monto Total:</strong> ${totalAmount}<br>
+        <strong>Fecha de Emisión:</strong> ${issueDate}<br>
+        <strong>Estado:</strong> ${status}<br>
+      </p>
+    </div>
+    <div class="email-body text-center">
+      <a href="https://admin.factura.gob.sv/consultaPublica?ambiente=01&codGen=AE8FD0D5-4A24-33A4-D614-4C1DD072FA69&fechaEmi=2025-03-20" class="button">Consulta MH</a>
+
+    </div>
+    <div class="email-footer">
+      <p>© 2023 Tu Empresa. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</body>
+
+</html>

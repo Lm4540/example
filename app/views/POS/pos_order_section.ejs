@@ -1,29 +1,80 @@
 <div class="order-section">
-  <h5 class="fw-semibold mb-3" id="client">Create a Maximilian</h5>
-  <p class="text-muted small mb-4" id="order_number">#3992327
+  <h5 class="fw-semibold mb-3" id="clientlabel">No Seleccionado</h5>
+  <p class="text-muted small mb-4" id="order_number">
     <br>
-    <span id="order_date">22 Jul 2024</span>
+    <span id="order_date">--</span>
   </p>
+  <div class="dashed-divider"></div>
+  <div class="form-group">
+    <label for="select_client_exento">Exento de IVA</label>
+    <select name="select_client_exento" class="form-control" id="select_client_exento">
+      <option value="no" selected>NO</option>
+      <option value="si">SI</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="select_agente_retencion">Retencion de IVA</label>
+    <select name="select_agente_retencion" class="form-control" id="select_agente_retencion">
+      <option value="no" selected>NO</option>
+      <option value="si">SI</option>
+    </select>
+  </div>
+
+
+  <div class="form-group">
+    <label for="dte_document_type">Tipo de Documento</label>
+    <select name="dte_document_type" class="form-control" id="dte_document_type">
+      <option value="01">Factura Electrónica</option>
+      <option value="03">Comprobante de Crédito Fiscal Electrónico</option>
+      <option value="11" disabled>Factura de Exportación Electrónica</option>
+    </select>
+  </div>
   <div class="dashed-divider"></div>
 
   <div class="mb-4">
     <div class="d-flex justify-content-between mb-2">
+      <span>Subtotal</span>
+      <span id="sub_total_label">$00.00</span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-2">
+      <span>IVA</span>
+      <span id="iva_label">$00.00</span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-2">
+      <span>Iva Retenido</span>
+      <span id="iva_retenido_label">$00.00</span>
+    </div>
+
+
+
+    <div class="d-flex justify-content-between mb-2">
       <span>Total</span>
-      <span>$211.00</span>
-    </div>
-    <div class="d-flex justify-content-between">
-      <span>Pagado</span>
-      <span>$0.00</span>
+      <span id="total_label">$00.00</span>
     </div>
 
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between mb-2">
+      <span>Pagos <span class="badge bg-warning" data-bs-toggle="modal" data-bs-target="#addPaysModal">Ver</span></span>
+      <span id="pays_label">$00.00 </span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-2">
+      <span>Efectivo</span>
+      <span id="payed_label">
+        <input type="number" class="transparent_control" id="cash_payed_amount" value="" min="0" step="0.01" placeholder="00.00" />
+      </span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-2">
       <span>Restante</span>
-      <span>$221.00</span>
+      <span id="restante_label">$00.00</span>
     </div>
 
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between mb-2">
       <span>Cambio</span>
-      <span>$00.00</span>
+      <span id="vuelto_label">$00.00</span>
     </div>
   </div>
 
@@ -31,7 +82,16 @@
 
   <div class="payment-methods">
 
-    <button class="btn btn-outline-success w-100 round">Registrar Pago</button>
-    <button class="btn btn-outline-primary w-100 mt-3 round">Facturar</button>
+    <button class="btn btn-outline-primary w-100 mt-3 round" id="btnContinuar">Facturar</button>
+    <button class="btn btn-outline-warning w-100 mt-1 round" data-bs-target="#helpModal" data-bs-toggle="modal">Ayuda</button>
+
+
+    <div>
+      <div class="form-check form-switch">
+        <input class="form-check-input fs-3 text" type="checkbox" id="printTicket">
+        <label class="form-check-label" for="printTicket">Imprimir ticket</label>
+      </div>
+
+    </div>
   </div>
 </div>

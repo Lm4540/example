@@ -2,9 +2,9 @@
 <html lang="es">
 
 <head>
-  <%- include('../Layouts/Head.ejs') %>
+
   <style>
-     dl,
+    dl,
     ol,
     p,
     pre,
@@ -12,7 +12,33 @@
       margin-top: 0
     }
 
+    dd,
+    legend {
+      margin-bottom: .5rem
+    }
+
+    progress,
+    sub,
+    sup {
+      vertical-align: baseline
+    }
+
+    .img-fluid,
+    .img-thumbnail {
+      max-width: 100%;
+      height: auto
+    }
+
+    .g-0,
+    .gy-0,
+    .row {
+      --bs-gutter-y: 0
+    }
+
+
+
     :root {
+
       --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
       --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0))
@@ -27,11 +53,18 @@
     body {
       margin: 0;
       font-family: var(--bs-font-sans-serif);
+      font-size: .9rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #727e8c;
+      background-color: #fff;
       -webkit-text-size-adjust: 100%;
       -webkit-tap-highlight-color: transparent
     }
 
-   
+    [tabindex="-1"]:focus:not(:focus-visible) {
+      outline: 0 !important
+    }
 
     hr {
       margin: 1rem 0;
@@ -64,6 +97,50 @@
       color: #475f7b
     }
 
+    address,
+    dl,
+    ol,
+    p,
+    ul {
+      margin-bottom: 1rem
+    }
+
+    dt,
+    kbd kbd {
+      font-weight: 700
+    }
+
+    address,
+    legend {
+      line-height: inherit
+    }
+
+    .alert-heading,
+    a>code,
+    pre code {
+      color: inherit
+    }
+
+    .h1,
+    h1 {
+      font-size: calc(1.35rem + 1.2vw)
+    }
+
+    .h2,
+    h2 {
+      font-size: calc(1.305rem + .66vw)
+    }
+
+    .h3,
+    h3 {
+      font-size: calc(1.2825rem + .39vw)
+    }
+
+    .h4,
+    h4 {
+      font-size: calc(1.26rem + .12vw)
+    }
+
     .h5,
     h5 {
       font-size: 1.125rem
@@ -74,6 +151,30 @@
       font-size: .9rem
     }
 
+    abbr[data-original-title],
+    abbr[title] {
+      text-decoration: underline;
+      -webkit-text-decoration: underline dotted;
+      text-decoration: underline dotted;
+      cursor: help;
+      -webkit-text-decoration-skip-ink: none;
+      text-decoration-skip-ink: none
+    }
+
+    .badge,
+    .btn,
+    [role=button],
+    [type=button]:not(:disabled),
+    [type=reset]:not(:disabled),
+    [type=submit]:not(:disabled),
+    button:not(:disabled),
+    summary {
+      cursor: pointer
+    }
+
+    address {
+      font-style: normal
+    }
 
     ol,
     ul {
@@ -89,14 +190,108 @@
       margin-bottom: 0
     }
 
-  
+    dd {
+      margin-left: 0
+    }
+
+    blockquote,
+    figure {
+      margin: 0 0 1rem
+    }
+
+    .blockquote,
+    .blockquote-footer,
+    pre {
+      margin-bottom: 1rem
+    }
+
     b,
     strong {
       font-weight: bolder
     }
 
+    .small,
+    small {
+      font-size: .875em
+    }
 
-    
+    .mark,
+    mark {
+      padding: .2em;
+      background-color: #fcf8e3
+    }
+
+    sub,
+    sup {
+      position: relative;
+      font-size: .75em;
+      line-height: 0
+    }
+
+    sub {
+      bottom: -.25em
+    }
+
+    sup {
+      top: -.5em
+    }
+
+    a {
+      color: #0d6efd;
+      text-decoration: underline
+    }
+
+    .btn-link:hover,
+    a:hover {
+      color: #024dbc
+    }
+
+    a:not([href]):not([class]),
+    a:not([href]):not([class]):hover {
+      color: inherit;
+      text-decoration: none
+    }
+
+    code,
+    kbd,
+    pre,
+    samp {
+      font-family: var(--bs-font-monospace);
+      font-size: 1em
+    }
+
+    code,
+    kbd,
+    pre {
+      font-size: .875em
+    }
+
+    pre {
+      display: block;
+      overflow: auto;
+      -ms-overflow-style: scrollbar
+    }
+
+    pre code {
+      font-size: inherit;
+      word-break: normal
+    }
+
+    code {
+      color: #d63384
+    }
+
+    kbd {
+      padding: .2rem .4rem;
+      color: #fff;
+      background-color: #212529;
+      border-radius: .2rem
+    }
+
+    kbd kbd {
+      padding: 0;
+      font-size: 1em
+    }
 
     img,
     svg {
@@ -306,6 +501,33 @@
       border-bottom-width: 0
     }
 
+
+
+
+    .align-baseline {
+      vertical-align: baseline !important
+    }
+
+    .align-top {
+      vertical-align: top !important
+    }
+
+    .align-middle {
+      vertical-align: middle !important
+    }
+
+    .align-bottom {
+      vertical-align: bottom !important
+    }
+
+    .align-text-bottom {
+      vertical-align: text-bottom !important
+    }
+
+    .align-text-top {
+      vertical-align: text-top !important
+    }
+
     .float-left {
       float: left !important
     }
@@ -326,7 +548,7 @@
       overflow: hidden !important
     }
 
-    
+
 
 
     .w-25 {
@@ -533,7 +755,7 @@
       align-self: stretch !important
     }
 
-    
+
 
     .m-0 {
       margin: 0 !important
@@ -563,7 +785,75 @@
       margin: auto !important
     }
 
-    
+    .mx-0 {
+      margin-right: 0 !important;
+      margin-left: 0 !important
+    }
+
+    .mx-1 {
+      margin-right: .25rem !important;
+      margin-left: .25rem !important
+    }
+
+    .mx-2 {
+      margin-right: .5rem !important;
+      margin-left: .5rem !important
+    }
+
+    .mx-3 {
+      margin-right: 1rem !important;
+      margin-left: 1rem !important
+    }
+
+    .mx-4 {
+      margin-right: 1.5rem !important;
+      margin-left: 1.5rem !important
+    }
+
+    .mx-5 {
+      margin-right: 3rem !important;
+      margin-left: 3rem !important
+    }
+
+    .mx-auto {
+      margin-right: auto !important;
+      margin-left: auto !important
+    }
+
+    .my-0 {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important
+    }
+
+    .my-1 {
+      margin-top: .25rem !important;
+      margin-bottom: .25rem !important
+    }
+
+    .my-2 {
+      margin-top: .5rem !important;
+      margin-bottom: .5rem !important
+    }
+
+    .my-3 {
+      margin-top: 1rem !important;
+      margin-bottom: 1rem !important
+    }
+
+    .my-4 {
+      margin-top: 1.5rem !important;
+      margin-bottom: 1.5rem !important
+    }
+
+    .my-5 {
+      margin-top: 3rem !important;
+      margin-bottom: 3rem !important
+    }
+
+    .my-auto {
+      margin-top: auto !important;
+      margin-bottom: auto !important
+    }
 
     .mt-0 {
       margin-top: 0 !important
@@ -673,6 +963,221 @@
       margin-left: 3rem !important
     }
 
+    .ml-auto {
+      margin-left: auto !important
+    }
+
+    .p-0 {
+      padding: 0 !important
+    }
+
+    .p-1 {
+      padding: .25rem !important
+    }
+
+    .p-2 {
+      padding: .5rem !important
+    }
+
+    .p-3 {
+      padding: 1rem !important
+    }
+
+    .p-4 {
+      padding: 1.5rem !important
+    }
+
+    .p-5 {
+      padding: 3rem !important
+    }
+
+    .px-0 {
+      padding-right: 0 !important;
+      padding-left: 0 !important
+    }
+
+    .px-1 {
+      padding-right: .25rem !important;
+      padding-left: .25rem !important
+    }
+
+    .px-2 {
+      padding-right: .5rem !important;
+      padding-left: .5rem !important
+    }
+
+    .px-3 {
+      padding-right: 1rem !important;
+      padding-left: 1rem !important
+    }
+
+    .px-4 {
+      padding-right: 1.5rem !important;
+      padding-left: 1.5rem !important
+    }
+
+    .px-5 {
+      padding-right: 3rem !important;
+      padding-left: 3rem !important
+    }
+
+    .py-0 {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important
+    }
+
+    .py-1 {
+      padding-top: .25rem !important;
+      padding-bottom: .25rem !important
+    }
+
+    .py-2 {
+      padding-top: .5rem !important;
+      padding-bottom: .5rem !important
+    }
+
+    .py-3 {
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important
+    }
+
+    .py-4 {
+      padding-top: 1.5rem !important;
+      padding-bottom: 1.5rem !important
+    }
+
+    .py-5 {
+      padding-top: 3rem !important;
+      padding-bottom: 3rem !important
+    }
+
+    .pt-0 {
+      padding-top: 0 !important
+    }
+
+    .pt-1 {
+      padding-top: .25rem !important
+    }
+
+    .pt-2 {
+      padding-top: .5rem !important
+    }
+
+    .pt-3 {
+      padding-top: 1rem !important
+    }
+
+    .pt-4 {
+      padding-top: 1.5rem !important
+    }
+
+    .pt-5 {
+      padding-top: 3rem !important
+    }
+
+    .pr-0 {
+      padding-right: 0 !important
+    }
+
+    .pr-1 {
+      padding-right: .25rem !important
+    }
+
+    .pr-2 {
+      padding-right: .5rem !important
+    }
+
+    .pr-3 {
+      padding-right: 1rem !important
+    }
+
+    .pr-4 {
+      padding-right: 1.5rem !important
+    }
+
+    .pr-5 {
+      padding-right: 3rem !important
+    }
+
+    .pb-0 {
+      padding-bottom: 0 !important
+    }
+
+    .pb-1 {
+      padding-bottom: .25rem !important
+    }
+
+    .pb-2 {
+      padding-bottom: .5rem !important
+    }
+
+    .pb-3 {
+      padding-bottom: 1rem !important
+    }
+
+    .pb-4 {
+      padding-bottom: 1.5rem !important
+    }
+
+    .pb-5 {
+      padding-bottom: 3rem !important
+    }
+
+    .pl-0 {
+      padding-left: 0 !important
+    }
+
+    .pl-1 {
+      padding-left: .25rem !important
+    }
+
+    .pl-2 {
+      padding-left: .5rem !important
+    }
+
+    .pl-3 {
+      padding-left: 1rem !important
+    }
+
+    .pl-4 {
+      padding-left: 1.5rem !important
+    }
+
+    .pl-5 {
+      padding-left: 3rem !important
+    }
+
+    .font-weight-light {
+      font-weight: 300 !important
+    }
+
+    .font-weight-lighter {
+      font-weight: lighter !important
+    }
+
+    .font-weight-normal {
+      font-weight: 400 !important
+    }
+
+    .font-weight-bold {
+      font-weight: 700 !important
+    }
+
+    .font-weight-bolder {
+      font-weight: bolder !important
+    }
+
+    .text-lowercase {
+      text-transform: lowercase !important
+    }
+
+    .text-uppercase {
+      text-transform: uppercase !important
+    }
+
+    .text-capitalize {
+      text-transform: capitalize !important
+    }
 
     .text-left {
       text-align: left !important
@@ -784,10 +1289,10 @@
     <header class="invoice-header">
       <div class="row align-items-center">
         <div class="col-6 text-center mb">
-          <img src="/assets/images/logo3.png" alt="Logo" style="width: 75mm; ">
+          <img src="/assets/images/logo3.png"  alt="Logo" style="width: 75mm; ">
         </div>
         <div class="col-6 text-center">
-          <p class="bold"> DOCUMENTO TRIBUTARIO ELECTRÓNICO <br><%= dte.identificacion.tipoDte == "01" ? "FACTURA" : "COMPROBANTE DE CREDITO FISCAL" %></p>
+            <p class="bold"> DOCUMENTO TRIBUTARIO ELECTRÓNICO <br>COMPROBANTE DE CREDITO FISCAL <small>(Ver. <%= dte.identificacion.version   %>) </small></p>
         </div>
       </div>
 
@@ -833,7 +1338,8 @@
     <div class="row">
 
       <div class="col-6">
-        <div class="info-box">
+         <div class="info-box">
+          <h5>EMISOR</h5>
           <h5><%= dte.emisor.nombre %></h5>
 
           <p class="mb-1">
@@ -854,9 +1360,7 @@
             </span>
           </p>
 
-          <p class="mb-1">
-            <%= data.emisor_direction %>
-          </p>
+
 
           <p class="mb-1">
             <strong>Número de teléfono:</strong>
@@ -864,90 +1368,41 @@
               <%= dte.emisor.telefono %>
             </span>
           </p>
-          <p class="mb-0">
+          <p class="mb-1">
             <strong>Correo electrónico:</strong>
             <span>
               <%= dte.emisor.correo %>
             </span>
           </p>
 
-          <p class="mb-0">
+          <p class="mb-1">
             <strong>Nombre comercial:</strong>
             <span>
               <%= dte.emisor.nombreComercial %>
             </span>
           </p>
 
-
-        </div>
-
-      </div>
-
-      <% if (dte.identificacion.tipoDte == "01") { %>
-      <div class="col-6">
-        <div class="info-box">
-          <h5><%= dte.receptor.nombre %></h5>
-
           <p class="mb-1">
-            <strong>Documento:</strong>
-            <span>
-              <%= data.receptor.documento %>
-            </span>
+            <strong>Establecimiento:</strong>
+            <%= dte.emisor.tipoEstablecimiento == "01" ?  "Sucursal" : "Casa Matriz"  %> <%= sucursal %>
           </p>
-          <p class="mb-0">
-            <strong>Correo Electrónico:</strong>
-            <span>
-              <%= dte.receptor.correo %>
-            </span>
+          <p class="mb-1">
+            <strong>Dirección:</strong>
+            <%= data.emisor_direction %>
+            <%= sucursal.name %>
           </p>
+
+
         </div>
+
       </div>
 
-      <% }else if(dte.identificacion.tipoDte == "03"){%>
+
 
       <div class="col-6">
-        <div class="info-box h-100">
-          <h5><%= dte.receptor.nombre %></h5>
-          <p class="mb-1">
-            <strong>NIT:</strong>
-            <span>
-              <%= dte.receptor.nit %>
-            </span>
-            &nbsp;&nbsp;
-            <strong>NRC:</strong>
-            <span>
-              <%= dte.receptor.nrc %>
-            </span>
-          </p>
-          <p class="mb-1"><strong>Actividad económica:</strong>
-            <span>
-              <%= dte.receptor.descActividad %>
-            </span>
-          </p>
-          <p class="mb-1">
-            <%= data.receptor.direccion %>
-          </p>
-          <strong>Número de teléfono:</strong>
-          <span>
-            <%= dte.receptor.telefono %>
-          </span>
-          </p>
-          <p class="mb-0">
-            <strong>Correo electrónico:</strong>
-            <span>
-              <%= dte.receptor.correo %>
-            </span>
-          </p>
-
-          <p class="mb-0">
-            <strong>Nombre comercial:</strong>
-            <span>
-              <%= dte.receptor.nombreComercial %>
-            </span>
-          </p>
-        </div>
+        
       </div>
-      <% } %>
+
     </div>
 
     <div class="table-responsive mb-4 mt-4">

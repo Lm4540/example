@@ -60,15 +60,34 @@ module.exports = sequelize.define('Sucursal', {
             return {
                 "departamento": this.departamento,
                 "municipio": this.municipio,
-                "complemento": this.direccion
+                "complemento": this.location
             };
         }
 
     },
+    dte_emisor:{
+        type: DataTypes.VIRTUAL,
+        get(){
+            return {
+                nit: process.env.COMPANY_NIT,
+                nrc: process.env.COMPANY_NRC,
+                nombre: process.env.COMPANY_LEGAL_NAME,
+                codActividad: process.env.COD_ACTIVIDAD,
+                descActividad: process.env.DESC_ACTIVIDAD,
+                nombreComercial: process.env.COMPANY_NAME,
+                tipoEstablecimiento: this.tipoEstablecimiento,
+                direccion: this.direccion,
+                telefono: process.env.COMPNY_TEL,
+                correo: process.env.COMPANY_EMAIL,
+                codEstableMH: this.codEstableMH,
+                codEstable: this.codEstable,
+                codPuntoVentaMH: null,
+                codPuntoVenta: null,             
+            }
+        }
+        
+    }
 
 }, {
     tableName: 'system_sucursal',
 });
-
-
-

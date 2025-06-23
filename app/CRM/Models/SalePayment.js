@@ -23,7 +23,7 @@ const SalePayment = sequelize.define('SalePayment', {
     },
 
     type: {
-        type: DataTypes.ENUM('money', 'credit_card', 'transfer'),
+        type: DataTypes.ENUM('money', 'credit_card', 'transfer','bitcoin','otros'),
         defaultValue: 'money',
     },
     amount: {
@@ -44,7 +44,12 @@ const SalePayment = sequelize.define('SalePayment', {
     },
     bank: DataTypes.STRING,
     reference: DataTypes.STRING,
-    createdBy: DataTypes.STRING
+    createdBy: DataTypes.STRING,
+    fecha: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.fn('now'),
+        allowNull: true,
+    },
 }, {
     tableName: 'crm_sale_payment',
 });

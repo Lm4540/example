@@ -307,7 +307,7 @@ const genStrLong = (minLong, maxLong) => {
 
 const copy = (text) => {
     copyToClipboard(text);
-    createToast('purple', 'Codigo Copíado', 'es');
+    createToast('purple', 'Copíado', 'es');
 }
 
 
@@ -599,4 +599,95 @@ if (!Math.ceil10) {
     Math.ceil10 = function (value, exp) {
         return decimalAdjust('ceil', value, exp);
     };
+}
+
+
+/**
+ * Guarda un valor en localStorage.
+ *
+ * @param {string} key La clave bajo la cual se guardará la información.
+ * @param {any} value El valor a guardar. Se convertirá a JSON string.
+ * @returns {boolean} true si se guardó correctamente, false en caso de error.
+ */
+function guardarEnLocalStorage(key, value) {
+    try {
+        const serializedValue = JSON.stringify(value);
+
+        localStorage.setItem(key, serializedValue);
+        return true;
+    } catch (e) {
+        // Manejo de errores
+        if (e.name === 'QuotaExceededError') {
+            console.error(`Error al guardar en localStorage: Cuota de almacenamiento excedida para la clave "${key}".`, e);
+            // Podrías notificar al usuario, limpiar datos antiguos, etc.
+        } else if (e.name === 'SecurityError') {
+            console.error(`Error al guardar en localStorage: Acceso denegado (posiblemente modo de navegación privada estricta o restricciones de seguridad) para la clave "${key}".`, e);
+            // Podrías indicar al usuario que desactive el modo privado o las restricciones.
+        } else if (e.name === 'TypeError') {
+            console.error(`Error al guardar en localStorage: No se pudo serializar el valor a JSON para la clave "${key}". Posiblemente un objeto circular.`, e);
+            // Asegúrate de que el valor pueda ser convertido a JSON.
+        } else {
+            console.error(`Error desconocido al guardar en localStorage para la clave "${key}".`, e);
+        }
+        return false;
+    }
+}
+
+/**
+ * Recupera un valor de localStorage.
+ *
+ * @param {string} key La clave de la información a recuperar.
+ * @returns {any | null} El valor recuperado (parseado desde JSON), o null si no se encuentra o hay un error.
+ */
+function obtenerDeLocalStorage(key) {
+    try {
+        const serializedValue = localStorage.getItem(key);
+        if (serializedValue === null) {
+            console.log(`No se encontró información bajo la clave: "${key}".`);
+            return null;
+        }
+        // Intentamos parsear la cadena JSON de vuelta a su tipo original.
+        const value = JSON.parse(serializedValue);
+        return value;
+    } catch (e) {
+        console.error(`Error al recuperar o parsear información de localStorage para la clave "${key}".`, e);
+        // Esto puede ocurrir si el valor guardado no es un JSON válido
+        return null;
+    }
+}
+
+/**
+ * Elimina un valor de localStorage.
+ *
+ * @param {string} key La clave de la información a eliminar.
+ * @returns {boolean} true si se eliminó correctamente, false en caso de error.
+ */
+function eliminarDeLocalStorage(key) {
+    try {
+        localStorage.removeItem(key);
+        return true;
+    } catch (e) {
+        console.error(`Error al eliminar información de localStorage para la clave "${key}".`, e);
+        return false;
+    }
+}
+
+
+function descargarJson(jsonData, nombreArchivo) {
+    const jsonString = JSON.stringify(jsonData, null, 4);
+
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo; // Establece el nombre del archivo de descarga
+
+    document.body.appendChild(a); // Es necesario agregarlo al DOM para que funcione en algunos navegadores
+    a.click();
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+        a.remove(); // Elimina el elemento 'a' del DOM
+    }, 100);
 }

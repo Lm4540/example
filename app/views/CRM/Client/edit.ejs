@@ -28,7 +28,7 @@
 
               <div class="form-group col-md-6">
                 <label for="clientPhone">Numero Telefonico</label>
-                <input class="form-control" id="clientPhone" type="number" placeholder="77665544" value="<%= cliente.phone %>">
+                <input class="form-control" id="clientPhone" type="number" placeholder="77665544" value="<%= cliente.phone.replace(/[^0-9]/g, '') %>">
               </div>
 
               <div class="form-group col-md-6">
@@ -154,12 +154,23 @@
 
 
 
-  const cargarMunicipios = (index) => {
-    let muni = departamentos[index];
+  const cargarMunicipios = (dpto, mun = null) => {
+    document.querySelector("#departamento").value = dpto;
     document.querySelector("#municipio").innerHTML = '';
+    if (dpto == "") {
+      document.querySelector("#municipio").innerHTML = `<option value="">No Registrado</option>`;
+      return true;
+    }
+
+    console.log(departamentos, dpto, mun);
+    let muni = departamentos[document.querySelector("#departamento").value];
     muni.forEach(element => {
       document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
     });
+
+    if (mun != null) {
+      document.querySelector("#municipio").value = mun;
+    }
 
   }
 
@@ -171,7 +182,16 @@
 
 
     document.querySelector("#departamento").addEventListener('change', e => {
-      cargarMunicipios(document.querySelector("#departamento").value);
+
+      document.querySelector("#municipio").innerHTML = '';
+      if (index = "") {
+        document.querySelector("#municipio").innerHTML = `<option value="">No Registrado</option>`;
+        return true;
+      }
+      let muni = departamentos[e.target.value];
+      muni.forEach(element => {
+        document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
+      });
     });
 
     document.querySelector("#clientClassification").addEventListener('change', e => {
@@ -208,10 +228,10 @@
         documentType: document.getElementById("clientDocumentType").value == 'ninguno' ? null : document.getElementById("clientDocumentType").value,
         dui: document.getElementById("clientDUI").value.trim(),
         isLocal: document.getElementById("isLocal").value === 'true',
-        departamento: document.getElementById("departamento").value,
+        departamento: document.getElementById("departamento").value !== "" ? document.getElementById("departamento").value : null,
         direction: document.getElementById("clientDirection").value.trim(),
-        municipio: document.querySelector("#municipio").value,
-        classification: document.getElementById("clientClassification").value,
+        municipio: document.querySelector("#municipio").value != "" ? document.querySelector("#municipio").value : null,
+        classification: document.getElementById("clientClassification").value == 'ninguno' ? null : document.getElementById("clientClassification").value,
         codActividad: document.getElementById("clientCodActividad").value,
         giro: document.getElementById("clientCodActividad").options[document.getElementById("clientCodActividad").selectedIndex].text,
         seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
@@ -282,7 +302,7 @@
             successMessage('Guardado con Exito, redirigiendo');
             /**Redirigir a la pagina del Proveedor*/
             setTimeout(() => {
-              // history.back();
+              location.href = `/sales/client/view/${data.data.id}`;
             }, 1500);
 
           } else if (data.status == 'errorMessage') {
@@ -301,9 +321,8 @@
 </script>
 <% if (cliente.departamento != null) { %>
 <script>
-  document.querySelector("#departamento").value = '<%= cliente.departamento %>';
-  cargarMunicipios('<%= cliente.departamento %>');
-  document.querySelector("#municipio").value = '<%= cliente.municipio %>';
+  cargarMunicipios('<%= cliente.departamento %>', '<%= cliente.municipio %>');
+  
 </script>
 
 <% } 

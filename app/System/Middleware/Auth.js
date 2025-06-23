@@ -144,6 +144,7 @@ const Auth = {
         req.session.cookie.maxAge = hour;
         req.session.cookie.sameSite = true;
         req.session.userSession = user_;
+        req.session.sucursal = user_.employee?.sucursal;
 
         //sucursal del usuario
         // req.session.userSession.employee.sucursal

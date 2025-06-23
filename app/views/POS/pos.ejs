@@ -3,95 +3,7 @@
 
 <head>
   <%- include('../Layouts/Head.ejs') %>
-  <style>
-    .category-nav {
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .product-card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
-    }
-
-    .sales-info {
-      font-size: 0.9rem;
-      color: #6c757d;
-      margin-bottom: 0.5rem;
-    }
-
-    .product-table {
-      width: 100%;
-      margin: 1rem 0;
-    }
-
-    .product-table th {
-      font-weight: 500;
-      color: #6c757d;
-    }
-
-    .price-tag {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #2a59fe;
-    }
-
-    .order-section {
-      border-radius: 12px;
-      padding: 1.5rem;
-    }
-
-    .dashed-divider {
-      margin: 1.5rem 0;
-      border: #dbdbf1 solid .5px;
-    }
-
-    .payment-methods {
-      display: grid;
-      gap: 0.5rem;
-    }
-
-    .order-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .order-item-details {
-      color: #d4dce3;
-      font-size: 0.9rem;
-    }
-
-    #second_section {
-      border-radius: 12px;
-      background-color: #fbfdff;
-    }
-
-    .product-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-    }
-
- 
-    .product-quantity {
-      width: 100px;
-    }
-
-    .text-bold {
-      font-weight: bold;
-    }
-
-    .product_image {
-      width: 100px;
-    }
-
-
-    
-  </style>
+  <%- include('pos_styles.ejs') %>
 </head>
 
 <body class="<%= darkMode %>">
@@ -104,66 +16,15 @@
       <div class="card-body">
         <div class="row">
           <div class="col-12 col-md-9">
-            <h4 class="mb-3 fw-bold text-center">Modulo de Facturación</h4>
+            <h4 class="mb-3 fw-bold text-center">Modulo de Facturación <button class="badge badge-pill bg-purple" onclick="location.reload()"> Reset</button></h4>
             <!-- Navigation -->
             <div class="category-nav text-center">
-              <button class="btn btn-sm btn-outline-secondary mt-2">Cargar Orden</button>
-              <button class="btn btn-sm btn-outline-secondary mt-2">Buscar Cliente</button>
-              <button class="btn btn-sm btn-outline-secondary mt-2">Registrar Cliente</button>
-              <button class="btn btn-sm btn-outline-secondary mt-2">Facturacion Pendiente</button>
-              <button class="btn btn-sm btn-outline-secondary mt-2">Viñetas pendientes</button>
+              <button class="btn btn-sm round btn-outline-primary mt-2" data-bs-target="#search_order" data-bs-toggle="modal">Cargar Orden</button>
+              <button class="btn btn-sm round btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#search_client">Buscar Cliente</button>
+              <button class="btn btn-sm round btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#registrarClienteModal">Registrar Cliente</button>
+              <button class="btn btn-sm round btn-outline-warning mt-2" data-bs-target="#ordertobeBilledModal" data-bs-toggle="modal" onclick="ordersToBeBilled()">Facturacion Pendiente</button>
+              <button class="btn btn-sm round btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#guidesModal" onclick="ordersGuides()">Viñetas pendientes</button>
             </div>
-
-            <div id="div_client">
-              <div class="form">
-                <div class="form-group">
-                  <label for="client_name">Nombre</label>
-                  <input type="text" class="form-control" id="client_name" placeholder="Nombre del Cliente">
-                </div>
-
-                <div class="d-flex justify-content-between">
-                  <div class="form-group">
-                    <label for="client_phone">Teléfono</label>
-                    <input type="text" class="form-control" id="client_phone" placeholder="Teléfono del Cliente">
-                  </div>
-                  <div class="form-group">
-                    <label for="client_email">Email</label>
-                    <input type="text" class="form-control" id="client_email" placeholder="Email del Cliente">
-                  </div>
-
-                  <div class="form-group">
-                    <label for="client_DUI">NIT DUI</label>
-                    <input type="text" class="form-control" id="client_DUI" placeholder="NIT o DUI Homologado">
-                  </div>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                  <div class="form-group">
-                    <label for="client_country">País</label>
-                    <input type="text" class="form-control" id="client_country" placeholder="País del Cliente">
-                  </div>
-
-                  <div class="form-group">
-                    <label for="client_province">Departamento</label>
-                    <input type="text" class="form-control" id="client_province" placeholder="Provincia del Cliente">
-                  </div>
-                  <div class="form-group">
-                    <label for="client_city">Municipio</label>
-                    <input type="text" class="form-control" id="client_city" placeholder="Ciudad del Cliente">
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="client_address">Dirección</label>
-                  <input type="text" class="form-control" id="client_address" placeholder="Dirección del Cliente">
-                </div>
-                <div class="form-group">
-                  <label for="client_reference">Referencia</label>
-                  <input type="text" class="form-control" id="client_reference" placeholder="Referencia del Cliente">
-                </div>
-              </div>
-            </div>
-
             <div class="table-responsive" id="div_details">
               <table class="table table-sm table hover">
                 <thead>
@@ -175,28 +36,11 @@
                   </tr>
                 </thead>
                 <tbody id="body_details">
-                  <tr>
-                    <td>
-                      <img src="/upload/images/pd_1c92e88622ea8e8e40e0%202024_02_08%2022%2003%2010.jpg" alt="product image" class="round product_image">
-                    </td>
-                    <td>
-                      <p>Carro de empuje de 1 a 4 años AZUL</p>
-                      <span class="text-muted">sku # </span><span class="text-bold">CAR-004-Music</span>
-                      <br>
-                      <span class="text-muted">Precio </span><span class="text-bold">$10.00</span>
-                    </td>
-                    <td class=" justify-content-between align-items-center">
-                      <input type="number" name="quantity" id="quantity" class="form-control form-control-sm product-quantity" placeholder="Cantidad" value="1">
-                      <br>
 
-                      <button class="badge badge-pill bg-danger"> Actualizar</button>
-                    </td>
-                    <td class="text-bold">$10.00</td>
-                  </tr>
+                </tbody>
 
               </table>
             </div>
-
           </div>
           <div class="col-12 col-md-3" id="second_section">
             <%- include('pos_order_section.ejs') %>
@@ -204,12 +48,19 @@
         </div>
       </div>
     </div>
-
-
-
   </div>
 
+
+  <div>
+    <textarea class="form-control" id="signedTextArea"></textarea>
+  </div>
 </body>
+<%- include('pos_modals_section.ejs') %>
 <%- include('../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  
+</script>
+<%- include('pos_actions_and_buttons.ejs') %>
 
 </html>

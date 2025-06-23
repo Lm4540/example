@@ -333,7 +333,7 @@
             successMessage('Guardado con Exito, redirigiendo');
             /**Redirigir a la pagina del Proveedor*/
             setTimeout(() => {
-              location.href = `/sales/client/view/${data.data}`;
+              location.href = `/sales/client/view/${data.data.id}`;
             }, 1500);
 
           } else if (data.status == 'errorMessage') {

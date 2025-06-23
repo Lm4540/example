@@ -1,0 +1,959 @@
+<script src="assets/js/web-escpos-printer-localserver.js"></script>
+<script>
+  const s_options = {
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+  };
+
+  const selectClientExento = document.getElementById('select_client_exento');
+  const dteDocumentType = document.getElementById('dte_document_type');
+  const helper_url = '<%= helper_url %>';
+
+  var selected_client = null;
+  var transaction = {
+    original_total: 0.00,
+    client: null,
+    pos: 0.00,
+    pos_details: [],
+    total: 0.00,
+    iva: 0.00,
+    subtotal: 0.00,
+    cash: 0.00,
+    dte_type: '01',
+    order_number: null,
+    retencion: 0.00,
+    old_pays: 0.00,
+  };
+  var have_problems = false;
+  var have_warnings = false;
+  var last_generated_dte = null;
+  var current_pdf_html = null;
+
+  //variables para la impresion de los tickets
+  var isConnected = false;
+  var commands = null,
+    error_printing = null;
+
+  const documents = {
+    "36": "NIT",
+    "13": "DUI",
+    "37": "Otro",
+    "03": "Pasaporte",
+    "02": "Carnet de Residente"
+  }
+
+  const printer = new WebPOSPrinterLocalServer();
+
+
+  const current_sucursal = '<%= `${(sucursal.tipoEstablecimiento == "01" ? "SUCURSAL " + String(sucursal.name).toUpperCase() : "CASA MATRIZ")}` %>';
+
+  const ordersGuides = async () => {
+    try {
+      const response = await fetch(`/pos/ordersGuides`, s_options);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return errorMessage('Orden no encontrada. Por favor, verifique el número de orden.');
+        } else if (response.status === 500) {
+          return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
+        } else {
+          return errorMessage(`Error inesperado: ${response.status}`);
+        }
+      }
+
+      let res = await response.json();
+
+      if (res.sales.length == 0) {
+
+        document.querySelector("#guidesModaldiv").innerHTML = `<h5>
+                      No hay ordenes pendientes
+                  </h5>`;
+
+      } else {
+        let content = '';
+
+        res.sales.forEach(sale => {
+          let cli = res.clients[sale.client];
+          content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title" onclick="copy('${cli.name}')">${cli.name}</h5>
+                <p>Monto de Envio: (${money_format(sale.delivery_amount)})</p>
+                <p>Telefono: <span onclick="copy('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
+                <p>Direccion: <span onclick="copy('${sale.delivery_direction}')">${sale.delivery_direction}</span>  </p>
+                <p>Instrucciones: <span onclick="copy('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
+                <p>Entrega (${res.providers[sale.delivery_provider].name})</p>
+                <button class="btn btn-danger btn-sm round" onclick="createdGuide(${sale.id})">Guia Creada</button>
+              </div>
+            </div>
+          </div>`;
+        });
+        document.querySelector("#guidesModaldiv").innerHTML = content;
+      }
+    } catch (error) {
+      console.log(error);
+      errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
+    }
+  }
+
+  const createdGuide = async id => {
+    let div = document.querySelector(`#card_guide_${id}`);
+    div.classList.add('mt-5');
+    div.innerHTML = `<h5 class="text-center mt-2 mb-2 text-success"> ${div.dataset.name} <br> <br>Guia creada...</h5>`;
+
+    postData(`/pos/ordersGuides`, {
+      order: id
+    }).then(data => {
+      if (data.status == 'success') {
+        // successMessage('Guia creada con exito');
+      } else if (data.status == 'errorMessage') {
+        errorMessage(data.message);
+      } else {
+        errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he intentalo nuevamente');
+      }
+    });
+  }
+
+  const ordersToBeBilled = async () => {
+    try {
+      const response = await fetch(`/pos/ordersToBeBilled`, s_options);
+      if (!response.ok) {
+        if (response.status === 404) {
+          return errorMessage('Orden no encontrada. Por favor, verifique el número de orden.');
+        } else if (response.status === 500) {
+          return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
+        } else {
+          return errorMessage(`Error inesperado: ${response.status}`);
+        }
+      }
+
+      let res = await response.json();
+      if (res.sales.length == 0) {
+        document.querySelector("#ordertobeBilledTable").innerHTML = `<tr>
+                    <td colspan="2" class="text-center">
+                      No hay ordenes pendientes
+                    </td>
+                  </tr>`;
+
+      } else {
+        let content = '';
+
+        res.sales.forEach(element => {
+          content += `<tr>
+                      <td>${res.clients[element.client].name}</td>
+                      <td>${res.sellers[element.seller].name}</td>
+                      <td><button class="btn btn-sm btn-primary" onclick="load_order(${element.id})" data-bs-dismiss="modal">Cargar</button></td>
+                    </tr>`;
+        });
+        document.querySelector("#ordertobeBilledTable").innerHTML = content;
+      }
+    } catch (error) {
+      errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
+    }
+  }
+
+  const reload_order = () => {
+    if (selected_client.sale?.id != null) {
+      load_order(selected_client.sale.id);
+    } else {
+      errorMessage('No hay orden para recargar');
+    }
+  }
+
+  const load_order = async (id) => {
+    try {
+      const response = await fetch(`/pos/getOrder?order=${id}`, s_options);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return errorMessage('Orden no encontrada o ya esta facturada. Por favor, verifique el número de orden.');
+        } else if (response.status === 500) {
+          return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
+        } else {
+          return errorMessage(`Error inesperado: ${response.status}`);
+        }
+      }
+
+      let res = await response.json();
+      let client = res.client;
+      client.sale = res.sale;
+      client.sale_details = res.sale_details;
+      client.warnings = res.warnings;
+
+      load_client(client);
+    } catch (error) {
+      errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
+    }
+  }
+
+  const reload_client = async () => {
+    try {
+      const response = await fetch(`/pos/getClient?client=${selected_client.id}`, s_options);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return errorMessage('Orden no encontrada. Por favor, verifique el número de orden.');
+        } else if (response.status === 500) {
+          return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
+        } else {
+          return errorMessage(`Error inesperado: ${response.status}`);
+        }
+      }
+
+      let res = await response.json();
+      let client = res.client;
+      client.sale = res.sale;
+      client.sale_details = res.sale_details;
+      client.warnings = res.warnings;
+      load_client(client);
+    } catch (error) {
+      errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
+    }
+  }
+
+  const load_client = client => {
+    have_problems = false;
+    have_warnings = false;
+
+    if (client == null) {
+      document.querySelector("#clientlabel").innerHTML = 'No Seleccionado';
+      return;
+    }
+    document.querySelector("#clientlabel").innerHTML = client.name;
+    transaction.client = client.id;
+    selected_client = client;
+
+
+    if (client.classification != null && client.classification != "" && client.classification != "ninguno") {
+      dteDocumentType.value = '03';
+      //verificar si el cliente requiere actualizacion 
+      let _error = ``;
+      if (client.NRC == null || client.NRC == "") {
+        _error += `<span class="text-danger">NRC no registrado</span><br>`;
+      }
+
+      if (client.nit == null || client.nit == "") {
+        _error += `<span class="text-danger">NIT no registrado</span><br>`;
+      }
+
+      if (client.departamento == null || client.departamento == "" || client.municipio == null || client.municipio == "" || client.direccion == null || client.direccion == "") {
+        _error += `<span class="text-danger">Departamento, Municipio o Direccion no registrado</span><br>`;
+      }
+
+      if (client.telefono == null || client.telefono == "") {
+        _error += `<span class="text-danger">Telefono no registrado</span><br>`;
+      }
+
+      if (client.email == null || client.email == "") {
+        _error += `<span class="text-danger">Email no registrado</span><br>`;
+      }
+
+      if (client.codActividad == null || client.codActividad == "" || client.descActividad == null || client.descActividad == "" || client.nombreComercial == null || client.nombreComercial == "") {
+        _error += `<span class="text-danger">Codigo de Actividad, Descripcion de Actividad o Nombre Comercial no registrado</span><br>`;
+        //bloquear boton de continuar
+      }
+
+      if (_error != "") {
+        document.querySelector("#clientlabel").innerHTML = `${client.name} <br><span class="text-danger c_pointer" onclick="update_client()">Requiere actualización de datos </span> <br>
+        ${_error}<br>
+        <br><span onclick="reload_client()" class="badge bg-purple">Recargar</span>`;
+
+        have_problems = true;
+      }
+    } else {
+      dteDocumentType.value = '01';
+    }
+
+    document.querySelector("#body_details").innerHTML = `<tr>
+                    <td colspan="4" class="text-center">
+                      Este Cliente no tiene ordenes pendientes
+                    </td>
+                  </tr>`;
+    if (client.sale != null) {
+      let tableBody = '';
+      if (`${client.sale.sucursal}` != '<%= sucursal.id %>') {
+        tableBody = `<tr>
+                    <td colspan="4" class="text-center text-danger fw-bold" style="font-size: 1.5rem">
+                      Esta orden no pertenece a esta sucursal
+                    </td>
+                  </tr>`;
+        have_problems = true;
+
+      }
+
+      document.querySelector("#order_number").innerHTML = `<a href="/sales/client/view/${client.id}" target="_blank" > ${client.sale.id} </a><br><span onclick="reload_order()" class="badge bg-purple">Recargar</span>`;
+
+      transaction.order_number = client.sale.id;
+
+      transaction.original_total = 0.00;
+      document.querySelector("#cash_payed_amount").value = "";
+
+      client.sale_details.forEach(el => {
+
+        tableBody += `<tr>
+                    <td>
+                      <img src="${el.image}" alt="product image" class="round product_image">
+                    </td>
+                    <td>
+                      <p>${el.description}</p>`;
+
+        if (el.reserved != el.cant) {
+          tableBody += `<p class="badge bg-danger">No se puede facturar debido a que este producto esta en transito</p><br>`;
+          have_problems = true;
+        }
+
+        if (client.warnings[el.id] !== undefined && client.warnings[el.id] != null && client.warnings[el.id] != "") {
+          tableBody += `<p class="badge bg-warning">${client.warnings[el.id]}</p><br>`;
+          have_warnings = true;
+
+        }
+
+        tableBody += `<span class="text-muted">Precio </span><span class="text-bold">$${money_format(el.price)}</span>
+                    </td>
+                    
+                    <td class=" justify-content-between align-items-center">
+                      <span class="product_qty">${el.cant}</span>
+                    </td>
+                    <td class="text-bold">$${money_format(el.cant * el.price)}</td>
+                  </tr>`;
+
+
+        transaction.original_total = fix_number(transaction.original_total + (el.cant * el.price));
+      });
+
+      if (client.sale.delivery_amount > 0) {
+        tableBody += `<tr>
+                    <td>
+                      --
+                    </td>
+                    <td>
+                      <p>Embalaje y envio</p>
+                      <span class="text-muted">Precio </span><span class="text-bold">$${money_format(client.sale.delivery_amount)}</span>
+                    </td>
+                    <td class=" justify-content-between align-items-center">
+                      <span class="product_qty">1</span>
+                    </td>
+                    <td class="text-bold">$${money_format(client.sale.delivery_amount)}</td>
+                  </tr>`;
+      }
+
+
+      transaction.original_total = fix_number(transaction.original_total + client.sale.delivery_amount);
+
+      document.querySelector("#body_details").innerHTML = tableBody;
+      totalizar();
+
+      document.querySelector("#paysTbody").innerHTML = "";
+      if (client.sale.collected > 0) {
+        transaction.old_pays = client.sale.collected;
+        document.querySelector("#pays_label").innerHTML = `$${money_format(transaction.old_pays)}`;
+
+        document.querySelector("#paysTbody").innerHTML += `<tr><td colspan="4" class="text-center text-success fw-bold" style="font-size: 1.5rem">
+                      Esta orden ya tiene un pago de $${money_format(transaction.old_pays)}
+                    </td></tr>`;
+
+      } else {
+        transaction.old_pays = 0.00;
+        transaction.pos = 0.00;
+
+      }
+
+      transaction.pos_details = [];
+
+    }
+
+
+  }
+
+  const totalizar = () => {
+    transaction.total = transaction.original_total;
+
+    transaction.subtotal = fix_number(transaction.original_total / 1.13);
+    transaction.iva = fix_number(transaction.original_total - transaction.subtotal);
+
+    if (document.querySelector("#select_agente_retencion").value == "si" && transaction.subtotal > 100) {
+      transaction.retencion = fix_number(transaction.subtotal * 0.01);
+      transaction.total = fix_number(transaction.total - transaction.retencion);
+    }
+
+    if (selectClientExento.value == "si" || dteDocumentType.value == '11') {
+      transaction.total = transaction.subtotal;
+      transaction.iva = 0.00;
+    } else if (dteDocumentType.value == '01') {
+      transaction.subtotal = transaction.original_total;
+      transaction.iva = '--';
+    }
+
+    document.querySelector("#sub_total_label").innerHTML = `$${money_format(transaction.subtotal)}`;
+    document.querySelector("#iva_label").innerHTML = `$${transaction.iva == '--' ? transaction.iva : money_format(transaction.iva)}`;
+    document.querySelector("#total_label").innerHTML = `$${money_format(transaction.total)}`;
+    document.querySelector("#iva_retenido_label").innerHTML = `$${money_format(transaction.retencion)}`;
+
+    document.querySelector("#pays_label").innerHTML = `$${money_format(transaction.pos + transaction.old_pays)}`;
+
+    let value = parseFloat(document.getElementById('cash_payed_amount').value);
+    if (isNaN(value)) value = 0.00;
+
+    let restante = fix_number(transaction.total - value - transaction.old_pays - transaction.pos);
+    document.getElementById('restante_label').innerText = `$${restante > 0 ? money_format(restante) : '0.00'}`;
+
+    if (restante > 0 || value < 0.01) {
+      document.getElementById('vuelto_label').innerText = `$0.00`;
+    } else {
+      let vuelto = restante > 0 ? 0.00 : Math.abs(restante);
+      if (vuelto > value) {
+        vuelto = value;
+      }
+      document.getElementById('vuelto_label').innerText = `$${money_format(vuelto)}`;
+    }
+
+
+  }
+
+  const selectClient = document.querySelector('#clientSelect');
+
+  const choices_client = new Choices(selectClient, {
+    'searchResultLimit': 15,
+    'searchChoices': false,
+    'searchFloor': 2,
+  });
+
+  const doSearchClient = async (val) => {
+    const response = await fetch(`/pos/client_select2?search=${encodeURIComponent(val.trim())}&limit=15`, s_options);
+
+    let res = await response.json();
+    clients_in_select_to = {};
+    res.forEach(element => {
+      let client = element.client;
+      client.sale = element.sale;
+      client.sale_details = element.sale_details;
+      client.warnings = element.warnings;
+      clients_in_select_to[element.value] = client;
+    });
+    return res;
+  }
+
+  const quitPay = id => {
+    let row = document.querySelector(`#row_pay_${id}`);
+    let pay = transaction.pos_details[id];
+    transaction.pos -= pay.amount;
+    transaction.pos_details[id].amount = 0.00;
+    row.remove();
+    totalizar();
+  }
+
+
+  const reprint_ticket = async () => {
+    if (commands) {
+      await printer.sendCommands(commands);
+      return;
+    }
+    return errorMessage('Ups, el ticket ya no esta disponible, si se necesita imprima el PDF');
+  }
+
+
+  const print_ticket = async (data) => {
+    if (!isConnected) {
+      isConnected = await printer.connect();
+    }
+
+    if (isConnected && error_printing == null) {
+      commands = null;
+      const esc = new ESCPOSBuilder();
+
+      esc.initialize().setFont('A')
+        .align('center').bold(true).doubleHeightWidth(true)
+        .text(data.emisor.nombreComercial)
+        .doubleHeightWidth(false).newLine()
+        .text(data.emisor.nombre)
+        .bold(false).newLine()
+        .text('NRC: ' + data.emisor.nrc + ' NIT: ' + data.emisor.nit)
+        .newLine()
+        .text(current_sucursal)
+        .newLineN(2)
+        .text('=========================================')
+        .newLine().text('Datos del Cliente');
+      if (data.receptor.nombre != "" && data.receptor.nombre != null) {
+        esc.newLine().text(data.receptor.nombre);
+        if (data.receptor.tipoDocumento) {
+          esc.newLine().text(`Documento ${documents[data.receptor.tipoDocumento]} ${data.receptor.numDocumento}`);
+        }
+      } else {
+        esc.newLine().text('CONSUMIDOR FINAL');
+      }
+      esc.newLine().text('=========================================').setFont('B')
+        .newLine().text(`Tipo DTE: ${data.identificacion.tipoDte == "03" ? 'Credito Fiscal' : 'Factura'}`)
+        .newLine().text(`Modelo de Facturacion: ${data.identificacion.tipoModelo == 1 ? 'Previo' : 'Diferido'}`)
+        .newLine().text(`Tipo de Transmision: ${data.identificacion.tipoOperacion == 1 ? 'Normal' : 'Contingencia'}`)
+        .newLine().text('Fecha de Emision: ' + format_date(data.identificacion.fecEmi + " " + data.identificacion.horEmi, true))
+        .newLine().text('Codigo de Generacion:')
+        .newLine().text(data.identificacion.codigoGeneracion)
+        .newLine().text('Numero de Control:')
+        .newLine().text(data.identificacion.numeroControl);
+
+      if (data.identificacion.tipoOperacion == 1) {
+        esc.newLine().text('Sello de Recibido:')
+          .newLine().text(data.selloRecibido);
+      }
+      esc.newLine().qr(`https://admin.factura.gob.sv/consultaPublica?ambiente=${data.identificacion.ambiente}&codGen=${data.identificacion.codigoGeneracion}&fechaEmi=${data.identificacion.fecEmi}`, 5).newLine();
+      esc.align('left')
+        .newLine()
+        .text(`${String('Codigo').padEnd(23, ' ')}${String('cant').padStart(7)}${String('Precio').padStart(11)}${String('Subtotal').padStart(11, ' ')}`);
+
+      const lar_ = data.cuerpoDocumento.length;
+      for (let i = 0; i < lar_; i++) {
+        let item = data.cuerpoDocumento[i];
+        let name = item.descripcion.length > 48 ? item.descripcion.substring(0, 48) : item.descripcion.padEnd(48)
+        let code = item.codigo.length > 23 ? item.codigo.substring(0, 23) : item.codigo.padEnd(23);
+        const qty = String(item.cantidad).padStart(7);
+        const price = String(`$ ${money_format(item.precioUni)}`).padStart(10);
+        const itemTotal = String(`$ ${money_format(item.ventaGravada)}`).padStart(10);
+        esc.newLine().text(`${name}`)
+          .newLine().text(`${code}${qty}${price}${itemTotal}`);
+      }
+
+      esc.newLineN(2)
+        .text(`${String("Sub-Total Ventas Gravadas").padEnd(39, ' ')}$${String(money_format(data.resumen.totalGravada)).padStart(10, ' ')}`);
+      if (data.resumen.tributos !== null && data.resumen.tributos.length > 0) {
+        for (let index = 0; index < data.resumen.tributos.length; index++) {
+          const element = data.resumen.tributos[index];
+          esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`)
+        }
+      }
+      esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`)
+        .newLine().text(`${String("Retencion de Renta").padEnd(39, ' ')}$${String(money_format(data.resumen.reteRenta)).padStart(10, ' ')}`)
+        .newLine().setFont('A').bold(true).text(`${String("Total a Pagar    $")}${String(money_format(data.resumen.montoTotalOperacion)).padStart(10, ' ')}`)
+        .bold(false)
+        .align('center')
+        .newLineN(2)
+        .text('Descargue su factura en el siguiente QR:')
+        .qr(`${helper_url}/utils/services/dte/inline?uuid=${data.identificacion.codigoGeneracion}&fecha=${data.identificacion.fecEmi}`, 4).newLineN(2)
+        .text('Gracias por su compra')
+        .newLineN(5)
+        .cut();
+
+      commands = esc.build();
+      await printer.sendCommands(commands);
+      console.log(commands, "Impresion realizada");
+      return;
+    } else {
+      error_printing = "Impresora no disponible";
+    }
+
+
+  };
+
+
+  const clear_interfaz = () => {
+    have_problems = false;
+    have_warnings = false;
+    transaction = {
+      original_total: 0.00,
+      client: null,
+      pos: 0.00,
+      pos_details: [],
+      total: 0.00,
+      iva: 0.00,
+      subtotal: 0.00,
+      cash: 0.00,
+      dte_type: '01',
+      order_number: null,
+      retencion: 0.00,
+      old_pays: 0.00,
+    }
+
+    document.querySelector("#clientlabel").innerHTML = 'No Seleccionado';
+    dteDocumentType.value = '01';
+    document.querySelector("#order_number").innerHTML = `No seleccionado`;
+    document.querySelector("#paysTbody").innerHTML = "";
+    document.querySelector("#sub_total_label").innerHTML = `$0.00`;
+    document.querySelector("#iva_label").innerHTML = `$0.00`;
+    document.querySelector("#total_label").innerHTML = `$0.00`;
+    document.querySelector("#iva_retenido_label").innerHTML = `$0.00`;
+    document.querySelector("#pays_label").innerHTML = `$0.00`;
+    document.getElementById('cash_payed_amount').value = 0;
+    document.querySelector("#btnContinuar").innerHTML = 'Facturar';
+  }
+
+
+  var timer_client, client_last_val = '';
+  selectClient.addEventListener('search', async (e) => {
+    let valor_actual = e.detail.value;
+    if (client_last_val !== valor_actual) {
+      client_last_val = valor_actual;
+      clearTimeout(timer_client);
+      timer_client = setTimeout(async () => {
+        choices_client.setChoices(await doSearchClient(e.detail.value), 'value', 'label', true);
+      }, 500);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    document.querySelector("#printTicket").checked = obtenerDeLocalStorage('local_print_ticket') || false;
+
+    document.querySelector("#printTicket").addEventListener('click', e => {
+      return guardarEnLocalStorage('local_print_ticket', document.querySelector("#printTicket").checked) ? successMessage("Configuracion Actualizada") : errorMessage('Imposible guardar en el Almacenamiento Local')
+    });
+
+    document.querySelector("#addPayButton").addEventListener('click', e => {
+      let id = transaction.pos_details.length;
+
+      //recoger los datos del pago
+
+      let pay = {
+        id: id,
+        type: document.querySelector("#payment_method").value,
+        amount: fix_number(document.querySelector("#payment_amount").value),
+        reference: document.querySelector("#payment_reference").value,
+        date: document.querySelector("#payment_date").value,
+        bank: document.querySelector("#payment_bank").value,
+        option: document.querySelector("#payment_method").options[document.querySelector("#payment_method").selectedIndex].text,
+      }
+
+      //validar los datos
+      if (pay.type == "") return errorMessage('Por favor, seleccione el tipo de pago');
+      if (pay.amount <= 0) return errorMessage('Por favor, ingrese el monto del pago');
+      if (pay.reference == "") return errorMessage('Por favor, ingrese la referencia del pago');
+      if (pay.date == "") return errorMessage('Por favor, ingrese la fecha del pago');
+      if (pay.bank == "") return errorMessage('Por favor, escriba en que banoco se recibe el pago');
+
+      transaction.pos_details.push(pay);
+      transaction.pos = fix_number(transaction.pos + pay.amount);
+
+      //agregar el contenido a la tabla de pagos
+      let tr = document.createElement('tr');
+      tr.id = `row_pay_${id}`;
+
+
+      tr.innerHTML = `
+              <td>${pay.option}</td>
+              <td>${money_format(pay.amount)}</td>
+              <td>${pay.bank}</td>
+              <td>${pay.reference}</td>
+              <td>${pay.date}</td>
+              <td><button class="badge bg-danger btn-sm" onclick="quitPay(${id})">Eliminar</button></td>`;
+
+      totalizar();
+
+      document.querySelector("#payment_amount").value = 0.00;
+      document.querySelector("#payment_reference").value = '';
+      document.querySelector("#payment_bank").value = '';
+
+      document.querySelector("#paysTbody").appendChild(tr);
+    });
+
+    document.querySelector("#btnContinuar").addEventListener('click', e => {
+      if (transaction.client == null) return errorMessage('Por favor, seleccione un cliente o cargue una venta');
+      if (have_problems) return errorMessage('No se puede facturar, revise si debe actualizar el cliente, si tiene producto en transito o si la orden pertenece a otra sucursal');
+      if (transaction.order_number == null) return errorMessage('No hay orden para facturar');
+
+      if (transaction.total <= 0) return errorMessage('No hay productos para facturar');
+      // document.querySelector("#btnContinuar").disabled = true;
+      document.querySelector("#btnContinuar").innerHTML = 'Procesando...';
+
+      transaction.exento = selectClientExento.value == "si";
+      transaction.calcular_retencion = !transaction.exento && document.querySelector("#select_agente_retencion").value == "si";
+
+      let data = transaction;
+      data.dte_type = dteDocumentType.value;
+      data.exento = selectClientExento.value == "si";
+      data.calcular_retencion = !data.exento && document.querySelector("#select_agente_retencion").value == "si";
+      let value = parseFloat(document.getElementById('cash_payed_amount').value)
+      if (isNaN(value)) {
+        value = 0.00;
+      }
+
+      let restante = fix_number(transaction.total - value - transaction.old_pays - transaction.pos);
+      data.cash = restante > 0 ? value : fix_number(value - Math.abs(restante));
+
+      e.target.disabled = true;
+      postData('/pos', data).then(data => {
+        if (data.status == 'success') {
+          successMessage(data.message);
+          document.querySelector("#body_details").innerHTML = `<tr>
+              <td colspan="4" class="text-center">
+                  <h4> DTE: ${data.json.codigo} generada con exito</h4>
+                  <a href="${helper_url}/utils/services/dte/inline?uuid=${data.json.dte.identificacion.codigoGeneracion}&fecha=${data.json.dte.identificacion.fecEmi}" target="_blank" class="btn round btn-outline-secondary">Ver DTE</a>
+                  <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a>
+                  <button onclick="reprint_ticket()" class="btn round btn-outline-secondary ml-2 mr-2">Reimprimir Ticket</button>
+              </td>
+            </tr>`;
+          document.querySelector("#cash_payed_amount").value = "";
+          if (document.querySelector("#printTicket").checked) {
+            print_ticket(data.json.dte);
+          }
+          e.target.disabled = false;
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+        clear_interfaz();
+      });
+    });
+
+
+
+    document.querySelector("#select_agente_retencion").addEventListener('change', e => {
+      totalizar();
+    });
+
+
+    document.querySelector("#searchOrderButton").addEventListener('click', e => {
+      let order = document.querySelector("#orderSearch").value;
+      if (order == "") return errorMessage('Por favor, ingrese el numero de orden a buscar');
+      load_order(order);
+    });
+
+    selectClientExento.addEventListener('change', function(e) {
+      dteDocumentType.value = e.target.value === 'si' ? '01' : (selected_client.classification != "" && selected_client.classification != "ninguno" ? '03' : '01');
+      totalizar();
+    });
+
+    dteDocumentType.addEventListener('change', function(e) {
+      if (e.target.value == '03') {
+        let client = selected_client;
+        if (client.NRC == null || client.NRC == "" || client.NIT == null || client.NIT == "" || client.departamento == null || client.departamento == "" || client.municipio == null || client.municipio == "" || client.direccion == null || client.direccion == "" || client.telefono == null || client.telefono == "" || client.email == null || client.email == "" || client.codActividad == null || client.codActividad == "" || client.descActividad == null || client.descActividad == "" || client.nombreComercial == null || client.nombreComercial == "") {
+
+          document.querySelector("#clientlabel").innerHTML = `${client.name} <br><span class="text-danger c_pointer" onclick="update_client()">Requiere actualización de datos </span><br><span onclick="reload_client()" class="badge bg-purple">Recargar</span>`;
+          have_problems = true;
+          totalizar();
+        }
+        return;
+      }
+      load_client(selected_client);
+      have_problems = false;
+      totalizar();
+    });
+
+    document.getElementById('cash_payed_amount').addEventListener('input', function(e) {
+      let value = parseFloat(document.getElementById('cash_payed_amount').value);
+      if (isNaN(value)) value = 0.00;
+      let restante = fix_number(transaction.total - value - transaction.old_pays - transaction.pos);
+      document.getElementById('restante_label').innerText = `$${restante > 0 ? money_format(restante) : '0.00'}`;
+      if (restante > 0 || value < 0.01) {
+        document.getElementById('vuelto_label').innerText = `$0.00`;
+      } else {
+        let vuelto = restante > 0 ? 0.00 : Math.abs(restante);
+        if (vuelto > value) {
+          vuelto = value;
+        }
+        document.getElementById('vuelto_label').innerText = `$${money_format(vuelto)}`;
+      }
+    });
+
+
+
+
+    document.querySelector("#SelectedClientButton").addEventListener('click', e => {
+      let client = clients_in_select_to[selectClient.value];
+      load_client(client);
+    });
+
+  });
+</script>
+
+<script>
+  var distritos = '<%- dptos %>';
+  const departamentos = JSON.parse(distritos);
+  let selected_departamento = null;
+  let selected_municipio = null;
+
+
+  distritos = '<%- dis %>';
+  distritos = JSON.parse(distritos);
+
+  const cargarMunicipios = (index) => {
+    let muni = departamentos[index];
+    document.querySelector("#municipio").innerHTML = '';
+    muni.forEach(element => {
+      document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
+    });
+
+  }
+
+  const iframeModal = new bootstrap.Modal(document.querySelector("#iframeModal"), {
+    keyboard: false
+  });
+
+  const update_client = () => {
+    aux_iframe.src = `/sales/client/edit/${selected_client.id}`;
+    iframeModal.toggle();
+
+
+  }
+  //document ready
+  document.addEventListener("DOMContentLoaded", (event) => {
+    document.getElementById("clientName").focus();
+    document.getElementById("clientSeller").value = '<%= user.employee %>';
+
+
+    document.querySelector("#departamento").addEventListener('change', e => {
+      cargarMunicipios(document.querySelector("#departamento").value);
+    });
+
+    document.querySelector("#distrito").addEventListener('choice', e => {
+      let option = e.detail.choice;
+      if (option.value == '') {
+        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
+        document.querySelector("#departamento").value = '00';
+        selected_departamento = null;
+        selected_municipio = null;
+      } else if (option.value == '00') {
+        selected_departamento = '00';
+        selected_municipio = '00';
+        cargarMunicipios('00');
+        document.querySelector("#municipio").value = '00';
+        document.querySelector("#departamento").value = '00';
+      } else {
+        selected_departamento = option.customProperties.departamento;
+        selected_municipio = option.customProperties.municipio;
+        cargarMunicipios(option.customProperties.departamento);
+        document.querySelector("#municipio").value = option.customProperties.municipio;
+        document.querySelector("#departamento").value = option.customProperties.departamento;
+      }
+    });
+
+    const choices_distrito = new Choices(document.querySelector('#distrito'), {
+      'searchChoices': true,
+    }).setChoices(distritos);
+
+    const choices_actividad = new Choices(document.querySelector('#clientCodActividad'), {
+      'searchChoices': true,
+    });
+
+    document.querySelector("#clientClassification").addEventListener('change', e => {
+
+      if (e.target.value == "ninguno") {
+        document.querySelector("#clientNRC").disabled = true;
+        document.querySelector("#clientNombreComercial").disabled = true;
+      } else {
+        document.querySelector("#clientNRC").disabled = false;
+        document.querySelector("#clientNombreComercial").disabled = false;
+      }
+    });
+
+
+
+    document.getElementById("isLocal").addEventListener('change', e => {
+      let a = e.target.value === 'true';
+      document.getElementById("clientNRC").disabled = !a;
+      document.getElementById("clientClassification").disabled = !a;
+    });
+
+
+    //form controls validation
+    document.getElementById('saveClient').addEventListener('click', async (e) => {
+      // e.target.disabled = true;
+      let data = {
+        name: document.getElementById("clientName").value.trim(),
+        phone: document.getElementById("clientPhone").value.trim(),
+        mail: document.getElementById("clientMail").value.trim(),
+        distrito: document.querySelector("#distrito").value,
+        departamento: selected_departamento,
+        municipio: selected_municipio,
+        direction: document.getElementById("clientDirection").value.trim(),
+        type: 'major',
+        isLocal: document.getElementById("isLocal").value === 'true',
+        documentType: document.getElementById("clientDocumentType").value == 'ninguno' ? null : document.getElementById("clientDocumentType").value.trim(),
+        dui: document.getElementById("clientDUI").value.trim(),
+        nrc: document.getElementById("clientNRC").value.trim(),
+        classification: document.getElementById("clientClassification").value == 'ninguno' ? null : document.getElementById("clientClassification").value,
+        seller: document.getElementById("clientSeller").value == 'none' ? null : document.getElementById("clientSeller").value,
+        codActividad: document.getElementById("clientCodActividad").value,
+        giro: document.getElementById("clientCodActividad").options[document.getElementById("clientCodActividad").selectedIndex].text,
+        nombreComercial: document.getElementById("clientNombreComercial").value.trim(),
+      }
+
+      data.phone = data.phone.replace(/[^0-9]/g, '');
+
+      if (data.name.length < 2) {
+        e.target.disabled = false;
+        return errorMessage('Por favor, registre el nombre del Cliente');
+      } else if (data.phone.length < 8) {
+        e.target.disabled = false;
+        return errorMessage('Debe proporcionar un numero de contacto para este Cliente');
+      } else {
+
+
+        if (data.documentType != null && data.dui.length < 3) {
+          e.target.disabled = false;
+          return errorMessage('Debe proporcionar un numero de documento para este Cliente');
+        }
+
+        if (data.classification !== null) {
+          if (data.isLocal && data.distrito == null || data.departamento == null || data.municipio == null || data.distrito == '' || data.departamento == '00' || data.municipio == '00') {
+            e.target.disabled = false;
+            return errorMessage('Debe seleccionar el distrito, departamento y municipio para este Cliente');
+
+          } else if (!data.isLocal && data.departamento !== "00" && data.municipio !== "00") {
+            e.target.disabled = false;
+            return errorMessage('Debe seleccionar "Otro (Para extranjeros)" para el departamento y municipio de clientes no Locales');
+          }
+
+          if (data.nrc.length < 3) {
+            e.target.disabled = false;
+            return errorMessage('Debe proporcionar un numero de registro para este Cliente');
+
+          } else if (data.direction.trim().length < 3) {
+            e.target.disabled = false;
+            return errorMessage('Debe proporcionar la dirección para este Cliente');
+
+          }
+
+          if (data.codActividad == "") {
+            e.target.disabled = false;
+            return errorMessage('Seleccione la Actividad Economica del Contribuyente');
+
+          } else if (data.nombreComercial.length < 3) {
+            e.target.disabled = false;
+            return errorMessage('Proporcione el Nombre Comercial del Contribuyente');
+
+          }
+        } else {
+          data.nombreComercial = null;
+          data.codActividad = null;
+          data.nrc = null;
+        }
+
+        if (data.isLocal == false) {
+          data.distrito = null;
+          data.departamento = '00';
+          data.municipio = '00';
+        }
+
+        /** Enviar Informacion al Servidor y volver a Validar*/
+        postData('/sales/client/create', data).then(data => {
+          if (data.status == 'success') {
+            successMessage('Guardado con Exito, redirigiendo');
+            /**Redirigir a la pagina del Proveedor*/
+            setTimeout(() => {
+              selected_client = data.data;
+              transaction.client = data.data.id;
+
+              document.querySelector("#clientlabel").innerHTML = data.data.name;
+
+            }, 1500);
+
+          } else if (data.status == 'errorMessage') {
+            e.target.disabled = false;
+            return errorMessage(data.message);
+          } else {
+            return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+          }
+        });
+      }
+    });
+
+
+  });
+</script>

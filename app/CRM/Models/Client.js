@@ -1,17 +1,5 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../../DataBase/DataBase");
-
-
-const Contact = require('./Contact');
-const Budget = require('./Budget');
-const BudgetDetail = require('./BudgetDetail');
-const Invoice = require('./Invoice');
-const InvoiceDetail = require('./InvoiceDetail');
-const InvoiceSerie = require('./InvoiceSerie');
-const PriceList = require('./PriceList');
-const PriceListDetail = require('./PriceListDetail');
-const Sale = require('./Sale');
-const SaleDetail = require('./SaleDetail');
 
 const Client = sequelize.define('Client', {
     id: {
@@ -119,6 +107,10 @@ const Client = sequelize.define('Client', {
             return this.name;
         },
     },
+    proccess_client: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 
     descActividad: {
         type: DataTypes.VIRTUAL,
@@ -153,7 +145,7 @@ const Client = sequelize.define('Client', {
     correo: {
         type: DataTypes.VIRTUAL,
         get() {
-            return this.email;
+            return this.email !== "" ? this.email : null;
         },
         set(value) {
             this.email = value;
@@ -164,8 +156,8 @@ const Client = sequelize.define('Client', {
         type: DataTypes.VIRTUAL,
         get() {
             return {
-                "nit": this.nit ? this.nit.replace(/[^0-9]/g, '') : null,
-                "nrc": this.nrc ? this.nrc.replace(/[^0-9]/g, '') : null,
+                "nit": this.NIT_DUI ? this.NIT_DUI.replace(/[^0-9]/g, '') : null,
+                "nrc": this.NRC ? this.NRC.replace(/[^0-9]/g, '') : null,
                 "nombre": this.name,
                 "codActividad": this.codActividad,
                 "descActividad": this.giro,
@@ -179,32 +171,58 @@ const Client = sequelize.define('Client', {
     for_fc_dte: {
         type: DataTypes.VIRTUAL,
         get() {
-
+            if (this.proccess_client) {
+                return {
+                    "tipoDocumento": null,
+                    "numDocumento": null,
+                    "nrc": null,
+                    "nombre": null,
+                    "codActividad": null,
+                    "descActividad": null,
+                    "direccion": null,
+                    "telefono": null,
+                    "correo": null
+                }
+            }
+            
             let data = {
                 'tipoDocumento': null,
                 'numDocumento': null,
                 "nrc": null,
                 "nombre": this.name,
-                "codActividad": this.codActividad,
-                "descActividad": this.giro,
+                "codActividad": null,
+                "descActividad": null,
                 "direccion": this.direccion,
                 "telefono": this.telefono ? this.telefono.replace(/[^0-9]/g, '') : null,
-                "correo": this.email
+                "correo": this.correo
             }
 
-            if (["36", "13", "02", "03", "37"].includes(this.tipoDocumento)) {
-                data.tipoDocumento = this.tipoDocumento;
-                data.numeroDocumento = this.NIT_DUI ? this.NIT_DUI.replace(/[^0-9]/g, '') : null;
+            if (["36", "13", "02", "03", "37"].includes(this.tipoDocumento) && this.NIT_DUI !== null && this.NIT_DUI !== "") {
+                if (this.tipoDocumento == "13") {
+                    let regex = /^[0-9]{8}-[0-9]{1}$/;
+                    if (regex.test(this.NIT_DUI)) {
+                        data.numDocumento = this.NIT_DUI;
+                        // data.numDocumento = this.NIT_DUI.replace(/[^0-9]/g, '');
+                        data.tipoDocumento = "13";
+                    }
+                } else if (this.tipoDocumento == "36") {
+                    let regex = /^([0-9]{14}|[0-9]{9})$/;
+                    let _value = this.NIT_DUI.replace(/[^0-9]/g, '');
+                    if (regex.test(_value)) {
+                        data.numDocumento = _value;
+                        data.tipoDocumento = "36";
+                    }
+                } else {
+                    data.numDocumento = this.NIT_DUI;
+                    data.tipoDocumento = this.tipoDocumento;
+                }
             }
-
-
             return data;
         }
     }
 }, {
     tableName: 'crm_client',
 });
-
 
 module.exports = Client;
 
