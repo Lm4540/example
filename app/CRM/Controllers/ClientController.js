@@ -536,9 +536,13 @@ const ClientController = {
 
             hay_mas_pagos = hay_mas_pagos > 5;
             //determinar el departamento y municipio
-            const departamento = require('../../DTE/Catalogos/departamentos.json')[cliente.departamento];
-            const municipio = require('../../DTE/Catalogos/municipios.json')[cliente.departamento][cliente.municipio];
-            const cliente_direccion = `${cliente.direction}, ${municipio}, ${departamento}`;
+            let cliente_direccion = `${cliente.direction}`;
+
+            if(cliente.departamento !== null && cliente.departamento !== ""){
+                const departamento = require('../../DTE/Catalogos/departamentos.json')[cliente.departamento];
+                const municipio = require('../../DTE/Catalogos/municipios.json')[cliente.departamento][cliente.municipio];
+                cliente_direccion += `, ${municipio}, ${departamento}`;
+            }
 
 
             //buscar las ordenes en proceso
