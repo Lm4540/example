@@ -13,7 +13,6 @@ const Sucursal = require('../../Inventory/Models/Sucursal');
 const SalePayment = require('../Models/SalePayment');
 
 
-
 const ClientController = {
 
 
@@ -536,6 +535,11 @@ const ClientController = {
             });
 
             hay_mas_pagos = hay_mas_pagos > 5;
+            //determinar el departamento y municipio
+            const departamento = require('../../DTE/Catalogos/departamentos.json')[cliente.departamento];
+            const municipio = require('../../DTE/Catalogos/municipios.json')[cliente.departamento][cliente.municipio];
+            const cliente_direccion = `${cliente.direction}, ${municipio}, ${departamento}`;
+
 
             //buscar las ordenes en proceso
             return res.render('CRM/Client/view', {
@@ -556,7 +560,8 @@ const ClientController = {
                 payments,
                 hay_mas_pagos,
                 hay_mas_ventas,
-                a_favor
+                a_favor,
+                cliente_direccion,
             });
         }
 
