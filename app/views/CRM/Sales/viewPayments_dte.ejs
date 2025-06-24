@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title><%= (pageTitle != undefined ? pageTitle : 'Riveras Group') %></title>
+   <base href="<%=baseURL%>/" />
+   <link rel="manifest" href="manifest.json">
+   <link rel="stylesheet" href="assets/libs/perfect-scrollbar/perfect-scrollbar.css">
+   <link rel="stylesheet" href="assets/css/bootstrap.css">
+   <link rel="stylesheet" href="assets/css/app.css">
+   <link rel="stylesheet" href="assets/css/icon-font.css">
+   <link rel="shortcut" href="assets/images/favicon.svg" type="image/x-icon">
+   <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+   <style>
+
+   </style>
+</head>
+
+<body class="<%= darkMode %>">
+
+   <div id="">
+
+      <div class="main-content container-fluid mt-5">
+
+         <table class="table" style="font-size: 125%;">
+            <tbody>
+               <tr>
+                  <td>
+                     Venta ID:
+                  </td>
+                  <td>
+                     <%= sale.id %>
+                  </td>
+               </tr>
+
+               <tr>
+                  <td>Monto</td>
+                  <td>$<%= Helper.money_format(Number.parseFloat(sale.balance) +  (sale.delivery_amount != null ? Number.parseFloat(sale.delivery_amount) : 0.00)) %></td>
+               </tr>
+
+
+               <tr>
+                  <td>Cliente</td>
+                  <td><%= cliente.name %></td>
+               </tr>
+
+               <tr>
+                  <td>Vendedor</td>
+                  <td> <%= seller.name %></td>
+               </tr>
+
+               <tr>
+                  <td>Estado</td>
+                  <td><%= status[sale._status] %></td>
+               </tr>
+               <% if (sale.invoice_number!== null & sale.invoice_number !="" && sale.invoice_number > 0) { %>
+               <tr>
+                  <td>Documento</td>
+                  <td><%= dte !== null ? `${dte.tipo == "01" ? "Factura Electronica " : "Comprobante de Credito Fiscal Electronico"} numero de control ${dte.codigo}` : '' %> </td>
+               </tr>
+               <% } %>
+            </tbody>
+         </table>
+
+
+         <h4 class="mt-5 mb-3 text-center">Pagos registrados</h4>
+
+
+         <table class="table table-sm table-stripped table-hover table-bordered">
+            <thead class="text-center">
+               <tr>
+                  <th>Tipo</th>
+                  <th>Banco</th>
+                  <th>Referencia</th>
+                  <th>Monto correspondiente <br> a la factura</th>
+                  <th>Monto del pago</th>
+                  <th>Registro</th>
+               </tr>
+            </thead>
+
+
+            <tbody class="text-center">
+               <% payments.forEach(pay => { %>
+               <tr>
+                  <% if (pay.type == 'money') { %>
+                  <td>Efectivo</td>
+                  <td>--</td>
+                  <td>--</td>
+                  <% } else { %>
+                  <td><%=  (pay.type == 'transfer' ? 'Transferencias y Depósitos' : 'Pagos con tarjeta') %></td>
+                  <td><%= pay.bank %></td>
+                  <td><%= pay.reference %></td>
+                  <% } %>
+                  <td>$<%= Helper.money_format(pay.amount) %></td>
+                  <td>$<%= Helper.money_format(pay.total_amount) %></td>
+                  <td>
+                     <%= `${Helper.format_date(pay.createdAt)} ${pay.createdBy !== undefined && pay.createdBy !== null ? ' (R: '+ pay.createdBy +')' : ''}` %>
+                  </td>
+               </tr>
+               <% }) %>
+            </tbody>
+         </table>
+
+
+
+         <%- include('../../Layouts/Footer.ejs') %>
+      </div>
+
+
+</body>
+
+
+</html>

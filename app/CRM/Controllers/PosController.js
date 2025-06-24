@@ -33,6 +33,19 @@ const municipios = require('../../DTE/Catalogos/municipios.json');
 const departamentos = require('../../DTE/Catalogos/departamentos.json');
 const documentos = require('../../DTE/Catalogos/tipo_documento.json');
 
+const dte_types = {
+    "01": "Factura",
+    "03": "Comprobante de crédito fiscal",
+    "04": "Nota de remisión",
+    "05": "Nota de crédito",
+    "06": "Nota de débito",
+    "07": "Comprobante de retención",
+    "08": "Comprobante de Liquidación",
+    "09": "Documento contable de liquidación",
+    "11": "Factura de exportación",
+    "14": "Factura de sujeto excluido",
+    "15": "Comprobante de donación"
+};
 
 const status = {
     'process': 'En Proceso',
@@ -46,7 +59,8 @@ const status = {
     'to_resend': "Marcado para reenvio",
     'closed': 'Cerrado'
 };
-let helper_url = process.env.PDF_GENERATION_URL;
+
+const helper_url = process.env.PDF_GENERATION_URL;
 
 
 module.exports = {
@@ -1288,8 +1302,7 @@ module.exports = {
         return res.json({ status: 'errorMessage', message: 'Orden o Cliente no encontrados' });
     },
 
-
-    relacionar_pagos: async (req, res) => {
+     relacionar_pagos: async (req, res) => {
         if (cache.get('relacionar_pagos')) {
             return res.json({ status: 'errorMessage', message: 'Proceso de relacionar pagos en curso, espere unos minutos' });
         }
@@ -1373,6 +1386,36 @@ module.exports = {
         cache.put('relacionar_pagos', true); // establecer la bandera que diga que este proceso esta en curso por 5 minutos
 
 
-    }
+    },
+
+
+    view_any_dte: async (req, res) => {
+        let dte = await DTE_Model.findByPk(req.params.id);
+        if (dte) {
+            let sucursal = await Sucursal.findByPk(dte.sucursal);
+            return res.render('POS/dte/view', {
+                pageTitle: dte.codigo,
+                dte_types,
+                dte,
+                sucursal,
+                 helper_url,
+            });
+        }
+    },
+
+    create_manual_fc: async (req, res) => {
+
+        let sucursals = await Sucursal.findAll();
+         return res.render('POS/dte/create_dte', {
+                pageTitle: "DTES Manuales",
+                dte_types,
+                sucursals,
+                 helper_url
+            });
+
+    },
+
+
+   
 
 };

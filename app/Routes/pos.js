@@ -12,9 +12,11 @@ router.get('/getOrder', PosController.getOrder);
 router.get('/ordersToBeBilled', PosController.ordersToBeBilled);
 router.get('/ordersGuides', PosController.ordersGuides);
 router.post('/ordersGuides', PosController.marcarGuia);
-router.get('/viewDTE/:id(\\d+)', PosController.viewDTEinLine);
+router.get('/viewDTE/:id(\\d+)', PosController.view_any_dte);
 router.get('/getJson/:id(\\d+)', PosController.getJsonById);
 
+
+router.get('/create_manual', PosController.create_manual_fc);
 
 
 

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-body">
+          <div class="card-header">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Datos del Receptor</h2>
+          </div>
+          <!-- NIT y NRC en una fila -->
+          <div class="row for_ccf">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nit" class="form-label">NIT:</label>
+                <input type="text" class="form-control" id="nit" placeholder="Ingrese NIT">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nrc" class="form-label">NRC:</label>
+                <input type="text" class="form-control" id="nrc" placeholder="Ingrese NRC">
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-group">
+                <label for="nombreComercial" class="form-label">Nombre Comercial:</label>
+                <input type="text" class="form-control" id="nombreComercial" placeholder="Ingrese nombre comercial">
+              </div>
+            </div>
+          </div>
+
+          <div class="row for_fcf">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="tipoDocumento" class="form-label">Tipo de Documento:</label>
+                <input type="text" class="form-control" id="tipoDocumento" placeholder="Ingrese NIT">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="numDocumento" class="form-label">Numero de Documento:</label>
+                <input type="text" class="form-control" id="numDocumento" placeholder="Ingrese NRC">
+              </div>
+            </div>
+            
+          </div>
+
+          <!-- Nombre y Nombre Comercial -->
+          <div class="form-group">
+            <label for="nombre" class="form-label">Nombre:</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Ingrese nombre completo o razón social" required>
+          </div>
+
+          <!-- Código y Descripción de Actividad -->
+          <div class="row ">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="codActividad" class="form-label">Código de Actividad:</label>
+                <input type="text" class="form-control" id="codActividad" placeholder="Ingrese código de actividad">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="descActividad" class="form-label">Descripción de Actividad:</label>
+                <input type="text" class="form-control" id="descActividad" placeholder="Ingrese descripción de actividad" required>
+              </div>
+            </div>
+          </div>
+          <!-- Teléfono y Correo -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="telefono" class="form-label">Teléfono:</label>
+                <input type="tel" class="form-control" id="telefono" placeholder="Ingrese teléfono">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="correo" class="form-label">Correo:</label>
+                <input type="email" class="form-control" id="correo" placeholder="Ingrese correo electrónico">
+              </div>
+            </div>
+          </div>
+
+          <!-- Dirección -->
+          <fieldset class="p-4 border rounded-lg shadow-sm">
+            <legend class="text-lg font-semibold text-gray-700 mb-4 px-2">Dirección</legend>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="departamento" class="form-label">Departamento:</label>
+                  <input type="text" class="form-control" id="departamento" placeholder="Ingrese departamento">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="municipio" class="form-label">Municipio:</label>
+                  <input type="text" class="form-control" id="municipio" placeholder="Ingrese municipio">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="complemento" class="form-label">Complemento:</label>
+              <input type="text" class="form-control" id="complemento" placeholder="Ingrese complemento de dirección">
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+
+
+
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+
+</html>
+
+
+
+<!-- Font Awesome para iconos -->

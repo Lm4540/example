@@ -1,0 +1,146 @@
+<script>
+
+
+const receptor = {
+          nit: document.getElementById('nit').value || null,
+          nrc: document.getElementById('nrc').value || null,
+          nombre: document.getElementById('nombre').value || null,
+          codActividad: document.getElementById('codActividad').value || null,
+          descActividad: document.getElementById('descActividad').value || "string", // Valor por defecto si no se ingresa
+          nombreComercial: document.getElementById('nombreComercial').value || null,
+          direccion: {
+            departamento: document.getElementById('departamento').value || null,
+            municipio: document.getElementById('municipio').value || null,
+            complemento: document.getElementById('complemento').value || null
+          },
+          telefono: document.getElementById('telefono').value || null,
+          correo: document.getElementById('correo').value || null
+        };
+
+  const dte = {
+    "identificacion": {
+      "version": 3,
+      "ambiente": "00",
+      "tipoDte": "03",
+      "numeroControl": "^DTE-03-[A-Z0-9]{8}-[0-9]{15}$",
+      "codigoGeneracion": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$",
+      "tipoModelo": [1, 2],
+      "tipoOperacion": [1, 2],
+      "tipoContingencia": null,
+      "motivoContin": null,
+      "fecEmi": "2023-04-01",
+      "horEmi": "12:00:00",
+      "tipoMoneda": "USD"
+    },
+    "documentoRelacionado": null,
+    "emisor": {
+      "nit": "^([0-9]{14}|[0-9]{9})$",
+      "nrc": "^[0-9]{1,8}$",
+      "nombre": "string",
+      "codActividad": "string",
+      "descActividad": "string",
+      "nombreComercial": "string",
+      "tipoEstablecimiento": ["01", "02", "04", "07", "20"],
+      "direccion": {
+        "departamento": "string",
+        "municipio": "string",
+        "complemento": "string"
+      },
+      "telefono": "string",
+      "correo": "string",
+      "codEstableMH": "string",
+      "codEstable": "string",
+      "codPuntoVentaMH": "string",
+      "codPuntoVenta": "string"
+    },
+
+    "receptor": {
+      "nit": null,
+      "nrc": null,
+      "nombre": null,
+      "codActividad": null,
+      "descActividad": "string",
+      "nombreComercial": null,
+      "direccion": {
+        "departamento": null,
+        "municipio": null,
+        "complemento": null
+      },
+      "telefono": null,
+      "correo": null
+    },
+    "otrosDocumentos": null,
+    "ventaTercero": null,
+    "cuerpoDocumento": [{
+      "numItem": 1,
+      "tipoItem": 59,
+      "numeroDocumento": null,
+      "codigo": null,
+      "codTributo": null,
+      "descripcion": null,
+      "cantidad": 1,
+      "uniMedida": 59,
+      "precioUni": 10.00,
+      "montoDescu": 0,
+      "ventaNoSuj": 0,
+      "ventaExenta": 0,
+      "ventaGravada": 0,
+      "tributos": ["20"],
+      "psv": 0,
+      "noGravado": 0
+    }],
+
+    "resumen": {
+      "type": "object",
+      "description": "Resumen",
+      "properties": {
+        "totalNoSuj": 0,
+        "totalExenta": 0,
+        "totalGravada": 0,
+        "subTotalVentas": 0,
+        "descuNoSuj": 0,
+        "descuExenta": 0,
+        "descuGravada": 0,
+        "porcentajeDescuento": 0,
+        "totalDescu": 0,
+        "tributos": [{
+          "codigo": '20',
+          "descripcion": "IVA",
+          "valor": 10.00
+        }],
+        "subTotal": 0,
+        "ivaPerci1": 0,
+        "ivaRete1": 0,
+        "reteRenta": 0,
+        "montoTotalOperacion": 0,
+        "totalNoGravado": 0,
+        "totalPagar": 0,
+        "totalLetras": 0,
+        "saldoFavor": 0,
+        "condicionOperacion": 0,
+        "pagos": [{
+          "codigo": null,
+          "montoPago": null,
+          "referencia": null,
+          "plazo": null,
+          "periodo": null,
+        }],
+        "numPagoElectronico": null
+      },
+
+    },
+    "extension": {
+      "nombEntrega": null,
+      "docuEntrega": null,
+      "nombRecibe": null,
+      "docuRecibe": null,
+      "observaciones": null,
+      "placaVehiculo": null,
+    },
+    "apendice": [{
+      "campo": null,
+      "etiqueta": null,
+      "valor": null,
+    }],
+  };
+</script>

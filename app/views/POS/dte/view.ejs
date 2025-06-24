@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <section class="container my-4">
+      <div class="card shadow-sm mb-4 rounded-3">
+        <div class="card-header bg-primary text-white rounded-top-3">
+          <h4 class="mb-0">Información del DTE</h4>
+        </div>
+        <div class="card-body">
+          <!-- Identificación del Documento -->
+          <h5 class="card-title text-primary mb-3">Identificación</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Versión:</strong> <%= dte.dte.identificacion.version %></p>
+              <p><strong>Ambiente:</strong> <%= dte.dte.identificacion.ambiente %></p>
+              <p><strong>Tipo DTE:</strong> <%= dte_types[dte.dte.identificacion.tipoDte] %></p>
+              <p><strong>Número de Control:</strong> <%= dte.dte.identificacion.numeroControl %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Código de Generación:</strong> <%= dte.dte.identificacion.codigoGeneracion %></p>
+              <p><strong>Fecha de Emisión:</strong> <%= dte.dte.identificacion.fecEmi %></p>
+              <p><strong>Hora de Emisión:</strong> <%= dte.dte.identificacion.horEmi %></p>
+              <p><strong>Tipo de Moneda:</strong> <%=dte.dte.identificacion.tipoMoneda %></p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Información del Receptor -->
+          <h5 class="card-title text-primary mb-3">Receptor</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Tipo de Documento:</strong> <%= dte.dte.receptor.tipoDocumento %></p>
+              <p><strong>Número de Documento:</strong> <%= dte.dte.receptor.numDocumento %></p>
+              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono %></p>
+              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'N/A' %></p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Cuerpo del Documento -->
+          <h5 class="card-title text-primary mb-3">Detalle del Documento</h5>
+          <div class="table-responsive mb-3">
+            <table class="table table-bordered table-striped rounded-3">
+              <thead class="">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Código</th>
+                  <th scope="col">Descripción</th>
+                  <th scope="col">Cantidad</th>
+                  <th scope="col">Precio Unitario</th>
+                  <th scope="col">Venta Gravada</th>
+                  <th scope="col">IVA Ítem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dte.dte.cuerpoDocumento.forEach((item, index) => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.codigo %></td>
+                  <td><%= item.descripcion %></td>
+                  <td><%= item.cantidad %></td>
+                  <td><%= item.precioUni %></td>
+                  <td><%= item.ventaGravada %></td>
+                  <td><%= item.ivaItem %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Resumen del Documento -->
+          <h5 class="card-title text-primary mb-3">Resumen</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Total Gravada:</strong> $<%= dte.dte.resumen.totalGravada %></p>
+              <p><strong>Subtotal de Ventas:</strong> $<%= dte.dte.resumen.subTotalVentas %></p>
+              <p><strong>Total Descuento:</strong> $<%= dte.dte.resumen.totalDescu %></p>
+              <p><strong>Subtotal:</strong> $<%= dte.dte.resumen.subTotal %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Monto Total Operación:</strong> $<%= dte.dte.resumen.montoTotalOperacion %></p>
+              <p><strong>Total a Pagar:</strong> $<%= dte.dte.resumen.totalPagar %></p>
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones en la parte inferior -->
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-success btn-lg rounded-pill shadow-sm" >PDF</a>
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm" >JSON</a>
+
+        
+      </div>
+    </section>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+</script>
+
+</html>

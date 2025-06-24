@@ -2,6 +2,7 @@ const { Op, QueryTypes } = require('sequelize');
 const sequelize = require('../../DataBase/DataBase');
 const Sucursal = require('../../Inventory/Models/Sucursal');
 const PettyCashMoves = require('../Models/PettyCashMoves');
+const PettyCash = require('../Models/PettyCash');
 const CajaChica = require('../Models/PettyCash');
 const Helper = require('../../System/Helpers');
 

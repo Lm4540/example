@@ -8,6 +8,7 @@ const Product = require('../../Inventory/Models/Product');
 const Stock = require('../../Inventory/Models/Stock');
 const StockReserve = require('../../Inventory/Models/StockReserve');
 const sequelize = require("../../DataBase/DataBase");
+const DTE = require('../../DTE/Models/DTE');
 
 const { Op, QueryTypes } = require("sequelize");
 const Helper = require("../../System/Helpers");
@@ -865,7 +866,21 @@ const InvoiceController = {
         let sale = await Sale.findByPk(req.params.id);
 
         if (sale && sale.invoice_number !== null) {
+            let cliente = await Client.findByPk(sale.client);
             //Buscar los detalles
+            if(sale.invoice_type == "dte"){
+                let dte = await DTE.findByPk(sale.invoice_number);
+
+                console.log(dte)
+                return res.render('CRM/Invoice/view-invoice-dte', { 
+                    pageTitle: `DTE ${dte.codigo}`, 
+                    dte: dte.dte,
+                    helper_url: process.env.PDF_GENERATION_URL,
+                    registro_id: dte.id
+                });
+            }
+
+
             let details = await SaleDetail.findAll({
                 where: {
                     sale: sale.id,
@@ -880,19 +895,8 @@ const InvoiceController = {
                     invoice_column: 'gravado',
                 });
             }
-
-
-            //buscar el cliente
-            let cliente = await Client.findByPk(sale.client);
-
-            //reolver los detalles de la factura
-
             let serie = await InvoiceSeries.findByPk(sale.invoce_serie);
-            //enviar los datos a la vista
-
-
             let view = sale._status == "revoked" ? 'CRM/Invoice/view-revoked-invoice' : 'CRM/Invoice/view-invoice';
-
             return res.render(view, { pageTitle: `Ver Factura ${sale.invoice_type} N° ${sale.invoice_number}`, sale, details, cliente, data: sale.invoice_data, serie });
 
         }

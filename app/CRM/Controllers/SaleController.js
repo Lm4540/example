@@ -13,6 +13,7 @@ const PettyCashMoves = require('../../Financial/Models/PettyCashMoves');
 const Employee = require('../../HRM/Models/Employee');
 const RequisitionDetail = require('../../Inventory/Models/RequisitionDetail');
 const Requisition = require('../../Inventory/Models/Requisition');
+const DTE = require('../../DTE/Models/DTE');
 
 
 const Helper = require('../../System/Helpers');
@@ -1703,7 +1704,21 @@ const SaleController = {
                     if (sale.invoice_number != null && sale.invoice_number != '' && sale.invoice_number > 0) {
                         serie = await InvoiceSeries.findByPk(sale.invoce_serie);
                     }
-                    //buscar los detalles
+
+                    if(sale.invoice_type == "dte"){
+                        let dte = await DTE.findByPk(sale.invoice_number);
+
+
+                        return res.render('CRM/Sales/viewPayments_dte', { 
+                            pageTitle: 'Venta ID:' + sale.id, 
+                            sucursal, 
+                            sale, 
+                            seller, 
+                            cliente, 
+                            status, 
+                            payments, dte });
+                            
+                    }
                     return res.render('CRM/Sales/viewPayments', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, seller, cliente, status, payments, serie });
                 }
             }
