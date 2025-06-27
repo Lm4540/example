@@ -42,6 +42,7 @@ const Client = sequelize.define('Client', {
     },
     classification: {
         type: DataTypes.ENUM('otro', 'mediano', 'gran', 'ninguno'),
+        defaultValue: 'ninguno',
 
     },
     createdBy: DataTypes.STRING,
@@ -133,6 +134,10 @@ const Client = sequelize.define('Client', {
 
         }
     },
+    distrito: {
+        type: DataTypes.STRING(50),
+        defaultValue: null
+    },
     telefono: {
         type: DataTypes.VIRTUAL,
         get() {
@@ -163,7 +168,7 @@ const Client = sequelize.define('Client', {
                 "descActividad": this.giro,
                 "nombreComercial": this.nombreComercial,
                 "direccion": this.direccion,
-                "telefono": this.telefono ? this.telefono.replace(/[^0-9]/g, '') : null,
+                "telefono": this.telefono ? this.telefono.replace(/[^0-9/]/g, '') : null,
                 "correo": this.email
             }
         }
@@ -193,7 +198,7 @@ const Client = sequelize.define('Client', {
                 "codActividad": null,
                 "descActividad": null,
                 "direccion": this.direccion,
-                "telefono": this.telefono ? this.telefono.replace(/[^0-9]/g, '') : null,
+                "telefono": this.telefono ? this.telefono.replace(/[^0-9/]/g, '') : null,
                 "correo": this.correo
             }
 

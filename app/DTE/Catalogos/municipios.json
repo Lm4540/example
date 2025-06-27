@@ -3,75 +3,75 @@
     "00": "Otro (Para extranjeros)"
   },
   "01": {
-    "13": "AHUACHAPAN NORTE",
-    "14": "AHUACHAPAN CENTRO",
-    "15": "AHUACHAPAN SUR"
+    "13": "Ahuachapan Norte",
+    "14": "Ahuachapan Centro",
+    "15": "Ahuachapan Sur"
   },
   "02": {
-    "14": "SANTA ANA NORTE",
-    "15": "SANTA ANA CENTRO",
-    "16": "SANTA ANA ESTE",
-    "17": "SANTA ANA OESTE"
+    "14": "Santa Ana Norte",
+    "15": "Santa Ana Centro",
+    "16": "Santa Ana Este",
+    "17": "Santa Ana Oeste"
   },
   "03": {
-    "17": "SONSONATE NORTE",
-    "18": "SONSONATE CENTRO",
-    "19": "SONSONATE ESTE",
-    "20": "SONSONATE OESTE"
+    "17": "Ssonsonate Norte",
+    "18": "Ssonsonate Centro",
+    "19": "Ssonsonate Este",
+    "20": "Ssonsonate Oeste"
   },
   "04": {
-    "34": "CHALATENANGO NORTE",
-    "35": "CHALATENANGO CENTRO",
-    "36": "CHALATENANGO SUR"
+    "34": "Chalatenango Norte",
+    "35": "Chalatenango Centro",
+    "36": "Chalatenango SUR"
   },
   "05": {
-    "23": "LA LIBERTAD NORTE",
-    "24": "LA LIBERTAD CENTRO",
-    "25": "LA LIBERTAD OESTE",
-    "26": "LA LIBERTAD ESTE",
-    "27": "LA LIBERTAD COSTA",
-    "28": "LA LIBERTAD SUR"
+    "23": "La Libertad Norte",
+    "24": "La Libertad Centro",
+    "25": "La Libertad Oeste",
+    "26": "La Libertad Este",
+    "27": "La Libertad Costa",
+    "28": "La Libertad Sur"
   },
   "06": {
-    "20": "SAN SALVADOR NORTE",
-    "21": "SAN SALVADOR OESTE",
-    "22": "SAN SALVADOR ESTE",
-    "23": "SAN SALVADOR CENTRO",
-    "24": "SAN SALVADOR SUR"
+    "20": "San Salvador Norte",
+    "21": "San Salvador Oeste",
+    "22": "San Salvador Este",
+    "23": "San Salvador Centro",
+    "24": "San Salvador Sur"
   },
   "07": {
-    "17": "CUSCATLAN NORTE",
-    "18": "CUSCATLAN SUR"
+    "17": "Cuscatlan Norte",
+    "18": "Cuscatlan Sur"
   },
   "08": {
-    "23": "LA PAZ OESTE",
-    "24": "LA PAZ CENTRO",
-    "25": "LA PAZ ESTE"
+    "23": "La Paz Oeste",
+    "24": "La Paz Centro",
+    "25": "La Paz Este"
   },
   "09": {
-    "10": "CABAÑAS OESTE",
-    "11": "CABAÑAS ESTE "
+    "10": "Cabañas Oeste",
+    "11": "Cabañas Este"
   },
   "10": {
-    "14": "SAN VICENTE NORTE",
-    "15": "SAN VICENTE SUR"
+    "14": "San Vicente Norte",
+    "15": "San Vicente Sur"
   },
   "11": {
-    "24": "USULUTAN NORTE",
-    "25": "USULUTAN ESTE",
-    "26": "USULUTAN OESTE"
+    "24": "Usulutan Norte",
+    "25": "Usulutan Este",
+    "26": "Usulutan Oeste"
   },
   "12": {
-    "21": "SAN MIGUEL NORTE",
-    "22": "SAN MIGUEL CENTRO",
-    "23": "SAN MIGUEL OESTE"
+    "21": "San Miguel Norte",
+    "22": "San Miguel Centro",
+    "23": "San Miguel Oeste"
   },
   "13": {
-    "27": "MORAZAN NORTE",
-    "28": "MORAZAN SUR"
+    "27": "Morazan Norte",
+    "28": "Morazan Sur"
   },
   "14": {
-    "19": "LA UNION NORTE",
-    "20": "LA UNION SUR "
+    "19": "La Union Norte",
+    "20": "La Union Sur"
   }
 }

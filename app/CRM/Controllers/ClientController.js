@@ -155,15 +155,7 @@ const ClientController = {
         }
 
         //Verificar el Correo electronico
-        if (data.mail.length > 0) {
-            existe = await Client.findOne({ where: { email: data.mail } });
-            if (existe) {
-                return res.json({
-                    status: 'errorMessage',
-                    message: 'Ya hay un cliente registrado con este correo electrónico',
-                });
-            }
-        }
+
 
         let _seller = data.seller ?? req.session.userSession.employee.id;
         let _sucursal = null;
@@ -189,7 +181,8 @@ const ClientController = {
                 createdBy: req.session.userSession.employee.shortName,
                 phone: data.phone,
                 email: data.mail.length > 0 ? data.mail : '',
-                direction: data.direction.length > 0 ? `Distrito de ${data.distrito}, ${data.direction}` : 'No Registrado',
+                distrito: data.distrito,
+                direction: data.direction.length > 0 ? data.direction : 'No Registrado',
                 seller: _seller,
                 tipoDocumento: data.documentType,
                 sucursal: _sucursal,
@@ -217,11 +210,13 @@ const ClientController = {
         let cliente = await Client.findByPk(req.params.id);
         if (cliente) {
             let sellers = await Employee.findAll({ where: { isSeller: 1 } }).catch(e => next(e));
+            let distritos = require('../../DTE/Catalogos/distritos.json').values;
             let municipios = require('../../DTE/Catalogos/CAT-013.json').items;
             let departamentos = require('../../DTE/Catalogos/CAT-012.json').items;
             let dptos = JSON.stringify(require('../../DTE/Catalogos/direction.json'));
+            let dis = JSON.stringify(require('../../DTE/Catalogos/distritos_.json'));
             let giros = require('../../DTE/Catalogos/CAT-019.json').items;
-            return res.render('CRM/Client/edit', { pageTitle: 'Editando: ' + cliente.name, cliente, sellers, municipios, departamentos, dptos, giros });
+            return res.render('CRM/Client/edit', { pageTitle: 'Editando: ' + cliente.name, cliente, sellers, distritos, municipios, departamentos, dptos, dis, giros });
         }
 
         return Helper.notFound(req, res, 'Client not Found')
@@ -273,21 +268,8 @@ const ClientController = {
                 }
 
                 if (client.email != data.email && data.email != "") {
-                    other = await Client.count({
-                        where: {
-                            [Op.and]: [
-                                { id: { [Op.not]: client.id, } },
-                                { email: data.email },
-                            ],
-                        }
-                    });
-
-                    if (other > 0) {
-                        return res.json({ status: 'errorMessage', message: 'Ya hay otro Cliente con este Email' });
-                    } else {
-                        for_update.email = data.email;
-                        comment += client.email !== '' && client.email !== "" ? `<p>Email Anterior:  ${client.email}</p><br>` : `<p>Se agrego Email</p>`;
-                    }
+                    for_update.email = data.email;
+                    comment += client.email !== '' && client.email !== "" ? `<p>Email Anterior:  ${client.email}</p><br>` : `<p>Se agrego Email</p>`;
                 }
 
                 //validar el tipo de documento
@@ -353,15 +335,20 @@ const ClientController = {
                 if (client.direction !== data.direction) {
                     for_update.direction = data.direction;
                     comment += `<p>Direccion Anterior: ${client.direction}`;
+
                     if (client.departamento !== data.departamento) {
                         for_update.departamento = data.departamento;
                         for_update.municipio = data.municipio;
+                        for_update.distrito = data.distrito;
                         comment += `Depratamento ${client.departamento} y Municipio ${client.municipio}`;
                     }
                     comment += `</p>`;
                 } else if (client.departamento !== data.departamento) {
                     for_update.departamento = data.departamento;
                     for_update.municipio = data.municipio;
+                    for_update.distrito = data.distrito;
+                } else if (client.distrito !== data.distrito) {
+                    for_update.distrito = data.distrito;
                 }
 
                 if (client.seller != data.seller) {
@@ -536,12 +523,12 @@ const ClientController = {
 
             hay_mas_pagos = hay_mas_pagos > 5;
             //determinar el departamento y municipio
-            let cliente_direccion = `${cliente.direction}`;
-
-            if(cliente.departamento !== null && cliente.departamento !== ""){
-                const departamento = require('../../DTE/Catalogos/departamentos.json')[cliente.departamento];
-                const municipio = require('../../DTE/Catalogos/municipios.json')[cliente.departamento][cliente.municipio];
-                cliente_direccion += `, ${municipio}, ${departamento}`;
+            let cliente_direccion = `${cliente.direction || ''}`;
+            let departamento = 'No registrado', municipio = 'No registrado';
+            if (cliente.departamento !== null && cliente.departamento !== "") {
+                departamento = require('../../DTE/Catalogos/departamentos.json')[cliente.departamento];
+                municipio = require('../../DTE/Catalogos/municipios.json')[cliente.departamento][cliente.municipio];
+                cliente_direccion += ` Distrito de ${cliente.distrito}, ${municipio}, ${departamento}`;
             }
 
 
@@ -566,6 +553,8 @@ const ClientController = {
                 hay_mas_ventas,
                 a_favor,
                 cliente_direccion,
+                departamento,
+                municipio
             });
         }
 

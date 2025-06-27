@@ -79,6 +79,16 @@ const DTE = sequelize.define('DTE', {
             set(param) {
                   this.setDataValue('_errors', param == null ? null : JSON.stringify(param));
             }
+      },
+      fecEmi:DataTypes.DATEONLY,
+      client_label:DataTypes.STRING(100),
+      invalidacion: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            defaultValue: null,
+      },
+      nc: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            defaultValue: null,
       }
 }, {
       tableName: 'crm_dte',

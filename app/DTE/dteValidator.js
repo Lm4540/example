@@ -170,6 +170,7 @@ function validateDocument(jsonData, schemaType = null) {
 
 module.exports = {
       validateDocument,
+      validateWithSchema,
       // Exportar funciones específicas si se desean usar directamente
       validateFC,
       validateCCF,

@@ -20,8 +20,23 @@ const Employee = sequelize.define('Employee', {
     image: DataTypes.STRING,
     shortName: DataTypes.STRING,
     nickname: DataTypes.STRING,
+    municipio: {
+        type: DataTypes.STRING(2),
+        defaultValue: null
+    },
+    departamento: {
+        type: DataTypes.STRING(2),
+        defaultValue: null
+    },
+    distrito: {
+        type: DataTypes.STRING(50),
+        defaultValue: null
+    }
 }, {
     tableName: 'hrm_employee',
 });
+
+// alter table `hrm_employee` add municipio char(2), add departamento char(2), add distrito varchar(50);
+// ALTER TABLE crm_client add distrito varchar(50);
 
 module.exports = Employee;

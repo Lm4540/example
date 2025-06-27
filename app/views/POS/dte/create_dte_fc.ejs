@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Factura DTE Manual</h2>
+        </div>
+        <div class="card-body">
+          <!-- NIT y NRC en una fila -->
+          <h4 class="text-center">Datos del Receptor</h4>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="tipoDocumento" class="form-label">Tipo Documento:</label>
+                <select name="tipoDocumento" id="tipoDocumento" class="form-control">
+                  <option value="">Ninguno</option>
+                  <option value="36">NIT</option>
+                  <option value="13">DUI</option>
+                  <option value="37">Otro</option>
+                  <option value="03">Pasaporte</option>
+                  <option value="02">Carnet de Residente</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="numDocumento" class="form-label">Numero Documento:</label>
+                <input type="text" class="form-control" id="numDocumento" placeholder="con Guiones">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="nrc" class="form-label">Numero Registro de COntribuyente:</label>
+                <input type="text" class="form-control" id="nrc" placeholder="Ingrese NRC">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nombre" class="form-label">  <strong class="text-danger" style="font-size: 150%;">*</strong> Nombre:</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Ingrese nombre completo o razón social" required>
+          </div>
+
+          
+
+
+          <div class="row">
+            <div class=" form-group col-md-6">
+              <label for="clientClassification">Clasificación del Contribuyente</label>
+              <select name="clientClassification" id="clientClassification" class="form-control">
+                <option value="">Ninguno</option>
+                <option value="otro">Otro Contribuyente</option>
+                <option value="mediano">Mediano Contribuyente</option>
+                <option value="gran">Gran Contribuyente</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3 col-md-6">
+              <label for="clientCodActividad">Giro, Actividad Economica del Contribuyente</label>
+              <select class="form-control" id="clientCodActividad" type="text" placeholder="">
+                <option value="">Seleccione la Actividad Economica del Contribuyente</option>
+                <% giros.forEach(element => { %>
+                <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          <!-- Teléfono y Correo -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="telefono" class="form-label">Teléfono:</label>
+                <input type="text" class="form-control" id="telefono" placeholder="Ingrese teléfono">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="correo" class="form-label">Correo:</label>
+                <input type="email" class="form-control" id="correo" placeholder="Ingrese correo electrónico">
+              </div>
+            </div>
+          </div>
+
+          <h5>Dirección del Cliente</h5>
+
+          <div class="form-group">
+            <label for="distrito">Seleccione el Distrito</label>
+            <select name="distrito" id="distrito" class="form-control">
+              <option value="">Ninguno</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="departamento">Departamento</label>
+            <select name="departamento" id="departamento" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+              <% departamentos.forEach(element => { %>
+              <option value="<%= element.codigo %>"><%= element.Valor %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="municipio">Municipio</label>
+            <select name="municipio" id="municipio" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="complemento">Complemento de la Direccion:</label>
+            <input type="text" name="complemento" id="complemento" class="form-control">
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4 class="text-center">
+            Detalles del Cuerpo del Documento
+          </h4>
+
+          <div class="form-group mt-5 mb-5">
+            <label for="gravamen">Tipo de Venta (Exenta, No sujeta, Gravada)</label>
+            <select name="gravamen" id="gravamen" class="form-control" disabled >
+              <option value="gravadas" selected>Venta Gravada</option>
+              <option value="exentas">Venta Exenta</option>
+            </select>
+          </div>
+          <div class="table-responsive mb-4 table-responsive">
+            <table class="table table-sm table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="max-width: 30%;width: 30%;">Descripción</th>
+                  <th scope="col" style="max-width: 140px;width: 140px;">Cantidad</th>
+                  <th scope="col" style="max-width: 140px;width: 140px;">Precio Unitario</th>
+                  <th>Subtotal</th>
+                  <th scope="col" style="max-width: 140px;width: 140px;">Código</th>
+                  <th scope="col" style="max-width: 140px;width: 140px;">Tipo de Ítem</th>
+                  <th scope="col" style="max-width: 140px;width: 140px;">Unidad de Medida</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="documentoDetalleTableBody">
+                <!-- Filas de detalles se agregarán aquí dinámicamente -->
+              </tbody>
+              <tbody id="detalleTotales">
+                <tr>
+                  <td colspan="3" class="text-right">Subtotal Exentas</td>
+                  <td id="_exentas"></td>
+                  <td colspan="4"></td>
+                </tr>
+
+                <tr>
+                  <td colspan="3" class="text-right">Subtotal Gravadas</td>
+                  <td id="_gravadas"></td>
+                  <td colspan="4"></td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-right">Total</td>
+                  <td id="_total"></td>
+                  <td colspan="4"></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="8" class="text-center">
+                    <button type="button" class="btn btn-outline-primary mr-3 mt-3 ml-3 round" id="addDetalleBtn">Agregar Ítem</button>
+                    <button type="button" class="btn btn-outline-success mr-3 mt-3 ml-3 round" id="Totalizar">Totalizar</button>
+                  </td>
+                </tr>
+
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+
+        <div class="card-body">
+          <h4>Pagos Recibidos</h4>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered">
+              <thead>
+                <tr>
+                  <th> Codigo</th>
+                  <th>Monto Pago</th>
+                  <th style="width: 50%;">Referencia</th>
+                  <th>opt</th>
+                </tr>
+              </thead>
+              <tbody id="pagosRecibidoTbody">
+
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td class="text-center" colspan="6">
+                    <button class="round btn mt-2 mb-2 btn-outline-primary" id="btnAddPay">Agregar Pago</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+
+        <div class="card-body">
+          <h4>Apendices</h4>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Etiqueta</th>
+                  <th>Valor</th>
+                  <th>opt</th>
+                </tr>
+              </thead>
+              <tbody id="TBodyApendices">
+
+
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <button class="btn round btn-outline-primary" onclick="addApendiceRow()" id="btnAddApendices">
+                      Agregar Apendice
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer text-center">
+          <div id="results" class="mt-2 mb-4">
+
+
+          </div>
+          <button class="round btn-lg btn btn-primary mt-2" id="btnSave" disabled>
+            Procesar DTE
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<%- include('create_dte_fc_scripts.ejs') %>
+</html>
+
+
+
+<!-- Font Awesome para iconos -->

@@ -14,9 +14,12 @@ router.get('/ordersGuides', PosController.ordersGuides);
 router.post('/ordersGuides', PosController.marcarGuia);
 router.get('/viewDTE/:id(\\d+)', PosController.view_any_dte);
 router.get('/getJson/:id(\\d+)', PosController.getJsonById);
+router.get('/getJson/:uuid/:fecha(\\d{4}-\\d{2}-\\d{2})',  PosController.getDTEJsonByCOde);
 
 
-router.get('/create_manual', PosController.create_manual_fc);
+
+router.get('/create_manual/:dte', PosController.create_manual_fc);
+router.post('/procces_dte_manual', PosController.process_manual_dte);
 
 
 

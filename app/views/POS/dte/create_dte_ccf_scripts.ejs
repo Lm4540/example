@@ -1,0 +1,435 @@
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
+  const pagosRecibidoTbody = document.querySelector("#pagosRecibidoTbody");
+  const TBodyApendices = document.querySelector("#TBodyApendices");
+  const addDetalleBtn = document.querySelector('#addDetalleBtn');
+  const btnAddPay = document.querySelector('#btnAddPay');
+  const btnAddApendices = document.querySelector('#btnAddApendices');
+  const IVA_VAL = Number.parseFloat('<%= VALOR_IVA %>');
+  const helper_url = '<%= helper_url %>';
+  var distritos = '<%- dptos %>';
+  const departamentos = JSON.parse(distritos);
+  var selected_departamento = null;
+  var selected_municipio = null;
+  distritos = '<%- dis %>';
+  distritos = JSON.parse(distritos);
+
+  const cargarMunicipios = (index) => {
+    let muni = departamentos[index];
+    document.querySelector("#municipio").innerHTML = '';
+    muni.forEach(element => {
+      document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
+    });
+
+  }
+
+  const subtotalizar = node => {
+    let cant = Number.parseInt(node.querySelector('.cantidad-item').value);
+    let price = Number.parseFloat(node.querySelector('.precio-uni-item').value);
+    node.querySelector(".subtotal-td").innerHTML = isNaN(cant) || isNaN(price) ? '$ 0.00' : `$ ${money_format(cant * price)}`;
+
+  }
+
+  const addDetalleRow = () => {
+
+    document.querySelector("#btnSave").disabled = true;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+                <td>
+                    <input type="text" class="form-control descripcion-item" placeholder="Descripción" required>
+                </td>
+                <td>
+                    <input type="number" class="form-control cantidad-item" oninput="subtotalizar(this.parentNode.parentNode)" placeholder="Cantidad" min="0" step="any" required>
+                </td>
+                <td>
+                    <input type="number" class="form-control precio-uni-item" oninput="subtotalizar(this.parentNode.parentNode)" placeholder="Precio Uni." min="0" step="0.01" required>
+                </td>
+                <td class="subtotal-td">
+                    
+                </td>
+                <td>
+                    <input type="text" class="form-control codigo-item" placeholder="Código">
+                </td>
+                <td>
+                    <select class="form-select tipo-item" required>
+                        <option value="1">Bienes</option>
+                        <option value="2">Servicios</option>
+                        <option value="3">Ambos (incluye bienes y servicios, incluye los dos inherente a los Productos o Servicios</option>
+                        <option value="4">Otros Tributos por Item</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select uni-medida-item" required>
+                      <option value="59">Unidad</option>
+                      <option value="13">metro cuadrado</option>
+                      <option value="15">Vara cuadrada</option>
+                      <option value="18">metro cúbico</option>
+                      <option value="20">Barril</option>
+                      <option value="22">Galón</option>
+                      <option value="23">Litro</option>
+                      <option value="24">Botella</option>
+                      <option value="26">Mililitro</option>
+                      <option value="30">Tonelada</option>
+                      <option value="32">Quintal</option>
+                      <option value="33">Arroba</option>
+                      <option value="34">Kilogramo</option>
+                      <option value="36">Libra</option>
+                      <option value="37">Onza troy</option>
+                      <option value="38">Onza</option>
+                      <option value="39">Gramo</option>
+                      <option value="40">Miligramo</option>
+                      <option value="42">Megawatt</option>
+                      <option value="43">Kilowatt</option>
+                      <option value="44">Watt</option>
+                      <option value="45">Megavoltio-amperio</option>
+                      <option value="46">Kilovoltio-amperio</option>
+                      <option value="47">Voltio-amperio</option>
+                      <option value="49">Gigawatt-hora</option>
+                      <option value="50">Megawatt-hora</option>
+                      <option value="51">Kilowatt-hora</option>
+                      <option value="52">Watt-hora</option>
+                      <option value="53">Kilovoltio</option>
+                      <option value="54">Voltio</option>
+                      <option value="55">Millar</option>
+                      <option value="56">Medio millar</option>
+                      <option value="57">Ciento</option>
+                      <option value="58">Docena</option>
+                      <option value="99">Otra</option>
+                    </select>
+                </td>
+                <td>
+                    <span class="badge bg-danger btn-sm remove-item-btn">Eliminar</span>
+                </td>
+            `;
+    // Añadir el event listener para el botón de eliminar de la nueva fila
+    newRow.querySelector('.remove-item-btn').addEventListener('click', function() {
+      newRow.remove(); // Elimina la fila del DOM
+    });
+    documentoDetalleTableBody.appendChild(newRow);
+  }
+
+  const addPayRow = () => {
+
+    const newPayRow = document.createElement('tr');
+    newPayRow.innerHTML = `
+                <td>
+                    <select class="form-control pay-codigo">
+                      <option value="01">Billetes y monedas</option>
+                      <option value="05">Transferencia Depósito Bancario</option>
+                      <option value="02">Tarjeta de Débito</option>
+                      <option value="03">Tarjeta de Crédito</option>
+                      <option value="04">Cheque</option>
+                      <option value="08">Dinero Electrónico</option>
+                      <option value="09">Monedero Electrónico</option>
+                      <option value="11">Bitcoin</option>
+                      <option value="12">Otras Criptomonedas</option>
+                      <option value="13">Cuentas por pagar al Receptor</option>
+                      <option value="14">Giro Bancario</option>
+                      <option value="99">Otros</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="number" class="form-control pay-montoPago" placeholder="Monto del Pago" step="0.01">
+                  </td>
+                  <td>
+                    <input type="text" class="form-control pay-referencia" placeholder="Referencia">
+                  </td>
+                  
+                  <td><span class="bg-danger badge btn-delete-pay">Eliminar</span></td>
+            `;
+
+    // Añadir el event listener para el botón de eliminar de la nueva fila
+    newPayRow.querySelector('.btn-delete-pay').addEventListener('click', function() {
+      newPayRow.remove(); // Elimina la fila del DOM
+    });
+    pagosRecibidoTbody.appendChild(newPayRow);
+
+  }
+
+  const addApendiceRow = () => {
+    const newApendiceRow = document.createElement('tr');
+    newApendiceRow.innerHTML = `
+                <td>
+                    <input type="text" class="form-control apendice-campo">
+                  </td>
+                  <td>
+                    <input type="text" class="form-control apendice-etiqueta">
+                  </td>
+                  <td>
+                    <input type="text" class="form-control apendice-valor">
+                  </td>
+                  <td>
+                    <span class="bg-danger badge btn-delete-apendice">
+                      Eliminar
+                    </span>
+                  </td>
+            `;
+
+    // Añadir el event listener para el botón de eliminar de la nueva fila
+    newApendiceRow.querySelector('.btn-delete-apendice').addEventListener('click', function() {
+      newApendiceRow.remove(); // Elimina la fila del DOM
+    });
+    TBodyApendices.appendChild(newApendiceRow);
+
+
+
+  }
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+    document.querySelector("#Totalizar").addEventListener('click', e => {
+      let rows = documentoDetalleTableBody.querySelectorAll('tr');
+      if (rows.length < 1) {
+        return errorMessage('Agregue al menos un detalle valido al cuerpo del documento');
+      }
+      let exenta = document.querySelector("#gravamen").value == 'exentas';
+      var suma_gravadas = 0,
+        suma_exenta = 0,
+        suma_iva = 0;
+      let contador = 0;
+      rows.forEach(row => {
+        const cantidad = parseFloat(row.querySelector('.cantidad-item').value);
+        const precioUni = parseFloat(row.querySelector('.precio-uni-item').value);
+
+        // Solo agregar si la descripción y la cantidad son válidas (puedes ajustar esta validación)
+        if (!isNaN(cantidad) && !isNaN(precioUni)) {
+          contador++;
+          let venta_gravada = fix_number((cantidad * precioUni), 4);
+          if (exenta) {
+            suma_exenta = fix_number(venta_gravada + suma_exenta);
+          } else {
+            suma_iva = fix_number(fix_number(venta_gravada * IVA_VAL) + suma_iva);
+            suma_gravadas = fix_number(suma_gravadas + venta_gravada);
+          }
+        }
+
+      });
+
+      if (contador < 1) {
+        return errorMessage('Agregue al menos un detalle valido al cuerpo del documento');
+      }
+      document.querySelector("#_subtotal").innerHTML = `$ ${money_format(suma_gravadas)}`;
+      document.querySelector("#_iva").innerHTML = `$ ${money_format(suma_iva)}`;
+      document.querySelector("#_total").innerHTML = `$ ${money_format(suma_gravadas + suma_iva)}`;
+      document.querySelector("#btnSave").disabled = false;
+    });
+
+
+    document.querySelector("#btnSave").addEventListener('click', e => {
+      e.target.disabled = true;
+      var cuerpoDocumento = [];
+      var pagos = null;
+      let retencion = document.querySelector('#clientClassification').value === "gran";
+      let exenta = document.querySelector("#gravamen").value == 'exentas';
+      let subtotal = 0.00;
+      const clientCodActividad = document.getElementById('clientCodActividad');
+
+      const receptor = {
+        nit: document.getElementById('nit').value.replace(/[^0-9]/g, ''),
+        nrc: document.getElementById('nrc').value.replace(/[^0-9]/g, ''),
+        nombre: document.getElementById('nombre').value,
+        codActividad: clientCodActividad.value,
+        descActividad: clientCodActividad.options[clientCodActividad.selectedIndex].text,
+        nombreComercial: document.getElementById('nombreComercial').value,
+        direccion: {
+          departamento: document.getElementById('departamento').value,
+          municipio: document.getElementById('municipio').value,
+          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`
+        },
+        telefono: document.getElementById('telefono').value,
+        correo: document.getElementById('correo').value
+      };
+      const rows = documentoDetalleTableBody.querySelectorAll('tr');
+      if (rows.length < 0) {
+        return errorMessage('Agregue al menos un detalle valido al cuerpo del documento');
+      }
+      contador = 1;
+      var suma_gravadas = 0,
+        suma_exenta = 0,
+        suma_iva = 0;
+
+      rows.forEach(row => {
+        const codigo = row.querySelector('.codigo-item').value;
+        const descripcion = row.querySelector('.descripcion-item').value;
+        const tipoItem = Number.parseInt(row.querySelector('.tipo-item').value);
+        const uniMedida = Number.parseInt(row.querySelector('.uni-medida-item').value);
+        const cantidad = Number.parseInt(row.querySelector('.cantidad-item').value);
+        const precioUni = Number.parseFloat(row.querySelector('.precio-uni-item').value);
+
+        // Solo agregar si la descripción y la cantidad son válidas (puedes ajustar esta validación)
+        if (descripcion && !isNaN(cantidad) && !isNaN(tipoItem) && !isNaN(uniMedida) && !isNaN(precioUni)) {
+          let venta_exenta = 0,
+            venta_gravada = 0,
+            iva = 0;
+
+          if (exenta) {
+            venta_exenta = fix_number((cantidad * precioUni), 4);
+          } else {
+            venta_gravada = fix_number((cantidad * precioUni), 4);
+            iva = venta_gravada * IVA_VAL;
+          }
+          cuerpoDocumento.push({
+            numItem: contador,
+            tipoItem: tipoItem,
+            codigo: codigo || null, // Permitir null si está vacío
+            descripcion: descripcion,
+            cantidad: cantidad,
+            uniMedida: uniMedida,
+            precioUni: precioUni,
+            numeroDocumento: null,
+            codTributo: null,
+            montoDescu: 0,
+            ventaNoSuj: 0,
+            ventaExenta: venta_exenta,
+            ventaGravada: venta_gravada,
+            tributos: iva > 0 ? ['20'] : null,
+            psv: 0,
+            noGravado: 0
+          });
+          contador++;
+          suma_gravadas = fix_number(suma_gravadas + venta_gravada, 2);
+          suma_exenta = fix_number(suma_exenta + venta_exenta, 2);
+          suma_iva = fix_number(iva + suma_iva, 2);
+
+        }
+      });
+
+      retencion = (retencion && suma_gravadas > 100.00) ? fix_number((suma_gravadas * 0.01), 2) : 0;
+      let total = fix_number((suma_gravadas + suma_iva - retencion), 2);
+
+      let paysrows = pagosRecibidoTbody.querySelectorAll('tr');
+      if (paysrows.length > 0) {
+        pagos = [];
+        paysrows.forEach(row => {
+          let pay = {
+            codigo: row.querySelector('.pay-codigo').value,
+            montoPago: Number.parseFloat(row.querySelector('.pay-montoPago').value),
+            referencia: row.querySelector('.pay-referencia').value.trim(),
+            periodo: null,
+            plazo: null,
+          }
+          if (!isNaN(pay.montoPago)) {
+            pay.referencia = pay.referencia.length > 0 ? pay.referencia : null;
+            pagos.push(pay);
+          }
+        });
+        pagos = pagos.length > 0 ? pagos : null;
+      }
+
+      const resumen = {
+        totalNoSuj: 0,
+        totalExenta: 0,
+        totalGravada: suma_gravadas,
+        subTotalVentas: suma_gravadas,
+        descuNoSuj: 0,
+        descuExenta: 0,
+        descuGravada: 0,
+        porcentajeDescuento: 0,
+        totalDescu: 0,
+        subTotal: suma_gravadas,
+        ivaPerci1: 0,
+        ivaRete1: retencion,
+        reteRenta: 0,
+        montoTotalOperacion: total,
+        totalNoGravado: 0,
+        totalPagar: total,
+        totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
+        // totalIva: Helper.fix_number(sum_iva),
+        tributos: suma_gravadas > 0 ? [{
+          codigo: "20",
+          descripcion: "Impuesto al Valor Agregado 13%",
+          valor: fix_number(suma_iva)
+        }] : null,
+        saldoFavor: 0,
+        condicionOperacion: 1,
+        pagos: pagos,
+        numPagoElectronico: null
+      }
+
+
+      var apendices = null;
+
+      let ApendiceRows = TBodyApendices.querySelectorAll('tr');
+      if (ApendiceRows.length > 0) {
+        apendices = [];
+        ApendiceRows.forEach(row => {
+          let apendice = {
+            campo: row.querySelector('.apendice-campo').value.trim(),
+            etiqueta: row.querySelector('.apendice-etiqueta').value.trim(),
+            valor: row.querySelector('.apendice-valor').value.trim(),
+          }
+
+          if (apendice.campo.length > 0 && apendice.valor.length > 0) {
+            apendices.push(apendice);
+          }
+        });
+
+        apendices = apendices.length > 0 ? apendices : null;
+      }
+
+      let data = {
+        'dte_type': '03',
+        "receptor": receptor,
+        "cuerpoDocumento": cuerpoDocumento,
+        "resumen": resumen,
+        "apendice": apendices,
+      }
+      postData('/pos/procces_dte_manual', data).then(data => {
+        if (data.status == 'success') {
+          document.querySelector("#results").innerHTML = `
+          <h4> DTE: ${data.json.codigo} generada con exito</h4>
+          <a href="${helper_url}/utils/services/dte/inline?uuid=${data.json.dte.identificacion.codigoGeneracion}&fecha=${data.json.dte.identificacion.fecEmi}" target="_blank" class="btn round btn-outline-secondary">Ver DTE</a>
+          <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a>`;
+
+          e.target.remove();
+          successMessage(data.message);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+      });
+
+    });
+
+    document.querySelector("#departamento").addEventListener('change', e => {
+      cargarMunicipios(document.querySelector("#departamento").value);
+    });
+
+    document.querySelector("#distrito").addEventListener('choice', e => {
+      let option = e.detail.choice;
+      if (option.value == '') {
+        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
+        document.querySelector("#departamento").value = '00';
+        selected_departamento = null;
+        selected_municipio = null;
+      } else if (option.value == '00') {
+        selected_departamento = '00';
+        selected_municipio = '00';
+        cargarMunicipios('00');
+        document.querySelector("#municipio").value = '00';
+        document.querySelector("#departamento").value = '00';
+      } else {
+        selected_departamento = option.customProperties.departamento;
+        selected_municipio = option.customProperties.municipio;
+        cargarMunicipios(option.customProperties.departamento);
+        document.querySelector("#municipio").value = option.customProperties.municipio;
+        document.querySelector("#departamento").value = option.customProperties.departamento;
+      }
+    });
+
+    const choices_distrito = new Choices(document.querySelector('#distrito'), {
+      'searchChoices': true,
+    }).setChoices(distritos);
+
+    const choices_actividad = new Choices(document.querySelector('#clientCodActividad'), {
+      'searchChoices': true,
+    });
+    addDetalleRow();
+    addDetalleBtn.addEventListener('click', addDetalleRow);
+    btnAddPay.addEventListener('click', addPayRow);
+  });
+</script>
