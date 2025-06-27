@@ -347,7 +347,10 @@ const ClientController = {
                     for_update.departamento = data.departamento;
                     for_update.municipio = data.municipio;
                     for_update.distrito = data.distrito;
-                } else if (client.distrito !== data.distrito) {
+                } 
+
+
+                if (client.distrito !== data.distrito) {
                     for_update.distrito = data.distrito;
                 }
 
