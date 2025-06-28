@@ -1270,7 +1270,7 @@
           "resumen": {
             "properties": {
               "montoTotalOperacion": {
-                "minimum": 1095.0
+                "minimum": 25000.00
               }
             }
           }

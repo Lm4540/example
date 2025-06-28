@@ -250,8 +250,8 @@
       };
 
       if (nombre.length > 2) {
-        const tipoDocumento = document.getElementById('tipoDocumento').value;
-        const numDocumento = document.getElementById('numDocumento').value;
+        var tipoDocumento = document.getElementById('tipoDocumento').value;
+        var numDocumento = document.getElementById('numDocumento').value;
         if (tipoDocumento == "") {
           tipoDocumento = null;
           numDocumento = null;
@@ -262,8 +262,8 @@
         const nrc = document.getElementById('nrc').value.replace(/[^0-9]/g, '');
 
         receptor = {
-          tipoDocumento: tipoDocumento,
-          numDocumento: numDocumento,
+          tipoDocumento: tipoDocumento || null,
+          numDocumento: numDocumento || null,
           nrc: nrc.length > 0 ? nrc : null,
           nombre: nombre,
           codActividad: null,

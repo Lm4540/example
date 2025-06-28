@@ -16,6 +16,7 @@ const Stock = require('../../Inventory/Models/Stock');
 const PettyCash = require('../../Financial/Models/PettyCash');
 const Employee = require('../../HRM/Models/Employee');
 const DTE_Model = require('../../DTE/Models/DTE');
+const FailedDte = require('../../DTE/Models/FailedDte');
 const PettyCashMoves = require('../../Financial/Models/PettyCashMoves');
 
 const Helper = require('../../System/Helpers');
@@ -103,12 +104,23 @@ module.exports = {
                 }
             });
 
-            let data = {
-                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
-                receptor: {
+            let receptor = null;
+            if(String(dte.tipo) == "14"){
+                receptor = {
+                    documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
+                    direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
+                }
+
+            }else{
+                receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
                 }
+            }
+
+            let data = {
+                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
+                receptor: receptor
             }
             dte_json = dte.dte;
             dte_json.responseMH = dte.responseMH;
@@ -176,13 +188,25 @@ module.exports = {
                 }
             });
 
-            let data = {
-                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
-                receptor: {
+           let receptor = null;
+            if(String(dte.tipo) == "14"){
+                receptor = {
+                    documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
+                    direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
+                }
+
+            }else{
+                receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
                 }
             }
+
+            let data = {
+                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
+                receptor: receptor
+            }
+            
             dte_json = dte.dte;
             dte_json.responseMH = dte.responseMH;
             //direccion de las vistas
@@ -266,12 +290,23 @@ module.exports = {
                 }
             });
 
-            let data = {
-                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
-                receptor: {
+            let receptor = null;
+            if(String(dte.tipo) == "14"){
+                receptor = {
+                    documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
+                    direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
+                }
+
+            }else{
+                receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
                 }
+            }
+
+            let data = {
+                emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
+                receptor: receptor
             }
             dte_json = dte.dte;
             dte_json.responseMH = dte.responseMH;
@@ -1230,7 +1265,7 @@ module.exports = {
                         _errors: null
                     }
 
-                     //enviar el DTE
+                    //enviar el DTE
                     if (enviado.status === 'errorContingencia') {
                         dte_json.identificacion.tipoContingencia = 1;
                         dte_json.identificacion.motivoContin = "Tiempo de espera del sistema de Hacienda y reintentos superados";
@@ -1435,6 +1470,7 @@ module.exports = {
             '01': 'create_dte_fc',
             '05': 'create_dte_nc',
             '14': 'create_dte_fse',
+            '00': 'create_test_documents'
         }
 
 
@@ -1530,8 +1566,16 @@ module.exports = {
                 } else if (enviado.status === 'errorFatal') {
                     throw new Error(enviado.message);
                 } else if (enviado.status === 'errorRejected') {
+                    let failed = await FailedDte.create({
+                        _request: req.body,
+                        _user: req.session.userSession.shortName,
+                        opt: "Creacion Manual",
+                        responseMH: enviado.data,
+                        dte: dte_json
+                    });
+
                     dte_json.responseMH = enviado.data;
-                    console.log(enviado.data)
+                    // console.log(enviado.data)
                     throw new Error(enviado.message);
                 } else {
 
@@ -1575,11 +1619,11 @@ module.exports = {
 
                     return await sequelize.transaction(async (t) => {
                         dteModel = await DTE_Model.create(dteModel, { transaction: t });
-                        // if (data.receptor.correo !== null && data.receptor.correo !== "") {
-                        //     //enviar correo
-                        //     axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                        //         .then(response => { console.log(response) });
-                        // }
+                        if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
+                            //enviar correo
+                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
+                                .then(response => {  });
+                        }
 
                         return res.json({
                             status: 'success',
@@ -1591,7 +1635,7 @@ module.exports = {
             } catch (error) {
                 return res.json({
                     status: 'errorMessage',
-                    message: 'Orden o Cliente no encontrados' + error.message ? error.message : '',
+                    message: 'Error: ' + error.message ? error.message : '',
                     error,
                     json: dte_json
                 });
@@ -1601,7 +1645,7 @@ module.exports = {
         } else if (data.dte_type == '05') {
 
             let registro = await DTE_Model.findByPk(data.model);
-            if (!registro || registro.tipo !== "03") {
+            if (!registro || (registro.tipo !== "03" && registro.tipo !== "01")) {
                 return res.json({
                     status: 'errorMessage',
                     message: 'El DTE se ha encontrado o no es CCFE',
@@ -1669,8 +1713,16 @@ module.exports = {
                 } else if (enviado.status === 'errorFatal') {
                     throw new Error(enviado.message);
                 } else if (enviado.status === 'errorRejected') {
+
+                    let failed = await FailedDte.create({
+                        _request: req.body,
+                        _user: req.session.userSession.shortName,
+                        opt: "Creacion Manual",
+                        responseMH: enviado.data,
+                        dte: dte_json
+                    });
+
                     dte_json.responseMH = enviado.data;
-                    console.log(enviado.data)
                     throw new Error(enviado.message);
                 } else {
 
@@ -1715,12 +1767,12 @@ module.exports = {
                     return await sequelize.transaction(async (t) => {
                         dteModel = await DTE_Model.create(dteModel, { transaction: t });
                         registro.nc = dteModel.id;
-                        registro = await registro.save({transaction: t});
-                        // if (data.receptor.correo !== null && data.receptor.correo !== "") {
-                        //     //enviar correo
-                        //     axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                        //         .then(response => { console.log(response) });
-                        // }
+                        registro = await registro.save({ transaction: t });
+                        if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
+                            //enviar correo
+                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
+                                .then(response => { });
+                        }
 
                         return res.json({
                             status: 'success',
@@ -1740,7 +1792,7 @@ module.exports = {
 
         } else if (data.dte_type == '14') {
 
-            
+
 
             dte_json = {
                 identificacion: {
@@ -1788,6 +1840,15 @@ module.exports = {
                 } else if (enviado.status === 'errorFatal') {
                     throw new Error(enviado.message);
                 } else if (enviado.status === 'errorRejected') {
+
+                    let failed = await FailedDte.create({
+                        _request: req.body,
+                        _user: req.session.userSession.shortName,
+                        opt: "Creacion Manual",
+                        responseMH: enviado.data,
+                        dte: dte_json
+                    });
+
                     dte_json.responseMH = enviado.data;
                     console.log(enviado.data)
                     throw new Error(enviado.message);
@@ -1833,10 +1894,10 @@ module.exports = {
 
                     return await sequelize.transaction(async (t) => {
                         dteModel = await DTE_Model.create(dteModel, { transaction: t });
-                        if (data.receptor.correo !== null && data.receptor.correo !== "") {
+                        if (dte_json.sujetoExcluido.correo !== null && dte_json.sujetoExcluido.correo !== "") {
                             //enviar correo
                             axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                                .then(response => { console.log(response) });
+                                .then(response => {  });
                         }
 
                         return res.json({
@@ -1849,21 +1910,72 @@ module.exports = {
             } catch (error) {
                 return res.json({
                     status: 'errorMessage',
-                    message: 'Orden o Cliente no encontrados' + error.message ? error.message : '',
+                    message: 'Error: ' + error.message ? error.message : '',
                     error,
                     json: dte_json
                 });
             }
+        }
+    },
 
+    data_generar_pruebas: async (req, res) => {
+        let data = req.body;
+        let clients = [];
+        let products = [];
+        let tmp = await Product.findAll({
+            where: {
+                base_price: {
+                    [Op.gt]: 0
+                },
+                id: {
+                    [Op.gt]: 9000
+                }
+            },
+            limit: 100,
+        });
+
+        tmp.forEach(prod => {
+            products.push({
+                codigo: prod.sku,
+                descripcion: prod.name,
+                precioUni: prod.base_price
+            });
+        })
+
+        if (data.type == '01') {
+            tmp = await Client.findAll({
+                where: {
+                    NIT_DUI: { [Op.not]: null },
+                    id: { [Op.gt]: 2500 }
+                },
+                limit: 30
+            });
+
+            tmp.forEach(cl => {
+                clients.push(cl.for_fc_dte);
+            });
+        }else if(data.type == '03'){
+
+            tmp = await Client.findAll({
+                where: {
+                    
+                    id: { [Op.in]: [
+                        3564, 3890, 3304, 4257, 2227, 4929, 989, 2165
+                    ] }
+                },
+                limit: 30
+            });
+
+            tmp.forEach(cl => {
+                clients.push(cl.for_ccf_dte);
+            });
+            
         }
 
-
-
-
-
-
-
-    },
+        return res.json({
+            status: 'success', clients, products, type : data.type
+        });
+    }
 
 
 

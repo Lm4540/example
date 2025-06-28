@@ -202,6 +202,11 @@ const Client = sequelize.define('Client', {
                 "correo": this.correo
             }
 
+            if(data.telefono.length < 8){
+                data.telefono = null;
+            }  
+
+
             if (["36", "13", "02", "03", "37"].includes(this.tipoDocumento) && this.NIT_DUI !== null && this.NIT_DUI !== "") {
                 if (this.tipoDocumento == "13") {
                     let regex = /^[0-9]{8}-[0-9]{1}$/;

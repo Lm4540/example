@@ -105,7 +105,7 @@
 
             <p class="mb-1">
               <strong>Establecimiento:</strong>
-              <%= dte.emisor.tipoEstablecimiento == "01" ?  "Sucursal" : "Casa Matriz"  %> <%= sucursal %>
+              <%= dte.emisor.tipoEstablecimiento == "01" ?  `Sucursal ${sucursal}` : "Casa Matriz"  %> 
             </p>
             <p class="mb-1">
               <strong>Dirección:</strong>
@@ -262,17 +262,35 @@
     </table>
 
     <% if (dte.apendice !== null) { %>
-     <div class="" style="padding-top: 25px;">
-      <h5>Apendices</h5>
-      <% dte.apendice.forEach(ap => { %>
-        <p>
-          <b><%=ap.campo %> : </b>
-          <span>
+
+      <table class="table table-bordered table-sm text-center" style="margin-top: 25px;">
+        <thead>
+          <tr>
+            <th colspan="3">Apendice</th>
+          </tr>
+
+        </thead>
+        <tr>
+          <td>Campo</td>
+          <td>Etiqueta</td>
+          <td>Valor</td>
+        </tr>
+        <% dte.apendice.forEach(ap => { %>
+        <tr>
+          <td>
+            <%=ap.campo  %>
+          </td>
+          <td>
+            <%= ap.etiqueta %>
+          </td>
+          <td>
             <%= ap.valor %>
-          </span>
-        </p>
-      <% }) %>
-     </div>
+          </td>
+        </tr>
+
+        <% }) %>
+      </table>
+    
     <% } %>
 
 
