@@ -469,11 +469,118 @@ async function transmitirInvalidacion(dteData) {
             data: response.data,
         };
     } catch (error) {
-        console.log(error.response)
         // Manejar error 401 (Token inválido) -> Limpiar caché e intentar obtener uno nuevo en el siguiente ciclo
         if (error.response && error.response.status === 400) {
 
-            if (error.response.data && (error.response.data.estado === 'RECHAZADO' || response.data.selloRecibido === null)) {
+            if (error.response.data && (error.response.data.estado === 'RECHAZADO' || error.response?.data?.selloRecibido === undefined)) {
+                // Respuesta 200 pero con error lógico del MH (ej. RECHAZADO)
+                return {
+                    status: 'errorRejected',
+                    message: `DTE ${payload.codigoGeneracion} rechazado por el MH. Estado: ${error.response.data?.estado || 'Desconocido'}. Mensaje: ${error.response.data?.descripcionMsg || 'No disponible'}`,
+                    data: error.response.data,
+                };
+            }
+
+            return {
+                status: 'errorFatal',
+                message: `Solicitud invalida al MH`,
+                data: error.response.data,
+            }
+
+
+        } else if (error.response && error.response.status === 401) {
+            token = await TokenManager.getToken(true); // Forzar la renovacion del token
+            if (!token) {
+                return {
+                    status: 'errorToken',
+                    message: `No se pudo autenticar con el MH. Token no disponible.`,
+                    data: null
+                }
+            }
+
+        } else if (error.code === 'ECONNABORTED' || !error.response) {
+            return {
+                status: 'errorFatal',
+                message: `La Conexion fue cerrada por hacienda, por favor consulte el DTE Manualmente`,
+                data: null,
+            }
+
+        } else if (error.response) {
+            // Si es un error irrecuperable (ej. 400 Bad Request por datos mal formados), lanzar inmediatamente
+            if (error.response.status > 401 && error.response.status < 500 && error.response.status !== 401) {
+                return {
+                    status: 'error',
+                    message: `Error ${error.response.status} irrecuperable del MH: ${error.response.data?.descripcionMsg || error.message}`,
+                    data: error.response,
+                };
+            }
+        }
+
+
+    } // Fin catch
+
+}
+
+async function transmitirContingencia(dteData) {
+
+    const receptionUrl = getMhApiUrl('contingencia');
+    if (!receptionUrl) throw new Error("URL de recepción MH no configurada.");
+
+    let dteFirmado = await signDTE(dteData, false);
+    if (dteFirmado.status !== 'success') {
+        return {
+            status: 'errorFirma',
+            message: `Error al firmar el DTE: ${dteFirmado.message}`,
+            data: dteFirmado.data || null
+        }
+    }
+
+    var payload = {
+        nit: USER_NIT,
+        documento: dteFirmado.data,
+    };
+
+    const codigoGeneracion = dteData.identificacion.codigoGeneracion;
+
+    try {
+        var token = await TokenManager.getToken(); // Obtener token fresco en cada intento podría ser más seguro
+        if (!token) {
+            return {
+                status: 'errorToken',
+                message: `No se pudo autenticar con el MH. Token no disponible.`,
+            }
+        }
+
+
+        const response = await axios.post(receptionUrl, payload, {
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json',
+                'User-Agent': 'dte-app-nodejs/1.0'
+            },
+            timeout: MH_API_TIMEOUT // Timeout para la respuesta inicial
+        });
+
+        // Procesar respuesta exitosa
+        if (response.status === 200 && response.data && response.data.estado === 'RECIBIDO') {
+            return {
+                status: 'success',
+                message: `Evento ${codigoGeneracion} transmitido exitosamente. Estado: ${response.data.descripcionMsg}`,
+                data: response.data,
+                firma: dteFirmado.data,
+            }
+        }
+
+        return {
+            status: 'errorFatal',
+            message: `Error no procesado, comuniquelo al desarrollador del Sistema`,
+            data: response.data,
+        };
+    } catch (error) {
+        // Manejar error 401 (Token inválido) -> Limpiar caché e intentar obtener uno nuevo en el siguiente ciclo
+        if (error.response && error.response.status === 400) {
+
+            if (error.response.data && (error.response.data.estado === 'RECHAZADO' || error.response?.data?.selloRecibido === undefined)) {
                 // Respuesta 200 pero con error lógico del MH (ej. RECHAZADO)
                 return {
                     status: 'errorRejected',
@@ -724,6 +831,7 @@ module.exports = {
     generarNumeroControl,
     signDTE,
     transmitirInvalidacion,
+    transmitirContingencia
 
 
     // Añadir aquí funciones para transmisión en lote, consulta de lote, etc.

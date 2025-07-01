@@ -65,9 +65,9 @@ module.exports = sequelize.define('Sucursal', {
         }
 
     },
-    dte_emisor:{
+    dte_emisor: {
         type: DataTypes.VIRTUAL,
-        get(){
+        get() {
             return {
                 nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
@@ -82,14 +82,14 @@ module.exports = sequelize.define('Sucursal', {
                 codEstableMH: this.codEstableMH,
                 codEstable: this.codEstable,
                 codPuntoVentaMH: null,
-                codPuntoVenta: null,             
+                codPuntoVenta: null,
             }
         }
-        
+
     },
-    for_nc_dte:{
+    for_nc_dte: {
         type: DataTypes.VIRTUAL,
-        get(){
+        get() {
             return {
                 nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
@@ -103,11 +103,11 @@ module.exports = sequelize.define('Sucursal', {
                 correo: process.env.COMPANY_EMAIL,
             }
         }
-        
+
     },
-    for_fse_dte:{
+    for_fse_dte: {
         type: DataTypes.VIRTUAL,
-        get(){
+        get() {
             return {
                 nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
@@ -123,17 +123,17 @@ module.exports = sequelize.define('Sucursal', {
                 codPuntoVenta: null
             }
         }
-        
+
     },
 
-    for_anulation_event:{
+    for_anulation_event: {
         type: DataTypes.VIRTUAL,
-        get(){
+        get() {
             return {
                 nit: process.env.COMPANY_DUI_NIT,
                 nombre: process.env.COMPANY_LEGAL_NAME,
                 tipoEstablecimiento: this.tipoEstablecimiento,
-                nomEstablecimiento: null,
+                nomEstablecimiento: this.tipoEstablecimiento == "02" ? "Casa Matriz San Salvador" : "Sucursal " + this.name,
                 codEstableMH: this.codEstableMH,
                 codEstable: this.codEstable,
                 codPuntoVentaMH: null,
@@ -142,7 +142,29 @@ module.exports = sequelize.define('Sucursal', {
                 correo: process.env.COMPANY_EMAIL,
             }
         }
-        
+
+    },
+
+    for_contingencia_event: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return {
+                nit: process.env.COMPANY_DUI_NIT,
+                nombre: process.env.COMPANY_LEGAL_NAME,
+                tipoEstablecimiento: this.tipoEstablecimiento,
+                codEstableMH: this.codEstableMH,
+                codPuntoVenta: null,
+
+                telefono: process.env.COMPNY_TEL,
+                correo: process.env.COMPANY_EMAIL,
+
+
+                nombreResponsable: process.env.COMPANY_LEGAL_NAME,
+                tipoDocResponsable: '13',
+                numeroDocResponsable: process.env.COMPANY_DUI_NIT
+            }
+        }
+
     },
 
 }, {

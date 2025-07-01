@@ -19,8 +19,11 @@ router.get('/getJson/:uuid/:fecha(\\d{4}-\\d{2}-\\d{2})',  PosController.getDTEJ
 
 
 router.get('/create_manual/:dte', PosController.create_manual_fc);
+// router.post('/procces_dte_manual', PosController.simular_contingencia);
 router.post('/procces_dte_manual', PosController.process_manual_dte);
-//router.post('/invalidation_event', PosController.invalidation_dte);
+router.post('/invalidation_event', PosController.invalidation_dte);
+
+router.get('/contingencia_event', PosController.contingencia_event);
 
 
 // router.post('/data_to_test', PosController.data_generar_pruebas);
