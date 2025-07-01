@@ -25,8 +25,8 @@
                 <label for="tipoDocumento" class="form-label">Tipo Documento:</label>
                 <select name="tipoDocumento" id="tipoDocumento" class="form-control">
                   <option value="">Ninguno</option>
-                  <option value="36">NIT</option>
                   <option value="13">DUI</option>
+                  <option value="36">NIT</option>
                   <option value="37">Otro</option>
                   <option value="03">Pasaporte</option>
                   <option value="02">Carnet de Residente</option>
@@ -119,8 +119,8 @@
           <div class="form-group mt-5 mb-5">
             <label for="gravamen">Tipo de Impuesto</label>
             <select name="gravamen" id="gravamen" class="form-control">
-              <option value="0" selected>0% Compra de otros Articulos</option>
-              <option value="10">10% Servicios Profesionales</option>
+              <option value="0" >0% Compra de otros Articulos</option>
+              <option value="10" selected>10% Servicios Profesionales</option>
               <option value="13" disbled>13% Leche cruda, carnes y otros art 162 Cod Tributario</option>
             </select>
           </div>
@@ -475,7 +475,7 @@
         }
       });
 
-      retencion = retencion ? (suma_compra * 0.10) : 0;
+      retencion = retencion ? fix_number(suma_compra * 0.10) : 0;
 
       const resumen = {
         totalCompra: suma_compra,

@@ -105,13 +105,13 @@ module.exports = {
             });
 
             let receptor = null;
-            if(String(dte.tipo) == "14"){
+            if (String(dte.tipo) == "14") {
                 receptor = {
                     documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
                     direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
                 }
 
-            }else{
+            } else {
                 receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
@@ -188,14 +188,14 @@ module.exports = {
                 }
             });
 
-           let receptor = null;
-            if(String(dte.tipo) == "14"){
+            let receptor = null;
+            if (String(dte.tipo) == "14") {
                 receptor = {
                     documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
                     direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
                 }
 
-            }else{
+            } else {
                 receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
@@ -206,7 +206,7 @@ module.exports = {
                 emisor_direction: `${dte.dte.emisor.direccion.complemento}, ${municipios[dte.dte.emisor.direccion.departamento][dte.dte.emisor.direccion.municipio]}, ${departamentos[dte.dte.emisor.direccion.departamento]?.toUpperCase()}`,
                 receptor: receptor
             }
-            
+
             dte_json = dte.dte;
             dte_json.responseMH = dte.responseMH;
             //direccion de las vistas
@@ -291,13 +291,13 @@ module.exports = {
             });
 
             let receptor = null;
-            if(String(dte.tipo) == "14"){
+            if (String(dte.tipo) == "14") {
                 receptor = {
                     documento: dte.dte.sujetoExcluido.tipoDocumento && dte.dte.sujetoExcluido.numDocumento ? `${documentos[dte.dte.sujetoExcluido.tipoDocumento]} (${dte.dte.sujetoExcluido.numDocumento})` : "",
                     direccion: dte.dte.sujetoExcluido.direccion !== null ? `${dte.dte.sujetoExcluido.direccion.complemento}, ${municipios[dte.dte.sujetoExcluido.direccion.departamento][dte.dte.sujetoExcluido.direccion.municipio]}, ${departamentos[dte.dte.sujetoExcluido.direccion.departamento]?.toUpperCase()}` : "",
                 }
 
-            }else{
+            } else {
                 receptor = {
                     documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
                     direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
@@ -681,7 +681,14 @@ module.exports = {
         });
 
         let clients = {};
-        tmp.forEach(element => { clients[element.id] = element; });
+        tmp.forEach(element => {
+
+            if (element.departamento !== null) {
+                element.direction = `${element.direction}${element.distrito !== null ? ", Distrito de " + element.distrito : ''}, ${municipios[element.departamento][element.municipio]} ${departamentos[element.departamento]}`;
+            }
+            clients[element.id] = element;
+            //TOKEN
+        });
 
 
 
@@ -1326,13 +1333,17 @@ module.exports = {
                         sale.collected = Helper.fix_number(sale.collected + sum_pays, 2);
                         sale.invoice_number = dteModel.id;
                         sale.invoice_date = new Date(`${dte_json.identificacion.fecEmi} ${dte_json.identificacion.horEmi}`);
-                        if (sale._status == "process") { sale._status = "closed"; }
+                        if (sale._status == "process") { 
+                            sale._status = "closed";
+                            sale.delivery_type = "local";
+                         }
                         await sale.save({ transaction: t });
 
                         if (client.correo !== null && client.correo !== "") {
                             //enviar correo
-                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                                .then(response => { console.log(response) });
+                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => {
+                                    //  console.log(response) 
+                                    });
                         }
 
                         return res.json({
@@ -1470,7 +1481,8 @@ module.exports = {
             '01': 'create_dte_fc',
             '05': 'create_dte_nc',
             '14': 'create_dte_fse',
-            '00': 'create_test_documents'
+            // '00': 'create_test_documents',
+            // 'invalidation': 'invalidation_dte',
         }
 
 
@@ -1621,8 +1633,7 @@ module.exports = {
                         dteModel = await DTE_Model.create(dteModel, { transaction: t });
                         if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
                             //enviar correo
-                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                                .then(response => {  });
+                            // axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => {  });
                         }
 
                         return res.json({
@@ -1770,8 +1781,7 @@ module.exports = {
                         registro = await registro.save({ transaction: t });
                         if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
                             //enviar correo
-                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                                .then(response => { });
+                            // axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => { });
                         }
 
                         return res.json({
@@ -1897,7 +1907,7 @@ module.exports = {
                         if (dte_json.sujetoExcluido.correo !== null && dte_json.sujetoExcluido.correo !== "") {
                             //enviar correo
                             axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`)
-                                .then(response => {  });
+                                .then(response => { });
                         }
 
                         return res.json({
@@ -1954,14 +1964,16 @@ module.exports = {
             tmp.forEach(cl => {
                 clients.push(cl.for_fc_dte);
             });
-        }else if(data.type == '03'){
+        } else if (data.type == '03') {
 
             tmp = await Client.findAll({
                 where: {
-                    
-                    id: { [Op.in]: [
-                        3564, 3890, 3304, 4257, 2227, 4929, 989, 2165
-                    ] }
+
+                    id: {
+                        [Op.in]: [
+                            3564, 3890, 3304, 4257, 2227, 4929, 989, 2165
+                        ]
+                    }
                 },
                 limit: 30
             });
@@ -1969,13 +1981,198 @@ module.exports = {
             tmp.forEach(cl => {
                 clients.push(cl.for_ccf_dte);
             });
-            
+
         }
 
         return res.json({
-            status: 'success', clients, products, type : data.type
+            status: 'success', clients, products, type: data.type
         });
+    },
+
+
+    invalidation_dte: async (req, res) => {
+        let isValid = false;
+        let data = req.body;
+        console.log(data)
+        let sucursal = await Sucursal.findByPk(req.session.sucursal);
+        let caja = await PettyCash.findOne({ where: { sucursal: sucursal.id }, order: [['id', 'ASC']] });
+        if (sucursal == null || caja === null) { return res.json({ status: 'errorMessage', message: 'Sucursal o Caja no encontradas' }); }
+
+        //Estructurar los datos del DTE Json
+        const fechaActual = new Date();
+        const diaFormateado = String(fechaActual.getDate()).padStart(2, '0');
+        const mesFormateado = String(fechaActual.getMonth() + 1).padStart(2, '0');
+        // Formatear la hora como HH:MM:SS (asegurándose de que tengan dos dígitos)
+        const horasFormateadas = String(fechaActual.getHours()).padStart(2, '0');
+        const minutosFormateados = String(fechaActual.getMinutes()).padStart(2, '0');
+        const segundosFormateados = String(fechaActual.getSeconds()).padStart(2, '0');
+
+        let dte_anulado = await DTE_Model.findByPk(data.dte_anular);
+
+        if (!dte_anulado || dte_anulado.invalidacion !== null || dte_anulado.nc !== null) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'Este DTE ya ha sido Anulado o tiene documentos relacionados',
+            });
+        }
+
+        let montoIva = null;
+        let receptor_tipoDocumento = "13";
+        let receptor_numDocumento = null;
+
+        if (dte_anulado.tipo == "01") {
+            montoIva = dte_anulado.dte.resumen.totalIva;
+            receptor_tipoDocumento = dte_anulado.dte.receptor.tipoDocumento;
+            receptor_numDocumento = dte_anulado.dte.receptor.numDocumento;
+
+        } else if (dte_anulado.tipo == "03" || dte_anulado.tipo == "05") {
+            receptor_tipoDocumento = '36';
+            receptor_numDocumento = dte_anulado.dte.receptor.nit;
+
+            // [{"codigo":"20","descripcion":"Impuesto al Valor Agregado 13%","valor":62.4}]
+            if (dte_anulado.dte.resumen.tributos[0].codigo == "20") {
+
+                montoIva = dte_anulado.dte.resumen.tributos[0].valor;
+            }
+            //si no es el primer tributo el IVA, entonces buscarlo hasta encontralo
+        } else if (dte_anulado.tipo == "14") {
+            receptor_tipoDocumento = dte_anulado.dte.sujetoExcluido.tipoDocumento;
+            receptor_numDocumento = dte_anulado.dte.sujetoExcluido.numDocumento;
+
+        }
+
+
+
+        let dte_json = {
+            identificacion: {
+                version: 2,
+                ambiente: process.env.DTE_AMBIENTE,
+                codigoGeneracion: DTEController.generarCodigoGeneracion(),
+                fecAnula: `${fechaActual.getFullYear()}-${mesFormateado}-${diaFormateado}`,
+                horAnula: `${horasFormateadas}:${minutosFormateados}:${segundosFormateados}`,
+            },
+            emisor: sucursal.for_anulation_event,
+            documento: {
+                tipoDte: dte_anulado.dte.identificacion.tipoDte,
+                codigoGeneracion: dte_anulado.codigo,
+                selloRecibido: dte_anulado.responseMH.selloRecibido,
+                numeroControl: dte_anulado.dte.identificacion.numeroControl,
+                fecEmi: dte_anulado.dte.identificacion.fecEmi,
+                montoIva: montoIva,
+                codigoGeneracionR: null,
+                tipoDocumento: receptor_tipoDocumento,
+                numDocumento: receptor_numDocumento,
+                nombre: dte_anulado.tipo == "14" ? dte_anulado.dte.sujetoExcluido.nombre : dte_anulado.dte.receptor.nombre,
+                telefono: dte_anulado.tipo == "14" ? dte_anulado.dte.sujetoExcluido.telefono : dte_anulado.dte.receptor.telefono,
+                correo: dte_anulado.tipo == "14" ? dte_anulado.dte.sujetoExcluido.correo : dte_anulado.dte.receptor.correo,
+            },
+            motivo: {
+                tipoAnulacion: data.tipoAnulacion,
+                motivoAnulacion: data.tipoAnulacion == 3 ? data.motivoAnulacion : null,
+                nombreResponsable: data.nombreResponsable.trim(),
+                tipDocResponsable: data.tipDocResponsable,
+                numDocResponsable: data.numDocResponsable.trim(),
+                nombreSolicita: data.nombreSolicita.trim(),
+                tipDocSolicita: data.tipDocSolicita,
+                numDocSolicita: data.numDocSolicita.trim(),
+            }
+        };
+
+        dte_json.emisor.codPuntoVentaMH = caja.codPuntoVentaMH;
+        dte_json.emisor.codPuntoVenta = caja.codPuntoVenta;
+
+        let _r_ = /^[0-9+;]{8,50}$/i;
+        if(!_r_.test(dte_json.documento.telefono = null)){
+            dte_json.documento.telefono = null;
+        }
+
+        isValid = dteValidator.validateAnulacion(dte_json);
+
+        if (!isValid.isValid) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'El DTE no cumple con la validacion minima',
+                errors: isValid.errors,
+                json: dte_json
+            });
+        }
+
+
+
+
+        try {
+
+            let enviado = await DTEController.transmitirInvalidacion(dte_json);
+
+            console.log(enviado);
+
+            if (enviado.status === 'errorFirma') {
+                throw new Error("Error al firmar el DTE, verifique la configuracion de la firma electronica");
+            } else if (enviado.status === 'errorToken') {
+                throw new Error(enviado.message);
+            } else if (enviado.status === 'errorFatal') {
+                throw new Error(enviado.message);
+            } else if (enviado.status === 'errorRejected') {
+                return res.json({
+                    status: 'errorMessage',
+                    message: 'La Solicitud fue rechazada por MH',
+                    responseMH: enviado.data,
+                    json: dte_json
+                });
+            } else if (enviado.status === 'success') {
+
+                dte_json.selloRecibido = enviado.data?.selloRecibido || null;
+                dte_json.firmaElectronica = enviado.firma || null;
+                
+                let dteModel = {
+                    sale: null,
+                    sucursal: sucursal.id,
+                    caja: caja.id,
+                    codigo: dte_json.identificacion.codigoGeneracion,
+                    contingencia: null,
+                    tipo: 'anulacion',
+                    trasnmitido: true,
+                    entregado: false,
+                    responseMH: enviado.data,
+                    correlativo: null,
+                    dte: dte_json,
+                    intentos: 1,
+                    _errors: null,
+                    fecEmi: dte_json.identificacion.fecAnula,
+                    client_label: null,
+                }
+
+
+
+
+                return await sequelize.transaction(async (t) => {
+                    dteModel = await DTE_Model.create(dteModel, { transaction: t });
+                    
+
+                    dte_anulado.invalidacion = dteModel.id;
+                    await dte_anulado.save({transaction: t});
+
+                    return res.json({
+                        status: 'success',
+                        json: dteModel,
+                        message: 'Orden procesada correctamente, DTE enviado exitosamente',
+                    });
+                });
+             }
+        } catch(error) {
+        return res.json({
+            status: 'errorMessage',
+            message: 'Error: ' + error.message ? error.message : '',
+            error,
+            json: dte_json
+        });
+
+        
     }
+
+
+
+},
 
 
 

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Invalidación de DTE</h2>
+        </div>
+        <div class="card-body">
+          <!-- NIT y NRC en una fila -->
+          <h4 class="text-center">Busca el DTE a Invalidar por su codigo de Generación </h4>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <input type="text" name="uuid" id="uuid" class="form-control">
+                <label for="uuid">Codigo de generación</label>
+              </div>
+            </div>
+
+            <div class="col-4">
+              <div class="form-group">
+                <input type="date" class="form-control" id="_date">
+                <label for="_date">Fecha del Documento</label>
+              </div>
+            </div>
+            <div class="col-md-2 text-center align-items-center">
+              <button onclick="buscarCCF()" class=" mt-2 btn btn-outline-danger round">Buscar</button>
+            </div>
+          </div>
+          <div id="receptor_data">
+
+          </div>
+        </div>
+
+        <div class="card-body mt-5">
+          <h4 class="text-center">
+            Datos Obligatorios pára la Invalidación
+          </h4>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="form-group">
+                <label for="tipoAnulacion">Tipo de Invalidacion</label>
+                <select name="tipoAnulacion" id="tipoAnulacion" class="form-control">
+                  <option value="2">Rescindir de la operación realizada</option>
+                  <option value="1">Error en la Información del Documento Tributario Electrónico a invalidar</option>
+                  <option value="3">Otro</option>
+                </select>
+              </div>
+            </div>
+
+
+            <div class="col-12">
+              <div class="form-group">
+                <label for="motivoAnulacion">Motivo Anulacion</label>
+                <input type="text" class="form-control" name="motivoAnulacion" id="motivoAnulacion">
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="form-group">
+                <label for="nombreResponsable">Nombre Responsable de la Anulación</label>
+                <input type="text" name="nombreResponsable" id="nombreResponsable" class="form-control">
+              </div>
+            </div>
+
+
+
+            <div class="col-6">
+              <div class="form-group">
+                <label for="tipDocResponsable">Tipo de Documento (Responsable)</label>
+                <select name="tipDocResponsable" id="tipDocResponsable" class="form-control">
+                  <option value="13">DUI</option>
+                  <option value="36">NIT</option>
+                  <option value="37">Otro</option>
+                  <option value="03">Pasaporte</option>
+                  <option value="02">Carnet de Residente</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="form-group">
+                <label for="numDocResponsable">Numero de Documento (Responsable)</label>
+                <input type="text" name="numDocResponsable" id="numDocResponsable" class="form-control">
+              </div>
+            </div>
+
+
+
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="form-group">
+                <label for="nombreSolicita">Nombre Persona que Solicita</label>
+                <input type="text" name="nombreSolicita" id="nombreSolicita" class="form-control">
+
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label for="tipDocSolicita">Tipo de Documento del Solicitante</label>
+                <select name="tipDocSolicita" id="tipDocSolicita" class="form-control">
+                  <option value="13">DUI</option>
+                  <option value="36">NIT</option>
+                  <option value="37">Otro</option>
+                  <option value="03">Pasaporte</option>
+                  <option value="02">Carnet de Residente</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label for="numDocSolicita">Numero Documento (Solicitante)</label>
+                <input type="text" name="numDocSolicita" id="numDocSolicita" class="form-control">
+              </div>
+            </div>
+
+             <div class="col-12">
+              <div class="form-group">
+                <label for="remplazo">DTE que Remplaza</label>
+                <input type="text" name="remplazo" id="remplazo" class="form-control">
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+
+
+
+        <div class="card-footer text-center">
+          <div id="results" class="mt-2 mb-4">
+
+
+          </div>
+          <button class="round btn-lg btn btn-primary mt-2" id="btnSave" disabled>
+            Procesar DTE
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const dte_types = {
+    "01": "Factura",
+    "03": "Comprobante de crédito fiscal",
+    "04": "Nota de remisión",
+    "05": "Nota de crédito",
+    "06": "Nota de débito",
+    "07": "Comprobante de retención",
+    "08": "Comprobante de Liquidación",
+    "09": "Documento contable de liquidación",
+    "11": "Factura de exportación",
+    "14": "Factura de sujeto excluido",
+    "15": "Comprobante de donación"
+  };
+
+  const one_day = [
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "14",
+    "15"
+  ];
+  var selected_dte = null;
+  var current_dte = null;
+  var limiteModificacion = null;
+  var anulable = false;
+  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  
+
+  const obtenerFechaFormatoYYYYMMDD = (fechaObj) => {
+    const año = fechaObj.getFullYear();
+    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+    const dia = String(fechaObj.getDate()).padStart(2, '0');
+
+    return `${dia}-${mes}-${año}`;
+  }
+
+  const buscarCCF = async () => {
+
+    selected_dte = null;
+    current_dte = null;
+
+    const uuid = document.querySelector("#uuid").value.trim();
+    const date_ = document.querySelector("#_date").value.trim();
+    if (!regex.test(uuid)) {
+      return errorMessage('el codigo de generacion proporcionado no corresponde a un numero valido');
+    } else if (date_.length < 10) {
+      return errorMessage('Proporcione una fecha para buscar el Documento');
+    }
+
+    let url_ = `/pos/getJson/${uuid}/${date_}`;
+    let response = await fetch(url_);
+
+    if (!response.ok) {
+      throw new Error(`Error de red o del servidor: ${response.status} ${response.statusText}`);
+    }
+
+    // Parse the response body as JSON
+    const data = await response.json();
+    if (data.status == "success") {
+      selected_dte = data.model;
+      current_dte = data.json;
+
+      const fechaEmision = new Date(`${current_dte.identificacion.fecEmi} ${current_dte.identificacion.horEmi}`);
+      const ahora = new Date();
+      limiteModificacion = new Date(fechaEmision);
+
+      if (current_dte.identificacion.tipoDte == '01' || current_dte.identificacion.tipoDte == '11') {
+        limiteModificacion.setMonth(limiteModificacion.getMonth() + 3); // 3 meses calendario adelante
+        limiteModificacion.setHours(23, 58, 59, 999); // Hasta las 23:59:59
+      } else if (one_day.includes(current_dte.identificacion.tipoDte)) {
+        limiteModificacion.setDate(limiteModificacion.getDate() + 1); // Día siguiente
+        limiteModificacion.setHours(23, 58, 59, 999); // Hasta las 23:59:59 del día siguiente
+      }
+      anulable = ahora <= limiteModificacion;
+      document.querySelector("#btnSave").disabled = !anulable;
+      cargar_data();
+      return;
+    }
+    return errorMessage('Documento no encontrado');
+  }
+
+  const cargar_data = () => {
+    if (current_dte) {
+      const dte = current_dte;
+
+      document.querySelector("#receptor_data").innerHTML = `<h5 class="card-title mt-5 text-primary mb-3">Datos del Documento</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+                  
+                  <p><strong>Código de Generación:</strong> ${dte.identificacion.codigoGeneracion }</p>
+                  <p><strong>Número de Control:</strong> ${dte.identificacion.numeroControl }</p>
+                  <p><strong>Monto Total Operación:</strong> $${dte.resumen.montoTotalOperacion }</p>
+                  <p><strong>Fecha Maxima de Anulación:</strong> ${obtenerFechaFormatoYYYYMMDD(limiteModificacion) } 23:59:59</p>
+            </div>
+            <div class="col-md-6">
+                  <p><strong>Tipo DTE:</strong> ${ dte_types[dte.identificacion.tipoDte] }</p>
+                  <p><strong>Ambiente:</strong> ${dte.identificacion.ambiente }</p>
+                  <p><strong>Fecha de Emisión:</strong> ${dte.identificacion.fecEmi }</p>
+                  <p><strong>Hora de Emisión:</strong> ${dte.identificacion.horEmi }</p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Información del Receptor -->
+          <h5 class="card-title text-primary mb-3">Receptor</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>NIT:</strong> ${dte.receptor.nit }</p>
+              <p><strong>NRC:</strong> ${dte.receptor.nrc }</p>
+              <p><strong>Nombre:</strong> ${dte.receptor.nombre}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Teléfono:</strong> ${dte.receptor.telefono || '' }</p>
+              <p><strong>Correo:</strong> ${dte.receptor.correo || 'N/A' }</p>
+            </div>
+          </div> `;
+
+    }
+  };
+
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+
+    document.querySelector("#btnSave").addEventListener('click', e => {
+
+      let data = {
+        tipoAnulacion: Number.parseInt(document.querySelector("#tipoAnulacion").value),
+        tipDocResponsable: document.querySelector("#tipDocResponsable").value,
+        tipDocSolicita: document.querySelector("#tipDocSolicita").value,
+        motivoAnulacion: document.querySelector("#motivoAnulacion").value.trim(),
+        nombreResponsable: document.querySelector("#nombreResponsable").value.trim(),
+        numDocResponsable: document.querySelector("#numDocResponsable").value.trim(),
+        nombreSolicita: document.querySelector("#nombreSolicita").value.trim(),
+        numDocSolicita: document.querySelector("#numDocSolicita").value.trim(),
+        dte_anular: selected_dte,
+        codigoGeneracionR: document.querySelector("#remplazo").value.trim(),
+      }
+
+      if ( data.nombreResponsable.length < 8 ||
+        data.nombreSolicita.length < 8 ||
+        data.numDocResponsable.length < 4 ||
+        data.numDocSolicita.length < 4 ) {
+        return errorMessage('Complete los datos del Responsble y EL solicitante para proceder');
+      }
+      
+      
+      if(data.tipoAnulacion == 3 && data.motivoAnulacion.length < 8){
+        return errorMessage('Debe Escribir el motivo de la invalidación');
+
+      }
+
+      if(data.tipoAnulacion != 2 &&  !regex.test(data.codigoGeneracionR)){
+        return errorMessage('Debe proporcionar el codigo de Generacion del DTE que sustituye y debe ser valido');
+      }
+
+      postData('/pos/invalidation_event', data).then(data => {
+        if (data.status == 'success') {
+          document.querySelector("#results").innerHTML = `
+          <h4> DTE: ${data.json.codigo} generada con exito</h4>
+          <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a>`;
+
+          e.target.remove();
+          successMessage(data.message);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+      });
+
+
+    });
+
+  });
+</script>
+
+</html>

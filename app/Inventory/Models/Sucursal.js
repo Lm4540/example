@@ -69,7 +69,7 @@ module.exports = sequelize.define('Sucursal', {
         type: DataTypes.VIRTUAL,
         get(){
             return {
-                nit: process.env.COMPANY_NIT,
+                nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
                 nombre: process.env.COMPANY_LEGAL_NAME,
                 codActividad: process.env.COD_ACTIVIDAD,
@@ -91,7 +91,7 @@ module.exports = sequelize.define('Sucursal', {
         type: DataTypes.VIRTUAL,
         get(){
             return {
-                nit: process.env.COMPANY_NIT,
+                nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
                 nombre: process.env.COMPANY_LEGAL_NAME,
                 codActividad: process.env.COD_ACTIVIDAD,
@@ -109,7 +109,7 @@ module.exports = sequelize.define('Sucursal', {
         type: DataTypes.VIRTUAL,
         get(){
             return {
-                nit: process.env.COMPANY_NIT,
+                nit: process.env.COMPANY_DUI_NIT,
                 nrc: process.env.COMPANY_NRC,
                 nombre: process.env.COMPANY_LEGAL_NAME,
                 codActividad: process.env.COD_ACTIVIDAD,
@@ -121,6 +121,25 @@ module.exports = sequelize.define('Sucursal', {
                 codEstable: this.codEstable,
                 codPuntoVentaMH: null,
                 codPuntoVenta: null
+            }
+        }
+        
+    },
+
+    for_anulation_event:{
+        type: DataTypes.VIRTUAL,
+        get(){
+            return {
+                nit: process.env.COMPANY_DUI_NIT,
+                nombre: process.env.COMPANY_LEGAL_NAME,
+                tipoEstablecimiento: this.tipoEstablecimiento,
+                nomEstablecimiento: null,
+                codEstableMH: this.codEstableMH,
+                codEstable: this.codEstable,
+                codPuntoVentaMH: null,
+                codPuntoVenta: null,
+                telefono: process.env.COMPNY_TEL,
+                correo: process.env.COMPANY_EMAIL,
             }
         }
         

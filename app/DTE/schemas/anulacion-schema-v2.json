@@ -16,7 +16,7 @@
 					"type": "string",
 					"description": "Ambiente de destino: 00 - Pruebas, 01 - Produccion",
 					"enum": ["00", "01"]
-				},
+				},		
 				"codigoGeneracion": {
 					"type": "string",
 					"description": "Codigo Generacion",
@@ -181,18 +181,18 @@
 					"pattern": "^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$"
 				},
 				"tipoDocumento": {
-					"type": "string",
+					"type": ["string", "null"],
 					"description": "Tipo documento de identificación CAT-22: 36 - NIT, 13 - DUI, 02 - Carnet de residente, 03 - PASAPORTE, 37 - OTRO",
 					"enum": ["36", "13", "02", "03", "37"]
 				},
 				"numDocumento": {
-					"type": "string",
+					"type": ["string", "null"],
 					"description": "Número de documento de Identificación ",
 					"minLength": 3,
 					"maxLength": 20
 				},
 				"nombre": {
-					"type": "string",
+					"type": ["string", "null"],
 					"description": "Nombre/Denominacion/Razon social",
 					"maxLength": 200,
 					"minLength": 5
@@ -205,7 +205,7 @@
 					"pattern": "^[0-9+;]{8,50}$"
 				},
 				"correo": {
-					"type": "string",
+					"type": ["string", "null"],
 					"description": "Correo electronico del receptor",
 					"format": "email",
 					"maxLength": 100

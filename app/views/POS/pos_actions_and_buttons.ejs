@@ -54,7 +54,7 @@
   const current_sucursal = '<%= `${(sucursal.tipoEstablecimiento == "01" ? "SUCURSAL " + String(sucursal.name).toUpperCase() : "CASA MATRIZ")}` %>';
 
   const ordersGuides = async () => {
-    try {
+    // try {
       const response = await fetch(`/pos/ordersGuides`, s_options);
 
       if (!response.ok) {
@@ -77,29 +77,40 @@
 
       } else {
         let content = '';
+        if (res.sales.length > 0) {
 
-        res.sales.forEach(sale => {
-          let cli = res.clients[sale.client];
-          content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
+
+
+          res.sales.forEach(sale => {
+
+            let cli = res.clients[sale.client];
+            content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title" onclick="copy('${cli.name}')">${cli.name}</h5>
                 <p>Monto de Envio: (${money_format(sale.delivery_amount)})</p>
                 <p>Telefono: <span onclick="copy('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
-                <p>Direccion: <span onclick="copy('${sale.delivery_direction}')">${sale.delivery_direction}</span>  </p>
+                <p>Direccion para la entrega: <span onclick="copy('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
+                <p>Direccion del cliente: <span onclick="copy('${cli.direction}')">${cli.direction}</span></p>
                 <p>Instrucciones: <span onclick="copy('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
-                <p>Entrega (${res.providers[sale.delivery_provider].name})</p>
+                <p>Entrega (${sale.delivery_provider ? res.providers[sale.delivery_provider].name : ''})</p>
                 <button class="btn btn-danger btn-sm round" onclick="createdGuide(${sale.id})">Guia Creada</button>
               </div>
             </div>
           </div>`;
-        });
+          });
+        } else {
+          content = '<p class="text-success">Genial, parece que vamos al día...</p>';
+        }
         document.querySelector("#guidesModaldiv").innerHTML = content;
       }
-    } catch (error) {
-      console.log(error);
-      errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
-    }
+
+    // } catch (error) {
+    //   show_error(error);
+    //   console.log(error);
+
+    //   errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
+    // }
   }
 
   const createdGuide = async id => {
@@ -154,6 +165,7 @@
         document.querySelector("#ordertobeBilledTable").innerHTML = content;
       }
     } catch (error) {
+      show_error(error);
       errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
     }
   }
@@ -188,6 +200,7 @@
 
       load_client(client);
     } catch (error) {
+      show_error(error);
       errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
     }
   }
@@ -213,6 +226,7 @@
       client.warnings = res.warnings;
       load_client(client);
     } catch (error) {
+      show_error(error);
       errorMessage('Error de red. Por favor, verifique su conexión e inténtelo nuevamente.');
     }
   }
@@ -579,6 +593,8 @@
     document.querySelector("#pays_label").innerHTML = `$0.00`;
     document.getElementById('cash_payed_amount').value = 0;
     document.querySelector("#btnContinuar").innerHTML = 'Facturar';
+    document.querySelector("#vuelto_label").innerHTML = "$0.00";
+
   }
 
 
@@ -692,8 +708,10 @@
           e.target.disabled = false;
         } else if (data.status == 'errorMessage') {
           e.target.disabled = false;
+          show_error(data);
           return errorMessage(data.message);
         } else {
+          show_error(data);
           return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
         }
 

@@ -323,7 +323,7 @@
             <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a></div>`;
             generated.push(data.json);
 
-            nota_credito(data.json);
+            // nota_credito(data.json);
 
             //     e.target.remove();
             successMessage(data.message);
@@ -342,10 +342,7 @@
       }
     }
 
-    if(generated.length < 20){
-          generar_credito_fiscal(8);
-
-    }
+    
   }
 
   const nota_credito = async (model) => {

@@ -89,17 +89,7 @@
               </span>
             </p>
 
-            <p class="mb-1">
-              <strong>Nombre comercial:</strong>
-              <span>
-                <%= dte.emisor.nombreComercial %>
-              </span>
-            </p>
-
-            <p class="mb-1">
-              <strong>Establecimiento:</strong>
-              <%= dte.emisor.tipoEstablecimiento == "01" ?  `Sucursal ${sucursal}` : "Casa Matriz"  %> 
-            </p>
+            
             <p class="mb-1">
               <strong>Dirección:</strong>
               <%= data.emisor_direction %>
