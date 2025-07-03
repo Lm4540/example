@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <section class="container my-4">
+      <div class="card shadow-sm mb-4 rounded-3">
+        <div class="card-header bg-primary text-white rounded-top-3">
+          <h4 class="mb-0">Invalidación de DTE</h4>
+        </div>
+        <div class="card-body">
+          <!-- Identificación del Documento -->
+          <h5 class="card-title text-primary mb-3 mt-5 text-center">Identificación</h5>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <p><strong>Versión:</strong> <%= dte.dte.identificacion.version %></p>
+              <p><strong>Código de Generación:</strong> <%= dte.dte.identificacion.codigoGeneracion %></p>
+              <p><strong>Fecha de Anulación:</strong> <%= dte.dte.identificacion.fecAnula %> <%= dte.dte.identificacion.horAnula %></p>
+              <p><strong>Sello de Recepción:</strong> <%= dte.dte.selloRecibido %></p>
+              <p>
+                <strong>Motivo de la Anulación:</strong> 
+                <%= tipos_invalidacion[dte.dte.motivo.tipoAnulacion] %>
+                <% if (dte.dte.motivo.tipoAnulacion == 3) { %>
+                  : <%=dte.dte.motivo.motivoAnulacion %>
+                <% } %>
+              </p>
+              <p>
+                <strong>Solicita Anulación:</strong> 
+                <%= `${dte.dte.motivo.nombreResponsable} con ${tipos_documento[dte.dte.motivo.tipDocResponsable]} (${dte.dte.motivo.numDocResponsable})` %>
+              </p>
+              <p>
+                <strong>Responsable Anulación:</strong> 
+                <%= `${dte.dte.motivo.nombreSolicita} con ${tipos_documento[dte.dte.motivo.tipDocSolicita]} (${dte.dte.motivo.numDocSolicita})` %>
+              </p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Información del Receptor -->
+          <h5 class="card-title text-primary text-center mb-3">Documento Anulado</h5>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <p><strong>Tipo de DTE:</strong> <%= dte_types[dte.dte.documento.tipoDte] %></p>
+              <p><strong>Codigo de Generación:</strong> <%= dte.dte.documento.tipoDte %></p>
+              <p><strong>Numero de Control:</strong> <%= dte.dte.documento.numeroControl %></p>
+              <p><strong>Sello de Recepción:</strong> <%= dte.dte.documento.selloRecibido %></p>
+              <p><strong>Fecha de Emision:</strong> <%= dte.dte.documento.fecEmi %></p>
+              <p><strong>Nombre del Cliente:</strong> <%= dte.dte.documento.nombre %></p>
+              <p><strong>Documento del cliente:</strong> <%= dte.dte.documento.tipoDocumento !== null ? (`${tipos_documento[dte.dte.documento.tipoDocumento]} (${dte.dte.documento.numDocumento})`) : '' %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones en la parte inferior -->
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm">JSON</a>
+      </div>
+    </section>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+
+</body>
+
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+</script>
+
+</html>

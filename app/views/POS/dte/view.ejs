@@ -39,14 +39,23 @@
           <!-- Información del Receptor -->
           <h5 class="card-title text-primary mb-3">Receptor</h5>
           <div class="row mb-3">
-            <div class="col-md-6">
-              <p><strong>Tipo de Documento:</strong> <%= dte.dte.receptor.tipoDocumento %></p>
-              <p><strong>Número de Documento:</strong> <%= dte.dte.receptor.numDocumento %></p>
-              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
-            </div>
-            <div class="col-md-6">
-              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono %></p>
-              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'N/A' %></p>
+            <div class="col">
+
+              <% if (dte.dte.identificacion.tipoDte == "03") { %>
+                <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %> <%= dte.dte.receptor.nombreComercial !== null ? `(${dte.dte.receptor.nombreComercial})` : '' %> </p>
+                <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
+                <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
+                <p>
+                  <strong>NIT: </strong> <%= dte.dte.receptor.nit %> / <strong>NRC: </strong> <%= dte.dte.receptor.nrc %>
+                </p>
+
+              <% } else if (dte.dte.identificacion.tipoDte == "01") { %>
+                 
+                <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
+                <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
+                <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
+                <p><strong>Documento:</strong> <%= dte.dte.receptor.tipoDocumento !== null ? (`${tipos_documento[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})`) : ""%></p>
+              <% } %>
             </div>
           </div>
 
@@ -98,7 +107,7 @@
               <p><strong>Monto Total Operación:</strong> $<%= dte.dte.resumen.montoTotalOperacion %></p>
               <p><strong>Total a Pagar:</strong> $<%= dte.dte.resumen.totalPagar %></p>
               <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
-              
+
             </div>
           </div>
         </div>
@@ -106,10 +115,10 @@
 
       <!-- Botones en la parte inferior -->
       <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-success btn-lg rounded-pill shadow-sm" >PDF</a>
-        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm" >JSON</a>
+        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-success btn-lg rounded-pill shadow-sm">PDF</a>
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm">JSON</a>
 
-        
+
       </div>
     </section>
 

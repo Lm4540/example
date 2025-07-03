@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <section class="container my-4">
+      <div class="card shadow-sm mb-4 rounded-3">
+        <div class="card-header bg-primary text-white rounded-top-3">
+          <h4 class="mb-0">Evento de Contingencia</h4>
+        </div>
+        <div class="card-body">
+          <!-- Identificación del Documento -->
+          <h5 class="card-title text-primary mt-5 mb-3">Identificación</h5>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <p><strong>Versión:</strong> <%= dte.dte.identificacion.version %></p>
+              <p><strong>Código de Generación:</strong> <%= dte.dte.identificacion.codigoGeneracion %></p>
+              <p><strong>Fecha- Hora de Transmisión:</strong> <%= dte.dte.identificacion.fTransmision %> <%= dte.dte.identificacion.hTransmision %></p>
+              <p><strong>Sello de Recepción:</strong> <%= dte.dte.selloRecibido %></p>
+              
+            </div>
+          </div>
+          <!-- Cuerpo del Documento -->
+          <h5 class="card-title text-center text-primary mb-3">Documentos en Contingencia</h5>
+          <div class="table-responsive mb-3">
+            <table class="table table-bordered table-striped rounded-3">
+              <thead class="">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Codigo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dte.dte.detalleDTE.forEach((item, index) => { %>
+                <tr>
+                  <th scope="row"><%= item.noItem %></th>
+                  <td><%= item.codigoGeneracion %></td>
+                  <td><%= dte_types[item.tipoDoc] %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones en la parte inferior -->
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm" >Obtener JSON</a>
+      </div>
+    </section>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+</script>
+</html>

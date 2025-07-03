@@ -1138,7 +1138,7 @@ module.exports = {
                     let gravadas = 0, exenta = 0;
                     let price = Helper.fix_number(detail.price / (1 + valor_iva), 4);
 
-                    gravadas = (detail.cant * price);
+                    gravadas = Helper.fix_number(detail.cant * price);
                     sum_gravadas = Helper.fix_number(sum_gravadas + gravadas, 4);
 
                     cuerpo.push({
@@ -1455,15 +1455,61 @@ module.exports = {
     view_any_dte: async (req, res) => {
         let dte = await DTE_Model.findByPk(req.params.id);
         if (dte) {
+
             let sucursal = await Sucursal.findByPk(dte.sucursal);
+            let tipos_documento = {
+                '36': "NIT",
+                '13': "DUI",
+                '37': "Otro",
+                '03': "Pasaporte",
+                '02': "Carnet de Residente",
+            }
+
+            if (dte.tipo == "contingen") {
+                return res.render('POS/dte/view_contingencia', {
+                    pageTitle: dte.codigo,
+                    dte_types,
+                    dte,
+                    sucursal,
+                    helper_url,
+                    tipos_contingencia: {
+                        1: "No disponibilidad de sistema del MH",
+                        2: "No disponibilidad de sistema del emisor",
+                        3: "Falla en el suministro de servicio de Internet del Emisor",
+                        4: "Falla en el suministro de servicio de energia eléctrica del emisor que impida la transmisión de los DTE",
+                        5: "Otro",
+                    }
+                });
+
+            } else if (dte.tipo == "anulacion") {
+                return res.render('POS/dte/view_invalidacion', {
+                    pageTitle: dte.codigo,
+                    dte_types,
+                    dte,
+                    sucursal,
+                    helper_url,
+                    tipos_documento,
+                    tipos_invalidacion: {
+                        1: "Error en la Información del Documento Tributario Electrónico a invalidar.",
+                        2: "Rescindir de la operación realizada.",
+                        3: "Otro",
+                    }
+                });
+            }
             return res.render('POS/dte/view', {
                 pageTitle: dte.codigo,
                 dte_types,
                 dte,
                 sucursal,
                 helper_url,
+                tipos_documento
             });
         }
+
+        return res.json({
+            status: "error",
+            message: "DTE no Encontrado, verifique los datos",
+        })
     },
 
     create_manual_fc: async (req, res) => {
@@ -2429,7 +2475,100 @@ module.exports = {
 
 
         }
-    }
+    },
+
+
+    // aaaaaaaaaaaa: async (req, res) => {
+
+    //     let firma = "eyJhbGciOiJSUzUxMiJ9.ewogICJpZGVudGlmaWNhY2lvbiIgOiB7CiAgICAidmVyc2lvbiIgOiAxLAogICAgImFtYmllbnRlIiA6ICIwMSIsCiAgICAidGlwb0R0ZSIgOiAiMDEiLAogICAgIm51bWVyb0NvbnRyb2wiIDogIkRURS0wMS1TMDA0UDAwMS0wMDAwMDAwMDAwMDAwNDQiLAogICAgImNvZGlnb0dlbmVyYWNpb24iIDogIkU5RkM5MTg2LUQ4QzItNDBGNi05QkRCLTZCNDAyRjk2Rjc1OSIsCiAgICAidGlwb01vZGVsbyIgOiAxLAogICAgInRpcG9PcGVyYWNpb24iIDogMSwKICAgICJmZWNFbWkiIDogIjIwMjUtMDctMDMiLAogICAgImhvckVtaSIgOiAiMDk6NTk6NDIiLAogICAgInRpcG9Nb25lZGEiIDogIlVTRCIsCiAgICAidGlwb0NvbnRpbmdlbmNpYSIgOiBudWxsLAogICAgIm1vdGl2b0NvbnRpbiIgOiBudWxsCiAgfSwKICAiZG9jdW1lbnRvUmVsYWNpb25hZG8iIDogbnVsbCwKICAiZW1pc29yIiA6IHsKICAgICJuaXQiIDogIjA2MTQwMzMxOCIsCiAgICAibnJjIiA6ICIzMzU5ODUyIiwKICAgICJub21icmUiIDogIkdlcmFyZG8gQWxmb25zbyBSaXZlcmEgQ29ydGV6IiwKICAgICJjb2RBY3RpdmlkYWQiIDogIjEwMDA2IiwKICAgICJkZXNjQWN0aXZpZGFkIiA6ICJDb21lcmNpYW50ZSIsCiAgICAibm9tYnJlQ29tZXJjaWFsIiA6ICJSaXZlcmFzIEdyb3VwIiwKICAgICJ0aXBvRXN0YWJsZWNpbWllbnRvIiA6ICIwMSIsCiAgICAiZGlyZWNjaW9uIiA6IHsKICAgICAgImRlcGFydGFtZW50byIgOiAiMDIiLAogICAgICAibXVuaWNpcGlvIiA6ICIxNSIsCiAgICAgICJjb21wbGVtZW50byIgOiAiM0EsIENhbGxlIE9yaWVudGUgeSAxQS4gQVYgU3VyIEVzcXVpbmEsIExvY2FsIDEiCiAgICB9LAogICAgInRlbGVmb25vIiA6ICIyNTI3ODY4MyIsCiAgICAiY29ycmVvIiA6ICJmYWN0dXJhY2lvbkByaXZlcmFzZ3JvdXAuY29tIiwKICAgICJjb2RFc3RhYmxlTUgiIDogIlMwMDQiLAogICAgImNvZEVzdGFibGUiIDogIlMwMDQiLAogICAgImNvZFB1bnRvVmVudGFNSCIgOiAiUDAwMSIsCiAgICAiY29kUHVudG9WZW50YSIgOiAiUDAwMSIKICB9LAogICJyZWNlcHRvciIgOiB7CiAgICAidGlwb0RvY3VtZW50byIgOiAiMTMiLAogICAgIm51bURvY3VtZW50byIgOiAiMDQyMTk0MjAtMSIsCiAgICAibnJjIiA6IG51bGwsCiAgICAibm9tYnJlIiA6ICJTYW5keSBZb21hcmEgVXRvIGRlIFBpbiIsCiAgICAiY29kQWN0aXZpZGFkIiA6IG51bGwsCiAgICAiZGVzY0FjdGl2aWRhZCIgOiBudWxsLAogICAgImRpcmVjY2lvbiIgOiB7CiAgICAgICJkZXBhcnRhbWVudG8iIDogIjAyIiwKICAgICAgIm11bmljaXBpbyIgOiAiMTUiLAogICAgICAiY29tcGxlbWVudG8iIDogIlJpdmVyYXMgR3JvdXAgU2FudGEgQW5hIgogICAgfSwKICAgICJ0ZWxlZm9ubyIgOiAiNzg1ODczNDkiLAogICAgImNvcnJlbyIgOiAic2FuZHl5b21pamltZW5lemRlcGluQGdtYWlsLmNvbSIKICB9LAogICJvdHJvc0RvY3VtZW50b3MiIDogbnVsbCwKICAidmVudGFUZXJjZXJvIiA6IG51bGwsCiAgImN1ZXJwb0RvY3VtZW50byIgOiBbIHsKICAgICJudW1JdGVtIiA6IDEsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiU1RSLTYxMDEzIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIkVzdHVjaGUgcGFyYSBMYXB0b3AgTmVncm8iLAogICAgInVuaU1lZGlkYSIgOiA1OSwKICAgICJwcmVjaW9VbmkiIDogNywKICAgICJtb250b0Rlc2N1IiA6IDAsCiAgICAidmVudGFOb1N1aiIgOiAwLAogICAgInZlbnRhRXhlbnRhIiA6IDAsCiAgICAidmVudGFHcmF2YWRhIiA6IDcsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDAuODA1MwogIH0sIHsKICAgICJudW1JdGVtIiA6IDIsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiUy0zNzM3MSIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJNaW5pIEJpbGxldGVyYSBJbnNwaXJhY2nDs24gVm9ndWUgQ2Fmw6kgQ2xhcm8iLAogICAgInVuaU1lZGlkYSIgOiA1OSwKICAgICJwcmVjaW9VbmkiIDogMy45NSwKICAgICJtb250b0Rlc2N1IiA6IDAsCiAgICAidmVudGFOb1N1aiIgOiAwLAogICAgInZlbnRhRXhlbnRhIiA6IDAsCiAgICAidmVudGFHcmF2YWRhIiA6IDMuOTUsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDAuNDU0NAogIH0sIHsKICAgICJudW1JdGVtIiA6IDMsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiODgzMzUxIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIlRpamVyYSBkZSBQb2RhciBOZWdybyIsCiAgICAidW5pTWVkaWRhIiA6IDU5LAogICAgInByZWNpb1VuaSIgOiAyLjUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiAyLjUsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDAuMjg3NgogIH0sIHsKICAgICJudW1JdGVtIiA6IDQsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiTEhDLUZSMDQ0IiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIkp1ZWdvIGRlIDQgc2FydGVuZXMiLAogICAgInVuaU1lZGlkYSIgOiA1OSwKICAgICJwcmVjaW9VbmkiIDogMjkuNSwKICAgICJtb250b0Rlc2N1IiA6IDAsCiAgICAidmVudGFOb1N1aiIgOiAwLAogICAgInZlbnRhRXhlbnRhIiA6IDAsCiAgICAidmVudGFHcmF2YWRhIiA6IDI5LjUsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDMuMzkzOAogIH0sIHsKICAgICJudW1JdGVtIiA6IDUsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiUy0yOTQwNSIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJCaWxsZXRlcmEgZG9ibGUgemlwcGVyIFdLIEFtYXJpbGxvIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDUuOTUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiA1Ljk1LAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAwLjY4NDUKICB9LCB7CiAgICAibnVtSXRlbSIgOiA2LAogICAgInRpcG9JdGVtIiA6IDEsCiAgICAibnVtZXJvRG9jdW1lbnRvIiA6IG51bGwsCiAgICAiY2FudGlkYWQiIDogMSwKICAgICJjb2RpZ28iIDogIkRLSEQtMTY4IiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIlNldCBkZSBzYWJhbmFzIDQgcGllemFzIEtJTkcgOCIsCiAgICAidW5pTWVkaWRhIiA6IDU5LAogICAgInByZWNpb1VuaSIgOiAxMiwKICAgICJtb250b0Rlc2N1IiA6IDAsCiAgICAidmVudGFOb1N1aiIgOiAwLAogICAgInZlbnRhRXhlbnRhIiA6IDAsCiAgICAidmVudGFHcmF2YWRhIiA6IDEyLAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAxLjM4MDUKICB9LCB7CiAgICAibnVtSXRlbSIgOiA3LAogICAgInRpcG9JdGVtIiA6IDEsCiAgICAibnVtZXJvRG9jdW1lbnRvIiA6IG51bGwsCiAgICAiY2FudGlkYWQiIDogMSwKICAgICJjb2RpZ28iIDogIkxULTE5MDZQbGFuY2hhIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIlBsYW5jaGEgQW50aWFkaGVyZW50ZSBDb21hbCBMVC0xOTA4IiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDE2Ljk1LAogICAgIm1vbnRvRGVzY3UiIDogMCwKICAgICJ2ZW50YU5vU3VqIiA6IDAsCiAgICAidmVudGFFeGVudGEiIDogMCwKICAgICJ2ZW50YUdyYXZhZGEiIDogMTYuOTUsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDEuOTUKICB9LCB7CiAgICAibnVtSXRlbSIgOiA4LAogICAgInRpcG9JdGVtIiA6IDEsCiAgICAibnVtZXJvRG9jdW1lbnRvIiA6IG51bGwsCiAgICAiY2FudGlkYWQiIDogMSwKICAgICJjb2RpZ28iIDogIkNULTkyMDYzLUsxMSIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJTZXQgZGUgc8OhYmFuYXMgNC9waWV6YXMgS2luZyBCZWlnZSBPc2N1cm8iLAogICAgInVuaU1lZGlkYSIgOiA1OSwKICAgICJwcmVjaW9VbmkiIDogMTQsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiAxNCwKICAgICJ0cmlidXRvcyIgOiBudWxsLAogICAgInBzdiIgOiAwLAogICAgIm5vR3JhdmFkbyIgOiAwLAogICAgIml2YUl0ZW0iIDogMS42MTA2CiAgfSwgewogICAgIm51bUl0ZW0iIDogOSwKICAgICJ0aXBvSXRlbSIgOiAxLAogICAgIm51bWVyb0RvY3VtZW50byIgOiBudWxsLAogICAgImNhbnRpZGFkIiA6IDEsCiAgICAiY29kaWdvIiA6ICJBLTE5NTMxIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIkJhbmRvbGVyYSBZVCBkZSA0IHppcHBlciB5IExhbnlhcmQgTmVncm8gIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDE0LjUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiAxNC41LAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAxLjY2ODEKICB9LCB7CiAgICAibnVtSXRlbSIgOiAxMCwKICAgICJ0aXBvSXRlbSIgOiAxLAogICAgIm51bWVyb0RvY3VtZW50byIgOiBudWxsLAogICAgImNhbnRpZGFkIiA6IDEsCiAgICAiY29kaWdvIiA6ICJCRU5FTEkzMjEyIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIlNldCBkZSAzIGZvcnJvcyBwYXJhIHNpbGxvbmVzIDMtMi0xIEJFTkVMSTMyMSIsCiAgICAidW5pTWVkaWRhIiA6IDU5LAogICAgInByZWNpb1VuaSIgOiAzMCwKICAgICJtb250b0Rlc2N1IiA6IDAsCiAgICAidmVudGFOb1N1aiIgOiAwLAogICAgInZlbnRhRXhlbnRhIiA6IDAsCiAgICAidmVudGFHcmF2YWRhIiA6IDMwLAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAzLjQ1MTMKICB9LCB7CiAgICAibnVtSXRlbSIgOiAxMSwKICAgICJ0aXBvSXRlbSIgOiAxLAogICAgIm51bWVyb0RvY3VtZW50byIgOiBudWxsLAogICAgImNhbnRpZGFkIiA6IDEsCiAgICAiY29kaWdvIiA6ICI4NjQzNTEiLAogICAgImNvZFRyaWJ1dG8iIDogbnVsbCwKICAgICJkZXNjcmlwY2lvbiIgOiAiVGFibGFzIGRlIGNvcnRhciAyIHBpZXphcyArIEN1Y2hpbGxvIFZlcmRlIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDIuNzUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiAyLjc1LAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAwLjMxNjQKICB9LCB7CiAgICAibnVtSXRlbSIgOiAxMiwKICAgICJ0aXBvSXRlbSIgOiAxLAogICAgIm51bWVyb0RvY3VtZW50byIgOiBudWxsLAogICAgImNhbnRpZGFkIiA6IDEsCiAgICAiY29kaWdvIiA6ICJES0hSLTExMDQtMiIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJWYXNvcyBwbMOhc3RpY29zIDQ1MG1sIG1vcmFkbyDwn5-jIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDQuOTUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiA0Ljk1LAogICAgInRyaWJ1dG9zIiA6IG51bGwsCiAgICAicHN2IiA6IDAsCiAgICAibm9HcmF2YWRvIiA6IDAsCiAgICAiaXZhSXRlbSIgOiAwLjU2OTUKICB9LCB7CiAgICAibnVtSXRlbSIgOiAxMywKICAgICJ0aXBvSXRlbSIgOiAxLAogICAgIm51bWVyb0RvY3VtZW50byIgOiBudWxsLAogICAgImNhbnRpZGFkIiA6IDEsCiAgICAiY29kaWdvIiA6ICJMSEMtOTAxMTAyIiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIkxvbmNoZXJhIGVuIHNldCBkZSAzIEN1YWRyYWRvIEJsYW5jbyIsCiAgICAidW5pTWVkaWRhIiA6IDU5LAogICAgInByZWNpb1VuaSIgOiA5LjUsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiA5LjUsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDEuMDkyOQogIH0sIHsKICAgICJudW1JdGVtIiA6IDE0LAogICAgInRpcG9JdGVtIiA6IDEsCiAgICAibnVtZXJvRG9jdW1lbnRvIiA6IG51bGwsCiAgICAiY2FudGlkYWQiIDogMSwKICAgICJjb2RpZ28iIDogIkVWMTIyMTEiLAogICAgImNvZFRyaWJ1dG8iIDogbnVsbCwKICAgICJkZXNjcmlwY2lvbiIgOiAiU21hcnR3YXRjaCArIEF1ZMOtZm9ub3MgTmVncm8iLAogICAgInVuaU1lZGlkYSIgOiA1OSwKICAgICJwcmVjaW9VbmkiIDogMTMsCiAgICAibW9udG9EZXNjdSIgOiAwLAogICAgInZlbnRhTm9TdWoiIDogMCwKICAgICJ2ZW50YUV4ZW50YSIgOiAwLAogICAgInZlbnRhR3JhdmFkYSIgOiAxMywKICAgICJ0cmlidXRvcyIgOiBudWxsLAogICAgInBzdiIgOiAwLAogICAgIm5vR3JhdmFkbyIgOiAwLAogICAgIml2YUl0ZW0iIDogMS40OTU2CiAgfSwgewogICAgIm51bUl0ZW0iIDogMTUsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiQS0yMTIzMiIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJMb25jaGVyYSBUw6lybWljYSBCZW50byBOZWdybyIsCiAgICAidW5pTWVkaWRhIiA6IDU5LAogICAgInByZWNpb1VuaSIgOiA1LAogICAgIm1vbnRvRGVzY3UiIDogMCwKICAgICJ2ZW50YU5vU3VqIiA6IDAsCiAgICAidmVudGFFeGVudGEiIDogMCwKICAgICJ2ZW50YUdyYXZhZGEiIDogNSwKICAgICJ0cmlidXRvcyIgOiBudWxsLAogICAgInBzdiIgOiAwLAogICAgIm5vR3JhdmFkbyIgOiAwLAogICAgIml2YUl0ZW0iIDogMC41NzUyCiAgfSwgewogICAgIm51bUl0ZW0iIDogMTYsCiAgICAidGlwb0l0ZW0iIDogMSwKICAgICJudW1lcm9Eb2N1bWVudG8iIDogbnVsbCwKICAgICJjYW50aWRhZCIgOiAxLAogICAgImNvZGlnbyIgOiAiTlM0MDY5MzU3IiwKICAgICJjb2RUcmlidXRvIiA6IG51bGwsCiAgICAiZGVzY3JpcGNpb24iIDogIkNhamEgbWV0w6FsaWNhIHBhcmEgb3JnYW5pemFyIGRpbmVybyBOZWdybyBkZSAyMGNtIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDExLAogICAgIm1vbnRvRGVzY3UiIDogMCwKICAgICJ2ZW50YU5vU3VqIiA6IDAsCiAgICAidmVudGFFeGVudGEiIDogMCwKICAgICJ2ZW50YUdyYXZhZGEiIDogMTEsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDEuMjY1NQogIH0gXSwKICAicmVzdW1lbiIgOiB7CiAgICAidG90YWxOb1N1aiIgOiAwLAogICAgInRvdGFsRXhlbnRhIiA6IDAsCiAgICAidG90YWxHcmF2YWRhIiA6IDE4Mi41NSwKICAgICJzdWJUb3RhbFZlbnRhcyIgOiAxODIuNTUsCiAgICAiZGVzY3VOb1N1aiIgOiAwLAogICAgImRlc2N1RXhlbnRhIiA6IDAsCiAgICAiZGVzY3VHcmF2YWRhIiA6IDAsCiAgICAicG9yY2VudGFqZURlc2N1ZW50byIgOiAwLAogICAgInRvdGFsRGVzY3UiIDogMCwKICAgICJ0cmlidXRvcyIgOiBudWxsLAogICAgInN1YlRvdGFsIiA6IDE4Mi41NSwKICAgICJpdmFSZXRlMSIgOiAwLAogICAgInJldGVSZW50YSIgOiAwLAogICAgIm1vbnRvVG90YWxPcGVyYWNpb24iIDogMTgyLjU1LAogICAgInRvdGFsTm9HcmF2YWRvIiA6IDAsCiAgICAidG90YWxQYWdhciIgOiAxODIuNTUsCiAgICAidG90YWxMZXRyYXMiIDogIkNJRU5UTyBPQ0hFTlRBIFkgRE9TIDU1LzEwMCBET0xBUkVTIiwKICAgICJ0b3RhbEl2YSIgOiAyMSwKICAgICJzYWxkb0Zhdm9yIiA6IDAsCiAgICAiY29uZGljaW9uT3BlcmFjaW9uIiA6IDEsCiAgICAicGFnb3MiIDogbnVsbCwKICAgICJudW1QYWdvRWxlY3Ryb25pY28iIDogbnVsbAogIH0sCiAgImV4dGVuc2lvbiIgOiB7CiAgICAibm9tYkVudHJlZ2EiIDogIk5hdGhhbGllIENhcnJhbnphIiwKICAgICJkb2N1RW50cmVnYSIgOiBudWxsLAogICAgIm5vbWJSZWNpYmUiIDogbnVsbCwKICAgICJkb2N1UmVjaWJlIiA6IG51bGwsCiAgICAib2JzZXJ2YWNpb25lcyIgOiBudWxsLAogICAgInBsYWNhVmVoaWN1bG8iIDogbnVsbAogIH0sCiAgImFwZW5kaWNlIiA6IG51bGwKfQ.Dkc7VrtznE45EtINTB0ZGAXOQ45ndWD9g5todKYJBvAX9s1RQ3kt6fnW8ULgzchopf5_5gGg0fy8ngmLj7HVg7BdG3YCkocljRTSe49_hv4Z_jGiGUr2XUX8z65HhReDGbbp7ZysFV9WyseM5tgKq3uBaufUdHH-Sjl5YVBtUGVvo0FFdxc1V5GvFHPbtemJDs5SXe5JX45gyg6hajwBfQOiaWFbEAXQbI1VrJYiMNM6xYze0aB1BHJjpJ3kvroe0IQvRw3y2LIU-IbtUmHgjmm7l2en-1HdFjX52epzgF-_Z0ijigGnYKCm3vqkC9R3axbNjLKkKTFLqELGHfNvYQ";
+
+    //     let dte = await DTE_Model.create({
+    //         sale: null,
+    //         sucursal: 2,
+    //         caja: 2,
+    //         codigo: "E9FC9186-D8C2-40F6-9BDB-6B402F96F759",
+    //         contingencia: null,
+    //         tipo: "01",
+    //         trasnmitido: true,
+    //         entregado: true,
+    //         responseMH: {
+    //             "version": 2,
+    //             "ambiente": "01",
+    //             "versionApp": 2,
+    //             "estado": "PROCESADO",
+    //             "codigoGeneracion": "E9FC9186-D8C2-40F6-9BDB-6B402F96F759",
+    //             "selloRecibido": "202557EF8A8A75084F68824B333025D94AA2TKZK",
+    //             "fhProcesamiento": "03/07/2025 09:59:43",
+    //             "clasificaMsg": "10",
+    //             "codigoMsg": "001",
+    //             "descripcionMsg": "RECIBIDO",
+    //             "observaciones": []
+    //         },
+    //         correlativo: 44,
+    //         dte: {
+    //             "identificacion": {
+    //                 version: 1,
+    //                 ambiente: "01",
+    //                 tipoDte: "01",
+    //                 numeroControl: "DTE-01-S004P001-000000000000044",
+    //                 codigoGeneracion: "E9FC9186-D8C2-40F6-9BDB-6B402F96F759",
+    //                 tipoModelo: 1,
+    //                 tipoOperacion: 1,
+    //                 fecEmi: "2025-07-03",
+    //                 horEmi: "09:59:42",
+    //                 tipoMoneda: "USD",
+    //                 tipoContingencia: null,
+    //                 motivoContin: null
+    //             },
+    //             "documentoRelacionado": null,
+    //             "emisor": {
+    //                 "nit": "061403318",
+    //                 "nrc": "3359852",
+    //                 "nombre": "Gerardo Alfonso Rivera Cortez",
+    //                 "codActividad": "10006",
+    //                 "descActividad": "Comerciante",
+    //                 "nombreComercial": "Riveras Group",
+    //                 "tipoEstablecimiento": "01",
+    //                 "direccion": {
+    //                     "departamento": "02",
+    //                     "municipio": "15",
+    //                     "complemento": "3A, Calle Oriente y 1A. AV Sur Esquina, Local 1"
+    //                 }, "telefono": "25278683", "correo": "facturacion@riverasgroup.com", "codEstableMH": "S004", "codEstable": "S004", "codPuntoVentaMH": "P001", "codPuntoVenta": "P001"
+    //             }, 
+    //             "receptor": { "tipoDocumento": "13", "numDocumento": "04219420-1", "nrc": null, "nombre": "Sandy Yomara Uto de Pin", "codActividad": null, "descActividad": null, "direccion": { "departamento": "02", "municipio": "15", "complemento": "Riveras Group Santa Ana" }, "telefono": "78587349", "correo": "sandyyomijimenezdepin@gmail.com" }, 
+    //             "otrosDocumentos": null, 
+    //             "ventaTercero": null, 
+    //             "cuerpoDocumento": [
+    //                 { "numItem": 1, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "STR-61013", "codTributo": null, "descripcion": "Estuche para Laptop Negro", "uniMedida": 59, "precioUni": 7, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 7, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.8053 }, 
+    //                 { "numItem": 2, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "S-37371", "codTributo": null, "descripcion": "Mini Billetera Inspiración Vogue Café Claro", "uniMedida": 59, "precioUni": 3.95, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 3.95, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.4544 },
+    //                 { "numItem": 3, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "883351", "codTributo": null, "descripcion": "Tijera de Podar Negro", "uniMedida": 59, "precioUni": 2.5, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 2.5, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.2876 },
+    //                 { "numItem": 4, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "LHC-FR044", "codTributo": null, "descripcion": "Juego de 4 sartenes", "uniMedida": 59, "precioUni": 29.5, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 29.5, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 3.3938 },
+    //                 { "numItem": 5, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "S-29405", "codTributo": null, "descripcion": "Billetera doble zipper WK Amarillo", "uniMedida": 59, "precioUni": 5.95, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 5.95, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.6845 },
+    //                 { "numItem": 6, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "DKHD-168", "codTributo": null, "descripcion": "Set de sabanas 4 piezas KING 8", "uniMedida": 59, "precioUni": 12, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 12, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.3805 }, { "numItem": 7, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "LT-1906Plancha", "codTributo": null, "descripcion": "Plancha Antiadherente Comal LT-1908", "uniMedida": 59, "precioUni": 16.95, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 16.95, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.95 }, { "numItem": 8, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "CT-92063-K11", "codTributo": null, "descripcion": "Set de sábanas 4/piezas King Beige Oscuro", "uniMedida": 59, "precioUni": 14, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 14, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.6106 }, { "numItem": 9, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "A-19531", "codTributo": null, "descripcion": "Bandolera YT de 4 zipper y Lanyard Negro ", "uniMedida": 59, "precioUni": 14.5, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 14.5, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.6681 }, { "numItem": 10, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "BENELI3212", "codTributo": null, "descripcion": "Set de 3 forros para sillones 3-2-1 BENELI321", "uniMedida": 59, "precioUni": 30, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 30, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 3.4513 }, { "numItem": 11, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "864351", "codTributo": null, "descripcion": "Tablas de cortar 2 piezas + Cuchillo Verde", "uniMedida": 59, "precioUni": 2.75, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 2.75, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.3164 }, { "numItem": 12, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "DKHR-1104-2", "codTributo": null, "descripcion": "Vasos plásticos 450ml morado", "uniMedida": 59, "precioUni": 4.95, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 4.95, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.5695 }, { "numItem": 13, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "LHC-901102", "codTributo": null, "descripcion": "Lonchera en set de 3 Cuadrado Blanco", "uniMedida": 59, "precioUni": 9.5, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 9.5, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.0929 }, { "numItem": 14, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "EV12211", "codTributo": null, "descripcion": "Smartwatch + Audífonos Negro", "uniMedida": 59, "precioUni": 13, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 13, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.4956 }, { "numItem": 15, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "A-21232", "codTributo": null, "descripcion": "Lonchera Térmica Bento Negro", "uniMedida": 59, "precioUni": 5, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 5, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 0.5752 }, { "numItem": 16, "tipoItem": 1, "numeroDocumento": null, "cantidad": 1, "codigo": "NS4069357", "codTributo": null, "descripcion": "Caja metálica para organizar dinero Negro de 20cm", "uniMedida": 59, "precioUni": 11, "montoDescu": 0, "ventaNoSuj": 0, "ventaExenta": 0, "ventaGravada": 11, "tributos": null, "psv": 0, "noGravado": 0, "ivaItem": 1.2655 }], "resumen": { "totalNoSuj": 0, "totalExenta": 0, "totalGravada": 182.55, "subTotalVentas": 182.55, "descuNoSuj": 0, "descuExenta": 0, "descuGravada": 0, "porcentajeDescuento": 0, "totalDescu": 0, "tributos": null, "subTotal": 182.55, "ivaRete1": 0, "reteRenta": 0, "montoTotalOperacion": 182.55, "totalNoGravado": 0, "totalPagar": 182.55, "totalLetras": "CIENTO OCHENTA Y DOS 55/100 DOLARES", "totalIva": 21, "saldoFavor": 0, "condicionOperacion": 1, "pagos": null, "numPagoElectronico": null },
+    //             "extension": {
+    //                 "nombEntrega": "Nathalie Carranza",
+    //                 "docuEntrega": null,
+    //                 "nombRecibe": null,
+    //                 "docuRecibe": null,
+    //                 "observaciones": null,
+    //                 "placaVehiculo": null
+    //             },
+    //             "apendice": null,
+    //             "selloRecibido": "202557EF8A8A75084F68824B333025D94AA2TKZK",
+    //             "firmaElectronica": firma
+    //         },
+    //         intentos: 1,
+    //         _errors: null,
+    //         fecEmi: "2025-07-03",
+    //         client_label: "Sandy Yomara Uto de Pin",
+    //         invalidacion: null,
+    //         nc: null,
+    //     });
+
+    //     return res.json(dte);
+
+
+    // }
 
 
 

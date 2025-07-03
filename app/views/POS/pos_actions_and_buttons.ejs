@@ -87,12 +87,12 @@
             content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title" onclick="copy('${cli.name}')">${cli.name}</h5>
+                <h5 class="card-title" onclick="copiarAlPortapapeles('${cli.name}')">${cli.name}</h5>
                 <p>Monto de Envio: (${money_format(sale.delivery_amount)})</p>
-                <p>Telefono: <span onclick="copy('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
-                <p>Direccion para la entrega: <span onclick="copy('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
-                <p>Direccion del cliente: <span onclick="copy('${cli.direction}')">${cli.direction}</span></p>
-                <p>Instrucciones: <span onclick="copy('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
+                <p>Telefono: <span onclick="copiarAlPortapapeles('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
+                <p>Direccion para la entrega: <span onclick="copiarAlPortapapeles('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
+                <p>Direccion del cliente: <span onclick="copiarAlPortapapeles('${cli.direction}')">${cli.direction}</span></p>
+                <p>Instrucciones: <span onclick="copiarAlPortapapeles('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
                 <p>Entrega (${sale.delivery_provider ? res.providers[sale.delivery_provider].name : ''})</p>
                 <button class="btn btn-danger btn-sm round" onclick="createdGuide(${sale.id})">Guia Creada</button>
               </div>
