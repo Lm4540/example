@@ -50,7 +50,7 @@
     </div>
   </div>
 
-  <span class="mt-5 text-danger">Errores: </span>
+  <span class="mt-5 text-danger" style="cursor: pointer;">Errores: </span>  <span id="descargar_error" class="ml-5 mt-5 text-primary" style="cursor: pointer;"> Click para descargar el error</span>
   <div id="for_errors">
   </div>
 </body>
@@ -59,7 +59,9 @@
 <script src="assets/libs/choices/choices.min.js"></script>
 <script src="https://pfau-software.de/json-viewer/dist/iife/index.js"></script>
 <script>
+  var last_error = null;
   const show_error = (object) => {
+    last_error = object;
     document.querySelector("#for_errors").innerHTML = "";
       const o = document.createElement("andypf-json-viewer");
       o.id = "json";

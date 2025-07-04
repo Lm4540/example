@@ -1,4 +1,4 @@
-<script src="assets/js/web-escpos-printer-localserver.js"></script>
+<script src="assets/js/web-escpos-printer-localserver.js?v=20250704"></script>
 <script>
   const s_options = {
     mode: 'cors',
@@ -55,55 +55,55 @@
 
   const ordersGuides = async () => {
     // try {
-      const response = await fetch(`/pos/ordersGuides`, s_options);
+    const response = await fetch(`/pos/ordersGuides`, s_options);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return errorMessage('Orden no encontrada. Por favor, verifique el número de orden.');
-        } else if (response.status === 500) {
-          return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
-        } else {
-          return errorMessage(`Error inesperado: ${response.status}`);
-        }
+    if (!response.ok) {
+      if (response.status === 404) {
+        return errorMessage('Orden no encontrada. Por favor, verifique el número de orden.');
+      } else if (response.status === 500) {
+        return errorMessage('Error del servidor. Por favor, inténtelo más tarde.');
+      } else {
+        return errorMessage(`Error inesperado: ${response.status}`);
       }
+    }
 
-      let res = await response.json();
+    let res = await response.json();
 
-      if (res.sales.length == 0) {
+    if (res.sales.length == 0) {
 
-        document.querySelector("#guidesModaldiv").innerHTML = `<h5>
+      document.querySelector("#guidesModaldiv").innerHTML = `<h5>
                       No hay ordenes pendientes
                   </h5>`;
 
-      } else {
-        let content = '';
-        if (res.sales.length > 0) {
+    } else {
+      let content = '';
+      if (res.sales.length > 0) {
 
 
 
-          res.sales.forEach(sale => {
+        res.sales.forEach(sale => {
 
-            let cli = res.clients[sale.client];
-            content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
+          let cli = res.clients[sale.client];
+          content += `<div class="col-12 col-md-6" id="card_guide_${sale.id}" data-name="${cli.name}">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title" onclick="copiarAlPortapapeles('${cli.name}')">${cli.name}</h5>
+                <h5 class="card-title" style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${cli.name}')">${cli.name}</h5>
                 <p>Monto de Envio: (${money_format(sale.delivery_amount)})</p>
-                <p>Telefono: <span onclick="copiarAlPortapapeles('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
-                <p>Direccion para la entrega: <span onclick="copiarAlPortapapeles('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
-                <p>Direccion del cliente: <span onclick="copiarAlPortapapeles('${cli.direction}')">${cli.direction}</span></p>
-                <p>Instrucciones: <span onclick="copiarAlPortapapeles('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
+                <p>Telefono: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
+                <p>Direccion para la entrega: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
+                <p>Direccion del cliente:  <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${cli.direction}')">${cli.direction}</span></p>
+                <p>Instrucciones: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
                 <p>Entrega (${sale.delivery_provider ? res.providers[sale.delivery_provider].name : ''})</p>
                 <button class="btn btn-danger btn-sm round" onclick="createdGuide(${sale.id})">Guia Creada</button>
               </div>
             </div>
           </div>`;
-          });
-        } else {
-          content = '<p class="text-success">Genial, parece que vamos al día...</p>';
-        }
-        document.querySelector("#guidesModaldiv").innerHTML = content;
+        });
+      } else {
+        content = '<p class="text-success">Genial, parece que vamos al día...</p>';
       }
+      document.querySelector("#guidesModaldiv").innerHTML = content;
+    }
 
     // } catch (error) {
     //   show_error(error);
@@ -597,6 +597,55 @@
 
   }
 
+  const copiarTextoAlPortapapeles = (texto) => {
+    // Verifica si la API del portapapeles está disponible en el navegador
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(texto)
+        .then(() => {
+          return successMessage('copiado');
+        })
+        .catch(err => {
+          return false;
+        });
+    } else {
+      // Fallback para navegadores que no soportan la API del portapapeles (menos común hoy en día)
+      console.warn('El navegador no soporta la API navigator.clipboard.writeText(). Intentando método obsoleto.');
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed'; // Para que no interfiera con el layout
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return Promise.resolve(successMessage('copiado'));
+      } catch (err) {
+        return Promise.resolve(false);
+      }
+    }
+  }
+
+  const descargarObjetoComoJson = (objeto) => {
+    const timestamp = new Date().toISOString().replace(/[:.-]/g, ''); // Formato: YYYYMMDDTHHMMSSsssZ
+    const nombreArchivo = `error_${timestamp}.json`;
+    const contenidoJson = JSON.stringify(objeto, null, 2); // El 'null, 2' formatea el JSON con indentación para legibilidad
+    const blob = new Blob([contenidoJson], {
+      type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a); // Es necesario que el elemento esté en el DOM para poder simular el clic
+    a.click();
+
+    // Limpiar: liberar la URL del objeto y remover el elemento <a>
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
 
   var timer_client, client_last_val = '';
   selectClient.addEventListener('search', async (e) => {
@@ -690,6 +739,7 @@
       data.cash = restante > 0 ? value : fix_number(value - Math.abs(restante));
 
       e.target.disabled = true;
+      last_error = null;
       postData('/pos', data).then(data => {
         if (data.status == 'success') {
           successMessage(data.message);
@@ -723,6 +773,13 @@
 
     document.querySelector("#select_agente_retencion").addEventListener('change', e => {
       totalizar();
+    });
+
+    document.querySelector("#descargar_error").addEventListener('click', e => {
+      if(last_error){
+        return descargarObjetoComoJson(last_error);
+      }
+      return errorMessage('no se ha almacenado ningun error');
     });
 
 

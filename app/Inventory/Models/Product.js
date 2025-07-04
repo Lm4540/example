@@ -141,7 +141,7 @@ const Product = sequelize.define('Product', {
     color: DataTypes.STRING(25),
     in_web: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
     },
 
 }, {
