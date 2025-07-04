@@ -183,7 +183,7 @@
 				"tipoDocumento": {
 					"type": ["string", "null"],
 					"description": "Tipo documento de identificación CAT-22: 36 - NIT, 13 - DUI, 02 - Carnet de residente, 03 - PASAPORTE, 37 - OTRO",
-					"enum": ["36", "13", "02", "03", "37"]
+					"enum": [null,"36", "13", "02", "03", "37"]
 				},
 				"numDocumento": {
 					"type": ["string", "null"],
