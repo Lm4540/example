@@ -108,7 +108,7 @@
 
   const f_date = date => {
     if (!date) return '';
-    const d = new Date(date);
+    const d = new Date(date + ' 06:01:00');
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   }
 
