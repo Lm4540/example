@@ -552,9 +552,20 @@ module.exports = {
                 }
             }
 
+            let other_sales = await sequelize.query(`SELECT id, balance, _status, delivery_amount, collected FROM crm_sale WHERE collected < (delivery_amount + balance) and client = :client and id != :sale`, {
+                replacements: { client: sale.client, sale: sale.id },
+                type: QueryTypes.SELECT,
+                raw: true,
+            });
 
+            // buscar pagos recibidos
+            let payments = await sequelize.query(`SELECT id, amount, asigned_amount FROM crm_sale_payment WHERE client = :client and asigned_amount < amount`, {
+                replacements: { client: sale.client },
+                type: QueryTypes.SELECT,
+                models: SalePayment
+            });
 
-            return res.json({ client, sale, sale_details, warnings });
+            return res.json({ client, sale, sale_details, warnings, other_sales, payments });
         }
         return res.json({ client, sale: null, sale_details: null });
 
@@ -565,23 +576,16 @@ module.exports = {
         let order = req.query.order;
         order = await Sale.findByPk(order);
 
-
-
         if (order === null) return res.status(404).json({ error: 'Orden no encontrada' });
         if (order.invoice_number !== null && order.invoice_number > 0) return res.status(404).json({ error: 'Orden ya facturada' });
-
-
         let order_details = await SaleDetail.findAll({
             where: {
                 sale: order.id,
             },
 
         });
-
         let client = await Client.findByPk(order.client);
-
         let warnings = {};
-
         //verificar que detalles deben manejarse como advertencias
         let largo = order_details.length;
         for (let index = 0; index < largo; index++) {
@@ -606,8 +610,20 @@ module.exports = {
             }
         }
 
+        //buscar otras ventas pendientes de pago
+        let other_sales = await sequelize.query(`SELECT id, balance, _status, delivery_amount, collected FROM crm_sale WHERE collected < (delivery_amount + balance) and client = :client and id != :sale`, {
+            replacements: { client: order.client, sale: order.id },
+            type: QueryTypes.SELECT,
+            raw: true,
+        });
 
-        return res.json({ status: "success", client, sale: order, sale_details: order_details, warnings });
+        // buscar pagos recibidos
+        let payments = await sequelize.query(`SELECT id, amount, asigned_amount FROM crm_sale_payment WHERE client = :client and asigned_amount < amount`, {
+            replacements: { client: order.client },
+            type: QueryTypes.SELECT,
+            models: SalePayment
+        });
+        return res.json({ status: "success", client, sale: order, sale_details: order_details, warnings, other_sales, payments });
     },
 
     ordersToBeBilled: async (req, res) => {
@@ -1250,6 +1266,14 @@ module.exports = {
                 } else if (enviado.status === 'errorFatal') {
                     throw new Error(enviado.message);
                 } else if (enviado.status === 'errorRejected') {
+                    let failed = FailedDte.create({
+                        _request: req.body,
+                        _user: req.session.userSession.shortName,
+                        opt: "Creacion Manual",
+                        responseMH: enviado.data,
+                        dte: dte_json
+                    });
+
                     dte_json.responseMH = enviado.data;
                     throw new Error(enviado.message);
                 } else {
@@ -1324,7 +1348,7 @@ module.exports = {
                         }
 
                         //registrar saldo al cliente
-                        client.balance = Helper.fix_number(client.balance + all_pays_amount, 2);
+                        client.payments = Helper.fix_number(client.payments + all_pays_amount, 2);
                         await client.save({ transaction: t });
 
                         //modificar la venta
@@ -1451,7 +1475,6 @@ module.exports = {
 
     },
 
-
     view_any_dte: async (req, res) => {
         let dte = await DTE_Model.findByPk(req.params.id);
         if (dte) {
@@ -1496,13 +1519,15 @@ module.exports = {
                     }
                 });
             }
+
+
             return res.render('POS/dte/view', {
                 pageTitle: dte.codigo,
                 dte_types,
                 dte,
                 sucursal,
                 helper_url,
-                tipos_documento
+                tipos_documento,
             });
         }
 
@@ -2473,6 +2498,60 @@ module.exports = {
 
         }
     },
+
+    dte_report: async (req, res) => {
+        let sucursals = await Sucursal.findAll();
+        let _sucursals = {};
+        sucursals.forEach(suc => {
+            _sucursals[suc.id] = suc.name;
+        });
+        return res.render('POS/report/report', {
+            sucursals: sucursals,
+            _sucursals,
+            dte_types
+        });
+     },
+
+    dte_report_data: async (req, res) => {
+
+        let data = req.body;
+
+        let where = {
+            tipo: data.tipo,
+            trasnmitido: 1
+        };
+        if(data.sucursal !== 'all') {
+            where.sucursal = data.sucursal;
+        
+        }
+        if (data.desde && data.hasta) {
+            where.fecEmi = {
+                [Op.between]: [data.desde, data.hasta]
+            };
+        }
+
+        let dtes = await DTE_Model.findAll({
+            where: where,
+            order: [['fecEmi', 'ASC']]
+        });
+
+        return res.json({
+            status: 'success',
+            dtes: dtes
+        });
+
+
+
+    },
+
+    dte_cost_report: async (req, res) => {
+        return res.render('POS/report/cost_report');
+    },
+
+    dte_cost_report_data: async (req, res) => { },
+
+
+
 
 
     //     aaaaaaaaaaaa: async (req, res) => {

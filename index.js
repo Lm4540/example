@@ -18,6 +18,7 @@ app.use(express.json({ limit: '150mb' }));
 app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
 
 app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
+app.locals.pageTitle = 'Riveras Group';
 app.locals.options = '';
 app.locals.Helper = Helper;
 

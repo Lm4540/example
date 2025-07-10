@@ -197,6 +197,8 @@
       client.sale = res.sale;
       client.sale_details = res.sale_details;
       client.warnings = res.warnings;
+      client.other_sales = res.other_sales;
+      client.payments = res.payments;
 
       load_client(client);
     } catch (error) {
@@ -224,6 +226,8 @@
       client.sale = res.sale;
       client.sale_details = res.sale_details;
       client.warnings = res.warnings;
+      client.other_sales = res.other_sales;
+      client.payments = res.payments;
       load_client(client);
     } catch (error) {
       show_error(error);
@@ -234,6 +238,7 @@
   const load_client = client => {
     have_problems = false;
     have_warnings = false;
+    console.log(client)
 
     if (client == null) {
       document.querySelector("#clientlabel").innerHTML = 'No Seleccionado';
@@ -360,25 +365,62 @@
 
       transaction.original_total = fix_number(transaction.original_total + client.sale.delivery_amount);
 
-      document.querySelector("#body_details").innerHTML = tableBody;
-      totalizar();
+      if (client.other_sales.length > 0) {
+        tableBody += `<tr>
+                    <td colspan="4" class="text-center text-warning fw-bold" style="font-size: 1.5rem">
+                      Este cliente tiene ordenes pendientes de pago
+                    </td>
+                  </tr>`;
+      }
 
       document.querySelector("#paysTbody").innerHTML = "";
       if (client.sale.collected > 0) {
         transaction.old_pays = client.sale.collected;
-        document.querySelector("#pays_label").innerHTML = `$${money_format(transaction.old_pays)}`;
+        document.querySelector("#paysTbody").innerHTML += `<tr><td colspan="6" class="text-center text-success fw-bold" style="font-size: 1.5rem">
+          Esta orden ya tiene un pago de $${money_format(transaction.old_pays)}
+          </td></tr>`;
 
-        document.querySelector("#paysTbody").innerHTML += `<tr><td colspan="4" class="text-center text-success fw-bold" style="font-size: 1.5rem">
+        tableBody += `<tr>
+                    <td colspan="4" class="text-center text-success fw-bold" style="font-size: 1.5rem">
                       Esta orden ya tiene un pago de $${money_format(transaction.old_pays)}
-                    </td></tr>`;
+                    </td>
+                  </tr>`;
 
       } else {
         transaction.old_pays = 0.00;
         transaction.pos = 0.00;
-
       }
 
       transaction.pos_details = [];
+      if (client.payments.length > 0) {
+
+        let saldo_a_favor = 0.00;
+        client.payments.forEach(pay => {
+          if (pay.asigned_amount < pay.amount) {
+            saldo_a_favor += fix_number(pay.amount - pay.asigned_amount);
+          }
+        });
+
+        if (saldo_a_favor > 0) {
+
+          document.querySelector("#paysTbody").innerHTML += `<tr><td colspan="6" class="text-center text-success fw-bold" style="font-size: 1.5rem">
+            Saldo a Favor $${money_format(saldo_a_favor)}
+            </td></tr>`;
+
+          tableBody += `<tr>
+                    <td colspan="4" class="text-center text-success fw-bold" style="font-size: 1.5rem">
+                      Saldo a Favor $${money_format(saldo_a_favor)}
+                    </td>
+                  </tr>`;
+
+
+          transaction.old_pays = fix_number(transaction.old_pays + saldo_a_favor);
+        }
+      }
+
+      document.querySelector("#pays_label").innerHTML = `$${money_format(transaction.old_pays)}`;
+      document.querySelector("#body_details").innerHTML = tableBody;
+      totalizar();
 
     }
 
@@ -552,6 +594,10 @@
         .newLineN(5)
         .cut();
 
+      if (document.querySelector("#openChashDrwaer").checked) {
+        esc.cashDrawer();
+      }
+
       commands = esc.build();
       await printer.sendCommands(commands);
       console.log(commands, "Impresion realizada");
@@ -667,6 +713,12 @@
       return guardarEnLocalStorage('local_print_ticket', document.querySelector("#printTicket").checked) ? successMessage("Configuracion Actualizada") : errorMessage('Imposible guardar en el Almacenamiento Local')
     });
 
+    document.querySelector("#openChashDrwaer").checked = obtenerDeLocalStorage('local_open_cash_drawer') || false;
+
+    document.querySelector("#openChashDrwaer").addEventListener('click', e => {
+      return guardarEnLocalStorage('local_open_cash_drawer', document.querySelector("#openChashDrwaer").checked) ? successMessage("Configuracion Actualizada") : errorMessage('Imposible guardar en el Almacenamiento Local')
+    });
+
     document.querySelector("#addPayButton").addEventListener('click', e => {
       let id = transaction.pos_details.length;
 
@@ -769,14 +821,12 @@
       });
     });
 
-
-
     document.querySelector("#select_agente_retencion").addEventListener('change', e => {
       totalizar();
     });
 
     document.querySelector("#descargar_error").addEventListener('click', e => {
-      if(last_error){
+      if (last_error) {
         return descargarObjetoComoJson(last_error);
       }
       return errorMessage('no se ha almacenado ningun error');
@@ -826,12 +876,12 @@
       }
     });
 
-
-
-
     document.querySelector("#SelectedClientButton").addEventListener('click', e => {
-      let client = clients_in_select_to[selectClient.value];
-      load_client(client);
+      selected_client = {
+        id: selectClient.value
+      }
+      reload_client();
+      // load_client(clients_in_select_to[selectClient.value]);
     });
 
   });

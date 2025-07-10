@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container-fluid">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title text-center">
+            Reporte de DTE's generados
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="tipo">Tipo de DTE</label>
+                <select name="tipo" id="tipo" class="form-control">
+                  <option value="01">Factura Electronica</option>
+                  <option value="03">Comprobante de Credito Fiscal Electronico</option>
+                  <option value="05">Nota de Credito Electronica</option>
+                  <option value="14">Factura de Sujeto Excluido Electronica</option>
+                  <option value="anulacion">Invalidaciones Realizadas</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="form-group">
+                <label for="desde">Desde</label>
+                <input type="date" name="desde" id="desde" class="form-control" min="2025-07-01" value="<%= Helper.date_to_input(null, true) %>">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="hasta">Hasta</label>
+                <input type="date" name="hasta" id="hasta" class="form-control" max="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+              </div>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="sucursal">Sucursal</label>
+                <select name="sucursal" id="sucursal" class="form-control">
+                  <% sucursals.forEach(suc => { %>
+                  <option value="<%= suc.id %>"><%= suc.name %></option>
+                  <% }) %>
+                  <option value="all">Todas las Sucursales</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="report">Tipo de Reporte</label>
+                <select name="report" id="report" class="form-control">
+                  <option value="completo">Reporte Completo</option>
+                  <option value="conta">Para Contabilidad</option>
+                </select>
+              </div>
+            </div>
+            <div class="col text-center align-items-center">
+              <button class="btn btn-outline-primary mt-3 round" id="generarBtn">Generar Reporte</button>
+              <button class="btn btn-outline-success mt-3 round" id="ExcelBtn">Descargar XLSX</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+        </div>
+      </div>
+
+
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover table-sm" id="tablaReporte">
+          <thead id="reportHeader">
+
+          </thead>
+          <tbody id="reportData">
+            <!-- Data will be populated here -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/js/xlsx.mini.min.js"></script>
+<script>
+  var report_data = null;
+  var _data = null;
+  const _sucursales = JSON.parse('<%- JSON.stringify(_sucursals) %>');
+  const dte_types = JSON.parse('<%- JSON.stringify(dte_types) %>');
+
+  const f_date = date => {
+    if (!date) return '';
+    const d = new Date(date);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  const obtenerContenidoTabla = (tableId) => {
+    const tabla = document.getElementById(tableId);
+    if (!tabla) {
+      console.error(`No se encontró ninguna tabla con el ID: ${tableId}`);
+      return [];
+    }
+
+    const filas = tabla.querySelectorAll('tr'); // Obtener todos los <tr>
+    const datosTabla = [];
+
+    filas.forEach(fila => {
+      const celdas = fila.querySelectorAll('td, th'); // Obtener todos los <td> o <th> de la fila actual
+      const contenidoFila = [];
+
+      celdas.forEach(celda => {
+        contenidoFila.push(celda.textContent.trim()); // Obtener el texto de la celda y limpiar espacios
+      });
+
+      datosTabla.push(contenidoFila); // Agregar el arreglo de celdas al arreglo principal
+    });
+
+    return datosTabla;
+  }
+
+  const generar_reporte = () => {
+    document.getElementById('reportHeader').innerHTML = '';
+    if (report_data.length < 1) {
+      document.getElementById('reportData').innerHTML = `<tr><td class="text-center text-danger">No se encontraron datos para el reporte</td></tr>`;
+      return errorMessage('No se encontraron datos para el reporte');
+    }
+
+    var tipo_reporte = document.getElementById('report').value;
+    var tipo_documento = document.getElementById('tipo').value;
+    let header = document.createElement('tr');
+    let contentBody = '';
+    let filas = [];
+
+    if (tipo_documento == "03") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'NIT O NRC DEL CLIENTE',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'VENTAS EXENTAS',
+        'VENTAS GRAVADAS LOCALES',
+        'DEBITO FISCAL',
+        'TOTAL DE VENTAS',
+      ];
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>NIT O NRC DEL CLIENTE</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>VENTAS EXENTAS </th>
+              <th>VENTAS GRAVADAS LOCALES </th>
+              <th>DEBITO FISCAL</th>
+              <th>TOTAL DE VENTAS </th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Ajustado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+
+        fila.push('Invalidado', 'Ajustado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.receptor.nit}</td>
+                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>SI</td>
+                  <td>${dte.nc !== null ? "SI" : "NO"}</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.receptor.nit,
+                  dte.dte.receptor.nombre,
+                  0.00,
+                  0.00,
+                  0.00,
+                  0.00,
+                  'SI',
+                  dte.nc !== null ? "SI" : "NO",
+                  _sucursales[dte.sucursal],
+                ]);
+          } else {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.receptor.nit}</td>
+                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${dte.dte.resumen.totalExenta}</td>
+                  <td>${dte.dte.resumen.totalGravada}</td>
+                  <td>${dte.dte.resumen.tributos[0].valor}</td>
+                  <td>${dte.dte.resumen.montoTotalOperacion}</td>
+                  <td>NO</td>
+                  <td>${dte.nc !== null ? "SI" : "NO"}</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.receptor.nit,
+                  dte.dte.receptor.nombre,
+                  dte.dte.resumen.totalExenta,
+                  dte.dte.resumen.totalGravada,
+                  dte.dte.resumen.tributos[0].valor,
+                  dte.dte.resumen.montoTotalOperacion,
+                  'NO',
+                  dte.nc !== null ? "SI" : "NO",
+                  _sucursales[dte.sucursal],
+                ]);
+          }
+
+        });
+
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>${dte.dte.receptor.nit}</td>
+                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.receptor.nit,
+                     dte.dte.receptor.nombre,
+                     0.00,
+                     0.00,
+                     0.00,
+                     0.00,
+                   ]);
+          } else {
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>${dte.dte.receptor.nit}</td>
+                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${dte.dte.resumen.totalExenta}</td>
+                     <td>${dte.dte.resumen.totalGravada}</td>
+                     <td>${dte.dte.resumen.tributos[0].valor}</td>
+                     <td>${dte.dte.resumen.montoTotalOperacion}</td>
+                   </tr>`;
+
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.receptor.nit,
+                     dte.dte.receptor.nombre,
+                     dte.dte.resumen.totalExenta,
+                     dte.dte.resumen.totalGravada,
+                     dte.dte.resumen.tributos[0].valor,
+                     dte.dte.resumen.montoTotalOperacion,
+                   ]);
+          }
+        });
+      }
+
+
+    } else if (tipo_documento == "05") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'NIT O NRC DEL CLIENTE',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'VENTAS EXENTAS',
+        'VENTAS GRAVADAS LOCALES',
+        'DEBITO FISCAL',
+        'TOTAL DE VENTAS',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>NIT O NRC DEL CLIENTE</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>VENTAS EXENTAS </th>
+              <th>VENTAS GRAVADAS LOCALES </th>
+              <th>DEBITO FISCAL</th>
+              <th>TOTAL DE VENTAS </th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+
+            fila.push('Invalidado', 'Sucursal');
+            filas.push(fila);
+
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.receptor.nit}</td>
+                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>SI</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.receptor.nit,
+                  dte.dte.receptor.nombre,
+                  0.00,
+                  0.00,
+                  0.00,
+                  0.00,
+                  'SI',
+                  _sucursales[dte.sucursal],
+                ]);
+
+          } else {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.receptor.nit}</td>
+                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${dte.dte.resumen.totalExenta}</td>
+                  <td>${dte.dte.resumen.totalGravada}</td>
+                  <td>${dte.dte.resumen.tributos[0].valor}</td>
+                  <td>${dte.dte.resumen.montoTotalOperacion}</td>
+                  <td>NO</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.receptor.nit,
+                  dte.dte.receptor.nombre,
+                  dte.dte.resumen.totalExenta,
+                  dte.dte.resumen.totalGravada,
+                  dte.dte.resumen.tributos[0].valor,
+                  dte.dte.resumen.montoTotalOperacion,
+                  'NO',
+                  _sucursales[dte.sucursal],
+                ]);
+          }
+
+        });
+
+      } else {
+
+        filas.push(fila);
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>${dte.dte.receptor.nit}</td>
+                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.receptor.nit,
+                     dte.dte.receptor.nombre,
+                     0.00,
+                     0.00,
+                     0.00,
+                     0.00,
+                   ]);
+          } else {
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>${dte.dte.receptor.nit}</td>
+                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${dte.dte.resumen.totalExenta}</td>
+                     <td>${dte.dte.resumen.totalGravada}</td>
+                     <td>${dte.dte.resumen.tributos[0].valor}</td>
+                     <td>${dte.dte.resumen.montoTotalOperacion}</td>
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.receptor.nit,
+                     dte.dte.receptor.nombre,
+                     dte.dte.resumen.totalExenta,
+                     dte.dte.resumen.totalGravada,
+                     dte.dte.resumen.tributos[0].valor,
+                     dte.dte.resumen.montoTotalOperacion,
+                   ]);
+          }
+        });
+      }
+
+
+
+    } else if (tipo_documento == "01") {
+
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'VENTAS EXENTAS',
+        'VENTAS GRAVADAS LOCALES',
+        'TOTAL DE VENTAS',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>VENTAS EXENTAS </th>
+              <th>VENTAS GRAVADAS LOCALES </th>
+              <th>TOTAL DE VENTAS </th>
+              `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+                <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+                <th>Invalidado</th>
+                <th>Sucursal</th>
+                <th>ACCIONES</th>`;
+
+                fila.push('NOMBRE RAZÓN SOCIAL O DENOMINACIÓN', 'Invalidado', 'Sucursal');
+                filas.push(fila);
+
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>${dte.dte.receptor.nombre || "CONSUMIDOR FINAL"}</td>
+                  <td>SI</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  0.00,
+                  0.00,
+                  0.00,
+                  dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
+                  'SI',
+                  _sucursales[dte.sucursal],
+                ]);
+          } else {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.resumen.totalExenta}</td>
+                  <td>${dte.dte.resumen.totalGravada}</td>
+                  <td>${dte.dte.resumen.totalPagar}</td>
+                  <td>${dte.dte.receptor.nombre || "CONSUMIDOR FINAL"}</td>
+                  <td>NO</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.resumen.totalExenta,
+                  dte.dte.resumen.totalGravada,
+                  dte.dte.resumen.totalPagar,
+                  dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
+                  'NO',
+                  _sucursales[dte.sucursal],
+                ]);
+          }
+
+        });
+
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                   </tr>`;
+
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     0.00,
+                     0.00,
+                     0.00,
+                   ]);
+          } else {
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                     <td>${dte.dte.identificacion.numeroControl}</td>
+                     <td>${dte.dte.selloRecibido}</td>
+                     <td>${dte.codigo}</td>
+                     <td>${dte.dte.resumen.totalExenta}</td>
+                     <td>${dte.dte.resumen.totalGravada}</td>
+                     <td>${dte.dte.resumen.totalPagar}</td>
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.resumen.totalExenta,
+                     dte.dte.resumen.totalGravada,
+                     dte.dte.resumen.totalPagar,
+                   ]);
+          }
+        });
+      }
+    } else if (tipo_documento == "anulacion") {
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>TIPO DTE ANULADO</th>
+              <th>DTE ANULADO NUMERO DE CONTROL</th>
+              <th>DTE ANULADO CODIGO DE GENERACION</th>
+              <th>DTE ANULADO SELLO DE RECEPCION</th>
+              <th>MONTO DE IVA</th>
+            `;
+
+            let fila = [
+              'FECHA',
+              'CODIGO DE GENERACION',
+              'SELLO DE RECEPCION',
+              'TIPO DTE ANULADO',
+              'DTE ANULADO NUMERO DE CONTROL',
+              'DTE ANULADO CODIGO DE GENERACION',
+              'DTE ANULADO SELLO DE RECEPCION',
+              'MONTO DE IVA',
+            ];
+
+
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+                <th>Sucursal</th>
+                <th>ACCIONES</th>`;
+
+        fila.push('Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte_types[dte.dte.documento.tipoDte]}</td>
+                  <td>${dte.dte.documento.numeroControl}</td>
+                  <td>${dte.dte.documento.codigoGeneracion}</td>
+                  <td>${dte.dte.documento.selloRecibido}</td>
+                  <td>${dte.dte.documento.montoIva}</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.codigo,
+                  dte.dte.selloRecibido,
+                  dte_types[dte.dte.documento.tipoDte],
+                  dte.dte.documento.numeroControl,
+                  dte.dte.documento.codigoGeneracion,
+                  dte.dte.documento.selloRecibido,
+                  dte.dte.documento.montoIva,
+                  _sucursales[dte.sucursal],
+                ]);
+        });
+
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte_types[dte.dte.documento.tipoDte]}</td>
+                  <td>${dte.dte.documento.numeroControl}</td>
+                  <td>${dte.dte.documento.codigoGeneracion}</td>
+                  <td>${dte.dte.documento.selloRecibido}</td>
+                  <td>${dte.dte.documento.montoIva}</td>
+                </tr>`;
+
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.codigo,
+                  dte.dte.selloRecibido,
+                  dte_types[dte.dte.documento.tipoDte],
+                  dte.dte.documento.numeroControl,
+                  dte.dte.documento.codigoGeneracion,
+                  dte.dte.documento.selloRecibido,
+                  dte.dte.documento.montoIva,
+                ]);
+        });
+
+      }
+
+    } else if (tipo_documento == "14") {
+      let fila = [
+        'FECHA',
+        'NÚMERO DE NIT, DUI U OTRO DOCUMENTO',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'MONTO DE LA OPERACIÓN',
+        'MONTO DE LA RETENCIÓN DEL IVA 13%',
+        'RETENCION ISR 10%',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NÚMERO DE NIT, DUI U OTRO DOCUMENTO</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>MONTO DE LA OPERACIÓN</th>
+              <th>MONTO DE LA RETENCIÓN DEL IVA 13%</th>
+              <th>RETENCION ISR 10%</th>
+            `;
+
+
+
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+
+            fila.push('Invalidado', 'Sucursal');
+            filas.push(fila);
+
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
+                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>0.00</td>
+                  <td>SI</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.sujetoExcluido.numDocumento,
+                  dte.dte.sujetoExcluido.nombre,
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  0.00,
+                  0.00,
+                  0.00,
+                  'SI',
+                  _sucursales[dte.sucursal],
+                ]);
+          } else {
+            contentBody += `
+                <tr>
+                  <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
+                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.resumen.totalCompra}</td>
+                  <td>${dte.dte.resumen.ivaRete1}</td>
+                  <td>${dte.dte.resumen.reteRenta}</td>
+                  <td>NO</td>
+                  <td>${_sucursales[dte.sucursal]}</td>
+                  <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
+                </tr>`;
+
+                filas.push([
+                  f_date(dte.fecEmi),
+                  dte.dte.sujetoExcluido.numDocumento,
+                  dte.dte.sujetoExcluido.nombre,
+                  dte.dte.identificacion.numeroControl,
+                  dte.dte.selloRecibido,
+                  dte.codigo,
+                  dte.dte.resumen.totalCompra,
+                  dte.dte.resumen.ivaRete1,
+                  dte.dte.resumen.reteRenta,
+                  'NO',
+                  _sucursales[dte.sucursal],
+                ]);
+          }
+
+        });
+
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          if (dte.invalidacion !== null) {
+
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                      <td>${dte.dte.sujetoExcluido.numDocumento}</td>
+                      <td>${dte.dte.sujetoExcluido.nombre}</td>
+                      <td>${dte.dte.identificacion.numeroControl}</td>
+                      <td>${dte.dte.selloRecibido}</td>
+                      <td>${dte.codigo}</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     <td>0.00</td>
+                     
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.sujetoExcluido.numDocumento,
+                     dte.dte.sujetoExcluido.nombre,
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     0.00,
+                     0.00,
+                     0.00,
+                   ]);
+          } else {
+            contentBody += `
+                   <tr>
+                     <td>${f_date(dte.fecEmi)}</td>
+                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
+                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${dte.dte.identificacion.numeroControl}</td>
+                  <td>${dte.dte.selloRecibido}</td>
+                  <td>${dte.codigo}</td>
+                  <td>${dte.dte.resumen.totalCompra}</td>
+                  <td>${dte.dte.resumen.ivaRete1}</td>
+                  <td>${dte.dte.resumen.reteRenta}</td>
+                   </tr>`;
+
+                   filas.push([
+                     f_date(dte.fecEmi),
+                     dte.dte.sujetoExcluido.numDocumento,
+                     dte.dte.sujetoExcluido.nombre,
+                     dte.dte.identificacion.numeroControl,
+                     dte.dte.selloRecibido,
+                     dte.codigo,
+                     dte.dte.resumen.totalCompra,
+                     dte.dte.resumen.ivaRete1,
+                     dte.dte.resumen.reteRenta,
+                   ]);
+          }
+        });
+      }
+
+    }
+
+    
+    header.classList.add('text-center');
+    document.getElementById('reportHeader').appendChild(header);
+    document.getElementById('reportData').innerHTML = contentBody;
+
+  _data = filas;
+
+  };
+
+  document.addEventListener('DOMContentLoaded', event => {
+    const generarBtn = document.getElementById('generarBtn');
+    const ExcelBtn = document.getElementById('ExcelBtn');
+
+    generarBtn.addEventListener('click', e => {
+      _data = null;
+
+      document.getElementById('reportData').innerHTML = `<div class="d-flex flex-column justify-content-center align-items-center" style="height: 150px; border: 1px dashed #ccc; margin-top: 20px;">
+            <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden"></span>
+            </div>
+            <p class="mt-2">Generando Reporte...</p>
+            </div>`;
+
+      let data = {
+        tipo: document.getElementById('tipo').value,
+        desde: document.getElementById('desde').value,
+        hasta: document.getElementById('hasta').value,
+        sucursal: document.getElementById('sucursal').value,
+      }
+      // report: document.getElementById('report').value,
+
+
+      postData('/pos/report', data).then(data => {
+        if (data.status == 'success') {
+          report_data = data.dtes;
+          generar_reporte();
+        } else if (data.status == 'errorMessage') {
+          return errorMessage(data.message);
+        } else {
+          console.log(data)
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+      });
+    });
+
+    ExcelBtn.addEventListener('click', e => {
+
+      // obtener todos los TR de la tabla y pasarlos a celdas de excel
+      let name = `Reporte_DTE_${document.getElementById('tipo').value}_${document.getElementById('desde').value}_${document.getElementById('hasta').value}`;
+      let archivos = obtenerContenidoTabla('tablaReporte');
+
+      var wb = XLSX.utils.book_new();
+
+      // const wb = XLSX.utils.table_to_book(document.querySelector("#tablaReporte"));
+      wb.SheetNames.push("reporte");
+      wb.Sheets["reporte"] = XLSX.utils.aoa_to_sheet(_data);
+      XLSX.writeFile(wb, `${name}.xlsx`);
+
+    });
+  });
+</script>
+
+</html>

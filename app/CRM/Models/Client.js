@@ -126,7 +126,7 @@ const Client = sequelize.define('Client', {
         type: DataTypes.VIRTUAL,
         get() {
 
-            return this.departamento != null ? {
+            return this.departamento != null && this.municipio !== null && this.direction !== null && this.direction != "" ? {
                 'departamento': this.departamento,
                 'municipio': this.municipio,
                 'complemento': this.direction

@@ -348,5 +348,21 @@ module.exports = [
         "explication": "Administrar Catalogos",
         "group": "Web",
         "permission": "admin_web_catalogs"
+    },
+    {
+        "name": "Invalidar DTE",
+        "explication": "Invalidar DTE",
+        "group": "DTE",
+        "permission": "invalidate_dte"
+    },
+
+    {
+        "name": "Generar DTE Manualmente",
+        "explication": "Generar DTE Manualmente",
+        "group": "DTE",
+        "permission": "generar_dte_manuales"
     }
+
+    
+
 ]

@@ -18,7 +18,7 @@
         </div>
         <div class="card-body">
           <!-- Identificación del Documento -->
-          <h5 class="card-title text-primary mb-3">Identificación</h5>
+          <h5 class="card-title text-primary mb-3 mt-3 text-center">Identificación</h5>
           <div class="row mb-3">
             <div class="col-md-6">
               <p><strong>Versión:</strong> <%= dte.dte.identificacion.version %></p>
@@ -34,27 +34,49 @@
             </div>
           </div>
 
+          <% if (dte.invalidacion  != null) { %>
+          <div class="text-center">
+
+            <hr class="my-4">
+            <h3 class="text-danger">Este documento ha sido Invalidado</h3>
+
+            <a target="_blank" href="/pos/viewDTE/<%=dte.invalidacion %>">Click aqui para ver la invalidación</a>
+
+          </div>
+          <% } %>
+
+          <% if (dte.nc  != null) { %>
+          <div class="text-center">
+
+            <hr class="my-4">
+            <h3 class="text-danger">Este documento ha sido Ajustado con una Nota de Credito</h3>
+
+            <a target="_blank" href="/pos/viewDTE/<%=dte.nc %>">Click aqui para ver la Nota de Credito</a>
+
+          </div>
+          <% } %>
+
           <hr class="my-4">
 
           <!-- Información del Receptor -->
-          <h5 class="card-title text-primary mb-3">Receptor</h5>
+          <h5 class="card-title text-primary mb-3 text-center">Receptor</h5>
           <div class="row mb-3">
             <div class="col">
 
               <% if (dte.dte.identificacion.tipoDte == "03") { %>
-                <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %> <%= dte.dte.receptor.nombreComercial !== null ? `(${dte.dte.receptor.nombreComercial})` : '' %> </p>
-                <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
-                <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
-                <p>
-                  <strong>NIT: </strong> <%= dte.dte.receptor.nit %> / <strong>NRC: </strong> <%= dte.dte.receptor.nrc %>
-                </p>
+              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %> <%= dte.dte.receptor.nombreComercial !== null ? `(${dte.dte.receptor.nombreComercial})` : '' %> </p>
+              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
+              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
+              <p>
+                <strong>NIT: </strong> <%= dte.dte.receptor.nit %> / <strong>NRC: </strong> <%= dte.dte.receptor.nrc %>
+              </p>
 
               <% } else if (dte.dte.identificacion.tipoDte == "01") { %>
-                 
-                <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
-                <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
-                <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
-                <p><strong>Documento:</strong> <%= dte.dte.receptor.tipoDocumento !== null ? (`${tipos_documento[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})`) : ""%></p>
+
+              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
+              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
+              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
+              <p><strong>Documento:</strong> <%= dte.dte.receptor.tipoDocumento !== null ? (`${tipos_documento[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})`) : ""%></p>
               <% } %>
             </div>
           </div>

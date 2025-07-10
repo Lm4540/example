@@ -43,11 +43,7 @@
               <i class="fas fa-user-plus"></i>
               <p>Nuevo Cliente</p>
             </a>
-            <!-- 
-                  <a class="card icon-card text-center" href="/sales/history">
-                     <i class="fas fa-calendar-alt"></i>
-                     <p>Historial de ventas</p>
-                  </a> -->
+
             <% if (permission.includes('view_commission_report')) { %>
             <a class="card icon-card text-center" href="/sales/seller/history">
               <i class="fas fa-calendar-alt"></i>
@@ -60,47 +56,31 @@
               <p>Ventas en Proceso</p>
             </a>
 
-
-
-            
-
             <!-- <a class="card icon-card text-center" href="/sales/sale_in_room">
               <i class="fas fa-file-invoice-dollar"></i>
               <p>Factura Rapida</p>
             </a> -->
 
-
-
-
-            <a class="card icon-card text-center" href="/sales/invoice_serie">
+            <!-- <a class="card icon-card text-center" href="/sales/invoice_serie">
               <i class="fas fa-file-invoice"></i>
               <p>Numeros de Serie</p>
-            </a>
-
+            </a> -->
+<!-- 
             <a class="card icon-card text-center" href="/sales/invoices">
               <i class="fas fa-file-invoice"></i>
               <p>Facturas Registradas</p>
-            </a>
+            </a> -->
 
             <a class="card icon-card text-center" href="/sales/invoices_with_costs">
               <i class="fas fa-file-invoice"></i>
-              <p>Facturas Registradas (Costo de Venta)</p>
+              <p>Facturas (Fisicas) Registradas (Costo de Venta)</p>
             </a>
-
-
-
-            <!-- <a class="card icon-card text-center" href="/sales/daily_report">
-                     <i class="far fa-file-spreadsheet"></i>
-                     <p>Reporte Diario de Ventas</p>
-                  </a> -->
             <% if (permission.includes('revoke_invoice_documents')) { %>
-            <a class="card icon-card text-center" href="javascript:void(0)" onclick="revoke_invoice()">
+            <!-- <a class="card icon-card text-center" href="javascript:void(0)" onclick="revoke_invoice()">
               <i class="fas fa-file-excel"></i>
-              <p>Anular Factura</p>
-            </a>
-
+              <p>Anular Factura (Fisicas)</p>
+            </a> -->
             <% } %>
-
 
             <a class="card icon-card text-center" href="/sales/update_prices">
               <i class="fas fa-search-dollar"></i>
@@ -111,6 +91,38 @@
               <i class="fas fa-book"></i>
               <p>Cátalogos Web</p>
             </a>
+
+            <% if (permission.includes('invalidate_dte')) { %>
+            <a class="card icon-card text-center" href="/pos/create_manual/invalidation">
+              <i class="fas fa-file-excel"></i>
+              <p>Invalidar DTE</p>
+            </a>
+            <% } %>
+
+            <% if (permission.includes('generar_dte_manuales')) { %>
+            <a class="card icon-card text-center" href="/pos/create_manual/14">
+              <i class="fas fa-file-exclamation"></i>
+              <p>Generar Sujeto Excluido</p>
+            </a>
+            <a class="card icon-card text-center" href="/pos/create_manual/05">
+              <i class="fas fa-file-edit"></i>
+              <p>Generar Nota de Credito</p>
+            </a>
+            <% } %>
+
+            <a class="card icon-card text-center" href="/pos/report">
+              <i class="fas fa-file-csv"></i>
+              <p>DTE Generados</p>
+            </a>
+
+             <!-- <a class="card icon-card text-center" href="/pos/cost_report">
+              <i class="fas fa-file-chart-pie"></i>
+              <p>DTE Generados (Costo de Venta)</p>
+            </a> -->
+
+            
+
+
           </div>
         </div>
       </div>

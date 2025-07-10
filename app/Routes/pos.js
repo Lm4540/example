@@ -26,8 +26,10 @@ router.post('/invalidation_event', PosController.invalidation_dte);
 // router.get('/test', PosController.aaaaaaaaaaaa);
 
 
-
-//reports
+router.get('/report', PosController.dte_report);
+router.post('/report', PosController.dte_report_data);
+router.get('/cost_report', PosController.dte_cost_report);
+router.post('/cost_report', PosController.dte_cost_report_data);
 
 
 
