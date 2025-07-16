@@ -30,6 +30,7 @@ router.get('/client/edit/:id(\\d+)', ClientController.editClient);
 router.get('/client/view/:id(\\d+)/sales/:last(\\d+)/:limit(\\d+)', ClientController.viewClientSales);
 router.get('/client/view/:id(\\d+)/payments/:last(\\d+)/:limit(\\d+)', ClientController.viewClientPayments);
 router.get('/client/select2', ClientController.getClientToSelect2);
+router.post('/client/block', ClientController.blockClient);
 
 router.get('/create/:id(\\d+)', SaleController.createClientSale);
 

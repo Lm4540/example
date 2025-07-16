@@ -157,7 +157,21 @@
 <% } else { %>
 
 <script>
-  var web_access = () => {
+  const toggle_free_search = () => {
+    fetch('/web/catalog/free_search/<%= cliente.id %>').then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        successMessage('Actualizado');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    }).catch(response => console.log(response));
+  
+  }
+
+  const web_access = () => {
     postData('/web/catalog/client', {
       case: 'grant_access',
       client: '<%= cliente.id %>',

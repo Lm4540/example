@@ -302,3 +302,31 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="block_clientModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><% if (cliente.locked) { %>
+          Cliente Bloqueado
+          <% } else { %>
+          Cliente no Reportado/Bloqueado
+          <% } %></h5>
+        <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="locked_reason">Motivo del Reporte/bloqueo</label>
+          <textarea name="locked_reason" id="locked_reason" maxlength="200" class="form-control"><%=(cliente.locked_motivo) %></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: block;">
+        <div class="text-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="bloquearClienteBTN"><%= cliente.locked ? "Desbloquear" : "Bloquear"%></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

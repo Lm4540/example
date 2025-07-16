@@ -1,0 +1,130 @@
+<script>
+  var __order = null,
+    modal_options = {
+      keyboard: true
+    },
+    s_options = {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    },
+    modalInvoice = new bootstrap.Modal(document.getElementById('addInvoiceModal'), modal_options);
+
+  const get_facturation_options = async () => {
+
+    series = await fetch('/sales/invoice_options', s_options).then(d => d.json());
+    let k = Object.keys(series);
+    let content = '`<option value="0">Seleccione una opcion</option>`';
+    let df = false;
+    k.forEach(key => {
+      let _serie = series[key];
+      if (df == false) {
+        if ('<%= cliente.classification %>' == 'ninguno' && _serie.type == "fcf") {
+          content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+          document.querySelector("#invoice_number").value = _serie.number;
+          df = true;
+
+        } else if ('<%= cliente.classification %>' != 'ninguno' && _serie.type == "ccf") {
+
+          content += `<option value="${_serie.id}" selected>${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+          document.querySelector("#invoice_number").value = _serie.number;
+          df = true;
+        } else {
+          content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+        }
+      } else {
+        content += `<option value="${_serie.id}">${_serie.serie}(${_serie.type_name} / ${_serie.sucursal_name})</option>`;
+      }
+
+    });
+
+    document.querySelector("#invoice_type").innerHTML = content;
+  };
+
+
+
+  const create_invoice = async (order_id) => {
+    __order = order_id;
+
+    modalInvoice.toggle();
+    get_facturation_options();
+
+  }
+
+  document.addEventListener('DOMContentLoaded', event => {
+
+    document.querySelector("#invoice_type").addEventListener('change', e => {
+      if (e.target.value !== "0") {
+        document.querySelector("#invoice_number").value = series[e.target.value].number;
+      } else {
+        createToast('rose', 'Seleccione el tipo de documento', null);
+      }
+    });
+
+
+    document.querySelector("#addInvoiceButton").addEventListener('click', e => {
+      let data = {};
+      //obtener los datos de facturacion
+      data.invoice_serie = document.querySelector("#invoice_type").value;
+      data.invoice_number = Number.parseInt(document.querySelector("#invoice_number").value);
+      data.invoice_resume = document.querySelector("#invoice_simplification").value;
+      data.invoice_retention = document.querySelector("#invoice_iva_retention").checked;
+      data.invoice_isr = document.querySelector("#invoice_isr_retention").checked;
+      data.sale = __order;
+
+      let invoice_data = {
+        name: document.querySelector("#invoice_name").value,
+        direction: document.querySelector("#invoice_direction").value,
+        giro: document.querySelector("#invoice_giro").value,
+        nit: document.querySelector("#invoice_nit").value,
+        nrc: document.querySelector("#invoice_nrc").value,
+        nota_remision_anterior: document.querySelector("#invoice_nota_remision_anterior").value,
+        cuenta_de: document.querySelector("#invoice_cuenta_de").value,
+        invoice_date: document.querySelector("#invoice_date").value,
+        leyend: document.querySelector("#invoice_leyend").value,
+
+      }
+
+      if (isNaN(data.invoice_number) || data.invoice_number < 1) {
+        return errorMessage('Coloque el numero de la factura');
+      }
+
+      let _s = series[data.invoice_serie];
+      if (_s.type == "ccf") {
+        if (invoice_data.direction.length < 5) {
+          return errorMessage('Coloque la direccion para el Credito Fiscal');
+        } else if (invoice_data.nrc.length < 3) {
+          return errorMessage('Coloque el Numero de Registro para el Credito Fiscal');
+        }
+      }
+
+      data.invoice_data = invoice_data;
+      document.querySelector("#addInvoiceButton").disabled = true;
+
+      postData('/sales/invoice/create_invoice', data).then(data => {
+
+        if (data.status == 'success') {
+          successMessage('Factura Generada');
+          setTimeout(() => {
+            window.location.href = `/sales/view_invoice/${data.sale}`;
+          }, 1500);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          document.querySelector("#addInvoiceButton").disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+      });
+
+
+      //enviar la data
+    });
+
+  });
+</script>

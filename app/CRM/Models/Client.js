@@ -101,6 +101,16 @@ const Client = sequelize.define('Client', {
             this.NRC = value;
         },
     },
+    locked_motivo: {
+        type: DataTypes.STRING(255),
+        defaultValue: null,
+    },
+    locked: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return this.locked_motivo != null && this.locked_motivo != "" ? true : false;
+        },
+    },
 
     nombre: {
         type: DataTypes.VIRTUAL,
@@ -189,7 +199,7 @@ const Client = sequelize.define('Client', {
                     "correo": null
                 }
             }
-            
+
             let data = {
                 'tipoDocumento': null,
                 'numDocumento': null,
@@ -202,9 +212,9 @@ const Client = sequelize.define('Client', {
                 "correo": this.correo
             }
 
-            if(data.telefono.length < 8){
+            if (data.telefono.length < 8) {
                 data.telefono = null;
-            }  
+            }
 
 
             if (["36", "13", "02", "03", "37"].includes(this.tipoDocumento) && this.NIT_DUI !== null && this.NIT_DUI !== "") {

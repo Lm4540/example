@@ -15,6 +15,64 @@ const SalePayment = require('../Models/SalePayment');
 
 const ClientController = {
 
+    blockClient: async (req, res) => {
+        let data = req.body;
+        let client = await Client.findByPk(data.client);
+        if (client) {
+
+            let message = 'Cliente desbloqueado correctamente';
+
+            if (client.locked) {
+                client.locked_motivo = null;
+                let observation = await ClientObservation.create({
+                    client: client.id,
+                    createdBy: req.session.userSession.shortName,
+                    observation: "Cliente desbloqueado",
+                });
+            } else {
+                if (data.motivo && data.motivo.length > 0) {
+                    let sales = await Sale.count({
+                        where: {
+                            client: client.id,
+                            _status: 'process'
+                        }
+
+                    });
+                    if (sales > 0) {
+                        return res.json({
+                            status: 'error',
+                            message: 'No se puede bloquear al cliente, tiene ordenes en proceso'
+                        });
+                    }
+
+                    client.locked_motivo = data.motivo;
+                    message = 'Cliente bloqueado correctamente';
+                    let observation = await ClientObservation.create({
+                        client: client.id,
+                        createdBy: req.session.userSession.shortName,
+                        observation: "Cliente Bloqueado",
+                    });
+                } else {
+                    return res.json({
+                        status: 'error',
+                        message: 'Debe proporcionar un motivo para bloquear al cliente'
+                    });
+                }
+            }
+
+            await client.save();
+            return res.json({
+                status: 'success',
+                message: message,
+            });
+        }
+
+        return res.json({
+            status: 'error',
+            message: 'Cliente no encontrado',
+        });
+    },
+
 
     getClientsView: (req, res) => {
         return res.render('CRM/Client/clients', { pageTitle: 'Cliente Registrados' });
@@ -347,7 +405,7 @@ const ClientController = {
                     for_update.departamento = data.departamento;
                     for_update.municipio = data.municipio;
                     for_update.distrito = data.distrito;
-                } 
+                }
 
 
                 if (client.distrito !== data.distrito) {

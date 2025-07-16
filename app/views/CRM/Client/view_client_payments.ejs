@@ -301,11 +301,11 @@
 
         }
 
-        if (order.invoice_number == null) {
-          content += `<span class="badge bg-secondary" onclick="create_invoice('${ order.id }');"> Realizar la Factura</span>`;
-        } else {
+        if (order.invoice_number != null) {
+          // content += `<span class="badge bg-secondary" onclick="create_invoice('${ order.id }');"> Realizar la Factura</span>`;
           content += `<a href="/sales/view_invoice/${ order.id }" class="badge bg-secondary">Ver factura</a>`;
         }
+        
         content += `<br><a href="/sales/view/${ order.id }" class="badge bg-blue mt-2">Ver Venta</a>`;
         let _balance = fix_number(Number.parseFloat(order.balance) + Number.parseFloat(order.delivery_amount) - Number.parseFloat(order.collected));
         if (_balance > 0) {

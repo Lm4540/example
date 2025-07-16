@@ -514,7 +514,7 @@
   }
 
 
-  const print_ticket = async (data) => {
+  const print_ticket = async (data, amount = 0.00) => {
     if (!isConnected) {
       isConnected = await printer.connect();
     }
@@ -594,7 +594,7 @@
         .newLineN(5)
         .cut();
 
-      if (document.querySelector("#openChashDrwaer").checked) {
+      if (document.querySelector("#openChashDrwaer").checked && !isNaN(amount) && amount > 0) {
         esc.cashDrawer();
       }
 
@@ -803,9 +803,10 @@
                   <button onclick="reprint_ticket()" class="btn round btn-outline-secondary ml-2 mr-2">Reimprimir Ticket</button>
               </td>
             </tr>`;
-          document.querySelector("#cash_payed_amount").value = "";
           if (document.querySelector("#printTicket").checked) {
-            print_ticket(data.json.dte);
+            print_ticket(data.json.dte, Number.parseFloat(document.querySelector("#cash_payed_amount").value));
+            document.querySelector("#cash_payed_amount").value = "";
+            clear_interfaz();
           }
           e.target.disabled = false;
         } else if (data.status == 'errorMessage') {
@@ -817,7 +818,6 @@
           return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
         }
 
-        clear_interfaz();
       });
     });
 

@@ -230,6 +230,26 @@
 
   document.addEventListener('DOMContentLoaded', event => {
 
+    document.querySelector("#bloquearClienteBTN").addEventListener('click', e => {
+      postData('/sales/client/block', {
+        client: '<%= cliente.id %>',
+        motivo: document.querySelector("#locked_reason").value
+      }).then(data => {
+        if (data.status == 'success') {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+          return successMessage('Cliente Actualizado');
+        } else {
+          return errorMessage(data.message || "Error Al Actualizar el cliente");
+        }
+      });
+
+    });
+
+
+
+
     clean_detail_inputs();
     document.querySelector("#free_toggle").style.display = "none";
 
@@ -266,7 +286,7 @@
         document.querySelector("#delivery_provider").disabled = true;
       }
 
-      
+
     });
 
     document.querySelector("#delivery_provider").addEventListener('change', e => {

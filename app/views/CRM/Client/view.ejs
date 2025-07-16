@@ -42,6 +42,7 @@
 	</a>
 	<div class="dropdown-menu dropdown-menu-center" style="min-width: 250px;">
 	  <a class="list-group-item" href="javascript:void(0)" onclick="create_payment()"><i class="fas fa-clipboard-list mr-3"></i>Registrar pago</a>
+    <a class="list-group-item" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#block_clientModal"><i class="fas fa-clipboard-list mr-3"></i>Bloquear-Reportar / Desbloquear</a>
 	 
     <a class="list-group-item" href="javascript:history.back()"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atras</a>
 	</div>
@@ -62,7 +63,7 @@
       </h3>
       <div class="row">
         <div class="col-12 col-md-8">
-          <% if (cliente.type == 'minor') { %>
+          <% if (false) { %>
           <div class="text-center mb-3 mt-3">
             <button class="btn btn-lg btn-round btn-success" onclick="new_sale()">Registrar Pedido</button>
           </div>
@@ -85,6 +86,15 @@
               </div>
 
               <% } else { %>
+              <% if (cliente.locked) { %>
+              <h3 class="text-center text-danger">
+                Este cliente esta bloqueado, no puede realizar pedidos
+              </h3>
+              <h4 class="text-center text-danger"><%= cliente.locked_motivo %></h4>
+              <span style="display: none;" id="close_order"></span>
+              <span style="display: none;" id="show_to_add"></span>
+              <% } else { %>
+
               <h3>Pedido Actual <span id="span_sale_balance"></span></h3>
 
               <div class="text-center mb-3 mt-3">
@@ -94,6 +104,7 @@
                 <span class="badge bg-success" style="cursor:pointer; display: none;" id="close_order">Cerrar Pedido</span>
                 <% } %>
               </div>
+              <% } %>
               <% } %>
             </div>
 
@@ -172,7 +183,7 @@
               <div class="row" id="div_add_details">
                 <% if (in_process == null) { %>
                 <h5 class="text-center text-danger text-800 mb-5">
-                  No hay pedido abierto :( ... pero puedes abrir uno inmediatamente
+                  No hay pedido abierto...
                 </h5>
                 <% } else { %>
 
@@ -359,12 +370,10 @@
 
                       <% } %>
 
-                      <% if (order.invoice_number == null) { %>
-                      <span class="badge bg-secondary" onclick="create_invoice('<%= order.id %>');"> Realizar la Factura</span>
-                      <% } else { %>
+                      <% if (order.invoice_number != null) { %>
                       <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
-                      <% } %>
                       <br>
+                      <% } %>
                       <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
                       <% if (order.collected < Helper.fix_number(order.balance + order.delivery_amount)) { %>
@@ -667,8 +676,6 @@
 <%- include('view_client_add_invoice.ejs') %>
 <%- include('view_client_sale_option.ejs') %>
 <%- include('view_client_payments.ejs') %>
-<% if (cliente.has_web_access) { %>
-  <%- include('view_client_catalogs.ejs') %>
-<% } %>
+<%- include('view_client_catalogs.ejs') %>
 
 </html>

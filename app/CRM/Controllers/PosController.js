@@ -2513,16 +2513,14 @@ module.exports = {
      },
 
     dte_report_data: async (req, res) => {
-
         let data = req.body;
-
         let where = {
             tipo: data.tipo,
             trasnmitido: 1
         };
+
         if(data.sucursal !== 'all') {
             where.sucursal = data.sucursal;
-        
         }
         if (data.desde && data.hasta) {
             where.fecEmi = {
@@ -2545,10 +2543,65 @@ module.exports = {
     },
 
     dte_cost_report: async (req, res) => {
-        return res.render('POS/report/cost_report');
+
+        let sucursals = await Sucursal.findAll();
+        let _sucursals = {};
+        sucursals.forEach(suc => {
+            _sucursals[suc.id] = suc.name;
+        });
+        return res.render('POS/report/cost_report', {
+            sucursals: sucursals,
+            _sucursals,
+            dte_types
+        });
     },
 
-    dte_cost_report_data: async (req, res) => { },
+    dte_cost_report_data: async (req, res) => {
+
+        let data = req.body;
+        let where = {
+            tipo: data.tipo,
+            trasnmitido: 1
+        };
+
+        let sql = `select sale from crm_dte where tipo = "${data.tipo}" and trasnmitido = 1`; 
+
+        if(data.sucursal !== 'all') {
+            sql += ` and sucursal = ${data.sucursal}`;
+            where.sucursal = data.sucursal;
+        }
+        if (data.desde && data.hasta) {
+            sql += ` and fecEmi between "${data.desde}" and "${data.hasta}"`;
+            where.fecEmi = {
+                [Op.between]: [data.desde, data.hasta]
+            };
+        }
+
+        let dtes = await DTE_Model.findAll({
+            where: where,
+            order: [['fecEmi', 'ASC']]
+        });
+
+        //buscar las ventas relacionadas
+        let tmp = await sequelize.query(`Select * from crm_sale where id in (${sql})`, {
+            type: QueryTypes.SELECT,
+            model: Sale,
+            mapToModel: true,
+        });
+
+        let sales = {};
+
+        tmp.forEach(sale => {
+            sales[sale.id] = sale;
+        });
+
+        return res.json({
+            status: 'success',
+            dtes: dtes,
+            sales
+        });
+
+    },
 
 
 

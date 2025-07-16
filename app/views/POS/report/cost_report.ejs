@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container-fluid">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title text-center">
+            Reporte de DTE's generados
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="tipo">Tipo de DTE</label>
+                <select name="tipo" id="tipo" class="form-control">
+                  <option value="01">Factura Electronica</option>
+                  <option value="03">Comprobante de Credito Fiscal Electronico</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="form-group">
+                <label for="desde">Desde</label>
+                <input type="date" name="desde" id="desde" class="form-control" min="2025-07-01" value="<%= Helper.date_to_input(null, true) %>">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="hasta">Hasta</label>
+                <input type="date" name="hasta" id="hasta" class="form-control" max="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+              </div>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="sucursal">Sucursal</label>
+                <select name="sucursal" id="sucursal" class="form-control">
+                  <% sucursals.forEach(suc => { %>
+                  <option value="<%= suc.id %>"><%= suc.name %></option>
+                  <% }) %>
+                  <option value="all">Todas las Sucursales</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col text-center align-items-center">
+              <button class="btn btn-outline-primary mt-3 round" id="generarBtn">Generar Reporte</button>
+              <button class="btn btn-outline-success mt-3 round" id="ExcelBtn">Descargar XLSX</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+        </div>
+      </div>
+
+
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover table-sm" id="tablaReporte">
+          <tbody id="reportData">
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/js/xlsx.mini.min.js"></script>
+<script>
+  var report_data = null;
+  var _data = null;
+  const _sucursales = JSON.parse('<%- JSON.stringify(_sucursals) %>');
+  const dte_types = JSON.parse('<%- JSON.stringify(dte_types) %>');
+
+  const f_date = date => {
+    if (!date) return '';
+    const d = new Date(date + ' 06:01:00');
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+
+
+  const generar_reporte = (option) => {
+    if (report_data.length < 1) {
+      document.getElementById('reportData').innerHTML = `<tr><td class="text-center text-danger">No se encontraron datos para el reporte</td></tr>`;
+      return errorMessage('No se encontraron datos para el reporte');
+    }
+
+    var tipo_documento = document.getElementById('tipo').value;
+
+    let filas = [];
+
+    if (tipo_documento == "03") {
+      filas.push([
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'TOTAL DE VENTAS',
+        'COSTO DE VENTA',
+        'NIT O NRC DEL CLIENTE',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'Invalidado', 
+        'Ajustado',
+        'Sucursal',
+        'opciones'
+      ]);
+
+
+      report_data.dtes.forEach(dte => {
+        if (dte.invalidacion !== null) {
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            dte.dte.receptor.nit,
+            dte.dte.receptor.nombre,
+            0.00,
+            0.00,
+            0.00,
+            0.00,
+            'SI',
+            dte.nc !== null ? "SI" : "NO",
+            _sucursales[dte.sucursal],
+            `<span onclick="ver_detalle('/sales/view_pays/30982')" class="badge bg-purple mr-1 mb-1">Ver Pagos</span>
+             <span onclick="ver_detalle('/sales/view_cost/30982')" class="badge bg-warning">Ver detalle</span>
+             <a href="/sales/view_invoice/30982" class="badge bg-primary">Ver factura</a>`
+          ]);
+        } else {
+
+
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            dte.dte.receptor.nit,
+            dte.dte.receptor.nombre,
+            dte.dte.resumen.totalExenta,
+            dte.dte.resumen.totalGravada,
+            dte.dte.resumen.tributos[0].valor,
+            dte.dte.resumen.montoTotalOperacion,
+            'NO',
+            dte.nc !== null ? "SI" : "NO",
+            _sucursales[dte.sucursal],
+          ]);
+        }
+      });
+
+    } else if (tipo_documento == "01") {
+
+      filas.push([
+          'FECHA',
+          'NUMERO DE CONTROL',
+          'SELLO DE RECEPCION',
+          'CODIGO DE GENERACION',
+          'VENTAS EXENTAS',
+          'VENTAS GRAVADAS LOCALES',
+          'TOTAL DE VENTAS',
+          'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN', 'Invalidado', 'Sucursal', 'opciones'
+        ]);
+
+     report_data.dtes.forEach(dte => {
+          if (dte.invalidacion !== null) {
+
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              0.00,
+              0.00,
+              0.00,
+              dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
+              'SI',
+              _sucursales[dte.sucursal],
+            ]);
+          } else {
+            
+
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              dte.dte.resumen.totalPagar,
+              dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
+              'NO',
+              _sucursales[dte.sucursal],
+            ]);
+          }
+
+        });
+
+
+    }
+
+
+    let contentBody = '';
+    document.getElementById('reportData').innerHTML = contentBody;
+
+    _data = filas;
+
+  };
+
+  document.addEventListener('DOMContentLoaded', event => {
+    const generarBtn = document.getElementById('generarBtn');
+    const ExcelBtn = document.getElementById('ExcelBtn');
+
+    generarBtn.addEventListener('click', e => {
+      _data = null;
+
+      document.getElementById('reportData').innerHTML = `<div class="d-flex flex-column justify-content-center align-items-center" style="height: 150px; border: 1px dashed #ccc; margin-top: 20px;">
+            <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden"></span>
+            </div>
+            <p class="mt-2">Generando Reporte...</p>
+            </div>`;
+
+      let data = {
+        tipo: document.getElementById('tipo').value,
+        desde: document.getElementById('desde').value,
+        hasta: document.getElementById('hasta').value,
+        sucursal: document.getElementById('sucursal').value,
+      }
+      // report: document.getElementById('report').value,
+
+
+      postData('/pos/cost_report', data).then(data => {
+        if (data.status == 'success') {
+          report_data = data;
+          generar_reporte();
+        } else if (data.status == 'errorMessage') {
+          return errorMessage(data.message);
+        } else {
+          console.log(data)
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+      });
+    });
+
+    ExcelBtn.addEventListener('click', e => {
+
+      // obtener todos los TR de la tabla y pasarlos a celdas de excel
+      let name = `Reporte_DTE_${document.getElementById('tipo').value}_${document.getElementById('desde').value}_${document.getElementById('hasta').value}`;
+      let archivos = obtenerContenidoTabla('tablaReporte');
+
+      var wb = XLSX.utils.book_new();
+
+      // const wb = XLSX.utils.table_to_book(document.querySelector("#tablaReporte"));
+      wb.SheetNames.push("reporte");
+      wb.Sheets["reporte"] = XLSX.utils.aoa_to_sheet(_data);
+      XLSX.writeFile(wb, `${name}.xlsx`);
+
+    });
+  });
+</script>
+
+</html>
