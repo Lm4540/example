@@ -78,7 +78,7 @@
                 </tr>
 
                 <% if (user.sucursal == 1) { %>
-                
+
                 <tr>
                   <td>Consultar ultima ubicación </td>
                   <td>
@@ -190,6 +190,50 @@
                           </td>
                         </tr>
                         <% }) %>
+
+
+                        <% if (in_transit.length > 0 ) { %>
+                        <% in_transit.forEach(ele => { %>
+                        <% if (ele.sale_detail !== null && ele.sale_detail.length > 0) { %>
+                          <% ele.sale_detail.forEach(element => { %>
+                            <tr>
+                              <td>--</td>
+                              <td>
+                                <%= clients_in_transit[element.id].name %> <br>
+                              </td>
+                              <td>
+                                <%= element.cant %> Unidades Solicitadas
+                              </td>
+                              <td> Envio <%= ele.shipment %></td>
+                              <td>
+                                <%= element.by %>
+                              </td>
+                              <td>
+                                <a href="/inventory/shipment/<%= ele.shipment %>" class="badge bg-purple"> Ver Envio</a>
+                                <a href="/sales/view/<%= clients_in_transit[element.id].sale %>" class="badge bg-success">Ver Venta</a>
+                                <a href="/sales/client/view/<%= clients_in_transit[element.id].client %>" class="badge bg-blue">Ver Cliente</a>
+                              </td>
+                            </tr>
+
+                          <% }) %>
+                        <% } else { %>
+                        <tr>
+                          <td>--</td>
+                          <td>
+                            Producto en Transito
+                          </td>
+                          <td>
+                            <%= ele.cant %> Unidades Solicitadas
+                          </td>
+                          <td> Envio <%= ele.shipment %></td>
+                          <td> --</td>
+                          <td>
+                            <a href="/inventory/shipment/<%= ele.shipment %>" class="badge bg-purple"> Ver Envio</a>
+                          </td>
+                        </tr>
+                        <% } %>
+                        <% }) %>
+                        <% } %>
                       </tbody>
                     </table>
                   </div>

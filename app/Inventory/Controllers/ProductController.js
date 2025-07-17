@@ -5,6 +5,8 @@ const Sucursal = require('../Models/Sucursal');
 const Stock = require('../Models/Stock');
 const SaleDetail = require('../../CRM/Models/SaleDetail');
 const Movement = require('../Models/Movement');
+const ShipmentDetail = require('../Models/ShipmentDetail');
+const Client = require('../../CRM/Models/Client');
 
 const axios = require('axios').default;
 const Helper = require('../../System/Helpers');
@@ -16,6 +18,7 @@ const fs = require('fs');
 const StockReserve = require('../Models/StockReserve');
 const Sale = require('../../CRM/Models/Sale');
 const CatalogDetail = require('../../Web/Models/CatalogDetail');
+const { raw } = require('mysql2');
 
 
 
@@ -175,6 +178,7 @@ const ProductController = {
         let classification = await ProductClassification.findAll({ attributes: ['id', 'name'], order: [['name', 'asc']] });
         res.render('Inventory/Product/create', { pageTitle: 'Crear nuevo Producto', classification });
     },
+
     createProduct: async (req, res) => {
         let data = req.body;
         let message = null;
@@ -341,9 +345,11 @@ const ProductController = {
             }
         }
     },
+
     getProductsView: (req, res) => {
         res.render('Inventory/Product/products', { pageTitle: 'Productos registrados' });
     },
+
     getProductsToTable: async (req, res) => {
         let params = req.query;
         var query_options = {};
@@ -499,13 +505,57 @@ const ProductController = {
             type: QueryTypes.SELECT
         });
 
+        let in_transit = await sequelize.query('SELECT * FROM inventory_shipment_detail WHERE shipment in (SELECT id FROM inventory_shipment WHERE isIn = 0) and product = :product', {
+            replacements: { product: product.id },
+            type: QueryTypes.SELECT,
+            model: ShipmentDetail
+        });
+
+        //ids de los detalles de la venta que estan en transito
+        let _ids_ = ``;
+
+        //nombres de los clientes que tienen productos en transito
+        let clients_in_transit = {};
+
+        if (in_transit.length > 0){
+
+
+            in_transit.forEach((el) => {
+
+                if(el.sale_detail !== null && el.sale_detail.length > 0){
+
+                    el.sale_detail.forEach(sd => {
+                        _ids_ += `${sd.id},`;
+                    });
+
+                }
+
+            });
+
+            if(_ids_.length > 0) {
+                
+                _ids_ = await sequelize.query(`select crm_sale_detail.id, crm_sale_detail.sale, crm_sale.client, crm_client.name from crm_sale_detail inner join crm_sale on crm_sale.id = crm_sale_detail.sale inner join crm_client on crm_sale.client = crm_client.id where crm_sale_detail.id in (${_ids_.slice(0, -1)});`, {
+                    logging: console.log,
+                    type: QueryTypes.SELECT,
+                    raw : true,
+                } );
+                
+                _ids_.forEach(ele => {
+                    clients_in_transit[ele.id] = ele;
+                });
+                
+            }
+        }
+
+        console.log(in_transit, clients_in_transit)
+
         //
 
         res.render('Inventory/Product/view', {
             product,
             pageTitle: product.name,
             stock, almacen, classification,
-            in_reserve, transfers, catalogs
+            in_reserve, transfers, catalogs, in_transit, clients_in_transit
         });
 
     },
