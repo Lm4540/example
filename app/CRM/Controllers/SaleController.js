@@ -1705,19 +1705,20 @@ const SaleController = {
                         serie = await InvoiceSeries.findByPk(sale.invoce_serie);
                     }
 
-                    if(sale.invoice_type == "dte"){
+                    if (sale.invoice_type == "dte") {
                         let dte = await DTE.findByPk(sale.invoice_number);
 
 
-                        return res.render('CRM/Sales/viewPayments_dte', { 
-                            pageTitle: 'Venta ID:' + sale.id, 
-                            sucursal, 
-                            sale, 
-                            seller, 
-                            cliente, 
-                            status, 
-                            payments, dte });
-                            
+                        return res.render('CRM/Sales/viewPayments_dte', {
+                            pageTitle: 'Venta ID:' + sale.id,
+                            sucursal,
+                            sale,
+                            seller,
+                            cliente,
+                            status,
+                            payments, dte
+                        });
+
                     }
                     return res.render('CRM/Sales/viewPayments', { pageTitle: 'Venta ID:' + sale.id, sucursal, sale, seller, cliente, status, payments, serie });
                 }
@@ -2134,70 +2135,70 @@ const SaleController = {
             return { status: 'errorMessage', message: 'Cliente no seleccionado' };
         }
 
-        if (client.seller !== session.employee.id && !session.permission.includes('update_sales_of_another_user')) {
+        if (client.seller !== session?.employee?.id && !session?.permission?.includes('update_sales_of_another_user')) {
             return { status: 'errorMessage', message: 'No tienes permiso para agregar productos a este cliente' };
         }
 
 
-        try {
-            data.cant = Number.parseInt(data.cant);
-            data.price = Number.parseFloat(data.price);
+        data.cant = Number.parseInt(data.cant);
+        data.price = Number.parseFloat(data.price);
 
-            let sale = await Sale.findOne({
+        let sale = await Sale.findOne({
+            where: {
+                [Op.and]: {
+                    client: data.client,
+                    _status: 'process'
+                }
+            }
+        });
+
+
+        let detail_count = 0;
+        let detail = null;
+        if (sale !== null && sale !== undefined) {
+            if (sale.sucursal !== session?.employee?.sucursal) {
+                // Eliminado el permiso && !session.permission.includes('update_sales_of_another_sucursal') porque reservaba cosas de la sucursal incorrecta
+                return { status: 'errorMessage', message: 'No puedes agregar productos a una venta de otra sucursal' };
+
+            }
+            //token
+            detail_count = await SaleDetail.count({ where: { sale: sale.id } });
+        }
+
+        let product = await Product.findByPk(data.product);
+        if (product == null) {
+            return { status: 'errorMessage', message: 'Producto no encontrado' };
+
+        }
+
+        //buscar el stock que pertenece a la sucursal seleccionada
+
+
+        let stock = await Stock.findOne({
+            where: {
+                product: data.product,
+                sucursal: session.employee.sucursal
+            }
+        });
+
+
+        if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) {
+            return { status: 'errorMessage', message: 'No hay suficientes Existencias en tu sucursal asignada para poder agregar este producto' };
+        }
+
+        //buscar a ver si ya hay un detalle existente
+        if (detail_count > 0) {
+            detail = await SaleDetail.findOne({
                 where: {
                     [Op.and]: {
-                        client: data.client,
-                        _status: 'process'
+                        sale: sale.id,
+                        product: data.product,
+                        price: data.price
                     }
                 }
             });
-
-
-            let detail_count = 0;
-            let detail = null;
-            if (sale !== null && sale !== undefined) {
-                if (sale.sucursal !== session.employee.sucursal) {
-                    // Eliminado el permiso && !session.permission.includes('update_sales_of_another_sucursal') porque reservaba cosas de la sucursal incorrecta
-                    return { status: 'errorMessage', message: 'No puedes agregar productos a una venta de otra sucursal' };
-
-                }
-                //token
-                detail_count = await SaleDetail.count({ where: { sale: sale.id } });
-            }
-
-            let product = await Product.findByPk(data.product);
-            if (product == null) {
-                return { status: 'errorMessage', message: 'Producto no encontrado' };
-
-            }
-
-            //buscar el stock que pertenece a la sucursal seleccionada
-
-
-            let stock = await Stock.findOne({
-                where: {
-                    product: data.product,
-                    sucursal: session.employee.sucursal
-                }
-            });
-
-
-            if (stock == null || stock == undefined || (stock.cant - stock.reserved < data.cant)) {
-                return { status: 'errorMessage', message: 'No hay suficientes Existencias en tu sucursal asignada para poder agregar este producto' };
-            }
-
-            //buscar a ver si ya hay un detalle existente
-            if (detail_count > 0) {
-                detail = await SaleDetail.findOne({
-                    where: {
-                        [Op.and]: {
-                            sale: sale.id,
-                            product: data.product,
-                            price: data.price
-                        }
-                    }
-                });
-            }
+        }
+        try {
 
             return await sequelize.transaction(async (t) => {
 
