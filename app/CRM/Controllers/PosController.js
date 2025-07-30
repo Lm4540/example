@@ -630,7 +630,7 @@ module.exports = {
 
         let sales = await Sale.findAll({
             where: {
-                _status: { [Op.in]: ['closed', 'prepared', 'delivered', 'transport'] },
+                _status: { [Op.in]: ['closed', 'prepared', 'delivered', 'transport', 'collected'] },
                 invoice_type: { [Op.is]: null },
                 sucursal: req.session.sucursal,
             },

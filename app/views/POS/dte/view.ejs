@@ -137,10 +137,11 @@
 
       <!-- Botones en la parte inferior -->
       <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-success btn-lg rounded-pill shadow-sm">PDF</a>
-        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="btn btn-danger btn-lg rounded-pill shadow-sm">JSON</a>
-
-
+        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-outline-success btn-lg rounded-pill ml-2 mr-2 shadow-sm">PDF</a>
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class=" ml-2 mr-2 btn btn-outline-danger btn-lg rounded-pill shadow-sm">JSON </a>
+        <% if (dte.dte.identificacion.tipoDte == "01") { %>
+        <button class="btn btn-outline-primary btn-lg rounded-pill shadow-sm ml-2 mr-2" onclick="print_ticket();">Reimprimir Ticket</button>
+        <% } %>
       </div>
     </section>
 
@@ -150,7 +151,104 @@
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
+<% if (dte.dte.identificacion.tipoDte == "01") { %>
+<script src="assets/js/web-escpos-printer-localserver.js?v=20250704"></script>
 <script>
+  const printer = new WebPOSPrinterLocalServer();
+  var data = `<%- JSON.stringify(dte.dte) %>`;
+  data = JSON.parse(data);
+  var isConnected = false;
+  var error_printing = null;
+  const helper_url = '<%= helper_url %>';
+
+  const print_ticket = async ( ) => {
+    if (!isConnected) {
+      isConnected = await printer.connect();
+    }
+
+    if (isConnected && error_printing == null) {
+      commands = null;
+      const esc = new ESCPOSBuilder();
+
+      esc.initialize().setFont('A')
+        .align('center').bold(true).doubleHeightWidth(true)
+        .text(data.emisor.nombreComercial)
+        .doubleHeightWidth(false).newLine()
+        .text(data.emisor.nombre)
+        .bold(false).newLine()
+        .text('NRC: ' + data.emisor.nrc + ' NIT: ' + data.emisor.nit)
+        .newLineN(2)
+        .text('=========================================')
+        .newLine().text('Datos del Cliente');
+      if (data.receptor.nombre != "" && data.receptor.nombre != null) {
+        esc.newLine().text(data.receptor.nombre);
+        
+      } else {
+        esc.newLine().text('CONSUMIDOR FINAL');
+      }
+      esc.newLine().text('=========================================').setFont('B')
+        .newLine().text(`Tipo DTE: Factura}`)
+        .newLine().text(`Modelo de Facturacion: ${data.identificacion.tipoModelo == 1 ? 'Previo' : 'Diferido'}`)
+        .newLine().text(`Tipo de Transmision: ${data.identificacion.tipoOperacion == 1 ? 'Normal' : 'Contingencia'}`)
+        .newLine().text('Fecha de Emision: ' + format_date(data.identificacion.fecEmi + " " + data.identificacion.horEmi, true))
+        .newLine().text('Codigo de Generacion:')
+        .newLine().text(data.identificacion.codigoGeneracion)
+        .newLine().text('Numero de Control:')
+        .newLine().text(data.identificacion.numeroControl);
+
+      if (data.identificacion.tipoOperacion == 1) {
+        esc.newLine().text('Sello de Recibido:')
+          .newLine().text(data.selloRecibido);
+      }
+      esc.newLine().qr(`https://admin.factura.gob.sv/consultaPublica?ambiente=${data.identificacion.ambiente}&codGen=${data.identificacion.codigoGeneracion}&fechaEmi=${data.identificacion.fecEmi}`, 5).newLine();
+      esc.align('left')
+        .newLine()
+        .text(`${String('Codigo').padEnd(23, ' ')}${String('cant').padStart(7)}${String('Precio').padStart(11)}${String('Subtotal').padStart(11, ' ')}`);
+
+      const lar_ = data.cuerpoDocumento.length;
+      for (let i = 0; i < lar_; i++) {
+        let item = data.cuerpoDocumento[i];
+        let name = item.descripcion.length > 48 ? item.descripcion.substring(0, 48) : item.descripcion.padEnd(48)
+        let code = item.codigo.length > 23 ? item.codigo.substring(0, 23) : item.codigo.padEnd(23);
+        const qty = String(item.cantidad).padStart(7);
+        const price = String(`$ ${money_format(item.precioUni)}`).padStart(10);
+        const itemTotal = String(`$ ${money_format(item.ventaGravada)}`).padStart(10);
+        esc.newLine().text(`${name}`)
+          .newLine().text(`${code}${qty}${price}${itemTotal}`);
+      }
+
+      esc.newLineN(2)
+        .text(`${String("Sub-Total Ventas Gravadas").padEnd(39, ' ')}$${String(money_format(data.resumen.totalGravada)).padStart(10, ' ')}`);
+      if (data.resumen.tributos !== null && data.resumen.tributos.length > 0) {
+        for (let index = 0; index < data.resumen.tributos.length; index++) {
+          const element = data.resumen.tributos[index];
+          esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`)
+        }
+      }
+      esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`)
+        .newLine().text(`${String("Retencion de Renta").padEnd(39, ' ')}$${String(money_format(data.resumen.reteRenta)).padStart(10, ' ')}`)
+        .newLine().setFont('A').bold(true).text(`${String("Total a Pagar    $")}${String(money_format(data.resumen.montoTotalOperacion)).padStart(10, ' ')}`)
+        .bold(false)
+        .align('center')
+        .newLineN(2)
+        .text('Descargue su factura en el siguiente QR:')
+        .qr(`${helper_url}/utils/services/dte/inline?uuid=${data.identificacion.codigoGeneracion}&fecha=${data.identificacion.fecEmi}`, 4).newLineN(2)
+        .text('Gracias por su compra')
+        .newLineN(5)
+        .cut();
+
+     
+
+      commands = esc.build();
+      await printer.sendCommands(commands);
+      return;
+    } else {
+      error_printing = "Impresora no disponible";
+    }
+
+
+  };
 </script>
+<% } %>
 
 </html>

@@ -304,6 +304,8 @@
         if (order.invoice_number != null) {
           // content += `<span class="badge bg-secondary" onclick="create_invoice('${ order.id }');"> Realizar la Factura</span>`;
           content += `<a href="/sales/view_invoice/${ order.id }" class="badge bg-secondary">Ver factura</a>`;
+        }else{
+          content += `<span class="text-danger">Factura Pendiente</span>`;
         }
         
         content += `<br><a href="/sales/view/${ order.id }" class="badge bg-blue mt-2">Ver Venta</a>`;

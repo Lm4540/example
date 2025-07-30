@@ -373,6 +373,9 @@
                       <% if (order.invoice_number != null) { %>
                       <a href="/sales/view_invoice/<%= order.id %>" class="badge bg-secondary">Ver factura</a>
                       <br>
+
+                      <% } else { %>
+                       <span class="text-danger">Factura Pendiente</span><br>
                       <% } %>
                       <a href="/sales/view/<%= order.id %>" class="badge bg-blue mt-2">Ver Venta</a>
 
