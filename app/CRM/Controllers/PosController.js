@@ -1576,6 +1576,8 @@ module.exports = {
     process_manual_dte: async (req, res) => {
         let isValid = false;
         let data = req.body;
+
+        console.log(data);
         let sucursal = await Sucursal.findByPk(req.session.sucursal);
         let caja = await PettyCash.findOne({ where: { sucursal: sucursal.id }, order: [['id', 'ASC']] });
         if (sucursal == null || caja === null) { return res.json({ status: 'errorMessage', message: 'Sucursal o Caja no encontradas' }); }
@@ -1873,8 +1875,6 @@ module.exports = {
 
         } else if (data.dte_type == '14') {
 
-
-
             dte_json = {
                 identificacion: {
                     version: 1,
@@ -1997,6 +1997,9 @@ module.exports = {
                 });
             }
         }
+
+
+        return res.json({ status: 'errorMessage', message: 'Tipo de DTE no soportado' });
     },
 
     data_generar_pruebas: async (req, res) => {
