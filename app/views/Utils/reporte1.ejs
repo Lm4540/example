@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Clientes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <div class="container mt-5">
+    <h1 class="mb-4">📋 Listado de Clientes</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title text-center">
+          <h5>Elije las opciones para filtrar</h5>
+        </div>
+
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="date">Fecha</label>
+              <input type="date" class="form-control" id="date" name="date">
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="form-group">
+              <label for="sucursal">Sucursal</label>
+              <select name="sucursal" id="sucursal" class="form-control">
+                <% sucursals.forEach(s => { %>
+                <option value="<%= s.id %>"><%= s.name %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="col">
+            <button class="btn btn-outline-primary round mt-3" onclick="buscar()">Buscar</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+
+    <h3 class="text-center mt-5 mb-5">Ventas <%= sucursal.name %></h3>
+
+    <div class="table-responsive">
+      <table class="table table-sm  table-bordered">
+        <thead >
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Monto Comprado</th>
+            <th scope="col">Total Envios</th>
+            <th scope="col">Retiros en tienda</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (keys.length > 0) { %>
+          <% keys.forEach(key => {
+                              let cliente = clients[key] %>
+          <tr>
+            <td><%= cliente.id %></td>
+            <td><%= cliente.name %></td>
+            <td><%= cliente.amount %></td>
+            <td><%= cliente.delivery %></td>
+            <td><%= cliente.local %></td>
+          </tr>
+          <% }); %>
+          <% } else { %>
+          <tr>
+            <td colspan="5" class="text-center">No hay clientes para mostrar.</td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</body>
+<script>
+  const buscar = () => {
+    const date = document.getElementById('date').value;
+    const sucursal = document.getElementById('sucursal').value;
+
+    if (!date || !sucursal) {
+      alert('Por favor, completa todos los campos.');
+      return;
+    }
+
+    window.location.href = `/utils/reporte1?date=${date + ' 00:00' }&sucursal=${sucursal}`;
+  }
+</script>
+
+</html>

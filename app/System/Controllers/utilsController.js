@@ -647,6 +647,62 @@ const UtilsController = {
                 name: ''
             }
         ]
+    },
+
+
+    reporte1: async (req, res) => {
+       //buscar las ventas finalizadas en los ultimos dos meses, el estado debe ser collected y seran divididas por sucursal(parametro get), no se incluiran ventas de cliente de proceso
+        let sucursal = await  Sucursal.findByPk(req.query.sucursal ? req.query.sucursal : 1);
+        let sucursals = await Sucursal.findAll();
+        var fecha = null;
+        if (req.query.date) {
+            fecha = new Date(req.query.date);
+        }else{
+            fecha = new Date();
+            fecha.setMonth(fecha.getMonth() - 2);
+        }
+
+        let tmp = await  sequelize.query(`select * from crm_client where id in (SELECT client FROM crm_sale WHERE sucursal = ${sucursal.id} and _status = 'collected' and endAt >= :fecha)`, {
+            replacements: { fecha: fecha },
+            type: QueryTypes.SELECT,
+            model: Client
+        });
+        
+        
+        let clients = {};
+        tmp.forEach(client => { 
+            clients[client.id] = {
+                name: client.name,
+                id: client.id,
+                sales: [],
+                amount: 0.00,
+                delivery: 0,
+                local: 0,
+            };
+        });
+        
+        tmp = await Sale.findAll({
+            where: {
+                sucursal: sucursal.id,
+                _status: 'collected',
+                endAt: {
+                    [Op.gte]: fecha
+                }
+            },
+        });
+
+        tmp.forEach(sale => {
+            if (sale.client && clients[sale.client]) {
+                clients[sale.client].sales.push(sale);
+                clients[sale.client].amount = Helper.fix_number(clients[sale.client].amount + sale.balance + sale.delivery_amount);
+                sale.delivery_type == "delivery" ? clients[sale.client].delivery++ : clients[sale.client].local++;
+            }
+        });
+
+
+        let keys = Object.keys(clients);
+
+        return res.render('Utils/reporte1', {clients , keys, sucursal, sucursals});
     }
 };
 
