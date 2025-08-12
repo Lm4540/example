@@ -139,6 +139,7 @@ const Sale = sequelize.define('Sale', {
         defaultValue: false,
     },
     invoice_date: { type: DataTypes.DATE, },
+   
     endAt: { type: DataTypes.DATE, },
     locked: {
         type: DataTypes.BOOLEAN,
@@ -153,6 +154,11 @@ const Sale = sequelize.define('Sale', {
         set(param) {
             this.setDataValue('taxes', JSON.stringify(param == null ? [] : param));
         }
+    },
+     closed_date : { 
+        type: DataTypes.DATE, 
+        allowNull: true,
+        defaultValue: null
     },
 }, {
     tableName: 'crm_sale',

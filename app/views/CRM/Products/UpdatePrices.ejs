@@ -277,11 +277,14 @@
       } else if (data.major > data.detail) {
          return errorMessage('El precio de detalle no puede ser más bajo que el precio de mayor');
       } else {
-         element.parentNode.removeChild(element);
+         let parent = element.parentNode;
+         parent.removeChild(element);
+         parent.innerHTML = `<span class="text-warning">Actualizando...</span>`;
+         
          postData('/sales/update_price', data)
             .then(res => {
                if (res.status == 'success') {
-                  successMessage('¡Precios Actualizados!');
+                  parent.innerHTML = `<span class="text-success">Actualizado</span>`;
                } else if (res.status == 'errorMessage') {
                   return errorMessage(res.message);
                } else {

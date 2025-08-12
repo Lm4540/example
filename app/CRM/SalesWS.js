@@ -217,7 +217,7 @@ module.exports = (io, socket) => {
 
 
 
-        console.log(_direction, _reference);
+        
 
         let errorMessage = null;
         if (_direction.length < 5) {
@@ -275,6 +275,7 @@ module.exports = (io, socket) => {
                                     sale.delivery_date = new Date(data.day);
                                     sale.delivery_time = data.time;
                                     sale.delivery_amount = data.delivery_amount;
+                                    sale.closed_date = new Date();
 
                                     if (data.delivery_type == 'delivery') {
                                         sale.delivery_provider = data.delivery_provider;

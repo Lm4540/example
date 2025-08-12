@@ -56,17 +56,21 @@ const SalesStatusController = {
                     { sucursal: _sucursal_id }
                 ],
             },
-            order: [['id', 'ASC']],
+            order: [['closed_date', 'ASC']],
         });
 
         totals.reservas = tmp.length;
+        let order = 0;
 
         tmp.forEach(sale => {
             reservas[sale.id] = {
                 sale: sale,
                 details: [],
-                client: clients[sale.client]
+                client: clients[sale.client],
+                order,
             }
+
+            order++;
         });
 
         //buscar las ventas que haya que preparar el paquete y las que ya se hayan preparado y no sean mas viejas que un dia

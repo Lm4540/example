@@ -365,12 +365,13 @@
 
 
     //cargar los controlles de las reservas
+    let arreglo = [];
     let keys = Object.keys(reservas);
     if (keys.length > 0) {
-      let content = '';
       keys.forEach(index => {
         element = reservas[index];
         if (element !== null) {
+          let content = '';
           content += `<div class="col-12 col-md-6 mb-3" id="reservas_sale_${element.sale.id}">
                          <div class="card card-round">
                             <div class="card-body">
@@ -379,7 +380,11 @@
                                   
                                   <span class="badge bg-success" onclick="charge_iframe('/sales/view/${element.sale.id}')">Ver Venta</span>
                                </h5>
-                               <p>${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}<br>Referencia: ${element.sale.delivery_instructions}</p>
+                               <p>
+                                ${element.sale.delivery_type == 'local' ? 'Retiro en Tienda' : (element.sale.delivery_type == 'delivery' ? 'Entrega (' + providers[element.sale.delivery_provider] +`)<br>${element.sale.delivery_direction}`: 'Entrega (Riveras Group)'+`)<br>${element.sale.delivery_direction}`)}
+                                <br><span class="text-danger">Referencia: ${element.sale.delivery_instructions || ''}</span>
+                                <br><span class="text-warning">Cerrado el ${element.sale.closed_date != null ? format_date(element.sale.closed_date, true) : ""}</span>
+                                </p>
                                <div class="list-group">`;
           //recorrer los detalles de la venta
           element.details.forEach(detail => {
@@ -404,9 +409,18 @@
                             </div>
                          </div>
                       </div>`;
+
+                      arreglo[element.order] = content;
         }
       });
-      document.querySelector("#div_reservas").innerHTML = content;
+      let acumulador = '';
+      console.log(arreglo);
+      arreglo.forEach(e => {
+        if (e !== undefined) {
+          acumulador += e;
+        }
+      });
+      document.querySelector("#div_reservas").innerHTML = acumulador;
     } else {
       createToast('rose', 'No hay mas tareas por completar');
     }
