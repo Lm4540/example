@@ -18,6 +18,23 @@ const SalesStatusController = {
 
     get_data: async (session) => {
         //obtener la sucursal del usuario
+        if (!session.employee) {
+            return {
+                reservas: {},
+                mayor: {},
+                entregas: {},
+                sellers: {},
+                clients: {},
+                mayor_resolved: {},
+                reservas_resolved: {},
+                totals: {},
+                providers: {},
+                prepared: {},
+                transport: {},
+                delivery_failed: {}
+            };
+        }
+
 
         let _sucursal_id = session.employee.sucursal;
         var tmp = await Employee.findAll({ where: { isSeller: 1 }, attributes: ['id', 'name'] }),
@@ -120,7 +137,7 @@ const SalesStatusController = {
             //     mayor[detail.sale].open = (detail.ready > 0);
             // }
 
-            
+
             if (detail.reserved > detail.ready) {
                 sum_mayor_details += (detail.reserved - detail.ready);
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
