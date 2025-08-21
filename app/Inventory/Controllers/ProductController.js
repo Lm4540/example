@@ -365,13 +365,14 @@ const ProductController = {
                 ]
             }
         }
+        query_options.order = [['name', 'ASC'],];
 
         //Si Hay parametros de Ordenamiento
-        if (params.order !== undefined) {
-            query_options.order = [[params.order, params.dir],];
-        } else {
-            query_options.order = [['name', 'ASC'],];
-        }
+        // if (params.order !== undefined) {
+        //     query_options.order = [[params.order, params.dir],];
+        // } else {
+        //     query_options.order = [['name', 'ASC'],];
+        // }
         try {
             let result = {
                 params: params,
