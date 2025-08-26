@@ -201,7 +201,7 @@
          cost = fix_number(cost + sale.cost);
          let sale_amount = fix_number(sale.balance + sale.delivery_amount);
          let sale_iva = fix_number(sale_amount - (sale_amount / 1.13));
-         iva = fix_number(iva + sale.sale_iva);
+         iva = fix_number(iva + sale_iva);
          content += `<tr>
                         <td><a href="/sales/view/${sale.id}" target="_blank">${sale.id}</a></td>
                         <td>${sale.seller}</td>
@@ -210,7 +210,7 @@
                         <td class="text-center">${format_date(sale.endAt , false)}</td>
                         <td class="text-center">$${money_format(sale.delivery_amount)}</td>
                         <td class="text-center">$${money_format(sale.balance)}</td>
-                        <td class="text-center">$${money_format(sale.sale_iva)}</td>
+                        <td class="text-center">$${money_format(sale_iva)}</td>
                         <td class="text-center">$${money_format(sale.cost)}</td>
                         <td class="text-center">$${money_format(sale.balance - sale.cost - sale_iva)}</td>
 

@@ -360,6 +360,22 @@ const SaleController = {
         return res.render('CRM/Sales/SellerReport2', { pageTitle: 'Reporte de Ventas por Vendedor', sucursals });
     },
 
+
+    seller_history_old: async (req, res) => {
+        let sucursals = await Sucursal.findAll({ raw: true });
+
+        for (let index = 0; index < sucursals.length; index++) {
+            sucursals[index].sellers = await Employee.findAll({
+                where: {
+                    isSeller: true,
+                    sucursal: sucursals[index].id
+                }
+            });
+
+        }
+        return res.render('CRM/Sales/SellerReport', { pageTitle: 'Reporte de Ventas por Vendedor', sucursals });
+    },
+
     //verificar estado de las ventas
 
 
