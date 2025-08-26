@@ -357,7 +357,7 @@ const SaleController = {
             });
 
         }
-        return res.render('CRM/Sales/SellerReport', { pageTitle: 'Reporte de Ventas por Vendedor', sucursals });
+        return res.render('CRM/Sales/SellerReport2', { pageTitle: 'Reporte de Ventas por Vendedor', sucursals });
     },
 
     //verificar estado de las ventas

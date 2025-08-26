@@ -171,21 +171,24 @@
       let data = await fetch(url).then(data => data.json());
 
       let content = opt != "calculo" ? `<div class="bg-warning mb-3 text-white pt-1 pb-2 pl-5 pr-5 round">
-               <p class="mt-5">NOTA: Estas Consultando Datos Historicos, estos no necesariamente son Comision pendiente de pago!</p>
+               <p class="mt-5">NOTA: Está consultando datos históricos, estos no necesariamente son comisión pendiente de pago.</p>
             </div>` : '';
       content += `<table class="table table-sm table-hover table-bordered">
                <thead>
                   <tr>
                      <th>ID</th>
-                     <th> seller </td>
+                     <th>ID Vendedor</td>
                      <th>Cliente</th>
                      <th>Fecha de apertura</th>
                      <th>Fin del Proceso</th>
-                     <th>Monto de Envio</th>
-                     <th>Monto Vendido</th>
-                     <th> IVA CF </td>
-                     <th>Costo de la Venta</th>
-                     <th>Ganancia</th>
+                     <th>Envio</th>
+                     <th>Producto Vendido</th>
+                     <th>Total Facturado</th>
+                     <th>Costo del Producto</th>
+                     <th>IVA Credito<br>Fiscal</td>
+                     <th>IVA Debito<br>Fiscal</th>
+                     <th>IVA a Pagar <br>(Aprox)</th>
+                     <th>Ingreso Generado </th>
                   </tr>
                </thead>
                <tbody>`;
@@ -193,26 +196,36 @@
          balance = 0.00,
          cost = 0.00,
          iva = 0.0;
-      last = 0;
+         last = 0;
+         iva_debito = 0.0;
+
       data.sales.forEach(sale => {
          last = sale.id;
-         delivery = fix_number(delivery + sale.delivery_amount);
-         balance = fix_number(balance + sale.balance);
-         cost = fix_number(cost + sale.cost);
-         let sale_amount = fix_number(sale.balance + sale.delivery_amount);
-         let sale_iva = fix_number(sale_amount - (sale_amount / 1.13));
-         iva = fix_number(iva + sale.sale_iva);
+         let monto_venta = fix_number(sale.balance + sale.delivery_amount);
+         let sale_iva_credito = fix_number(monto_venta - (monto_venta / 1.13),2);
+         
+         let sale_iva_debito = fix_number(sale.cost * 0.13 + (sale.delivery_amount - (sale.delivery_amount /  1.13)),2); 
+         
+
+         delivery = fix_number(delivery + sale.delivery_amount ,2);
+         balance = fix_number(balance + sale.balance,2 );
+         cost = fix_number(cost + sale.cost, 2);
+         iva = fix_number(iva + sale_iva_credito, 2);
+         iva_debito = fix_number(iva_debito + sale_iva_debito, 2);
          content += `<tr>
                         <td><a href="/sales/view/${sale.id}" target="_blank">${sale.id}</a></td>
                         <td>${sale.seller}</td>
-                        <td>${data.clients[sale.client].name}</td>
+                        <td><a href="/sales/view/${sale.id}" target="_blank">${data.clients[sale.client].name}</a></td>
                         <td class="text-center">${format_date(sale.createdAt, false)}</td>
                         <td class="text-center">${format_date(sale.endAt , false)}</td>
                         <td class="text-center">$${money_format(sale.delivery_amount)}</td>
                         <td class="text-center">$${money_format(sale.balance)}</td>
-                        <td class="text-center">$${money_format(sale.sale_iva)}</td>
+                        <td class="text-center">$${money_format(monto_venta)}</td>
                         <td class="text-center">$${money_format(sale.cost)}</td>
-                        <td class="text-center">$${money_format(sale.balance - sale.cost - sale_iva)}</td>
+                        <td class="text-center">$${money_format(sale_iva_credito)}</td>
+                        <td class="text-center">$${money_format(sale_iva_debito)}</td>
+                        <td class="text-center">$${money_format(sale_iva_credito - sale_iva_debito)}</td>
+                        <td class="text-center">$${money_format(sale.balance - sale.cost - (sale_iva_credito - sale_iva_debito))}</td>
 
                      </tr>`;
       });
@@ -221,9 +234,12 @@
                         <td class="text-right" colspan="5">TOTALES</td>
                         <td class="text-center">$${money_format(delivery)}</td>
                         <td class="text-center">$${money_format(balance)}</td>
-                        <td class="text-center">$${money_format(iva)}</td>
+                        <td class="text-center">$${money_format(balance + delivery)}</td>
                         <td class="text-center">$${money_format(cost)}</td>
-                        <td class="text-center">$${money_format(balance - cost - iva)}</td>
+                        <td class="text-center">$${money_format(iva)}</td>
+                        <td class="text-center">$${money_format(iva_debito)}</td>
+                        <td class="text-center">$${money_format(iva - iva_debito)}</td>
+                        <td class="text-center">$${money_format(balance + delivery - cost - (iva - iva_debito))}</td>
 
                      </tr>`;
 
