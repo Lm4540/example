@@ -188,6 +188,8 @@
             return errorMessage(`Complete el 100% del producto`);
          } else {
 
+            document.querySelector('#processResult').disabled = true;
+
             let data = {
                origin: destinoSelect.value,
                cant: Number.parseInt(document.querySelector('#final_cant').value),
@@ -203,7 +205,7 @@
             } else if (data.cant > current_max) {
                return errorMessage(`La Cantidad maxima producible es ${current_max} de acuerdo a los productos de origen seleccionados`);
             } else {
-               console.log(data);
+               document.querySelector('#processResult').disabled = true;
                e.target.disabled = true;
                postData('/inventory/product/divide', data)
                   .then(data => {
