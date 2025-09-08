@@ -45,8 +45,8 @@ router.get('/view_pays/:id(\\d+)', SaleController.viewPayments);
 
 router.get('/inProccess', SaleController.inProccess);
 
-router.get('/seller/history', SaleController.seller_history);
-router.get('/seller/history_old', SaleController.seller_history_old);
+router.get('/seller/history_old', SaleController.seller_history);
+router.get('/seller/history', SaleController.seller_history_old);
 router.get('/seller/history/details', SaleController.seller_history_details);
 router.post('/seller/history/details', SaleController.seller_history_details_comisioned);
 

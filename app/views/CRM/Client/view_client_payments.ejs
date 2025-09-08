@@ -75,6 +75,7 @@
 
     
     document.getElementById('addPayment').addEventListener('click', async (e) => {
+      document.getElementById('addPayment').disabled = true;
       let data = {
         method: document.querySelector("#payment_method").value,
         amount: Number.parseFloat(document.querySelector("#payment_amount").value),
@@ -85,12 +86,14 @@
       }
 
       if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
+        document.getElementById('addPayment').disabled = false;
         return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
       } else if (isNaN(data.amount) || data.amount < 0.01) {
+        document.getElementById('addPayment').disabled = false;
         return errorMessage('monto no Valido');
 
       } else {
-        document.getElementById('addPayment').disabled = true;
+        
         postData('/sales/client/create_payment', data).then(data => {
           if (data.status == 'success') {
             successMessage('registrado');
@@ -110,6 +113,7 @@
 
 
     document.getElementById('addPayment2').addEventListener('click', async (e) => {
+      document.getElementById('addPayment2').disabled = true;
       let data = {
         method: document.querySelector("#payment_method2").value,
         amount: Number.parseFloat(document.querySelector("#payment_amount2").value),
@@ -122,13 +126,15 @@
       }
 
       if (data.method != 'money' && (data.bank.length < 4 || data.reference.length < 4)) {
+        document.getElementById('addPayment2').disabled = false;
         return errorMessage('Proporcione el Nombre del Banco y el numero de referencia de la Transacción');
       } else if (isNaN(data.amount) || data.amount < 0.01 || data.amount > data.max) {
+        document.getElementById('addPayment2').disabled = false;
         return errorMessage('monto no Valido');
 
       } else {
 
-        document.getElementById('addPayment2').disabled = true;
+        
         postData('/sales/client/create_payment2', data).then(data => {
           if (data.status == 'success') {
             successMessage('registrado');

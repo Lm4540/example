@@ -94,9 +94,9 @@ const FinancialController = {
             }
         });
 
-        if (req.query.print !== undefined && req.query.init !== false) {
-            return res.render(`Financial/PettyCash/printMoves`, { pageTitle: `Caja Chica ${sucursal.name}`, sucursal, moves });
-        }
+        // if (req.query.print !== undefined && req.query.init !== false) {
+        //     return res.render(`Financial/PettyCash/printMoves`, { pageTitle: `Caja Chica ${sucursal.name}`, sucursal, moves });
+        // }
 
         if (req.session.userSession.permission.includes('admin_all_petty_cash')) {
             return res.render(`Financial/PettyCash/adminPettyCash`, { pageTitle: `Caja Chica ${sucursal.name}`, sucursal, moves });
