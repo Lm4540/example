@@ -22,7 +22,8 @@ router.get('/create_manual/:dte', PosController.create_manual_fc);
 // router.post('/procces_dte_manual', PosController.simular_contingencia);
 router.post('/procces_dte_manual', PosController.process_manual_dte);
 router.post('/invalidation_event', PosController.invalidation_dte);
-// router.get('/contingencia_event', PosController.contingencia_event);
+//router.get('/contingencia_event', PosController.contingencia_event);
+router.get('/consulta_no_transmitidos', PosController.no_transmitidos);
 // router.get('/test', PosController.aaaaaaaaaaaa);
 
 

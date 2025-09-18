@@ -2245,7 +2245,7 @@ module.exports = {
 
     },
 
-    simular_contingencia: async (req, res) => {
+   /* simular_contingencia: async (req, res) => {
         let isValid = false;
         let data = req.body;
         let sucursal = await Sucursal.findByPk(req.session.sucursal);
@@ -2366,6 +2366,24 @@ module.exports = {
         }
     },
 
+    */
+
+    no_transmitidos: async (req, res) => {
+        let DTES = await DTE_Model.findAll({
+            where: {
+                trasnmitido: 0
+            }
+        });
+
+        return res.json({ count: DTES.length, DTES, });
+
+    },
+
+
+    ultimos_errores: async (req, res) => {
+        let faileds = [];
+    },
+
     contingencia_event: async (req, res) => {
         let DTES = await DTE_Model.findAll({
             where: {
@@ -2411,10 +2429,10 @@ module.exports = {
                 emisor: sucursal.for_contingencia_event,
                 detalleDTE: detalleDTE,
                 motivo: {
-                    fInicio: "2025-07-01",
-                    fFin: "2025-07-01",
-                    hInicio: '02:51:01',
-                    hFin: '02:53:00',
+                    fInicio: `${fechaActual.getFullYear()}-${mesFormateado}-${diaFormateado}`,
+                    fFin: `${fechaActual.getFullYear()}-${mesFormateado}-${diaFormateado}`,
+                    hInicio: `${horasFormateadas}:${minutosFormateados}:00`,
+                    hFin: `${horasFormateadas}:${minutosFormateados}:${segundosFormateados}`,
                     tipoContingencia: 2,
                     motivoContingencia: null
                 }
@@ -2477,7 +2495,7 @@ module.exports = {
                             let failed = await FailedDte.create({
                                 _request: DTES[index].dte,
                                 _user: req.session.userSession.shortName,
-                                opt: "Tansmision Contingencia",
+                                opt: "Transmision Contingencia",
                                 responseMH: resultado.data,
                                 dte: DTES[index].dte
                             });
@@ -2500,6 +2518,8 @@ module.exports = {
 
 
         }
+
+        return res.json({ status: 'errorMessage', message: 'No hay DTEs en espera de transmision' });
     },
 
     dte_report: async (req, res) => {
