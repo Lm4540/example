@@ -5,6 +5,9 @@ const PettyCashMoves = require('../Models/PettyCashMoves');
 const PettyCash = require('../Models/PettyCash');
 const CajaChica = require('../Models/PettyCash');
 const Helper = require('../../System/Helpers');
+const Sale = require('../../CRM/Models/Sale');
+const SalePayment = require('../../CRM/Models/SalePayment');
+const Client = require('../../CRM/Models/Client');
 
 const FinancialController = {
 
@@ -159,6 +162,42 @@ const FinancialController = {
             status: 'errorMessage', message: 'Sucursal Not Found!'
         });
     },
+
+    saldos_a_favor: async (req, res) => {
+        //buscar los pagos cuyos saldos no hayan sido aplicados
+
+        let tmp = await sequelize.query("SELECT * FROM `crm_sale_payment` WHERE amount > asigned_amount", { type: QueryTypes.SELECT, model: SalePayment });
+
+        let payments = {};
+        tmp.forEach((el) => {
+            if (payments[el.client] === undefined) {
+                payments[el.client] = [];
+            }
+            payments[el.client].push(el)
+        });
+
+       
+
+
+        //buscar las ventas de dichos clientes
+
+        tmp = await sequelize.query(`SELECT * FROM crm_sale WHERE _status in('delivered', 'transport','prepared','process') and client in (SELECT DISTINCT (client) FROM crm_sale_payment WHERE amount > asigned_amount)`, { type: QueryTypes.SELECT, model: Sale });
+        let sales = {};
+        tmp.forEach((el) => {
+            if (sales[el.client] === undefined) {
+                sales[el.client] = [];
+            }
+            sales[el.client].push(el)
+        });
+
+         //buscars los clientes a los que pertenezcan dichos pagos
+        clients = await sequelize.query(`SELECT * FROM crm_client WHERE id in (SELECT DISTINCT (client) FROM crm_sale_payment WHERE amount > asigned_amount)`, { type: QueryTypes.SELECT, model: Client });
+
+
+         return res.render(`Financial/aFavor`, { pageTitle: 'Saldos a Favor', clients, sales, payments });
+
+
+    }
 
 };
 

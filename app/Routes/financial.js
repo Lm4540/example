@@ -31,7 +31,9 @@ router.get("/pettycash/printVoucher/:id(\\d+)",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
     Controller.printVoucher);
 
-
+router.get("/saldos_a_favor",
+    
+    Controller.saldos_a_favor);
 
 
 module.exports = router;
