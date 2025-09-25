@@ -869,15 +869,17 @@ const InvoiceController = {
             let cliente = await Client.findByPk(sale.client);
             //Buscar los detalles
             if(sale.invoice_type == "dte"){
-                let dte = await DTE.findByPk(sale.invoice_number);
 
-                console.log(dte)
-                return res.render('CRM/Invoice/view-invoice-dte', { 
-                    pageTitle: `DTE ${dte.codigo}`, 
-                    dte: dte.dte,
-                    helper_url: process.env.PDF_GENERATION_URL,
-                    registro_id: dte.id
-                });
+               return  res.redirect(`/pos/viewDTE/${sale.invoice_number}`);
+                // let dte = await DTE.findByPk(sale.invoice_number);
+
+                // console.log(dte)
+                // return res.render('CRM/Invoice/view-invoice-dte', { 
+                //     pageTitle: `DTE ${dte.codigo}`, 
+                //     dte: dte.dte,
+                //     helper_url: process.env.PDF_GENERATION_URL,
+                //     registro_id: dte.id
+                // });
             }
 
 

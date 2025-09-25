@@ -160,6 +160,11 @@ const Sale = sequelize.define('Sale', {
         allowNull: true,
         defaultValue: null
     },
+    orderTracking: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        defaultValue: null
+    },
 }, {
     tableName: 'crm_sale',
     hooks: {
