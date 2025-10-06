@@ -34,6 +34,15 @@
 
             </div>
             <div class="col">
+               <div class="form-group">
+                  <label for="zeros">Mostrar Valores a Zero?</label>
+                  <select name="zeros" id="zeros" class="form-control">
+                     <option value="SI">SI</option>
+                     <option value="NO">NO</option>
+                  </select>
+               </div>
+            </div>
+            <div class="col">
                <button class="btn btn-success mt-4" onclick="calcular()">Calcular</button>
             </div>
          </div>
@@ -84,7 +93,7 @@
              </div>
              <p style="font-weight: bolder; font-size: 150%;">Cargando...</p>
          </div>`;
-         const response = await fetch(`/inventory/product/stock_report/get_details?selected_date=${encodeURIComponent(date)}&sucursal=${sucursal}`, s_options);
+         const response = await fetch(`/inventory/product/stock_report/get_details?selected_date=${encodeURIComponent(date)}&sucursal=${sucursal}&zeros=${document.querySelector('#zeros').value}`, s_options);
          //Procesar la respuest para que me guarde los productos en cuestion en una variable
          let res = await response.json();
 

@@ -18,6 +18,8 @@ const Money = require('../../System/Money');
 const sequelize = require("../../DataBase/DataBase");
 const { Op, QueryTypes } = require("sequelize");
 const SaleDetail = require('../../CRM/Models/SaleDetail');
+const ProductClassification = require('../Models/ProductClassification');
+
 
 
 const StockController = {
@@ -138,7 +140,6 @@ const StockController = {
             sucursals, requisitions, init, end, indexed_sucursals, open
         });
     },
-
 
     viewRequisitionOLD: async (req, res) => {
         let sucursals = await Sucursal.findAll();
@@ -357,7 +358,7 @@ const StockController = {
                                         where: {
                                             requisition: requisition.id,
                                             product: dt.product,
-                                            sale_detail: {[Op.is]: null}
+                                            sale_detail: { [Op.is]: null }
                                         }
                                     });
 
@@ -783,7 +784,7 @@ const StockController = {
                             reserve = reserves[dt.id];
                         console.log(product, stock, reserve);
                         if (product == undefined || stock == undefined || reserve == undefined) {
-                            throw  `Product or Stock not Found ${dt.id}`;
+                            throw `Product or Stock not Found ${dt.id}`;
                         }
 
                         //Recopilar aqui la informacion para consolidarla
@@ -869,7 +870,6 @@ const StockController = {
             return res.json({ status: 'error', message: error.message, error: error });
         }
     },
-
 
     proccessRequisitionOLD: async (req, res) => {
         let data = req.body;
@@ -1027,7 +1027,7 @@ const StockController = {
         });
     },
 
-    inventory_retpor_details: async (req, res) => {
+    inventory_report_details_old: async (req, res) => {
         //obtengo todos los productos
         let selected_date = `${req.query.selected_date} 23:59:59`;
         let sucursal = await Sucursal.findByPk(req.query.sucursal);
@@ -1141,6 +1141,263 @@ const StockController = {
 
 
     },
+
+    inventory_report_details_vieja: async (req, res) => {
+        //obtengo todos los productos
+        let selected_date = `${req.query.selected_date} 23:59:59`;
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+
+        if (sucursal == null) {
+            return res.json({
+                status: 'error',
+                message: "Sucursal not Found",
+            })
+        }
+
+        let sql = 'select inventory_product.name, inventory_product.id, inventory_product.internal_code, inventory_product.classification as class, inventory_product.cost, inventory_product_classification.id as class_id, inventory_product_classification.name as class_name, inventory_product_classification._group from inventory_product INNER JOIN inventory_product_classification on inventory_product_classification.id = inventory_product.classification where inventory_product.id in(SELECT DISTINCT(product) FROM `inventory_product_movement` WHERE createdAt <= :date and sucursal = :sucursal) order by inventory_product.id ASC';
+
+        let products = {};
+        let tmp = await sequelize.query(sql, { replacements: { date: selected_date, sucursal: sucursal.id }, type: QueryTypes.SELECT });
+        tmp.forEach(el => {
+            // console.log(el);
+            products[el.id] = el;
+        });
+
+
+        let result = {
+            name: sucursal.name,
+            valor: 0.00,
+            groups: {
+                'Carteras': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Mochilas': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Relojes': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Electrodomesticos': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Tecnologia': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Productos para el Hogar': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Productos y accesorios para niños': {
+                    total: 0.00,
+                    details: [],
+                },
+                'Accesorios para dama': {
+                    total: 0.00,
+                    details: [],
+                },
+
+            }
+        }
+
+        //recorrer los productos, clasificarlos y obtener su movimiento
+
+        let indexes = Object.keys(products);
+        let len = indexes.length;
+
+        for (let index = 0; index < len; index++) {
+            let i = indexes[index];
+            let product = products[i];
+            let move = await Movement.findOne({
+                where: {
+                    product: product.id,
+                    sucursal: sucursal.id,
+                    createdAt: {
+                        [Op.lte]: selected_date,
+                    }
+                },
+                order: [['id', 'DESC']],
+            });
+
+            let cant = 0, cost = 0.00;
+            //determinar la cantidad
+
+            if (move.in == true || move.in == 1) {
+                cant = move.last_sucursal_stock + move.cant;
+                cost = ((move.last_sucursal_stock * move.last_cost) + (move.cant * move.cost)) / cant;
+            } else {
+                cant = Number.parseInt(move.last_sucursal_stock) - Number.parseInt(move.cant);
+                cost = move.cost;
+            }
+
+
+
+            let detail = {
+                id: product.id,
+                name: product.name,
+                sku: product.internal_code,
+                cant: cant,
+                cost: cost,
+                subtotal: Helper.fix_number((cant * cost)),
+                fecha: move.createdAt
+            }
+
+            result['groups'][product._group].total = Helper.fix_number(result['groups'][product._group].total) + Helper.fix_number(detail.subtotal);
+            result['groups'][product._group]['details'].push(detail);
+            result.valor = Helper.fix_number(result.valor) + Helper.fix_number(detail.subtotal);
+        }
+
+
+        return res.json(result);
+
+
+    },
+
+    inventory_report_details: async (req, res) => {
+        let selected_date = new Date(`${req.query.selected_date} 23:59:59`);
+        let sucursal = await Sucursal.findByPk(req.query.sucursal);
+        let zeros = req.query.zeros;
+
+        if (sucursal == null) {
+            return res.json({
+                status: 'error',
+                message: "Sucursal not Found",
+            })
+        }
+
+        let result = {
+            name: sucursal.name,
+            valor: 0.00,
+            groups: {}
+        }
+
+        //buscar las clasificaciones
+        let tmp = await ProductClassification.findAll();
+        let clasificaciones = {};
+        tmp.forEach(e => {
+
+            if (result['groups'][e._group] == undefined || result['groups'][e._group] == null) {
+                result['groups'][e._group] = {
+                    total: 0.00,
+                    details: [],
+                }
+            }
+
+            clasificaciones[e.id] = e;
+        });
+
+
+        //buscar los productos que tengan registro de stock en la sucursal seleccionada
+        tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in(SELECT DISTINCT(product) FROM `inventory_product_stock` WHERE sucursal = :sucursal)', {
+            type: QueryTypes.SELECT,
+            model: Product,
+            replacements: {
+                sucursal: sucursal.id
+            }
+        });
+        let products = {};
+        tmp.forEach(e => products[e.id] = e);
+
+        //buscar los movimientos de esos productos hasta la fecha seleccionada, podemos hacerlos por medio de lotes para no sobrecargar el servidor de base de datos e ir acumulando la informacion en un arreglo.
+
+        let sql = `WITH RankedMovements AS ( SELECT inventory_product_movement.*, ROW_NUMBER() OVER(PARTITION BY product ORDER BY createdAt DESC) as rn FROM inventory_product_movement WHERE sucursal = :sucursal AND createdAt <= :date ) SELECT rm.* FROM RankedMovements rm WHERE rm.rn = 1;`
+        //ordenar los movimientos dando el ultimo movimiento de cada producto, si ya hay un movimiento anterior se puede comparar la fecha y obtener la fecha mas reciente.
+
+        tmp = await sequelize.query(sql, {
+            type: QueryTypes.SELECT,
+            model: Movement,
+            replacements: {
+                sucursal: sucursal.id,
+                date: selected_date
+            }
+        });
+
+        if (zeros == "SI") {
+
+            tmp.forEach(move => {
+                let product = products[move.product];
+                let cant = 0, cost = 0.00;
+                //determinar la cantidad
+
+                if (move.in == true || move.in == 1) {
+                    cant = move.last_sucursal_stock + move.cant;
+                    cost = ((move.last_sucursal_stock * move.last_cost) + (move.cant * move.cost)) / cant;
+                } else {
+                    cant = Number.parseInt(move.last_sucursal_stock) - Number.parseInt(move.cant);
+                    cost = move.cost;
+                }
+
+                let detail = cant > 0 ? {
+                    id: product.id,
+                    name: product.name,
+                    sku: product.internal_code,
+                    cant: cant,
+                    cost: cost,
+                    subtotal: Helper.fix_number((cant * cost)),
+                    fecha: move.createdAt
+                } : {
+                    id: product.id,
+                    name: product.name,
+                    sku: product.internal_code,
+                    cant: 0,
+                    cost: 0.00,
+                    subtotal: 0.00,
+                    fecha: move.createdAt
+                }
+
+                let cla = clasificaciones[product.classification]._group;
+
+
+                result['groups'][cla].total = Helper.fix_number(result['groups'][cla].total) + Helper.fix_number(detail.subtotal);
+                result['groups'][cla]['details'].push(detail);
+                result.valor = Helper.fix_number(result.valor) + Helper.fix_number(detail.subtotal);
+            });
+
+
+        } else {
+            tmp.forEach(move => {
+                let product = products[move.product];
+                let cant = 0, cost = 0.00;
+                //determinar la cantidad
+
+                if (move.in == true || move.in == 1) {
+                    cant = move.last_sucursal_stock + move.cant;
+                    cost = ((move.last_sucursal_stock * move.last_cost) + (move.cant * move.cost)) / cant;
+                } else {
+                    cant = Number.parseInt(move.last_sucursal_stock) - Number.parseInt(move.cant);
+                    cost = move.cost;
+                }
+
+                if (cant > 0) {
+                    let detail = {
+                        id: product.id,
+                        name: product.name,
+                        sku: product.internal_code,
+                        cant: cant,
+                        cost: cost,
+                        subtotal: Helper.fix_number((cant * cost)),
+                        fecha: move.createdAt
+                    }
+
+                    let cla = clasificaciones[product.classification]._group;
+
+
+                    result['groups'][cla].total = Helper.fix_number(result['groups'][cla].total) + Helper.fix_number(detail.subtotal);
+                    result['groups'][cla]['details'].push(detail);
+                    result.valor = Helper.fix_number(result.valor) + Helper.fix_number(detail.subtotal);
+
+                }
+            });
+        }
+
+        return res.json(result);
+
+    },
+
 
 
     reporte_detallado: async (req, res) => {
@@ -2436,7 +2693,7 @@ const StockController = {
         let stocks = {};
         tmp.forEach(stock => {
             if (stocks[stock.product] === undefined) {
-                stocks[stock.product] = { 'reserved': 0, stock: [], sum:0 };
+                stocks[stock.product] = { 'reserved': 0, stock: [], sum: 0 };
             }
             stocks[stock.product].stock.push(stock);
             stocks[stock.product].reserved += stock.reserved;
@@ -2451,7 +2708,7 @@ const StockController = {
                     id: prod.id,
                     cant: prod.stock,
                     sku: prod.internal_code,
-                    sum:0,
+                    sum: 0,
                     reserved: 0,
                     stocks: [],
                     name: prod.name,
