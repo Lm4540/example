@@ -284,7 +284,8 @@ const PurchaseController = {
 
             let details = await PurchaseDetail.findAll({
                 where: {
-                    purchase: purchase.id
+                    purchase: purchase.id,
+                    detail_type: 'product'
                 }, raw: true,
             });
             let provider = await Provider.findByPk(purchase.provider);
@@ -819,7 +820,7 @@ const PurchaseController = {
             if (purchase.purchase_type == "product" && purchase.isIn == 0) {
 
                 let details = await PurchaseDetail.findAll({
-                    where: { purchase: purchase.id }
+                    where: { purchase: purchase.id, detail_type: 'product' }
                 });
 
                 let provider = await Provider.findByPk(purchase.provider);
@@ -860,9 +861,9 @@ const PurchaseController = {
                                 detail.identification = data.details[detail.id].products;
 
                                 //determinar el costo del Item
-                                let dt_cost = ((detail.cant * detail.price) / purchase.subtotal) * total_cost; 
-                               
-                                dt_cost = (detail.cant * detail.price)  + dt_cost;
+                                let dt_cost = ((detail.cant * detail.price) / purchase.subtotal) * total_cost;
+
+                                dt_cost = (detail.cant * detail.price) + dt_cost;
                                 let cost = Helper.fix_number(dt_cost / detail.in).toFixed(2);
 
                                 detail.cost = cost;
