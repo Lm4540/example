@@ -50,7 +50,12 @@
     </div>
   </div>
 
-  <span class="mt-5 text-danger" style="cursor: pointer;">Errores: </span>  <span id="descargar_error" class="ml-5 mt-5 text-primary" style="cursor: pointer;"> Click para descargar el error</span>
+  <span class="mt-5 text-danger" style="cursor: pointer;">Errores: </span>
+  <span id="descargar_error" class="ml-5 mt-5 text-primary" style="cursor: pointer;"> Click para descargar el error</span>
+  <% if (permission.includes('force_cash_drawer_open')) { %>
+  <span class="ml-5 mt-5 text-warning" onclick="openChashDrwaerCommand()">Forzar apertura de Caja</span>
+  <% } %>
+
   <div id="for_errors">
   </div>
 </body>

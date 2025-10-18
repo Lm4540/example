@@ -97,7 +97,12 @@
         <label class="form-check-label" for="printTicket">Abrir Registradora</label>
       </div>
 
-      
+      <% if (permission.includes('force_cash_drawer_open')) { %>
+      <br>
+      <span class="badge bg-secondary" data-bs-target="#modalConfig" data-bs-toggle="modal">Configuración</span>
+
+      <% } %>
+
 
     </div>
   </div>

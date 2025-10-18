@@ -342,7 +342,12 @@ module.exports = [
         "group": "Finanzas",
         "permission": "admin_all_petty_cash"
     },
-
+    {
+        "name": "Comando apertura de caja Registradora",
+        "explication": "Permite forzar la apertura de la caja registradora, siempre y cuando no este bloqueada con llave",
+        "group": "Finanzas",
+        "permission": "force_cash_drawer_open"
+    },
     {
         "name": "Administrar Catálogos web",
         "explication": "Administrar Catalogos",

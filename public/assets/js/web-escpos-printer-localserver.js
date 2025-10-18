@@ -357,6 +357,10 @@ class WebPOSPrinterLocalServer {
             this.serverUrl = serverUrl; // URL del endpoint del servidor Java
       }
 
+      setServerUrl(url) {
+            this.serverUrl = url;
+      }
+
       // El método connect ahora solo verifica la conectividad al servidor Java
       async connect() {
             try {

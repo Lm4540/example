@@ -48,8 +48,7 @@
     "02": "Carnet de Residente"
   }
 
-  const printer = new WebPOSPrinterLocalServer();
-
+  const printer = new WebPOSPrinterLocalServer(obtenerDeLocalStorage('local_print_server_ip') || 'http://localhost:4567/print');
 
   const current_sucursal = '<%= `${(sucursal.tipoEstablecimiento == "01" ? "SUCURSAL " + String(sucursal.name).toUpperCase() : "CASA MATRIZ")}` %>';
 
@@ -714,6 +713,15 @@
       return guardarEnLocalStorage('local_print_ticket', document.querySelector("#printTicket").checked) ? successMessage("Configuracion Actualizada") : errorMessage('Imposible guardar en el Almacenamiento Local')
     });
 
+    document.querySelector("#printerServerConfigAddress").value = obtenerDeLocalStorage('local_print_server_ip') || 'http://localhost:4567/print';
+
+    document.querySelector("#printerServerConfigAddress").addEventListener('input', e => {
+      let r = guardarEnLocalStorage('local_print_server_ip', document.querySelector("#printerServerConfigAddress").value) ? successMessage("Configuracion Actualizada") : errorMessage('Imposible guardar en el Almacenamiento Local');
+
+      // printer.setServerUrl('http://192.168.1.44:4567/print')
+      printer.setServerUrl(document.querySelector("#printerServerConfigAddress").value);
+    });
+
     document.querySelector("#openChashDrwaer").checked = obtenerDeLocalStorage('local_open_cash_drawer') || false;
 
     document.querySelector("#openChashDrwaer").addEventListener('click', e => {
@@ -796,7 +804,7 @@
       postData('/pos', data).then(data => {
         if (data.status == 'success') {
           successMessage(data.message);
-          document.querySelector("#body_details").innerHTML = `<tr>
+          let r_t = `<tr>
               <td colspan="4" class="text-center">
                   <h4> DTE: ${data.json.codigo} generada con exito</h4>
                   <a href="${helper_url}/utils/services/dte/inline?uuid=${data.json.dte.identificacion.codigoGeneracion}&fecha=${data.json.dte.identificacion.fecEmi}" target="_blank" class="btn round btn-outline-secondary">Ver DTE</a>
@@ -804,6 +812,48 @@
                   <button onclick="reprint_ticket()" class="btn round btn-outline-secondary ml-2 mr-2">Reimprimir Ticket</button>
               </td>
             </tr>`;
+          r_t += document.getElementById('restante_label').value != "" ? `
+            <tr>
+              <td colspan="4" class="text-center mt-4">
+                  Ultima transacción
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="text-right">
+                  Total:
+              </td>
+              <td colspan="2" class="text-left">
+              ${document.getElementById('total_label').innerHTML}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="text-right">
+                  Pagos Anteriores:
+              </td>
+              <td colspan="2" class="text-left">
+              ${document.getElementById('pays_label').innerHTML}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="text-right">
+                  Efectivo Recibido:
+              </td>
+              <td colspan="2" class="text-left">
+                  $${money_format(document.getElementById('cash_payed_amount').value)}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="text-right">
+                  Cambio:
+                  
+              </td>
+              <td colspan="2" class="text-left text-danger" style="font-size: 1.5rem">
+                  ${document.getElementById('vuelto_label').innerHTML}
+              </td>
+
+            </tr>` : '';
+
+          document.querySelector("#body_details").innerHTML = r_t
           if (document.querySelector("#printTicket").checked) {
             print_ticket(data.json.dte, Number.parseFloat(document.querySelector("#cash_payed_amount").value));
             document.querySelector("#cash_payed_amount").value = "";
@@ -1083,3 +1133,29 @@
 
   });
 </script>
+
+<% if (permission.includes('force_cash_drawer_open')) { %>
+<script>
+  const openChashDrwaerCommand = async () => {
+
+    if (!isConnected) {
+      isConnected = await printer.connect();
+    }
+
+    if (isConnected && error_printing == null) {
+      commands = null;
+      let _esc = new ESCPOSBuilder();
+
+      _esc.initialize().cashDrawer();
+      await printer.sendCommands(_esc.build());
+
+      return;
+    } else {
+      error_printing = "Impresora no disponible";
+      return;
+    }
+
+  }
+</script>
+
+<% } %>
