@@ -91,8 +91,11 @@ router.get('/product/stock_report/dates', StockController.inventory_report_per_d
 router.get('/product/stock_report/get_details', StockController.inventory_report_details);
 router.get('/product/archive/:id(\\d+)', ProductController.archive);
 // router.get('/product/updateClassification', ProductController.getVistadeCorreccionDeClassificaciones);
-router.get('/product/ProductosACorregir', ProductController.obtenerProductosACorregir);
-router.post('/product/updateClassification', ProductController.corregirClassificacion);
+// router.get('/product/ProductosACorregir', ProductController.obtenerProductosACorregir);
+// router.post('/product/updateClassification', ProductController.corregirClassificacion);
+router.get('/product/locations', StockController.getLocations);
+router.post('/product/locations', StockController.addLocation);
+router.put('/product/locations', StockController.deleteLocation);
 
 
 

@@ -1,6 +1,7 @@
 const Product = require('../Models/Product');
 const Sucursal = require('../Models/Sucursal');
 const Stock = require('../Models/Stock');
+const StockLocation = require('../Models/StockLocation');
 const Movement = require('../Models/Movement');
 const Recount = require('../Models/Recount');
 const RecountDetail = require('../Models/RecountDetail');
@@ -3870,8 +3871,84 @@ const StockController = {
 
     },
 
+    addLocation: async (req, res) => {
 
-    pdfRecountReport: async (req, res) => {
+        let data = req.body;
+
+        if (data.location == null || data.location == '') {
+            return res.json({
+                status: 'error',
+                message: 'proporcione la descripcion de la Ubicación'
+            });
+        }
+
+        if (data.product == null || data.product == '') {
+            return res.json({
+                status: 'error',
+                message: 'Producto no encontrado'
+            });
+        }
+
+        if (req.session.userSession && req.session.userSession.employee) {
+            let location = await StockLocation.create({
+                createdBy: req.session.userSession.shortName,
+                sucursal: req.session.userSession.employee.sucursal,
+                product: data.product,
+                location: data.location,
+            });
+
+            return res.json({
+                status: 'success',
+                data: location,
+            });
+
+        } else {
+            return res.json({
+                status: 'error',
+                message: 'Su session ha Expirado'
+            });
+        }
+    },
+
+    deleteLocation: async (req, res) => {
+        let location = await StockLocation.findByPk(req.body.id);
+        if (location == null) {
+            return res.json({
+                status: 'error',
+                message: 'Recurso no encontrado'
+            });
+        }
+
+        await location.destroy();
+
+        return res.json({
+            status: 'success',
+            data: req.body.id,
+        });
+    },
+
+
+    getLocations: async (req, res) => {
+
+
+        let locations = await StockLocation.findAll({
+            where: {
+                product: req.query.product,
+                sucursal: req.query.sucursal,
+            }
+        });
+
+        if (locations.length < 1) {
+            return res.json({
+                status: 'success',
+                data: [],
+            });
+        }
+
+        return res.json({
+            status: 'success',
+            data: locations,
+        });
 
     },
 };

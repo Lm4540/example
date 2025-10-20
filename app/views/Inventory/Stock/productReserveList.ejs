@@ -23,28 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          <% if (user.sucursal == 1) { %>
-          <% let keys = Object.keys(products);
-            keys.forEach(key => {
-                let prod = products[key] 
-
-                if(prod.cant > 0){ %>
-          <tr>
-            <td>
-              <img src="<%= prod.image %>" alt="Image" class="round" style="width: 150px; ">
-            </td>
-            <td>
-              <%= prod.name %><br>
-              Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
-              <a class="badge bg-primary mt-1" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br>
-              <a class="badge bg-danger mt-1" href="/inventory/product/<%= prod.id %>/reserveList" target="_blank"> Reservar</a><br>
-              <a class="badge bg-warning mt-1" href="/inventory/product/recount/12/<%= prod.id %>" target="_blank"> Ultima Ubicación</a><br>
-              Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
-
-            </td>
-          </tr>
-          <% }}) %>
-          <% } else { %>
+          
 
           <% let keys = Object.keys(products);
               keys.forEach(key => {
@@ -61,14 +40,59 @@
               <a class="badge bg-primary mt-1" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br>
               <a class="badge bg-danger mt-1" href="/inventory/product/<%= prod.id %>/reserveList" target="_blank"> Reservar</a><br>
               Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
+              <br>
+              <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= user.sucursal %>', 'Tu Sucursal', '<%= prod.id %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span>
 
             </td>
           </tr>
           <% }}) %>
-          <% } %>
 
         </tbody>
       </table>
+    </div>
+
+    <div class="modal fade" id="stockLocationsModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Ubicaciones del Producto <span id="locationSucursal"></span></h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-8 form-group">
+                <label for="newLocation">¿Cuál es la Ubicación?</label>
+                <input type="hidden" name="locationProductInput" id="locationProductInput">
+                <input type="text" class="form-control" id="newLocation">
+              </div>
+              <div class="col-4">
+                <span onclick="saveNewLocation()" class="badge bg-purple mt-3">Agregar</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-body">
+            <table class="table table-sm table-hover table-bordered">
+              <thead>
+                <tr>
+                  <th>Ubicacion</th>
+                  <th>Agregado por</th>
+                  <th>Fecha</th>
+                  <th>Opciones</th>
+                </tr>
+              </thead>
+              <tbody id="locationsTable">
+
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          </div>
+        </div>
+      </div>
     </div>
     <%- include('../../Layouts/Footer.ejs') %>
   </div>
@@ -76,6 +100,85 @@
 
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+  const viewStockLocations = (sucursal, sucursalName, product) => {
+
+    document.getElementById('locationSucursal').innerHTML = sucursalName;
+    document.getElementById('locationProductInput').value = product;
+    document.getElementById('locationsTable').innerHTML = '';
+
+    fetch(`/inventory/product/locations?product=${product}&sucursal=${sucursal}`).then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        response.data.forEach(location => {
+          let tr = document.createElement('tr');
+          tr.id = `location_${location.id}`;
+          tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+          document.getElementById('locationsTable').appendChild(tr);
+        });
+
+        console.log(response.data);
+
+      }
+    }).catch(response => console.log(response));
+  }
+
+  const saveNewLocation = () => {
+    let location = document.querySelector("#newLocation").value;
+    if (location == "") {
+      return errorMessage('Escriba una ubicación');
+    }
+    postData('/inventory/product/locations', {
+      product: document.getElementById('locationProductInput').value,
+      location
+    }).then(data => {
+      if (data.status == 'success') {
+        let tr = document.createElement('tr');
+        let location = data.data;
+        tr.id = `location_${location.id}`;
+        tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+        document.getElementById('locationsTable').appendChild(tr);
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+
+  }
+
+  const deleteLocation = (id) => {
+    postData('/inventory/product/locations', {
+      id
+    }, 'PUT').then(data => {
+      if (data.status == 'success') {
+        document.getElementById('locationsTable').removeChild(document.getElementById(`location_${data.data}`));
+        return successMessage('Eliminado');
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+
+
   document.addEventListener('DOMContentLoaded', event => {
 
 

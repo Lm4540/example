@@ -452,7 +452,7 @@ const ProductController = {
         //indexar los almacenes
         if (tmp.length > 0) {
             tmp.forEach(element => {
-                almacen[element.id] = { 'name': element.name, cant: 0, reserved: 0 };
+                almacen[element.id] = { id: element.id, 'name': element.name, cant: 0, reserved: 0 };
             })
         } else {
             almacen = null;

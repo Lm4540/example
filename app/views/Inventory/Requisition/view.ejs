@@ -26,11 +26,6 @@
           </h2>
         </div>
 
-        <div class="card-header">
-
-        </div>
-
-
         <div class="card-body table-responsive">
           <table class="table table-sm table-bordered table-hover table-stripped">
             <thead>
@@ -43,18 +38,20 @@
             </thead>
             <tbody>
               <% let keys = Object.keys(products)
-                        keys.forEach(key => { 
-                           let prod = products[key] ;
-                        %>
+                keys.forEach(key => { 
+                  let prod = products[key] ;
+              %>
 
               <tr>
                 <td class="text-center">
                   <img src="<%= prod.image %>" class="round" alt="<%= prod.name %>" width="150px">
                 </td>
                 <td class="text-center">
-                  <%= prod.name %> <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round"> Ver Producto</a><br>
+                  <%= prod.name %> <br>
                   SKU: <%= prod.sku %><br>
                   Codigo: <%= prod.provider_code %><br>
+                  <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round mt-1"> Ver Producto</a><br>
+                  <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= requisition.origin%>', 'Santa Tecla', '<%= key %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span><br>
 
                 </td>
                 <td class="text-center"><%= prod.cant %></td>
@@ -85,8 +82,7 @@
                 </td>
               </tr>
 
-              <% })
-                     %>
+              <% }) %>
             </tbody>
 
 
@@ -98,109 +94,150 @@
                   <textarea name="commentary" id="commentary" class="form-control"><%= requisition.commentary %></textarea>
 
                   <%}%>
-                        </td>
-                     </tr>
-                  </tfoot>
-               </table>
-
-
-            </div>
-         </div>
-
-
-         <div class="modal fade" id="newRequisitionDetail" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
-               <div class="modal-content">
-                  <div class="modal-header">
-                     <h3 class="text-center">Agregar Item</h3>
-                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-                  </div>
-
-                  <div class="modal-body">
-                     <div class="form-group">
-                        <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
-                        <select name="productSelect" id="productSelect" class="form-control"></select>
-                     </div>
-
-                     <div class="form-group">
-                        <label for="product_cant">Cantidad</label>
-                        <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
-                        <small class="text-danger" id="max_cant_small"></small>
-                     </div>
-
-
-                  </div>
-
-
-
-                  <div class="modal-footer" style="display: block;">
-                     <div class="text-center">
-                        <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                        <button class="btn round btn-sm btn-warning" id="add_detail">Agregar</button>
-
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-
-         <div class="modal fade" id="quitDetailModal" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
-               <div class="modal-content">
-                  <div class="modal-header">
-                     <h3 class="text-center">Quitar Item</h3>
-                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-                  </div>
-
-                  <div class="modal-body">
-                     <div class="form-group">
-                        <label for="quit_product_cant">Cantidad a Quitar</label>
-                        <input type="number" name="quit_product_cant" step="1" id="quit_product_cant" class="form-control">
-
-                     </div>
-                  </div>
-                  <div class="modal-footer" style="display: block;">
-                     <div class="text-center">
-                        <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                        <button class="btn round btn-sm btn-danger" id="quit_Detail">Quitar</button>
-
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div class="modal fade" id="finishModal" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
-               <div class="modal-content">
-                  <div class="modal-header">
-                     <h3 class="text-center">Procesar Orden</h3>
-                     <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
-                  </div>
-
-                  <div class="modal-body">
-                     <div class="form-group">
-                        <label for="shiptment_transport">Transporta</label>
-                        <input type="text" name="shiptment_transport" step="1" id="shiptment_transport" class="form-control">
-
-                     </div>
-                  </div>
-
-                  <div class="modal-footer text-center" style="display: block;">
-                     <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                     <button class="btn round btn-sm btn-success" id="proccessRequisition">Elaborar Envio</button>
-
-                  </div>
-               </div>
-            </div>
-         </div>
-
-
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
 
-      <%- include('../../Layouts/Footer.ejs') %>
+
+      <div class="modal fade" id="newRequisitionDetail" tabindex="-1" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                  <h3 class="text-center">Agregar Item</h3>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+              </div>
+
+              <div class="modal-body">
+                  <div class="form-group">
+                    <label for="productSelect" style="font-size: 120%;">Escribe el nombre o SKU <small class="text-danger">Solo apareceran productos con existencias</small></label>
+                    <select name="productSelect" id="productSelect" class="form-control"></select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="product_cant">Cantidad</label>
+                    <input type="number" name="product_cant" step="1" id="product_cant" class="form-control">
+                    <small class="text-danger" id="max_cant_small"></small>
+                  </div>
+
+
+              </div>
+
+
+
+              <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                    <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                    <button class="btn round btn-sm btn-warning" id="add_detail">Agregar</button>
+
+                  </div>
+              </div>
+            </div>
         </div>
+      </div>
+
+
+      <div class="modal fade" id="quitDetailModal" tabindex="-1" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                  <h3 class="text-center">Quitar Item</h3>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+              </div>
+
+              <div class="modal-body">
+                  <div class="form-group">
+                    <label for="quit_product_cant">Cantidad a Quitar</label>
+                    <input type="number" name="quit_product_cant" step="1" id="quit_product_cant" class="form-control">
+
+                  </div>
+              </div>
+              <div class="modal-footer" style="display: block;">
+                  <div class="text-center">
+                    <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                    <button class="btn round btn-sm btn-danger" id="quit_Detail">Quitar</button>
+
+                  </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="finishModal" tabindex="-1" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                  <h3 class="text-center">Procesar Orden</h3>
+                  <i class="fas fa-times" style="font-size: 1.2rem; cursor:pointer;" data-bs-dismiss="modal" aria-label="Close"></i>
+              </div>
+
+              <div class="modal-body">
+                  <div class="form-group">
+                    <label for="shiptment_transport">Transporta</label>
+                    <input type="text" name="shiptment_transport" step="1" id="shiptment_transport" class="form-control">
+
+                  </div>
+              </div>
+
+              <div class="modal-footer text-center" style="display: block;">
+                  <button type="button" class="btn btn-secondary round" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                  <button class="btn round btn-sm btn-success" id="proccessRequisition">Elaborar Envio</button>
+
+              </div>
+            </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="modal fade" id="stockLocationsModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Ubicaciones del Producto <span id="locationSucursal"></span></h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-8 form-group">
+                <label for="newLocation">¿Cuál es la Ubicación?</label>
+                <input type="hidden" name="locationProductInput" id="locationProductInput">
+                <input type="text" class="form-control" id="newLocation">
+              </div>
+              <div class="col-4">
+                <span onclick="saveNewLocation()" class="badge bg-purple mt-3">Agregar</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-body">
+            <table class="table table-sm table-hover table-bordered">
+              <thead>
+                <tr>
+                  <th>Ubicacion</th>
+                  <th>Agregado por</th>
+                  <th>Fecha</th>
+                  <th>Opciones</th>
+                </tr>
+              </thead>
+              <tbody id="locationsTable">
+
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  <%- include('../../Layouts/Footer.ejs') %>
+  </div>
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
@@ -373,6 +410,85 @@
 
 
   });
+
+
+  const viewStockLocations = (sucursal, sucursalName, product) => {
+
+    document.getElementById('locationSucursal').innerHTML = sucursalName;
+    document.getElementById('locationProductInput').value = product;
+    document.getElementById('locationsTable').innerHTML = '';
+
+    fetch(`/inventory/product/locations?product=${product}&sucursal=${sucursal}`).then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        response.data.forEach(location => {
+          let tr = document.createElement('tr');
+          tr.id = `location_${location.id}`;
+          tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+          document.getElementById('locationsTable').appendChild(tr);
+        });
+
+        console.log(response.data);
+
+      }
+    }).catch(response => console.log(response));
+  }
+
+  const saveNewLocation = () => {
+    let location = document.querySelector("#newLocation").value;
+    if (location == "") {
+      return errorMessage('Escriba una ubicación');
+    }
+    postData('/inventory/product/locations', {
+      product: document.getElementById('locationProductInput').value,
+      location
+    }).then(data => {
+      if (data.status == 'success') {
+        let tr = document.createElement('tr');
+        let location = data.data;
+        tr.id = `location_${location.id}`;
+        tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+        document.getElementById('locationsTable').appendChild(tr);
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+
+  }
+
+  const deleteLocation = (id) => {
+    postData('/inventory/product/locations', {
+      id
+    }, 'PUT').then(data => {
+      if (data.status == 'success') {
+        document.getElementById('locationsTable').removeChild(document.getElementById(`location_${data.data}`));
+        return successMessage('Eliminado');
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
 </script>
 
 <% if ((permission.includes('trasnfer_between_warehouses') && user.sucursal == requisition.destino) || permission.includes('trasnfer_between_all_warehouses')) { %>

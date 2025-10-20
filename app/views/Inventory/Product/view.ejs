@@ -113,21 +113,7 @@
                     <i class="fas fa-book-spells"></i>Catalogos
                   </a>
                 </li>
-                <!-- <li class="nav-item me-3" role="presentation">
-                           <a class="nav-link text-nowrap" id="wishlist-tab" data-bs-toggle="tab" href="#tab-wishlist" role="tab" aria-controls="tab-orders" aria-selected="false" tabindex="-1">
-                              <i class="far fa-adjust"></i>Wishlist
-                           </a>
-                        </li>
-                        <li class="nav-item me-3" role="presentation">
-                           <a class="nav-link text-nowrap" id="stores-tab" data-bs-toggle="tab" href="#tab-stores" role="tab" aria-controls="tab-stores" aria-selected="false" tabindex="-1">
-                              <i class="far fa-adjust"></i>Stores
-                           </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                           <a class="nav-link text-nowrap" id="personal-info-tab" data-bs-toggle="tab" href="#tab-personal-info" role="tab" aria-controls="tab-personal-info" aria-selected="false" tabindex="-1">
-                              <i class="far fa-adjust"></i>Personal info
-                           </a>
-                        </li> -->
+
               </ul>
 
               <div class="tab-content" id="profileTabContent">
@@ -195,27 +181,27 @@
                         <% if (in_transit.length > 0 ) { %>
                         <% in_transit.forEach(ele => { %>
                         <% if (ele.sale_detail !== null && ele.sale_detail.length > 0) { %>
-                          <% ele.sale_detail.forEach(element => { %>
-                            <tr>
-                              <td>--</td>
-                              <td>
-                                <%= clients_in_transit[element.id].name %> <br>
-                              </td>
-                              <td>
-                                <%= element.cant %> Unidades Solicitadas
-                              </td>
-                              <td> Envio <%= ele.shipment %></td>
-                              <td>
-                                <%= element.by %>
-                              </td>
-                              <td>
-                                <a href="/inventory/shipment/<%= ele.shipment %>" class="badge bg-purple"> Ver Envio</a>
-                                <a href="/sales/view/<%= clients_in_transit[element.id].sale %>" class="badge bg-success">Ver Venta</a>
-                                <a href="/sales/client/view/<%= clients_in_transit[element.id].client %>" class="badge bg-blue">Ver Cliente</a>
-                              </td>
-                            </tr>
+                        <% ele.sale_detail.forEach(element => { %>
+                        <tr>
+                          <td>--</td>
+                          <td>
+                            <%= clients_in_transit[element.id].name %> <br>
+                          </td>
+                          <td>
+                            <%= element.cant %> Unidades Solicitadas
+                          </td>
+                          <td> Envio <%= ele.shipment %></td>
+                          <td>
+                            <%= element.by %>
+                          </td>
+                          <td>
+                            <a href="/inventory/shipment/<%= ele.shipment %>" class="badge bg-purple"> Ver Envio</a>
+                            <a href="/sales/view/<%= clients_in_transit[element.id].sale %>" class="badge bg-success">Ver Venta</a>
+                            <a href="/sales/client/view/<%= clients_in_transit[element.id].client %>" class="badge bg-blue">Ver Cliente</a>
+                          </td>
+                        </tr>
 
-                          <% }) %>
+                        <% }) %>
                         <% } else { %>
                         <tr>
                           <td>--</td>
@@ -248,15 +234,21 @@
                         <th>Existencias</th>
                         <th>Reservado</th>
                         <th>Disponible</th>
+                        <th>Opciones</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <% almacen.forEach(element => { %>
+                      <% almacen.forEach(element => { 
+                      console.log(element)  
+                      %>
                       <tr>
                         <td><%= element.name %></td>
                         <td class="text-center"><%= element.cant %></td>
                         <td class="text-center"><%= element.reserved %></td>
                         <td class="text-center"><b><%= (element.cant - element.reserved) %></b></td>
+                        <td class="text-center">
+                          <span class="badge bg-green" onclick="viewStockLocations('<%= element.id %>', '<%= element.name %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span>
+                        </td>
                       </tr>
                       <% })%>
                     </tbody>
@@ -332,7 +324,7 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="damagedinput">Cantidad</label>
+            <label for="InputDamaged">Cantidad</label>
             <input class="form-control" type="number" min="0" step="1" value="<%= product.damaged %>" id="InputDamaged">
           </div>
         </div>
@@ -344,10 +336,130 @@
     </div>
   </div>
 
+  <div class="modal fade" id="stockLocationsModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Ubicaciones del Producto <span id="locationSucursal"></span></h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-8 form-group">
+              <label for="newLocation">¿Cuál es la Ubicación?</label>
+              <input type="text" class="form-control" id="newLocation">
+            </div>
+            <div class="col-4">
+              <span onclick="saveNewLocation()" class="badge bg-purple mt-3">Agregar</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-body">
+          <table class="table table-sm table-hover table-bordered">
+            <thead>
+              <tr>
+                <th>Ubicacion</th>
+                <th>Agregado por</th>
+                <th>Fecha</th>
+                <th>Opciones</th>
+              </tr>
+            </thead>
+            <tbody id="locationsTable">
+
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 <script>
+  const viewStockLocations = (sucursal, sucursalName) => {
+
+    document.getElementById('locationSucursal').innerHTML = sucursalName;
+    document.getElementById('locationsTable').innerHTML = '';
+
+    fetch(`/inventory/product/locations?product=<%=product.id%>&sucursal=${sucursal}`).then(data => data.json()).then(response => {
+      if (response.status == 'error') {
+        return errorMessage(response.message);
+      } else if (response.status == 'success') {
+        response.data.forEach(location => {
+          let tr = document.createElement('tr');
+          tr.id = `location_${location.id}`;
+          tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+          document.getElementById('locationsTable').appendChild(tr);
+        });
+
+        console.log(response.data);
+
+      }
+    }).catch(response => console.log(response));
+  }
+
+  const saveNewLocation = () => {
+    let location = document.querySelector("#newLocation").value;
+    if (location == "") {
+      return errorMessage('Escriba una ubicación');
+    }
+    postData('/inventory/product/locations', {
+      product: '<%= product.id %>',
+      location
+    }).then(data => {
+      if (data.status == 'success') {
+        let tr = document.createElement('tr');
+        let location = data.data;
+        tr.id = `location_${location.id}`;
+        tr.innerHTML = `
+            <td>${location.location}</td>
+            <td>${location.createdBy}</td>
+            <td>${format_date(location.createdAt)}</td>
+            <td><span class="badge bg-danger" onclick="deleteLocation(${location.id})">Quitar</span></td>
+          `;
+        document.getElementById('locationsTable').appendChild(tr);
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+
+  }
+
+  const deleteLocation = (id) => {
+    postData('/inventory/product/locations', {
+      id
+    }, 'PUT').then(data => {
+      if (data.status == 'success') {
+        document.getElementById('locationsTable').removeChild(document.getElementById(`location_${data.data}`));
+        return successMessage('Eliminado');
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+
   const copyNumber = () => {
     copiarAlPortapapeles('<%= product.internal_code %>');
     successMessage('Copiado');
