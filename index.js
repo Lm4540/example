@@ -13,6 +13,7 @@ app.use(session);
 // app.use(cors);
 app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
+app.set('trust proxy', true);
 app.use(express.urlencoded({ extended: false, limit: '150mb' }));
 app.use(express.json({ limit: '150mb' }));
 app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
@@ -21,9 +22,11 @@ app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
 
 app.use((req, res, next) => {
 
-    if(req.headers['x-forwarded-proto'] == 'https'){
-        const host = req.headers['x-forwarded-host'] || req.hostname;
-        res.locals.baseUrl =  `https://${host}` ;
+    console.log("el protocolo usado es" +  req.protocol)
+
+    if(req.protocol == 'https'){
+        
+        res.locals.baseURL =  `${req.protocol}://${req.hostname}`; ;
 
     }
     
