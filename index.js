@@ -22,7 +22,7 @@ app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
 
 app.use((req, res, next) => {
 
-    console.log("el protocolo usado es" +  req.protocol)
+    console.log("el protocolo usado es " +  req.protocol + 'Consultado desde el host ' + req.hostname )
 
     if(req.protocol == 'https'){
         
