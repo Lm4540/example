@@ -152,9 +152,9 @@
 
 <%- include('../../Layouts/Scripts.ejs') %>
 <% if (dte.dte.identificacion.tipoDte == "01") { %>
-<script src="assets/js/web-escpos-printer-localserver.js?v=20250704"></script>
+<script src="assets/js/web-escpos-printer-localserver.js?v=20251107"></script>
 <script>
-  const printer = new WebPOSPrinterLocalServer();
+  const printer = new WebPOSPrinterLocalServer('https://localhost:4567/print');
   var data = `<%- JSON.stringify(dte.dte) %>`;
   data = JSON.parse(data);
   var isConnected = false;
