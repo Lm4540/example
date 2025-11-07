@@ -24,9 +24,9 @@ app.use((req, res, next) => {
 
     console.log("el protocolo usado es " +  req.protocol + 'Consultado desde el host ' + req.hostname )
 
-    if(req.protocol == 'https'){
+    if(req.hostname == 'erp.riveras.dev'){
         
-        res.locals.baseURL =  `${req.protocol}://${req.hostname}`; ;
+        res.locals.baseURL =  `https://erp.riveras.dev`;
 
     }
     
