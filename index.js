@@ -18,20 +18,9 @@ app.use(express.urlencoded({ extended: false, limit: '150mb' }));
 app.use(express.json({ limit: '150mb' }));
 app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
 
-app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
+app.locals.baseURL = process.env.URL_HOST;
+// app.locals.baseURL = `${process.env.URL_HOST}:${process.env.DEFAULT_PORT}`;
 
-app.use((req, res, next) => {
-
-    console.log("el protocolo usado es " +  req.protocol + 'Consultado desde el host ' + req.hostname )
-
-    if(req.hostname == 'erp.riveras.dev'){
-        
-        res.locals.baseURL =  `https://erp.riveras.dev`;
-
-    }
-    
-   return next();
-});
 app.locals.pageTitle = 'Riveras Group';
 app.locals.options = '';
 app.locals.Helper = Helper;
