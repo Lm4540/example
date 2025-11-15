@@ -1,6 +1,11 @@
 {
   "nombre": "Unidad de Medida",
   "items": [
+    { "codigo": 1, "Valor": "metro" },
+    { "codigo": 2, "Valor": "Yarda" },
+    { "codigo": 6, "Valor": "milimetro" },
+    { "codigo": 9, "Valor": "kilometro cuadrado" },
+    { "codigo": 10, "Valor": "Hectarea" },
     { "codigo": 13, "Valor": "metro cuadrado" },
     { "codigo": 15, "Valor": "Vara cuadrada" },
     { "codigo": 18, "Valor": "metro cúbico" },

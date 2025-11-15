@@ -234,7 +234,11 @@
     { "codigo": "10611", "Valor": "Molienda de cereales" },
     {
       "codigo": "10612",
-      "Valor": "Elaboración de cereales para el desayuno y similares  10613 Servicios de beneficiado de productos agrícolas ncp (excluye Beneficio de azúcar rama 1072 y beneficio de café rama 0163)"
+      "Valor": "Elaboración de cereales para el desayuno y similares"
+    },
+    {
+      "codigo": "10613",
+       "Valor": "Servicios de beneficiado de productos agrícolas ncp (excluye Beneficio de azúcar rama 1072 y beneficio de café rama 0163)"
     },
     { "codigo": "10621", "Valor": "Fabricación de almidón" },
     {
@@ -586,7 +590,7 @@
     },
     {
       "codigo": "26510",
-      "Valor": "Fabricación de instrumentos y aparatos para medrr, verificar, ensayar, navegar y de control de procesos industriales"
+      "Valor": "Fabricación de instrumentos y aparatos para medir, verificar, ensayar, navegar y de control de procesos industriales"
     },
     {
       "codigo": "26520",
@@ -1251,7 +1255,7 @@
     },
     {
       "codigo": "46904",
-      "Valor": "Venta al por mayor de toldos y tiendas de campafia de cualquier material"
+      "Valor": "Venta al por mayor de toldos y tiendas de campaña de cualquier material"
     },
     {
       "codigo": "46905",
@@ -1775,7 +1779,7 @@
     { "codigo": "65120", "Valor": "Planes de seguro excepto de vida" },
     { "codigo": "65199", "Valor": "Seguros generales de todo tipo" },
     { "codigo": "65200", "Valor": "Planes se seguro" },
-    { "codigo": "65300", "Valor": "Planes de pensiones" },
+    { "codigo": "65300", "Valor": "Actividades de administración de fondos" },
     {
       "codigo": "66110",
       "Valor": "Administración de mercados financieros (Bolsa de Valores)"
@@ -1808,7 +1812,7 @@
     },
     {
       "codigo": "68200",
-      "Valor": "Actleidades Inmobiliarias Realizadas a Cambio de una Retribución o por Contrata"
+      "Valor": "Actividades Inmobiliarias Realizadas a Cambio de una Retribución o por Contrata"
     },
     { "codigo": "69100", "Valor": "Actividades jurídicas" },
     {
@@ -1881,7 +1885,7 @@
     },
     {
       "codigo": "78300",
-      "Valor": "Detación de recursos humanos y gestion; gestión de las funciones de recursos humanos"
+      "Valor": "Dotación de recursos humanos y gestion; gestión de las funciones de recursos humanos"
     },
     {
       "codigo": "79110",
@@ -2029,7 +2033,7 @@
     },
     {
       "codigo": "87900",
-      "Valor": "Actividades de asistencia a nifios y jóvenes"
+      "Valor": "Actividades de asistencia a niños y jóvenes"
     },
     {
       "codigo": "87901",
@@ -2110,7 +2114,7 @@
     { "codigo": "95299", "Valor": "Reparaciones de enseres personales n.c.p." },
     {
       "codigo": "96010",
-      "Valor": "Lavado y limpieza de prendas de tela y de piel, incluso la limpieza en SECO"
+      "Valor": "Lavado y limpieza de prendas de tela y de piel, incluso la limpieza en seco"
     },
     {
       "codigo": "96020",

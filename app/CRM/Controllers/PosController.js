@@ -1269,7 +1269,7 @@ module.exports = {
                     let failed = FailedDte.create({
                         _request: req.body,
                         _user: req.session.userSession.shortName,
-                        opt: "Creacion Manual",
+                        opt: "Proceso automatizado",
                         responseMH: enviado.data,
                         dte: dte_json
                     });
