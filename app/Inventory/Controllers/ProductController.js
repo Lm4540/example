@@ -126,6 +126,67 @@ const ProductController = {
         });
     },
 
+    testTest3: async (req, res) => {
+        let sucursal = req.query.sucursal || 1;
+
+        let tmp = await Stock.findAll({
+            where: {
+                cant: {
+                    [Op.gt]: 0
+                },
+                sucursal: sucursal
+            }
+        });
+
+        let stocks = {};
+        tmp.forEach(el => {
+            stocks[el.product] = {
+                cantidad: el.cant,
+                reservado: el.reserved,
+                id: el.product,
+                reservas: 0,
+            };
+        });
+
+        tmp = await StockReserve.findAll({
+            where: {
+                sucursal: sucursal
+            }
+        });
+
+        let not = [];
+        tmp.forEach(el => {
+            if (stocks[el.product]) {
+                stocks[el.product].reservas = stocks[el.product].reservas + el.cant;
+            } else {
+                not.push(el)
+            }
+        });
+
+        keys = Object.keys(stocks);
+        let revision = [];
+        for (let index = 0; index < keys.length; index++) {
+            const stock = stocks[keys[index]];
+            if (stock.reservas !== stock.reservado) {
+                revision.push(stock);
+            }
+        }
+
+
+        return res.json({
+            revision,
+            not
+        })
+
+
+
+
+
+
+
+
+    },
+
 
     getVistadeCorreccionDeClassificaciones: async (req, res) => {
         let limit = 15;
@@ -198,7 +259,7 @@ const ProductController = {
             message = 'Debe proporcionar un numero identificador del producto para el Inventario';
         } else if (data.description.length < 10) {
             message = 'Proporcione una descripción';
-        }else if (data.description.length > 255) {
+        } else if (data.description.length > 255) {
             message = 'descripción máxima de 255 caracteres';
         } else if (data.classification.length < 1 || data.classification == "") {
             message = 'Seleccione una Clasificación';
@@ -518,12 +579,12 @@ const ProductController = {
         //nombres de los clientes que tienen productos en transito
         let clients_in_transit = {};
 
-        if (in_transit.length > 0){
+        if (in_transit.length > 0) {
 
 
             in_transit.forEach((el) => {
 
-                if(el.sale_detail !== null && el.sale_detail.length > 0){
+                if (el.sale_detail !== null && el.sale_detail.length > 0) {
 
                     el.sale_detail.forEach(sd => {
                         _ids_ += `${sd.id},`;
@@ -533,18 +594,18 @@ const ProductController = {
 
             });
 
-            if(_ids_.length > 0) {
-                
+            if (_ids_.length > 0) {
+
                 _ids_ = await sequelize.query(`select crm_sale_detail.id, crm_sale_detail.sale, crm_sale.client, crm_client.name from crm_sale_detail inner join crm_sale on crm_sale.id = crm_sale_detail.sale inner join crm_client on crm_sale.client = crm_client.id where crm_sale_detail.id in (${_ids_.slice(0, -1)});`, {
                     logging: console.log,
                     type: QueryTypes.SELECT,
-                    raw : true,
-                } );
-                
+                    raw: true,
+                });
+
                 _ids_.forEach(ele => {
                     clients_in_transit[ele.id] = ele;
                 });
-                
+
             }
         }
 
@@ -591,7 +652,7 @@ const ProductController = {
             message = 'Por favor, proporcione el nombre de este producto';
         } else if (data.description.length < 10) {
             message = 'Proporcione una descripción';
-        }else if (data.description.length > 255) {
+        } else if (data.description.length > 255) {
             message = 'Descripcion máxima de 255 caracteres';
         } else if (data.classification.length < 1 || data.classification == "") {
             message = 'Seleccione una Clasificación';
@@ -715,7 +776,7 @@ const ProductController = {
         }
     },
 
-    
+
     updateDamaged: async (req, res) => {
         try {
             let product = await Product.findByPk(req.body.product);

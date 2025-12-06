@@ -138,7 +138,7 @@ router.get('/product/test', (req, res) => {
     })
 }); //pendiente
 
-router.get('/test/test', ProductController.testTest2);
+router.get('/test/test', ProductController.testTest3);
 /** Stock & Movements Routes */
 
 /** Reports Routes */
