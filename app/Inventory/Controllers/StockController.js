@@ -2560,7 +2560,10 @@ const StockController = {
                     { sucursal: sucursal },
                     { createdAt: { [Op.between]: [init, end], } }
                 ],
-            }
+            },
+            order: [
+                ['createdAt', 'ASC']
+            ]
         });
 
         // verificar si hay movimeintos

@@ -39,8 +39,11 @@
                         <% if (pms.length > 0) { %>
                         <ul>
                           <% pms.forEach(pm => { %>
-                          <li>
-                         Pago id <%= pm.id %>  Monto:  <%= pm.amount %>, Saldo a favor: <%= (pm.amount - pm.asigned_amount).toFixed(2) %>
+                          <li class="mt-2">
+                         (Pago id: <%= pm.id %>)<br>
+                         Monto:  $<%= Helper.money_format(pm.amount) %>
+                         <br>
+                          Saldo a favor: $<%= Helper.money_format((pm.amount - pm.asigned_amount).toFixed(2)) %>
                           </li>
                           <% }) %>
                          
@@ -49,9 +52,19 @@
                   <td>
                         <% if (sls.length > 0) { %>
                         <ul>
-                          <% sls.forEach(sale => { %>
-                          <li>
-                            <a target="_blank" href="/sales/view/<%= sale.id %>">Venta #<%= sale.id %> - Total: <%= sale.total %> - Saldo: <%= sale.balance %></a>
+                          <% sls.forEach(sale => { 
+                            let amount = (sale.delivery_amount || 0) + sale.balance;
+                            %>
+                          <li class="mt-2">
+                            <a target="_blank" href="/sales/view/<%= sale.id %>">Venta #<%= sale.id %>
+                              <br>
+                              Monto Vendido: $<%= Helper.money_format(amount) %>
+                              <br>
+                              Monto Cobrado: $<%= Helper.money_format(sale.collected) %>
+                              <br>
+                              Saldo Pendiente: $<%= Helper.money_format(amount - sale.collected) %>
+                            </a>
+                          </a>
                           </li>
                           <% }) %>
                         </ul>
