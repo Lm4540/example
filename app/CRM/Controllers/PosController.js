@@ -1047,7 +1047,7 @@ module.exports = {
                         tipoItem: 1, //bienes catalogo 11
                         numeroDocumento: null,
                         cantidad: detail.cant,
-                        codigo: product.internal_code,
+                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0,25),
                         codTributo: null,
                         descripcion: product.name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, ''),
                         uniMedida: 59, //unidad catalogo 14
@@ -1162,7 +1162,7 @@ module.exports = {
                         tipoItem: 1, //bienes catalogo 11
                         numeroDocumento: null,
                         cantidad: detail.cant,
-                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, ''),
+                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0,25),
                         codTributo: null,
                         descripcion: product.name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, ''),
                         uniMedida: 59, //unidad catalogo 14

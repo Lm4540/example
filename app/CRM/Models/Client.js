@@ -139,7 +139,7 @@ const Client = sequelize.define('Client', {
             return this.departamento != null && this.municipio !== null && this.direction !== null && this.direction != "" ? {
                 'departamento': this.departamento,
                 'municipio': this.municipio,
-                'complemento': this.direction
+                'complemento': this.direction.slice(0,200)
             } : null;
 
         }
