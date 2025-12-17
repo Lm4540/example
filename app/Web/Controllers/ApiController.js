@@ -55,12 +55,16 @@ const ApiController = {
             let client = await Client.findByPk(req.body.pin);
             if (client) {
                   //verificar el segundoi dato del cliente
-                  if (client.NIT_DUI != req.body.document || client.NIT_DUI == null) {
-                 /* if ((client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null)) || (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null))) {*/
+                  let soloNumeros = req.body.document.replace(/\D/g, '');
+                  let registered = client.NIT_DUI.replace(/\D/g, '');
+
+                  if (registered != soloNumeros || registered == null) {
+                        /* if ((client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null)) || (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null))) {*/
                         return res.json({
                               status: 'error',
                               message: 'Datos del cliente incompletos, por favor pida a un asesor que actualize sus datos',
-                              data: {client, nrc: (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null)), dui: (client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null))
+                              data: {
+                                    client, nrc: (client.classification != 'ninguno' && (client.NRC != req.body.document || client.NRC == null)), dui: (client.classification == 'ninguno' && (client.NIT_DUI != req.body.document || client.NIT_DUI == null))
 
                               }
                         });
@@ -383,7 +387,7 @@ const ApiController = {
                         );
                   } else {
                         details = await sequelize.query(
-                              sql+ ' order by id DESC',
+                              sql + ' order by id DESC',
                               {
                                     type: QueryTypes.SELECT
                               }
@@ -497,8 +501,8 @@ const ApiController = {
                   tmp.forEach(stock => {
                         stocks[stock.sucursal] = stock.cant - stock.reserved;
                   });
-                  
-                  
+
+
                   tmp = await Sucursal.findAll();
                   product = {
                         id: product.id,
@@ -514,7 +518,7 @@ const ApiController = {
                               return {
                                     id: sucursal.id,
                                     name: sucursal.name,
-                                    cant : stocks[sucursal.id] || 0,
+                                    cant: stocks[sucursal.id] || 0,
                               }
                         })
                   };
