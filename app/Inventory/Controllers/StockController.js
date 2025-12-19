@@ -2210,7 +2210,10 @@ const StockController = {
                     { product: product.id },
                     { createdAt: { [Op.between]: [init, end], } }
                 ],
-            }
+            },
+            order: [
+                ['createdAt', 'ASC']
+            ]
         });
 
         // verificar si hay movimeintos
