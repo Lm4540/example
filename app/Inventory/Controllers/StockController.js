@@ -3957,7 +3957,74 @@ const StockController = {
         });
 
     },
+
+    addRecountLocations: async (req, res) => {
+        let recount = await Recount.findByPk(req.params.id);
+        if (recount) {
+            let sucursal = await Sucursal.findByPk(recount.sucursal);
+            if (sucursal == null) {
+                return res.json({
+                    status: 'error',
+                    message: 'Sucursal no encontrada'
+                });
+            }
+
+            let tmp = await sequelize.query(
+                'SELECT inventory_recount_area.recount, inventory_recount_area_detail.product, inventory_recount_area_detail.cant, inventory_recount_area_detail.area, inventory_recount_area_detail.createdBy, inventory_recount_area_detail.createdAt, inventory_recount_area.name FROM inventory_recount_area inner join inventory_recount_area_detail on inventory_recount_area.id = inventory_recount_area_detail.area WHERE inventory_recount_area.recount = :recount_id',
+                {
+                    type: QueryTypes.SELECT,
+                    replacements: { recount_id: recount.id }
+                }
+            );
+            let locations = [];
+            tmp.forEach(element => {
+                locations.push({
+                    createdBy: element.createdBy,
+                    createdAt: element.createdAt,
+                    updatedAt: element.createdAt,
+                    sucursal: sucursal.id,
+                    product: element.product,
+                    location: `${element.cant} Unidades en ${element.name}`,
+                });
+            });
+
+            const t = await sequelize.transaction();
+
+            try {
+                await StockLocation.bulkCreate(locations, {
+                    transaction: t,
+                    validate: false
+                });
+
+                await t.commit(); // Guardar cambios si todo salió bien
+                  return res.json({
+                    status: 'success',
+                    message: 'Hecho :D',
+                    
+                });
+            } catch (error) {
+                await t.rollback(); // Deshacer todo si hubo un error
+                return res.json({
+                    status: 'error',
+                    message: 'Error en la carga, se revirtieron los cambios:',
+                    error
+                });
+
+            }
+
+
+
+        }
+
+        return res.json({
+            status: 'error',
+            message: 'proceso no encontrado'
+        });
+
+    }
 };
+
+
 
 
 module.exports = StockController;
