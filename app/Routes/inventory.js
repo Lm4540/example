@@ -139,7 +139,6 @@ router.get('/product/test', (req, res) => {
 }); //pendiente
 
 router.get('/test/test', ProductController.testTest3);
-router.get('/actualizar/areas/:id(\\d+)', StockController.addRecountLocations);
 /** Stock & Movements Routes */
 
 /** Reports Routes */
