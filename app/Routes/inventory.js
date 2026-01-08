@@ -142,6 +142,5 @@ router.get('/test/test', ProductController.testTest3);
 /** Stock & Movements Routes */
 
 /** Reports Routes */
-router.get('/caragar/test/:id(\\d+)', StockController.addRecountLocations);
 
 module.exports = router;
