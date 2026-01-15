@@ -91,7 +91,7 @@
                 <p>Telefono: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_contact}')">${sale.delivery_contact}</span></p>
                 <p>Direccion para la entrega: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_direction}')">${sale.delivery_direction}</span></p>
                 <p>Direccion del cliente:  <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${cli.direction}')">${cli.direction}</span></p>
-                <p>Instrucciones: <span style="cursor: pointer;" onclick="copiarTextoAlPortapapeles('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
+                <p>Instrucciones: <span style="cursor: pointer; font-size:1.2em; color:red;" onclick="copiarTextoAlPortapapeles('${sale.delivery_instructions}')">${sale.delivery_instructions}</span></p>
                 <p>Entrega (${sale.delivery_provider ? res.providers[sale.delivery_provider].name : ''})</p>
                 <button class="btn btn-danger btn-sm round" onclick="createdGuide(${sale.id})">Guia Creada</button>
               </div>

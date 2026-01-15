@@ -39,9 +39,15 @@
               Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
               <a class="badge bg-primary mt-1" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br>
               <a class="badge bg-danger mt-1" href="/inventory/product/<%= prod.id %>/reserveList" target="_blank"> Reservar</a><br>
-              Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.cant %></span>
+              <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= user.sucursal %>', 'Tu Sucursal', '<%= prod.id %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span><br>
+              Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: 1.5em;"><%= prod.cant %></span>
+
               <br>
-              <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= user.sucursal %>', 'Tu Sucursal', '<%= prod.id %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span>
+              Tienda: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.local %></span>
+              <br>
+              Envio: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.delivery %></span>
+             
+              
 
             </td>
           </tr>

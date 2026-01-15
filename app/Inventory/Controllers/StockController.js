@@ -51,19 +51,14 @@ const StockController = {
 
         return Helper.notFound(req, res, 'Product no Found')
 
-
-
-
-
-
-
-
     },
 
     ProductreserveList: async (req, res) => {
+
+        let sucursal = req.session.userSession.employee.sucursal;
         let tmp = await Product.findAll({
             where: {
-                id: { [Op.in]: sequelize.literal(`(SELECT product FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and  _status = 'process'))`) }
+                id: { [Op.in]: sequelize.literal(`(SELECT product FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`) }
             },
             order: [['name', 'ASC']],
         });
@@ -80,25 +75,46 @@ const StockController = {
             }
         })
 
-        tmp = await sequelize.query(`SELECT * FROM crm_sale_detail WHERE cant > ready and reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${req.session.userSession.employee.sucursal} and _status = 'process')`, { type: QueryTypes.SELECT, model: SaleDetail });
+        tmp = await sequelize.query(
+            `SELECT id, delivery_type FROM crm_sale WHERE sucursal = ${sucursal} and _status = 'process'`,
+            {
+                type: QueryTypes.SELECT,
+
+            }
+        );
+
+        let sales = {};
+        tmp.forEach(item => sales[item.id] = item.delivery_type);
+
+        tmp = await sequelize.query(
+            `SELECT * FROM crm_sale_detail WHERE cant > ready and reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and _status = 'process')`,
+            {
+                type: QueryTypes.SELECT,
+                model: SaleDetail
+            }
+        );
 
         tmp.forEach(dt => {
             if (products[`s_${dt.product}`] !== undefined) {
-                products[`s_${dt.product}`].cant = products[`s_${dt.product}`].cant + (dt.cant - dt.ready);
+                products[`s_${dt.product}`].cant = 0;
+                products[`s_${dt.product}`].local = 0;
+                products[`s_${dt.product}`].delivery = 0;
             }
 
-            // products[dt.product].cant > 0 ? products[dt.product].cant += (dt.cant - dt.ready) : products[dt.product].cant = (dt.cant - dt.ready);
-        });
+            if (sales[dt.sale] == 'local') {
+                products[`s_${dt.product}`].local = products[`s_${dt.product}`].local + (dt.cant - dt.ready);
 
-        // let llaves = Object.keys(products);
+            } else {
+                products[`s_${dt.product}`].delivery = products[`s_${dt.product}`].delivery + (dt.cant - dt.ready);
+            }
+
+            products[`s_${dt.product}`].cant = products[`s_${dt.product}`].cant + (dt.cant - dt.ready);
+        });
 
         return res.render('Inventory/Stock/productReserveList', {
             pageTitle: 'Lista de productos a Buscar',
             products
         });
-
-
-
     },
 
     viewRequisitions: async (req, res) => {
@@ -3997,10 +4013,10 @@ const StockController = {
                 });
 
                 await t.commit(); // Guardar cambios si todo salió bien
-                  return res.json({
+                return res.json({
                     status: 'success',
                     message: 'Hecho :D',
-                    
+
                 });
             } catch (error) {
                 await t.rollback(); // Deshacer todo si hubo un error
