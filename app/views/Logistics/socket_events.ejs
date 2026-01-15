@@ -1,24 +1,57 @@
 <script>
+  // 1. Instanciar el Modal
+  const reconnectModalElement = document.getElementById('reconnectingModal');
+  // Creamos la instancia y forzamos opciones por seguridad extra (aunque ya estén en HTML)
+  const reconnectModal = new bootstrap.Modal(reconnectModalElement, {
+    backdrop: 'static',
+    keyboard: false
+  });
+
   var socket = io.connect('<%= baseURL %>/logistics', {
-    autoConnect: false
+    autoConnect: true,
+
   });
   socket.connect();
 
+  window.addEventListener('offline', () => {
+   
+    reconnectModal.show(); // Mostramos el modal inmediatamente
+  });
+
+  window.addEventListener('online', () => {
+    if (socket.connected) {
+    
+      reconnectModal.hide();
+    }
+  });
+
   socket.on("reconnect_failed", () => {
-    errorMessage("Se ha perdido la conexión con el Servidor, recarga la página para poder recuperarla");
+    errorMessage("Se ha perdido la conexión con el Servidor, recagando la página para poder recuperarla");
+    socket.close();
+    setTimeout(() => {
+      window.location.reload()
+    }, 10000);
   });
 
   socket.on("error", (error) => {
     errorMessage("Ha Ocurrido un error, recarga pa pagina para poder continuar");
   });
 
-  socket.on("disconnect", () => {
+  socket.on('disconnect', (reason) => {
+    // Evitamos mostrarlo si el servidor nos desconectó voluntariamente (ej. logout)
+    if (reason !== "io server disconnect") {
+      reconnectModal.show();
+      re_render_needs = true;
+    } else {
+      location.reload();
+    }
+  });
 
-    errorMessage("Se ha perdido la conexión con el Servidor, recagando la página para poder recuperarla");
-    socket.close();
+  socket.on("connect", () => {
+
     setTimeout(() => {
-      window.location.reload()
-    }, 10000);
+      reconnectModal.hide();
+    }, 500);
   });
 
   socket.on('logistics data', data => {

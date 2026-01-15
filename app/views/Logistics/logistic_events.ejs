@@ -15,6 +15,8 @@
     on_screen = null,
     transport = {},
     info_not_renderized = false;
+  re_render_needs = false;
+
 
   const ShowDataModal = new bootstrap.Modal(document.getElementById('modalShowData'), {});
   const charge_iframe = (url) => {
@@ -28,6 +30,25 @@
     document.querySelector("#total_delivery").innerHTML = `${totals.prepared} Listo para entrega`;
     document.querySelector("#total_trasnport").innerHTML = `${totals.transport} En ruta`;
     // document.querySelector("#total_delivery_failed").innerHTML = `${totals.delivery_failed} Entregas Fallidas`;
+
+    if (re_render_needs) {
+      re_render_needs = false;
+      switch (on_screen) {
+        case 'mayor':
+          show_info();
+          break;
+        case 'reservas':
+          show_reservas();
+          break;
+        case 'delivery':
+          show_delivery();
+          break;
+        case 'transport':
+          show_trasnport();
+          break;
+      }
+    }
+
   };
 
   const showImageModal = new bootstrap.Modal(document.getElementById('showImage'), {});
@@ -410,7 +431,7 @@
                          </div>
                       </div>`;
 
-                      arreglo[element.order] = content;
+          arreglo[element.order] = content;
         }
       });
       let acumulador = '';

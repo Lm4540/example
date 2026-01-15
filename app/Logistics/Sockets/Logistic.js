@@ -126,5 +126,8 @@ module.exports = async (io, socket) => {
     // socket.on("order:read", readOrder);
 
 
+  }else {
+    socket.disconnect();
   }
+
 }
