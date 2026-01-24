@@ -95,7 +95,7 @@ const StockController = {
         );
 
         tmp.forEach(dt => {
-            if (products[`s_${dt.product}`] !== undefined) {
+            if (products[`s_${dt.product}`] == null || products[`s_${dt.product}`] == undefined) {
                 products[`s_${dt.product}`].cant = 0;
                 products[`s_${dt.product}`].local = 0;
                 products[`s_${dt.product}`].delivery = 0;

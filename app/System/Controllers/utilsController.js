@@ -3,17 +3,12 @@ const Sucursal = require('../../Inventory/Models/Sucursal');
 const Client = require("../../CRM/Models/Client");
 const Sale = require('../../CRM/Models/Sale');
 const SaleDetail = require('../../CRM/Models/SaleDetail');
-const InvoiceSeries = require('../../CRM/Models/InvoiceSerie');
-const SalePayment = require('../../CRM/Models/SalePayment');
 const Product = require('../../Inventory/Models/Product');
 const Stock = require('../../Inventory/Models/Stock');
 const StockReserve = require('../../Inventory/Models/StockReserve');
 const ClientObservation = require('../../CRM/Models/ClientObservation');
-const Movement = require("../../Inventory/Models/Movement");
-const Provider = require("../../Inventory/Models/Provider");
-const PettyCashMoves = require('../../Financial/Models/PettyCashMoves');
+const warningController = require('../../System/Controllers/warningController');
 const Employee = require('../../HRM/Models/Employee');
-const RequisitionDetail = require('../../Inventory/Models/RequisitionDetail');
 
 
 const Helper = require('../../System/Helpers');
@@ -332,7 +327,7 @@ const UtilsController = {
                             sucursals[reserve.sucursal] = {};
                             sucursals[reserve.sucursal][reserve.product] = reserve.cant;
 
-                        }else{
+                        } else {
                             sucursals[reserve.sucursal][reserve.product] = sucursals[reserve.sucursal][reserve.product] != undefined
                                 ? (sucursals[reserve.sucursal][reserve.product] + reserve.cant)
                                 : reserve.cant;
@@ -651,26 +646,26 @@ const UtilsController = {
 
 
     reporte1: async (req, res) => {
-       //buscar las ventas finalizadas en los ultimos dos meses, el estado debe ser collected y seran divididas por sucursal(parametro get), no se incluiran ventas de cliente de proceso
-        let sucursal = await  Sucursal.findByPk(req.query.sucursal ? req.query.sucursal : 1);
+        //buscar las ventas finalizadas en los ultimos dos meses, el estado debe ser collected y seran divididas por sucursal(parametro get), no se incluiran ventas de cliente de proceso
+        let sucursal = await Sucursal.findByPk(req.query.sucursal ? req.query.sucursal : 1);
         let sucursals = await Sucursal.findAll();
         var fecha = null;
         if (req.query.date) {
             fecha = new Date(req.query.date);
-        }else{
+        } else {
             fecha = new Date();
             fecha.setMonth(fecha.getMonth() - 2);
         }
 
-        let tmp = await  sequelize.query(`select * from crm_client where id in (SELECT client FROM crm_sale WHERE sucursal = ${sucursal.id} and _status = 'collected' and endAt >= :fecha)`, {
+        let tmp = await sequelize.query(`select * from crm_client where id in (SELECT client FROM crm_sale WHERE sucursal = ${sucursal.id} and _status = 'collected' and endAt >= :fecha)`, {
             replacements: { fecha: fecha },
             type: QueryTypes.SELECT,
             model: Client
         });
-        
-        
+
+
         let clients = {};
-        tmp.forEach(client => { 
+        tmp.forEach(client => {
             clients[client.id] = {
                 name: client.name,
                 id: client.id,
@@ -680,7 +675,7 @@ const UtilsController = {
                 local: 0,
             };
         });
-        
+
         tmp = await Sale.findAll({
             where: {
                 sucursal: sucursal.id,
@@ -702,7 +697,115 @@ const UtilsController = {
 
         let keys = Object.keys(clients);
 
-        return res.render('Utils/reporte1', {clients , keys, sucursal, sucursals});
+        return res.render('Utils/reporte1', { clients, keys, sucursal, sucursals });
+    },
+
+    revision_de_totales: async (req, res) => {
+        var { init, end, seller, sucursal } = req.query;
+        seller = Number.parseInt(seller);
+        sucursal = Number.parseInt(sucursal);
+
+
+        console.log(req.query)
+
+        let sales;
+        let totals = {};
+
+        let tmp = await Employee.findAll();
+        let employees = {};
+        tmp.forEach(obj => {
+            employees[obj.id] = obj.shortName || obj.name;
+        });
+
+        //buscar las ventas
+        if (!isNaN(seller) && seller > 0) {
+            sales = await Sale.findAll({
+                where: {
+                    createdAt: {
+                        [Op.between]: [
+                            new Date(`${init}T00:00:00Z`),
+                            new Date(`${end}T23:59:59Z`)
+                        ]
+                    },
+                    seller: seller,
+                }
+            });
+
+            tmp = await sequelize.query(`SELECT sale, SUM(price * cant) as sub FROM crm_sale_detail WHERE sale in (select id from crm_sale where seller = :seller and createdAt >= :init and createdAt <= :end) group by sale`, {
+                replacements: {
+                    seller: seller,
+                    init: new Date(`${init}T00:00:00Z`),
+                    end: new Date(`${end}T23:59:59Z`)
+                },
+                type: QueryTypes.SELECT
+            });
+
+            console.log(tmp)
+
+            tmp.forEach(obj => {
+                totals[obj.sale] = obj.sub;
+            });
+        } else if (!isNaN(sucursal) && sucursal > 0) {
+            sales = await Sale.findAll({
+                where: {
+                    createdAt: {
+                        [Op.between]: [
+                            new Date(`${init}T00:00:00Z`),
+                            new Date(`${end}T23:59:59Z`)
+                        ]
+                    },
+                    sucursal: sucursal,
+                },
+            });
+
+            tmp = await sequelize.query(`SELECT sale, SUM(price * cant) as sub FROM crm_sale_detail WHERE sale in (select id from crm_sale where sucursal = :sucursal and createdAt >= :init and createdAt <= :end) group by sale`, {
+                replacements: {
+                    sucursal: sucursal,
+                    init: new Date(`${init}T00:00:00Z`),
+                    end: new Date(`${end}T23:59:59Z`)
+                },
+                type: QueryTypes.SELECT
+            });
+
+            console.log(tmp)
+
+            tmp.forEach(obj => {
+                totals[obj.sale] = obj.sub;
+            });
+        } else {
+            return res.json({
+                error: 'nada que mostrar',
+            })
+        }
+        let fails = [];
+        // vamos a recorrer las ventas y ver si el monto es el mismo que la suma de los detalles
+        sales.forEach(sale => {
+            if (Number.parseFloat(sale.balance) != Number.parseFloat(totals[sale.id])) {
+                warningController.logInternalWarning({
+                    usuario: 'Sistema', // el usuario logueado en tu POS
+                    tipo: 'permiso',
+                    descripcion: `El total no coiuncide de la venta ${sale.id} : $${sale.balance} y sumatoria $${totals[sale.id]}`,
+                    proceso: 'Registro de Compras',
+                    usuario_auditado: employees[sale.seller]
+
+                });
+
+                fails.push({
+
+                    sale: sale.id,
+                    amount: sale.balance,
+                    seller: employees[sale.seller],
+                    detalles: totals[sale.id],
+                    
+                });
+            }
+        });
+
+        return res.json({
+            fails
+        })
+
+
     }
 };
 
