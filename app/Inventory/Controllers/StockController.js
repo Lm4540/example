@@ -71,7 +71,9 @@ const StockController = {
                 cant: 0,
                 provider_code: prod.provider_code,
                 internal_code: prod.internal_code,
-                id: prod.id
+                id: prod.id,
+                local: 0,
+                delivery: 0,
             }
         })
 
@@ -95,20 +97,13 @@ const StockController = {
         );
 
         tmp.forEach(dt => {
-            if (products[`s_${dt.product}`] == null || products[`s_${dt.product}`] == undefined) {
-                products[`s_${dt.product}`].cant = 0;
-                products[`s_${dt.product}`].local = 0;
-                products[`s_${dt.product}`].delivery = 0;
-            }
-
+            let cantidad = Number.parseInt(dt.cant - dt.ready);
             if (sales[dt.sale] == 'local') {
-                products[`s_${dt.product}`].local = products[`s_${dt.product}`].local + (dt.cant - dt.ready);
-
+                products[`s_${dt.product}`].local += cantidad;
             } else {
-                products[`s_${dt.product}`].delivery = products[`s_${dt.product}`].delivery + (dt.cant - dt.ready);
+                products[`s_${dt.product}`].delivery += cantidad;
             }
-
-            products[`s_${dt.product}`].cant = products[`s_${dt.product}`].cant + (dt.cant - dt.ready);
+            products[`s_${dt.product}`].cant += cantidad;
         });
 
         return res.render('Inventory/Stock/productReserveList', {
