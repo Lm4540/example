@@ -6,6 +6,7 @@ const SaleDetail = require('../../CRM/Models/SaleDetail');
 const Product = require('../../Inventory/Models/Product');
 const Stock = require('../../Inventory/Models/Stock');
 const StockReserve = require('../../Inventory/Models/StockReserve');
+const StockLocation = require('../../Inventory/Models/StockLocation');
 const ClientObservation = require('../../CRM/Models/ClientObservation');
 const warningController = require('../../System/Controllers/warningController');
 const Employee = require('../../HRM/Models/Employee');
@@ -809,12 +810,24 @@ const UtilsController = {
     },
 
     execute_sql: async (req, res) => {
-        let sql = 'update inventory_product_stock_locations SET location = "Bodega #10" WHERE id in (SELECT id from inventory_product_stock_locations WHERE sucursal = 1 AND (location LIKE "%Bodega #5" OR location LIKE "%Bodega #7"));';
+        let tmp = await sequelize.query(
+            'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND (location LIKE "%Bodega #5" OR location LIKE "%Bodega #10")',
+            {
+                type: QueryTypes.SELECT,
+                model: StockLocation
+            }
+        );
+
+        let result = []
+
+        for (let index = 0; index < tmp.length; index++) {
+            const element = tmp[index];
+            element.location = 'Bodega #10';
+            result.push(await element.save());
+        }
 
 
-        return res.json(await sequelize.query(sql, {
-            type: QueryTypes.UPDATE
-        }));
+       return res.json(result);
 
     }
 };
