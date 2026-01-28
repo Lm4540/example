@@ -811,7 +811,7 @@ const UtilsController = {
 
     execute_sql: async (req, res) => {
         let tmp = await sequelize.query(
-            'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND (location LIKE "%Bodega #5" OR location LIKE "%Bodega #7")',
+            'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND location LIKE "%Bodega #7"',
             {
                 type: QueryTypes.SELECT,
                 model: StockLocation
