@@ -1456,6 +1456,11 @@ const SaleController = {
         if (detail) {
             let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
             if (sale) {
+                if (sale._status != 'process') {
+                    return res.json({
+                        status: 'errorMessage', message: 'Ya no se puede modificar esta venta',
+                    });
+                }
                 try {
                     let count = await SaleDetail.count({ where: { sale: sale.id } }) - 1;
                     const result = await sequelize.transaction(async (t) => {

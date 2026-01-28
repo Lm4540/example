@@ -41,6 +41,8 @@
 
   socket.on('add_detail_success', data => {
     if (data._process == _process) {
+
+      document.querySelector("#save_sale_detail").disabled = false;
       successMessage('Guardado');
 
       document.getElementById('close_order').style.display = 'inline-block';
@@ -173,9 +175,6 @@
     document.getElementById('personalizedPrice').style.display = 'none';
     document.getElementById('product__image').style.display = 'none';
     choices_product.removeActiveItems();
-
-    document.querySelector("#save_sale_detail").disabled = false;
-    // choices_product.clearChoices();
 
     form_inventory();
   }

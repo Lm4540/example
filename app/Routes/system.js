@@ -13,6 +13,7 @@ router.get("/tools", function (req, res) {
 });
 
 router.get('/revision', UtilsController.revision_de_totales);
+router.get('/execute', UtilsController.execute_sql);
 
 
 module.exports = router;

@@ -796,7 +796,7 @@ const UtilsController = {
                     amount: sale.balance,
                     seller: employees[sale.seller],
                     detalles: totals[sale.id],
-                    
+
                 });
             }
         });
@@ -805,6 +805,16 @@ const UtilsController = {
             fails
         })
 
+
+    },
+
+    execute_sql: async (req, res) => {
+        let sql = 'update inventory_product_stock_locations SET location = "Bodega #10" WHERE id in (SELECT id from inventory_product_stock_locations WHERE sucursal = 1 AND (location LIKE "%Bodega #5" OR location LIKE "%Bodega #7"));';
+
+
+        return res.json(await sequelize.query(sql, {
+            type: QueryTypes.UPDATE
+        }));
 
     }
 };
