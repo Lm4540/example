@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Costos de Importación - Consolidado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para inputs numéricos */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- Encabezado -->
+        <header class="mb-8 flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-600">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Calculadora de Prorrateo - Importación Consolidada</h1>
+                <p class="text-sm text-gray-500 mt-1">Distribución de gastos basada en Valor FOB + DAI Directo</p>
+            </div>
+            <button onclick="resetData()" class="text-red-500 hover:text-red-700 text-sm font-semibold border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition">
+                <i class="fas fa-trash-alt mr-1"></i> Borrar Todo
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- SECCIÓN 1: GASTOS COMUNES -->
+            <section class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-lg font-bold text-blue-700"><i class="fas fa-receipt mr-2"></i>1. Gastos Comunes (Globales)</h2>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">A Prorratear</span>
+                </div>
+                
+                <!-- Formulario Gastos -->
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="expenseDesc" placeholder="Concepto (Ej. Flete, Almacenaje)" class="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                    <input type="number" id="expenseAmount" placeholder="Monto ($)" class="w-32 p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                    <button onclick="addExpense()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Lista de Gastos -->
+                <div class="overflow-y-auto max-h-60">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2">Concepto</th>
+                                <th class="px-4 py-2 text-right">Monto</th>
+                                <th class="px-4 py-2 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Total Gastos -->
+                <div class="mt-4 pt-4 border-t flex justify-between items-center font-bold text-lg">
+                    <span>Total Gastos Comunes:</span>
+                    <span id="totalExpensesDisplay" class="text-red-600">$0.00</span>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: FACTURAS / PROVEEDORES -->
+            <section class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-lg font-bold text-green-700"><i class="fas fa-file-invoice-dollar mr-2"></i>2. Facturas (Proveedores)</h2>
+                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Base del Cálculo</span>
+                </div>
+
+                <!-- Formulario Facturas -->
+                <div class="grid grid-cols-12 gap-2 mb-4">
+                    <div class="col-span-5">
+                        <label class="block text-xs text-gray-500 mb-1">Proveedor</label>
+                        <input type="text" id="invoiceSupplier" placeholder="Nombre" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-green-500">
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-xs text-gray-500 mb-1">Valor FOB ($)</label>
+                        <input type="number" id="invoiceFOB" placeholder="0.00" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-green-500">
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-xs text-gray-500 mb-1">DAI ($) <span class="text-xs italic text-gray-400">(Directo)</span></label>
+                        <input type="number" id="invoiceDAI" placeholder="0.00" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-green-500">
+                    </div>
+                    <div class="col-span-1 flex items-end">
+                        <button onclick="addInvoice()" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded transition h-10 mb-0.5">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista Facturas -->
+                <div class="overflow-y-auto max-h-60">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-2">Proveedor</th>
+                                <th class="px-2 py-2 text-right">FOB</th>
+                                <th class="px-2 py-2 text-right">DAI</th>
+                                <th class="px-2 py-2 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Total FOB -->
+                <div class="mt-4 pt-4 border-t flex justify-between items-center font-bold text-lg">
+                    <span>Total Valor FOB:</span>
+                    <span id="totalFOBDisplay" class="text-blue-600">$0.00</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECCIÓN 3: REPORTE FINAL -->
+        <section class="mt-8 bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-chart-pie mr-2 text-purple-600"></i>Reporte de Prorrateo y Costos Finales</h2>
+                    <p class="text-sm text-gray-500">Aquí tienes el costo real puesto en bodega por cada proveedor.</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500">Costo Total de Importación:</p>
+                    <p id="grandTotalDisplay" class="text-2xl font-bold text-gray-900">$0.00</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-white uppercase bg-gray-800">
+                        <tr>
+                            <th class="px-4 py-3 rounded-tl-lg">Proveedor</th>
+                            <th class="px-4 py-3 text-right">Valor FOB</th>
+                            <th class="px-4 py-3 text-center">% Part.</th>
+                            <th class="px-4 py-3 text-right bg-blue-900">Gasto Común (A)</th>
+                            <th class="px-4 py-3 text-right bg-green-900">DAI Directo (B)</th>
+                            <th class="px-4 py-3 text-right font-bold text-yellow-400">Costo Total</th>
+                            <th class="px-4 py-3 text-center rounded-tr-lg" title="Multiplica tu precio FOB unitario por este factor para saber el costo unitario real">Factor Costo <i class="fas fa-info-circle ml-1"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-400">Agrega gastos y facturas para generar el reporte...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Explicación del Factor -->
+            <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700 font-bold">¿Cómo uso el "Factor Costo"?</p>
+                        <p class="text-sm text-yellow-700">
+                            Si el factor es <strong>1.45</strong> y compraste una licuadora a <strong>$10.00</strong>, tu costo real puesto en bodega es: 
+                            $10.00 x 1.45 = <strong>$14.50</strong>. (¡Usa este número para fijar tu precio de venta!)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT DE LÓGICA -->
+    <script>
+        // --- 1. Estado de la Aplicación (Datos) ---
+        let data = {
+            expenses: [],
+            invoices: []
+        };
+
+        // --- 2. Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(); // Cargar datos guardados si existen
+            renderAll();
+        });
+
+        // --- 3. Funciones de GASTOS (Expenses) ---
+        function addExpense() {
+            const desc = document.getElementById('expenseDesc').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+
+            if (!desc || isNaN(amount) || amount <= 0) {
+                alert('Por favor ingresa un concepto y un monto válido.');
+                return;
+            }
+
+            data.expenses.push({ id: Date.now(), desc, amount });
+            
+            // Limpiar inputs
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseDesc').focus();
+
+            saveData();
+            renderAll();
+        }
+
+        function removeExpense(id) {
+            data.expenses = data.expenses.filter(exp => exp.id !== id);
+            saveData();
+            renderAll();
+        }
+
+        // --- 4. Funciones de FACTURAS (Invoices) ---
+        function addInvoice() {
+            const supplier = document.getElementById('invoiceSupplier').value.trim();
+            const fob = parseFloat(document.getElementById('invoiceFOB').value);
+            // Si el DAI está vacío, asumimos 0
+            const daiVal = document.getElementById('invoiceDAI').value; 
+            const dai = daiVal === '' ? 0 : parseFloat(daiVal);
+
+            if (!supplier || isNaN(fob) || fob <= 0 || isNaN(dai) || dai < 0) {
+                alert('Por favor ingresa proveedor, valor FOB y DAI válidos.');
+                return;
+            }
+
+            data.invoices.push({ id: Date.now(), supplier, fob, dai });
+
+            // Limpiar inputs
+            document.getElementById('invoiceSupplier').value = '';
+            document.getElementById('invoiceFOB').value = '';
+            document.getElementById('invoiceDAI').value = '';
+            document.getElementById('invoiceSupplier').focus();
+
+            saveData();
+            renderAll();
+        }
+
+        function removeInvoice(id) {
+            data.invoices = data.invoices.filter(inv => inv.id !== id);
+            saveData();
+            renderAll();
+        }
+
+        // --- 5. Motor de Cálculo y Renderizado ---
+        function renderAll() {
+            renderExpenses();
+            renderInvoices();
+            renderReport();
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        function renderExpenses() {
+            const tbody = document.getElementById('expensesTableBody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            data.expenses.forEach(exp => {
+                total += exp.amount;
+                const row = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-2 font-medium text-gray-900">${exp.desc}</td>
+                        <td class="px-4 py-2 text-right text-gray-600">${formatCurrency(exp.amount)}</td>
+                        <td class="px-4 py-2 text-center">
+                            <button onclick="removeExpense(${exp.id})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('totalExpensesDisplay').innerText = formatCurrency(total);
+            return total;
+        }
+
+        function renderInvoices() {
+            const tbody = document.getElementById('invoicesTableBody');
+            tbody.innerHTML = '';
+            let totalFOB = 0;
+
+            data.invoices.forEach(inv => {
+                totalFOB += inv.fob;
+                const row = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-2 py-2 font-medium text-gray-900">${inv.supplier}</td>
+                        <td class="px-2 py-2 text-right text-gray-600">${formatCurrency(inv.fob)}</td>
+                        <td class="px-2 py-2 text-right text-gray-600">${formatCurrency(inv.dai)}</td>
+                        <td class="px-2 py-2 text-center">
+                            <button onclick="removeInvoice(${inv.id})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('totalFOBDisplay').innerText = formatCurrency(totalFOB);
+            return totalFOB;
+        }
+
+        function renderReport() {
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+
+            // Totales necesarios para el cálculo
+            const totalCommonExpenses = data.expenses.reduce((sum, item) => sum + item.amount, 0);
+            const totalFOB = data.invoices.reduce((sum, item) => sum + item.fob, 0);
+            let grandTotalImportCost = 0;
+
+            if (data.invoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Agrega gastos y facturas para generar el reporte...</td></tr>';
+                document.getElementById('grandTotalDisplay').innerText = "$0.00";
+                return;
+            }
+
+            data.invoices.forEach(inv => {
+                // LÓGICA DE PRORRATEO (CORE)
+                // 1. Calcular participación (%)
+                const participationPct = (inv.fob / totalFOB);
+                
+                // 2. Asignar Gasto Común en base al porcentaje
+                const allocatedExpense = totalCommonExpenses * participationPct;
+
+                // 3. Costo Total = FOB + Gasto Común + DAI (Directo)
+                const totalCost = inv.fob + allocatedExpense + inv.dai;
+                
+                // 4. Factor = Costo Total / FOB
+                const factor = totalCost / inv.fob;
+
+                grandTotalImportCost += totalCost;
+
+                const row = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-3 font-bold text-gray-800">${inv.supplier}</td>
+                        <td class="px-4 py-3 text-right">${formatCurrency(inv.fob)}</td>
+                        <td class="px-4 py-3 text-center text-gray-500 text-xs">${(participationPct * 100).toFixed(2)}%</td>
+                        <td class="px-4 py-3 text-right text-blue-700 font-medium">+ ${formatCurrency(allocatedExpense)}</td>
+                        <td class="px-4 py-3 text-right text-green-700 font-medium">+ ${formatCurrency(inv.dai)}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-900 bg-gray-50">${formatCurrency(totalCost)}</td>
+                        <td class="px-4 py-3 text-center font-bold text-white bg-blue-600 rounded-md shadow-sm">${factor.toFixed(4)}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('grandTotalDisplay').innerText = formatCurrency(grandTotalImportCost);
+        }
+
+        // --- 6. Persistencia (LocalStorage) ---
+        function saveData() {
+            localStorage.setItem('importCalcData_v1', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('importCalcData_v1');
+            if (saved) {
+                try {
+                    data = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error cargando datos", e);
+                }
+            }
+        }
+
+        function resetData() {
+            if(confirm("¿Estás seguro de borrar todos los datos?")) {
+                data = { expenses: [], invoices: [] };
+                saveData();
+                renderAll();
+            }
+        }
+    </script>
+</body>
+</html>

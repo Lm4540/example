@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prorrateo de costos por furgon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background-color: white !important;
+                font-size: 10px;
+            }
+            .no-print, .input-group, button, header button { display: none !important; }
+            .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            section { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd !important; margin-bottom: 10px !important; padding: 10px !important; }
+            .col-action { display: none !important; }
+            table { width: 100% !important; }
+            th, td { padding: 4px !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 max-w-[98%]">
+        
+        <!-- Encabezado -->
+        <header class="mb-6 flex justify-between items-center bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-600 no-print">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Prorrateo de costos por furgon</h1>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="window.print()" class="text-blue-600 hover:text-blue-800 text-sm font-semibold border border-blue-200 px-4 py-2 rounded hover:bg-blue-50 transition">
+                    <i class="fas fa-print mr-1"></i> Imprimir Reporte
+                </button>
+                <button onclick="resetData()" class="text-red-500 hover:text-red-700 text-sm font-semibold border border-red-200 px-4 py-2 rounded hover:bg-red-50 transition">
+                    <i class="fas fa-trash-alt mr-1"></i> Borrar Todo
+                </button>
+            </div>
+        </header>
+
+        <div class="hidden print:block mb-4 text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Reporte de Costos de Importación por Furgon(Consolidado)</h1>
+            <p class="text-gray-500 text-xs">Fecha: <span id="printDate"></span></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- SECCIÓN 1: GASTOS COMUNES -->
+            <section class="bg-white p-5 rounded-lg shadow-md border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-lg font-bold text-blue-700"><i class="fas fa-receipt mr-2"></i>1. Gastos Comunes (Globales)</h2>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded no-print">Se Prorratean</span>
+                </div>
+                
+                <div class="flex gap-2 mb-4 input-group">
+                    <input type="text" id="expenseDesc" placeholder="Concepto (Ej. Flete)" class="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm">
+                    <input type="number" id="expenseAmount" placeholder="Monto ($)" class="w-32 p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm">
+                    <button onclick="addExpense()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-48 print:max-h-none print:overflow-visible">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2">Concepto</th>
+                                <th class="px-4 py-2 text-right">Monto</th>
+                                <th class="px-4 py-2 text-center col-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-2 pt-2 border-t flex justify-between items-center font-bold text-base">
+                    <span>Total Gastos Comunes:</span>
+                    <span id="totalExpensesDisplay" class="text-red-600">$0.00</span>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: FACTURAS -->
+            <section class="bg-white p-5 rounded-lg shadow-md border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-lg font-bold text-green-700"><i class="fas fa-file-invoice-dollar mr-2"></i>2. Facturas (Proveedores)</h2>
+                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded no-print">Gastos Directos</span>
+                </div>
+
+                <div class="grid grid-cols-12 gap-2 mb-4 input-group items-end">
+                    <div class="col-span-3">
+                        <label class="block text-[10px] text-gray-500 mb-1">Proveedor</label>
+                        <input type="text" id="invoiceSupplier" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-green-500" placeholder="Nombre">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-500 mb-1 font-bold">Valor FOB</label>
+                        <input type="number" id="invoiceFOB" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-green-500" placeholder="0.00">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-500 mb-1">DAI</label>
+                        <input type="number" id="invoiceDAI" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-green-500" placeholder="0.00">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-500 mb-1">Papeleo</label>
+                        <input type="number" id="invoicePaperwork" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-green-500" placeholder="0.00">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-500 mb-1">Otros</label>
+                        <input type="number" id="invoiceOthers" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-green-500" placeholder="0.00">
+                    </div>
+                    <div class="col-span-1">
+                        <button onclick="addInvoice()" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded h-[38px] flex items-center justify-center">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto max-h-48 print:max-h-none print:overflow-visible">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-2">Prov.</th>
+                                <th class="px-2 py-2 text-right">FOB</th>
+                                <!-- CAMBIO v1.3: Columnas separadas en Sección 2 -->
+                                <th class="px-2 py-2 text-right">DAI</th>
+                                <th class="px-2 py-2 text-right">Pap.</th>
+                                <th class="px-2 py-2 text-right">Otros</th>
+                                <th class="px-2 py-2 text-center col-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-2 pt-2 border-t flex justify-between items-center font-bold text-base">
+                    <span>Total Valor FOB:</span>
+                    <span id="totalFOBDisplay" class="text-blue-600">$0.00</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECCIÓN 3: REPORTE FINAL -->
+        <section id="reportSection" class="mt-6 bg-white p-5 rounded-lg shadow-lg border border-gray-200">
+            <div class="flex justify-between items-end mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-chart-pie mr-2 text-purple-600"></i>Reporte Detallado</h2>
+                </div>
+                <div class="text-right border border-gray-300 p-2 rounded bg-gray-50">
+                    <p class="text-[10px] text-gray-600 uppercase font-bold">Costo Total de Importacion</p>
+                    <p id="grandTotalDisplay" class="text-xl font-bold text-gray-900 leading-none">$0.00</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-gray-600 border-collapse">
+                    <thead class="text-xs text-white uppercase bg-gray-800" id="reportTableHead"></thead>
+                    <tbody id="reportTableBody" class="divide-y divide-gray-200"></tbody>
+                    <tfoot id="reportTableFoot" class="bg-gray-800 text-white font-bold text-xs"></tfoot>
+                </table>
+            </div>
+            
+            <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                <p class="text-xs text-yellow-800">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <strong>Nota:</strong> Los "Gastos Directos" incluyen la suma de DAI, Papeleo y Otros gastos específicos de esa factura.
+                </p>
+                <hr>
+
+                <div class="ml-3 mt-5">
+                        <p class="text-sm text-yellow-700 font-bold">¿Cómo uso el "Factor Costo"?</p>
+                        <p class="text-sm text-yellow-700">
+                            Si el factor es <strong>1.45</strong> y usted compro una cartera a <strong>$10.00</strong>, Su costo real puesto en bodega es: 
+                            $10.00 x 1.45 = <strong>$14.50</strong>
+                        </p>
+                    </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        document.getElementById('printDate').innerText = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString();
+
+        let data = { expenses: [], invoices: [] };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderAll();
+        });
+
+        // --- GASTOS ---
+        function addExpense() {
+            const desc = document.getElementById('expenseDesc').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            if (!desc || isNaN(amount) || amount <= 0) { alert('Dato inválido'); return; }
+            data.expenses.push({ id: Date.now(), desc, amount });
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseDesc').focus();
+            saveData(); renderAll();
+        }
+
+        function removeExpense(id) {
+            data.expenses = data.expenses.filter(exp => exp.id !== id);
+            saveData(); renderAll();
+        }
+
+        // --- FACTURAS ---
+        function addInvoice() {
+            const supplier = document.getElementById('invoiceSupplier').value.trim();
+            const fob = parseFloat(document.getElementById('invoiceFOB').value);
+            const getVal = (id) => { const v = document.getElementById(id).value; return v === '' ? 0 : parseFloat(v); };
+            const dai = getVal('invoiceDAI');
+            const paperwork = getVal('invoicePaperwork');
+            const others = getVal('invoiceOthers');
+
+            if (!supplier || isNaN(fob) || fob <= 0) { alert('Proveedor y FOB son obligatorios'); return; }
+
+            data.invoices.push({ id: Date.now(), supplier, fob, dai, paperwork, others });
+            
+            document.getElementById('invoiceSupplier').value = '';
+            document.getElementById('invoiceFOB').value = '';
+            document.getElementById('invoiceDAI').value = '';
+            document.getElementById('invoicePaperwork').value = '';
+            document.getElementById('invoiceOthers').value = '';
+            document.getElementById('invoiceSupplier').focus();
+            
+            saveData(); renderAll();
+        }
+
+        function removeInvoice(id) {
+            data.invoices = data.invoices.filter(inv => inv.id !== id);
+            saveData(); renderAll();
+        }
+
+        // --- RENDERIZADO ---
+        function renderAll() {
+            renderExpenses();
+            renderInvoices();
+            renderReport();
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        function renderExpenses() {
+            const tbody = document.getElementById('expensesTableBody');
+            tbody.innerHTML = '';
+            let total = 0;
+            data.expenses.forEach(exp => {
+                total += exp.amount;
+                tbody.innerHTML += `
+                    <tr class="bg-white border-b print:border-gray-200">
+                        <td class="px-4 py-2 font-medium text-gray-900">${exp.desc}</td>
+                        <td class="px-4 py-2 text-right text-gray-600">${formatCurrency(exp.amount)}</td>
+                        <td class="px-4 py-2 text-center col-action"><button onclick="removeExpense(${exp.id})" class="text-red-500"><i class="fas fa-trash-alt"></i></button></td>
+                    </tr>`;
+            });
+            document.getElementById('totalExpensesDisplay').innerText = formatCurrency(total);
+            return total;
+        }
+
+        function renderInvoices() {
+            const tbody = document.getElementById('invoicesTableBody');
+            tbody.innerHTML = '';
+            let totalFOB = 0;
+            data.invoices.forEach(inv => {
+                totalFOB += inv.fob;
+                // CAMBIO v1.3: Columnas separadas en la tabla de ingreso
+                tbody.innerHTML += `
+                    <tr class="bg-white border-b print:border-gray-200">
+                        <td class="px-2 py-2 font-medium text-gray-900">${inv.supplier}</td>
+                        <td class="px-2 py-2 text-right text-gray-600">${formatCurrency(inv.fob)}</td>
+                        <td class="px-2 py-2 text-right text-gray-500 text-[10px]">${formatCurrency(inv.dai)}</td>
+                        <td class="px-2 py-2 text-right text-gray-500 text-[10px]">${formatCurrency(inv.paperwork)}</td>
+                        <td class="px-2 py-2 text-right text-gray-500 text-[10px]">${formatCurrency(inv.others)}</td>
+                        <td class="px-2 py-2 text-center col-action"><button onclick="removeInvoice(${inv.id})" class="text-red-500"><i class="fas fa-trash-alt"></i></button></td>
+                    </tr>`;
+            });
+            document.getElementById('totalFOBDisplay').innerText = formatCurrency(totalFOB);
+            return totalFOB;
+        }
+
+        function renderReport() {
+            const thead = document.getElementById('reportTableHead');
+            const tbody = document.getElementById('reportTableBody');
+            const tfoot = document.getElementById('reportTableFoot');
+            
+            const totalCommonExpenses = data.expenses.reduce((sum, item) => sum + item.amount, 0);
+            const totalFOB = data.invoices.reduce((sum, item) => sum + item.fob, 0);
+            
+            if (data.invoices.length === 0) {
+                thead.innerHTML = ''; tbody.innerHTML = '<tr><td class="text-center py-8 text-gray-400">Sin datos...</td></tr>'; tfoot.innerHTML = '';
+                document.getElementById('grandTotalDisplay').innerText = "$0.00";
+                return;
+            }
+
+            // CABECERA REPORTE
+            let headerHTML = `<tr>
+                <th class="px-2 py-3 border border-gray-600">Proveedor</th>
+                <th class="px-2 py-3 text-right border border-gray-600">Valor FOB</th>
+                <th class="px-1 py-3 text-center border border-gray-600">%</th>`;
+            
+            data.expenses.forEach(exp => {
+                headerHTML += `<th class="px-2 py-3 bg-blue-900 text-right border border-blue-800 truncate max-w-[60px]" title="${exp.desc}">${exp.desc}</th>`;
+            });
+
+            // CAMBIO v1.3: Columna "Gastos Directos" unificada
+            headerHTML += `
+                <th class="px-2 py-3 bg-blue-800 text-right border border-blue-700 text-yellow-300">T. Gastos</th>
+                <th class="px-2 py-3 bg-green-900 text-right border border-green-800">Gastos Directos</th>
+                <th class="px-2 py-3 bg-gray-700 text-right border border-gray-600 text-white">TOTAL</th>
+                <th class="px-2 py-3 bg-gray-800 text-center border border-gray-600">Factor</th>
+            </tr>`;
+            
+            thead.innerHTML = headerHTML;
+            tbody.innerHTML = '';
+
+            let sumGrandTotal = 0;
+            let sumDirectTotal = 0; // Acumulador para la columna unificada
+            let sumTotalAllocated = 0;
+            let expenseColumnSums = new Array(data.expenses.length).fill(0);
+
+            data.invoices.forEach(inv => {
+                const participationPct = (inv.fob / totalFOB);
+                const totalAllocatedExpense = totalCommonExpenses * participationPct;
+                
+                // Suma de Gastos Directos Individuales
+                const directExpenses = inv.dai + inv.paperwork + inv.others;
+
+                const totalCost = inv.fob + totalAllocatedExpense + directExpenses;
+                const factor = totalCost / inv.fob;
+                
+                sumGrandTotal += totalCost;
+                sumDirectTotal += directExpenses;
+                sumTotalAllocated += totalAllocatedExpense;
+
+                let rowHTML = `<tr class="bg-white border-b hover:bg-gray-50 print:border-gray-300">
+                    <td class="px-2 py-2 font-bold text-gray-800 border-r border-gray-200">${inv.supplier}</td>
+                    <td class="px-2 py-2 text-right text-gray-600 border-r border-gray-200">${formatCurrency(inv.fob)}</td>
+                    <td class="px-1 py-2 text-center text-gray-500 text-[9px] border-r border-gray-200">${(participationPct * 100).toFixed(2)}%</td>`;
+
+                data.expenses.forEach((exp, index) => {
+                    const individualExpense = exp.amount * participationPct;
+                    expenseColumnSums[index] += individualExpense;
+                    rowHTML += `<td class="px-2 py-2 text-right text-blue-800 text-[10px] border-r border-gray-200 bg-blue-50 print:bg-gray-50">${formatCurrency(individualExpense)}</td>`;
+                });
+
+                // CAMBIO v1.3: Mostrar suma de directos en una sola celda
+                rowHTML += `
+                    <td class="px-2 py-2 text-right text-blue-900 font-bold border-r border-gray-200 bg-blue-100 print:bg-gray-100">${formatCurrency(totalAllocatedExpense)}</td>
+                    <td class="px-2 py-2 text-right text-green-700 font-medium border-r border-gray-200">${formatCurrency(directExpenses)}</td>
+                    <td class="px-2 py-2 text-right font-bold text-gray-900 bg-gray-100 border-r border-gray-200">${formatCurrency(totalCost)}</td>
+                    <td class="px-2 py-2 text-center text-xs font-bold bg-blue-600 text-white rounded print:text-black print:bg-gray-200 print:border print:border-black">
+                        ${factor.toFixed(4)}
+                    </td>
+                </tr>`;
+                tbody.innerHTML += rowHTML;
+            });
+
+            // FOOTER CON TOTALES
+            let footerHTML = `<tr>
+                <td class="px-2 py-3 border-t border-gray-500">TOTALES</td>
+                <td class="px-2 py-3 text-right border-t border-gray-500">${formatCurrency(totalFOB)}</td>
+                <td class="px-1 py-3 text-center border-t border-gray-500">100%</td>`;
+            
+            expenseColumnSums.forEach(sum => {
+                footerHTML += `<td class="px-2 py-3 text-right border-t border-gray-500 bg-blue-900">${formatCurrency(sum)}</td>`;
+            });
+
+            // CAMBIO v1.3: Footer unificado
+            footerHTML += `
+                <td class="px-2 py-3 text-right border-t border-gray-500 bg-blue-800 text-yellow-300">${formatCurrency(sumTotalAllocated)}</td>
+                <td class="px-2 py-3 text-right border-t border-gray-500 bg-green-900">${formatCurrency(sumDirectTotal)}</td>
+                <td class="px-2 py-3 text-right border-t border-gray-500 bg-gray-700 font-bold text-lg">${formatCurrency(sumGrandTotal)}</td>
+                <td class="px-2 py-3 text-center border-t border-gray-500 bg-gray-800"></td>
+            </tr>`;
+
+            tfoot.innerHTML = footerHTML;
+            document.getElementById('grandTotalDisplay').innerText = formatCurrency(sumGrandTotal);
+        }
+
+        // PERSISTENCIA
+        function saveData() { localStorage.setItem('importCalcData_v1_3', JSON.stringify(data)); }
+        function loadData() {
+            // Intenta cargar v1.3, si no existe, intenta v1.2 para no perder datos al actualizar
+            let saved = localStorage.getItem('importCalcData_v1_3');
+            if (!saved) saved = localStorage.getItem('importCalcData_v1_2');
+            
+            if (saved) { try { data = JSON.parse(saved); } catch (e) { console.error(e); } }
+        }
+        function resetData() {
+            if(confirm("¿Borrar todo?")) { data = { expenses: [], invoices: [] }; saveData(); renderAll(); }
+        }
+    </script>
+</body>
+</html>

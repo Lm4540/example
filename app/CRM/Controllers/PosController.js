@@ -1047,7 +1047,7 @@ module.exports = {
                         tipoItem: 1, //bienes catalogo 11
                         numeroDocumento: null,
                         cantidad: detail.cant,
-                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0,25),
+                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0, 25),
                         codTributo: null,
                         descripcion: product.name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, ''),
                         uniMedida: 59, //unidad catalogo 14
@@ -1162,7 +1162,7 @@ module.exports = {
                         tipoItem: 1, //bienes catalogo 11
                         numeroDocumento: null,
                         cantidad: detail.cant,
-                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0,25),
+                        codigo: product.internal_code.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, '').slice(0, 25),
                         codTributo: null,
                         descripcion: product.name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s-]/g, ''),
                         uniMedida: 59, //unidad catalogo 14
@@ -1546,6 +1546,11 @@ module.exports = {
         const dptos = JSON.stringify(require('../../DTE/Catalogos/direction.json'));
         const dis = JSON.stringify(require('../../DTE/Catalogos/distritos_.json'));
         const giros = require('../../DTE/Catalogos/CAT-019.json').items;
+        const employes = await Employee.findAll({
+            where: { isSeller: true },
+            order: [['name', 'ASC']]
+        });
+
 
         const _views = {
             '03': 'create_dte_ccf',
@@ -1569,6 +1574,7 @@ module.exports = {
             dis,
             giros,
             VALOR_IVA,
+            employes
         });
 
     },
@@ -2245,128 +2251,128 @@ module.exports = {
 
     },
 
-   /* simular_contingencia: async (req, res) => {
-        let isValid = false;
-        let data = req.body;
-        let sucursal = await Sucursal.findByPk(req.session.sucursal);
-        let caja = await PettyCash.findOne({ where: { sucursal: sucursal.id }, order: [['id', 'ASC']] });
-        if (sucursal == null || caja === null) { return res.json({ status: 'errorMessage', message: 'Sucursal o Caja no encontradas' }); }
-        //Estructurar los datos del DTE Json
-        const fechaActual = new Date();
-        const diaFormateado = String(fechaActual.getDate()).padStart(2, '0');
-        const mesFormateado = String(fechaActual.getMonth() + 1).padStart(2, '0');
-        // Formatear la hora como HH:MM:SS (asegurándose de que tengan dos dígitos)
-        const horasFormateadas = String(fechaActual.getHours()).padStart(2, '0');
-        const minutosFormateados = String(fechaActual.getMinutes()).padStart(2, '0');
-        const segundosFormateados = String(fechaActual.getSeconds()).padStart(2, '0');
-
-        let dte_correlativo = await DTEController.generarNumeroControl(data.dte_type, sucursal.id, caja.id, sucursal.codEstableMH, caja.codPuntoVentaMH);
-        let dte_json = null;
-
-        if (data.dte_type == '03' || data.dte_type == '01') {
-            dte_json = {
-                identificacion: {
-                    version: data.dte_type == '03' ? 3 : 1,
-                    ambiente: process.env.DTE_AMBIENTE,
-                    tipoDte: data.dte_type,
-                    numeroControl: dte_correlativo.numControl,
-                    codigoGeneracion: DTEController.generarCodigoGeneracion(),
-                    tipoModelo: 2, //modelo de Factur5acion previo catalogo 3
-                    tipoOperacion: 2, //modelo de trasmision normal catalogo 4
-                    fecEmi: `${fechaActual.getFullYear()}-${mesFormateado}-${diaFormateado}`,
-                    horEmi: `${horasFormateadas}:${minutosFormateados}:${segundosFormateados}`,
-                    tipoMoneda: "USD",
-                    tipoContingencia: 2,
-                    motivoContin: null
-                },
-                documentoRelacionado: null,
-                emisor: sucursal.dte_emisor,
-                receptor: data.receptor,
-                otrosDocumentos: null,
-                ventaTercero: null,
-                cuerpoDocumento: data.cuerpoDocumento,
-                resumen: data.resumen,
-                extension: {
-                    nombEntrega: req.session.userSession.shortName,
-                    docuEntrega: null,
-                    nombRecibe: null,
-                    docuRecibe: null,
-                    observaciones: null,
-                    placaVehiculo: null,
-                },
-                apendice: data.apendice,
-            };
-
-            dte_json.emisor.codPuntoVentaMH = caja.codPuntoVentaMH;
-            dte_json.emisor.codPuntoVenta = caja.codPuntoVenta;
-
-            isValid = data.dte_type == '03' ? dteValidator.validateCCF(dte_json) : dteValidator.validateFC(dte_json);
-
-            if (!isValid.isValid) {
-                return res.json({
-                    status: 'errorMessage',
-                    message: 'El DTE no cumple con la validacion minima',
-                    errors: isValid.errors,
-                    json: dte_json
-                });
-            }
-
-            try {
-
-                let dteModel = {
-                    sale: null,
-                    sucursal: sucursal.id,
-                    caja: caja.id,
-                    codigo: dte_json.identificacion.codigoGeneracion,
-                    contingencia: null,
-                    tipo: dte_json.identificacion.tipoDte,
-                    trasnmitido: false,
-                    entregado: false,
-                    responseMH: null,
-                    correlativo: dte_correlativo.correlativo,
-                    dte: null,
-                    intentos: 1,
-                    _errors: null,
-                    fecEmi: dte_json.identificacion.fecEmi,
-                    client_label: dte_json.receptor.nombre,
-                }
-
-
-                dte_json.firmaElectronica = await DTEController.signDTE(dte_json)?.data;
-
-                dteModel.intentos = process.env.MH_API_MAX_RETRIES;
-
-                dteModel.dte = dte_json;
-
-                return await sequelize.transaction(async (t) => {
-                    dteModel = await DTE_Model.create(dteModel, { transaction: t });
-                    if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
-                        //enviar correo
-                        // axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => {  });
-                    }
-
-                    return res.json({
-                        status: 'success',
-                        json: dteModel,
-                        message: 'Orden procesada correctamente, DTE enviado exitosamente',
-                    });
-                });
-
-
-            } catch (error) {
-                return res.json({
-                    status: 'errorMessage',
-                    message: 'Error: ' + error.message ? error.message : '',
-                    error,
-                    json: dte_json
-                });
-            }
-
-
-        }
-    },
-
-    */
+    /* simular_contingencia: async (req, res) => {
+         let isValid = false;
+         let data = req.body;
+         let sucursal = await Sucursal.findByPk(req.session.sucursal);
+         let caja = await PettyCash.findOne({ where: { sucursal: sucursal.id }, order: [['id', 'ASC']] });
+         if (sucursal == null || caja === null) { return res.json({ status: 'errorMessage', message: 'Sucursal o Caja no encontradas' }); }
+         //Estructurar los datos del DTE Json
+         const fechaActual = new Date();
+         const diaFormateado = String(fechaActual.getDate()).padStart(2, '0');
+         const mesFormateado = String(fechaActual.getMonth() + 1).padStart(2, '0');
+         // Formatear la hora como HH:MM:SS (asegurándose de que tengan dos dígitos)
+         const horasFormateadas = String(fechaActual.getHours()).padStart(2, '0');
+         const minutosFormateados = String(fechaActual.getMinutes()).padStart(2, '0');
+         const segundosFormateados = String(fechaActual.getSeconds()).padStart(2, '0');
+ 
+         let dte_correlativo = await DTEController.generarNumeroControl(data.dte_type, sucursal.id, caja.id, sucursal.codEstableMH, caja.codPuntoVentaMH);
+         let dte_json = null;
+ 
+         if (data.dte_type == '03' || data.dte_type == '01') {
+             dte_json = {
+                 identificacion: {
+                     version: data.dte_type == '03' ? 3 : 1,
+                     ambiente: process.env.DTE_AMBIENTE,
+                     tipoDte: data.dte_type,
+                     numeroControl: dte_correlativo.numControl,
+                     codigoGeneracion: DTEController.generarCodigoGeneracion(),
+                     tipoModelo: 2, //modelo de Factur5acion previo catalogo 3
+                     tipoOperacion: 2, //modelo de trasmision normal catalogo 4
+                     fecEmi: `${fechaActual.getFullYear()}-${mesFormateado}-${diaFormateado}`,
+                     horEmi: `${horasFormateadas}:${minutosFormateados}:${segundosFormateados}`,
+                     tipoMoneda: "USD",
+                     tipoContingencia: 2,
+                     motivoContin: null
+                 },
+                 documentoRelacionado: null,
+                 emisor: sucursal.dte_emisor,
+                 receptor: data.receptor,
+                 otrosDocumentos: null,
+                 ventaTercero: null,
+                 cuerpoDocumento: data.cuerpoDocumento,
+                 resumen: data.resumen,
+                 extension: {
+                     nombEntrega: req.session.userSession.shortName,
+                     docuEntrega: null,
+                     nombRecibe: null,
+                     docuRecibe: null,
+                     observaciones: null,
+                     placaVehiculo: null,
+                 },
+                 apendice: data.apendice,
+             };
+ 
+             dte_json.emisor.codPuntoVentaMH = caja.codPuntoVentaMH;
+             dte_json.emisor.codPuntoVenta = caja.codPuntoVenta;
+ 
+             isValid = data.dte_type == '03' ? dteValidator.validateCCF(dte_json) : dteValidator.validateFC(dte_json);
+ 
+             if (!isValid.isValid) {
+                 return res.json({
+                     status: 'errorMessage',
+                     message: 'El DTE no cumple con la validacion minima',
+                     errors: isValid.errors,
+                     json: dte_json
+                 });
+             }
+ 
+             try {
+ 
+                 let dteModel = {
+                     sale: null,
+                     sucursal: sucursal.id,
+                     caja: caja.id,
+                     codigo: dte_json.identificacion.codigoGeneracion,
+                     contingencia: null,
+                     tipo: dte_json.identificacion.tipoDte,
+                     trasnmitido: false,
+                     entregado: false,
+                     responseMH: null,
+                     correlativo: dte_correlativo.correlativo,
+                     dte: null,
+                     intentos: 1,
+                     _errors: null,
+                     fecEmi: dte_json.identificacion.fecEmi,
+                     client_label: dte_json.receptor.nombre,
+                 }
+ 
+ 
+                 dte_json.firmaElectronica = await DTEController.signDTE(dte_json)?.data;
+ 
+                 dteModel.intentos = process.env.MH_API_MAX_RETRIES;
+ 
+                 dteModel.dte = dte_json;
+ 
+                 return await sequelize.transaction(async (t) => {
+                     dteModel = await DTE_Model.create(dteModel, { transaction: t });
+                     if (dte_json.receptor.correo !== null && dte_json.receptor.correo !== "") {
+                         //enviar correo
+                         // axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => {  });
+                     }
+ 
+                     return res.json({
+                         status: 'success',
+                         json: dteModel,
+                         message: 'Orden procesada correctamente, DTE enviado exitosamente',
+                     });
+                 });
+ 
+ 
+             } catch (error) {
+                 return res.json({
+                     status: 'errorMessage',
+                     message: 'Error: ' + error.message ? error.message : '',
+                     error,
+                     json: dte_json
+                 });
+             }
+ 
+ 
+         }
+     },
+ 
+     */
 
     no_transmitidos: async (req, res) => {
         let DTES = await DTE_Model.findAll({
@@ -2533,7 +2539,7 @@ module.exports = {
             _sucursals,
             dte_types
         });
-     },
+    },
 
     dte_report_data: async (req, res) => {
         let data = req.body;
@@ -2542,7 +2548,7 @@ module.exports = {
             trasnmitido: 1
         };
 
-        if(data.sucursal !== 'all') {
+        if (data.sucursal !== 'all') {
             where.sucursal = data.sucursal;
         }
         if (data.desde && data.hasta) {
@@ -2587,9 +2593,9 @@ module.exports = {
             trasnmitido: 1
         };
 
-        let sql = `select sale from crm_dte where tipo = "${data.tipo}" and trasnmitido = 1`; 
+        let sql = `select sale from crm_dte where tipo = "${data.tipo}" and trasnmitido = 1`;
 
-        if(data.sucursal !== 'all') {
+        if (data.sucursal !== 'all') {
             sql += ` and sucursal = ${data.sucursal}`;
             where.sucursal = data.sucursal;
         }

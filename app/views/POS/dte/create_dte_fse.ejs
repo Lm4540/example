@@ -17,6 +17,17 @@
           <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Factura de Sujeto Excluido(DTE Manual)</h2>
         </div>
         <div class="card-body">
+          <div class="form-group">
+            <label for="selectEmpleados">Seleccione un vendedor</label>
+            <select name="selectEmpleados" id="selectEmpleados" class="form-control">
+              <option value="-1">Seleccione un empleado</option>
+              <% employes.forEach((element, key) => { %>
+              <option value="<%= key %>"><%= element.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
           <!-- NIT y NRC en una fila -->
           <h4 class="text-center">Datos del Receptor</h4>
           <div class="row">
@@ -119,7 +130,7 @@
           <div class="form-group mt-5 mb-5">
             <label for="gravamen">Tipo de Impuesto</label>
             <select name="gravamen" id="gravamen" class="form-control">
-              <option value="0" >0% Compra de otros Articulos</option>
+              <option value="0">0% Compra de otros Articulos</option>
               <option value="10" selected>10% Servicios Profesionales</option>
               <option value="13" disbled>13% Leche cruda, carnes y otros art 162 Cod Tributario</option>
             </select>
@@ -226,6 +237,9 @@
 <%- include('../../Layouts/Scripts.ejs') %>
 <script src="assets/libs/choices/choices.min.js"></script>
 <script>
+  const empleados = JSON.parse('<%- String(JSON.stringify(employes)) %>');
+
+
   const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
 
   const TBodyApendices = document.querySelector("#TBodyApendices");
@@ -241,6 +255,7 @@
   distritos = '<%- dis %>';
   distritos = JSON.parse(distritos);
 
+
   const cargarMunicipios = (index) => {
     let muni = departamentos[index];
     document.querySelector("#municipio").innerHTML = '';
@@ -249,6 +264,14 @@
     });
 
   }
+
+  const choices_distrito = new Choices(document.querySelector('#distrito'), {
+    'searchChoices': true,
+  }).setChoices(distritos);
+
+  const choices_actividad = new Choices(document.querySelector('#clientCodActividad'), {
+    'searchChoices': true,
+  });
 
   const subtotalizar = node => {
     let cant = Number.parseInt(node.querySelector('.cantidad-item').value);
@@ -386,10 +409,11 @@
         }
       });
 
-      if(document.querySelector('#gravamen').value == "10"){
-            renta = fix_number(sub * 0.10);
-      }if(document.querySelector('#gravamen').value == "13"){
-            iva = fix_number(sub * IVA_VAL);
+      if (document.querySelector('#gravamen').value == "10") {
+        renta = fix_number(sub * 0.10);
+      }
+      if (document.querySelector('#gravamen').value == "13") {
+        iva = fix_number(sub * IVA_VAL);
       }
 
 
@@ -545,6 +569,7 @@
 
     document.querySelector("#distrito").addEventListener('choice', e => {
       let option = e.detail.choice;
+
       if (option.value == '') {
         document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
         document.querySelector("#departamento").value = '00';
@@ -565,15 +590,42 @@
       }
     });
 
-    const choices_distrito = new Choices(document.querySelector('#distrito'), {
-      'searchChoices': true,
-    }).setChoices(distritos);
 
-    const choices_actividad = new Choices(document.querySelector('#clientCodActividad'), {
-      'searchChoices': true,
-    });
     addDetalleRow();
     addDetalleBtn.addEventListener('click', addDetalleRow);
+
+
+    document.getElementById('selectEmpleados').addEventListener('change', e => {
+      if (document.getElementById('selectEmpleados').value !== "-1") {
+
+        let emple = empleados[document.getElementById('selectEmpleados').value];
+
+        console.log(emple)
+
+        document.querySelector('#tipoDocumento').value = '13';
+        document.querySelector('#numDocumento').value = emple.NIT_DUI || '';
+        document.querySelector('#nombre').value = emple.name || '';
+        document.querySelector('#telefono').value = emple.phone || '';
+        document.querySelector('#correo').value = emple.email || '';
+        document.querySelector("#complemento").value = emple.direction || '';
+        if (emple.distrito) {
+          choices_distrito.setChoiceByValue(emple.distrito);
+          cargarMunicipios(emple.departamento);
+          document.querySelector("#municipio").value = emple.municipio;
+          document.querySelector("#departamento").value = emple.departamento;
+        }
+
+        document.querySelector('.descripcion-item').value = "Comisiones por Ventas";
+        document.querySelector('.cantidad-item').value = 1;
+        document.querySelector('.precio-uni-item').focus();
+        document.querySelector('.tipo-item').value = "2";
+        document.querySelector('.codigo-item').value = "--";
+        
+      }
+
+
+
+    });
   });
 </script>
 

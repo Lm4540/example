@@ -78,6 +78,12 @@
                     <%= move.concept %> <br>
                     Asignado a <%= move.asigned_to %><br>
                     R: <%= move.createdBy %>
+
+                    <% if (permission.includes('reprint_petty_cash_vouchers')) { %>
+
+                      <br><br><span class="badge bg-danger" onclick="charge_iframe(`/financial/pettycash/printVoucher/<%= move.id %>`)"><i class="fas fa-print"></i> &nbsp;&nbsp;&nbsp;Volver a Imprimir</span>
+                    <% } %>
+
                   </td>
                   <td></td>
                   <td class="text-danger">$<%= Helper.money_format(move.amount) %></td>

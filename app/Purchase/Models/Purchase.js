@@ -73,6 +73,11 @@ const Purchase = sequelize.define('Purchase', {
         get() {
             return this.subtotal + this.iva + this.iva_percibido - this.iva_retenido - this.renta + this.other_taxes
         },
+    },
+
+    DAI: {
+        type: DataTypes.DECIMAL(12, 2),
+        defaultValue: 0.00,
     }
 }, {
     tableName: 'purchase',

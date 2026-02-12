@@ -155,8 +155,8 @@ module.exports = [
         "group": "Inventario/Ventas",
         "permission": "update_price_list"
     },
-    
-        
+
+
     {
         "name": "Registro de Clientes",
         "explication": "habilita las opciones de registro de clientes",
@@ -196,7 +196,7 @@ module.exports = [
         "group": "Ventas",
         "permission": "update_sales_of_another_sucursal"
     },
-    
+
     {
         "name": "Consultar Informacion de Clientes",
         "explication": "permite acceder al historial de compras y pagos de los clientes",
@@ -244,9 +244,9 @@ module.exports = [
         "permission": "view_commission_report"
     },
 
-    
 
-    
+
+
     {
         "name": "marcar Reservas realizadas",
         "explication": "Permite marcar como reservado el producto en las ventas agregadas",
@@ -299,7 +299,7 @@ module.exports = [
         "permission": "view_product_cost"
     },
 
-    
+
     {
         "name": "Registro de costos en compras",
         "explication": "Permite agregar los costos a las compras registradas",
@@ -335,12 +335,18 @@ module.exports = [
         "explication": "Permite revisar los movimientos de caja chica",
         "group": "Finanzas",
         "permission": "view_petty_cash"
-    }, 
+    },
     {
         "name": "Administrar Cualquier caja chica",
         "explication": "Permite administrar la caja chica de cualquier sucursal",
         "group": "Finanzas",
         "permission": "admin_all_petty_cash"
+    },
+    {
+        "name": "Reimprimir Vales de Caja",
+        "explication": "Permite volver a imprimir los vales de caja chica, persimos disponible solo para los administradores",
+        "group": "Finanzas",
+        "permission": "reprint_petty_cash_vouchers"
     },
     {
         "name": "Comando apertura de caja Registradora",
@@ -368,8 +374,8 @@ module.exports = [
         "permission": "generar_dte_manuales"
     }
 
-    
 
-    
+
+
 
 ]

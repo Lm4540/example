@@ -15,25 +15,30 @@ const PurchaseDetail = sequelize.define('PurchaseDetail', {
     description: DataTypes.STRING,
     code: DataTypes.STRING,
     color: DataTypes.STRING,
-    price:DataTypes.DECIMAL(10,4),
-    cost:DataTypes.DECIMAL(10,2),
+    price: DataTypes.DECIMAL(10, 4),
+    cost: DataTypes.DECIMAL(10, 2),
     in: DataTypes.INTEGER.UNSIGNED,
     identified: DataTypes.INTEGER,
-    identification: { 
+    identification: {
         type: DataTypes.TEXT,
         get() {
             let locations = this.getDataValue('identification');
             return locations !== null && locations !== '[]' ? JSON.parse(locations) : [];
         },
         set(param) {
-            this.setDataValue('identification', param == null ? null : JSON.stringify(param) );
+            this.setDataValue('identification', param == null ? null : JSON.stringify(param));
         }
     },
     uniMedida: DataTypes.INTEGER,
     detail_type: {
         type: DataTypes.ENUM,
-        values: ['product', 'services', 'purchase_expense','sale_expense','equipment_purchase', 'factured_expense']
+        values: ['product', 'services', 'purchase_expense', 'sale_expense', 'equipment_purchase', 'factured_expense']
     },
+
+    DAI: {
+        type: DataTypes.DECIMAL(12, 2),
+        defaultValue: 0.00,
+    }
 }, {
     tableName: 'purchase_detail',
 });
