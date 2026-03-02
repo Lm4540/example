@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const Controller = require('../Financial/Controllers/FinancialController');
+const PettyCashController = require('../Financial/Controllers/PettyCashController');
 const Auth = require('../System/Middleware/Auth');
 
 // Home page route.
@@ -10,30 +10,28 @@ router.get("/", function (req, res) {
 
 router.get("/pettycash",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
-    Controller.pettycash);
+    PettyCashController.pettycash);
 
 router.post("/pettycash",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'admin_all_petty_cash']),
-    Controller.addMove);
+    PettyCashController.addMove);
 
 router.get("/pettycash/:id(\\d+)",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
-    Controller.viewPettyCash);
+    PettyCashController.viewPettyCash);
 
 router.post("/pettycash/update",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
-    Controller.updatePettyCash);
+    PettyCashController.updatePettyCash);
 router.post("/pettycash/create",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
-    Controller.createPettyCash);
+    PettyCashController.createPettyCash);
 
 router.get("/pettycash/printVoucher/:id(\\d+)",
     (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']),
-    Controller.printVoucher);
+    PettyCashController.printVoucher);
 
-router.get("/saldos_a_favor",
-    
-    Controller.saldos_a_favor);
+router.get("/saldos_a_favor",  PettyCashController.saldos_a_favor);
 
 
 module.exports = router;

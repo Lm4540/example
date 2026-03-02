@@ -238,13 +238,9 @@
 <script src="assets/libs/choices/choices.min.js"></script>
 <script>
   const empleados = JSON.parse('<%- String(JSON.stringify(employes)) %>');
-
-
   const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
-
   const TBodyApendices = document.querySelector("#TBodyApendices");
   const addDetalleBtn = document.querySelector('#addDetalleBtn');
-
   const btnAddApendices = document.querySelector('#btnAddApendices');
   const IVA_VAL = Number.parseFloat('<%= VALOR_IVA %>');
   const helper_url = '<%= helper_url %>';
@@ -599,9 +595,6 @@
       if (document.getElementById('selectEmpleados').value !== "-1") {
 
         let emple = empleados[document.getElementById('selectEmpleados').value];
-
-        console.log(emple)
-
         document.querySelector('#tipoDocumento').value = '13';
         document.querySelector('#numDocumento').value = emple.NIT_DUI || '';
         document.querySelector('#nombre').value = emple.name || '';

@@ -9,7 +9,7 @@ const Sale = require('../../CRM/Models/Sale');
 const SalePayment = require('../../CRM/Models/SalePayment');
 const Client = require('../../CRM/Models/Client');
 
-const FinancialController = {
+const PettyCashController = {
 
     createPettyCash: async (req, res) => {
         let data = req.body;
@@ -201,4 +201,4 @@ const FinancialController = {
 
 };
 
-module.exports = FinancialController;
+module.exports = PettyCashController;
