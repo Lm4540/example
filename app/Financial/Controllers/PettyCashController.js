@@ -222,7 +222,7 @@ const PettyCashController = {
                     "0.25": "Monedas $0.25", "0.1": "Monedas $0.10", "0.05": "Monedas $0.05", "0.01": "Monedas $0.01"
                 };
 
-                return res.render('financial/PettyCash/verify_arqueo', {
+                return res.render('Financial/PettyCash/verify_arqueo', {
                     title: 'Cuentas por Pagar',
                     arqueo,
                     denominations,
@@ -231,7 +231,7 @@ const PettyCashController = {
                 });
             }
 
-            return res.render('financial/PettyCash/petty_cash_closing', {
+            return res.render('Financial/PettyCash/petty_cash_closing', {
                 title: 'Cuentas por Pagar',
                 cash,
             });
@@ -333,7 +333,7 @@ const PettyCashController = {
         });
 
         cash = await PettyCash.findByPk(cash);
-        return res.render('financial/PettyCash/viewArqueos', { pageTitle: `Caja Chica ${cash.name}`, cash, start, end, arqueos });
+        return res.render('Financial/PettyCash/viewArqueos', { pageTitle: `Caja Chica ${cash.name}`, cash, start, end, arqueos });
 
     },
 
@@ -341,7 +341,7 @@ const PettyCashController = {
         let arqueo = await PettyCashClosing.findByPk(req.params.id);
         if (arqueo) {
             let cash = await PettyCash.findByPk(arqueo.petty_cash_id);
-            return res.render('financial/PettyCash/viewArqueo', { pageTitle: `Caja Chica ${arqueo.petty_cash_id}`, arqueo, cash });
+            return res.render('Financial/PettyCash/viewArqueo', { pageTitle: `Caja Chica ${arqueo.petty_cash_id}`, arqueo, cash });
 
 
         }

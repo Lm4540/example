@@ -91,7 +91,7 @@ module.exports = {
 
             const totalSemanaCaja = efectivoSucursales.reduce((acc, curr) => acc + parseFloat(curr.total), 0);
 
-            res.render('financial/main', {
+            res.render('Financial/main', {
                 totalSemanaCaja,
                 efectivoSucursales, 
                 title: 'Dashboard Financiero',
@@ -207,7 +207,7 @@ module.exports = {
 
 
 
-            res.render('financial/payables', {
+            res.render('Financial/payables', {
                 accounts: formattedAccounts,
                 providers,
                 title: 'Cuentas por Pagar',
@@ -351,7 +351,7 @@ module.exports = {
                 return { ...item, runningBalance };
             });
 
-            res.render('financial/provider_history', {
+            res.render('Financial/provider_history', {
                 provider,
                 timeline: timeline.reverse(), // Mostrar lo más reciente arriba
                 title: `Historial: ${provider.name}`
@@ -399,7 +399,7 @@ module.exports = {
             const providers = await InventoryProvider.findAll({ attributes: ['id', 'name'], order: [['name', 'ASC']] });
             let indexed_providers = {};
             providers.forEach(p => indexed_providers[p.id] = p.name);
-            res.render('financial/paid_history', {
+            res.render('Financial/paid_history', {
                 accounts: paidAccounts,
                 providers,
                 filters: { start, end, providerId },
@@ -441,7 +441,7 @@ module.exports = {
 
             const currentBalance = parseFloat(account.amount) + totalApplied;
 
-            res.render('financial/account_detail', {
+            res.render('Financial/account_detail', {
                 account,
                 currentBalance,
                 title: `Detalle Cuenta #${account.id}`,
