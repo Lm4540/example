@@ -205,41 +205,51 @@ const PettyCashController = {
 
     getArqueoView: async (req, res) => {
 
-        const { id } = req.params;
-        let cash = await PettyCash.findByPk(id);
-        if (cash) {
-            const arqueo = await PettyCashClosing.findOne({
-                where: {
-                    petty_cash_id: id,
-                    status: 'Pendiente'
-                }
-            })
-            if (arqueo) {
-                const denominations = arqueo.denominations;
-                const _labels = {
-                    "100": "Billetes $100.00", "50": "Billetes $50.00", "20": "Billetes $20.00",
-                    "10": "Billetes $10.00", "5": "Billetes $5.00", "1": "Billetes/Moneda $1.00",
-                    "0.25": "Monedas $0.25", "0.1": "Monedas $0.10", "0.05": "Monedas $0.05", "0.01": "Monedas $0.01"
-                };
+        try {
 
-                return res.render('Financial/PettyCash/verify_arqueo', {
+
+
+            const { id } = req.params;
+            let cash = await PettyCash.findByPk(id);
+            if (cash) {
+                const arqueo = await PettyCashClosing.findOne({
+                    where: {
+                        petty_cash_id: id,
+                        status: 'Pendiente'
+                    }
+                })
+                if (arqueo) {
+                    const denominations = arqueo.denominations;
+                    const _labels = {
+                        "100": "Billetes $100.00", "50": "Billetes $50.00", "20": "Billetes $20.00",
+                        "10": "Billetes $10.00", "5": "Billetes $5.00", "1": "Billetes/Moneda $1.00",
+                        "0.25": "Monedas $0.25", "0.1": "Monedas $0.10", "0.05": "Monedas $0.05", "0.01": "Monedas $0.01"
+                    };
+
+                    return res.render('Financial/PettyCash/verify_arqueo', {
+                        title: 'Cuentas por Pagar',
+                        arqueo,
+                        denominations,
+                        _labels,
+                        cash
+                    });
+                }
+
+                return res.render('Financial/PettyCash/petty_cash_closing', {
                     title: 'Cuentas por Pagar',
-                    arqueo,
-                    denominations,
-                    _labels,
-                    cash
+                    cash,
                 });
             }
 
-            return res.render('Financial/PettyCash/petty_cash_closing', {
-                title: 'Cuentas por Pagar',
-                cash,
+            return res.json({
+                status: 'errorMessage', message: 'Recurso no encontrado'
+            });
+
+        } catch (error) {
+            return res.json({
+                status: 'errorMessage', message: error.message
             });
         }
-
-        return res.json({
-            status: 'errorMessage', message: 'Recurso no encontrado'
-        });
     },
 
 
