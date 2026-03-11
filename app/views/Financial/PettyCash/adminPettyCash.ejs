@@ -9,6 +9,12 @@
       font-size: 0.85rem;
       font-weight: 500;
     }
+
+    .dark .table-danger,
+    .dark .table-warning,
+    .dark .table-primary {
+      color: black !important;
+    }
   </style>
 </head>
 
@@ -21,7 +27,7 @@
       <div class="row" id="move_controls" style="display: none;">
         <div class="col form-group">
           <label for="init_date">Desde la Fecha</label>
-          <input type="date" class="form-control" id="init_date" max="<%= Helper.date_to_input() %>">
+          <input type="date" class="form-control" id="init_date" max="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input(null, true) %>">
         </div>
         <div class="col form-group">
           <label for="end_date">Hasta la Fecha</label>
@@ -45,6 +51,8 @@
 
           <button class="btn btn-success round mt-1" id="ExcelBtn">Excel</button>
 
+          <a class="btn btn-warning round mt-1" href="/financial/view-arqueos?cash=<%= sucursal.id %>">Historial de Arqueos</a>
+          <button class="btn btn-outline-danger round mt-1" data-bs-toggle="modal" data-bs-target="#consignacion">Saldo en Consignacion</button>
 
           <div class="row justify-content-center mt-5 table-responsive">
             <table class="table table-sm table-bordered table-hover">
@@ -60,7 +68,7 @@
               <tbody id="moves">
                 <% moves.forEach(move => { %>
                 <% if (move.isin == true) { %>
-                <tr class="">
+                <tr class="<%= move.type == 'refill' ? 'table-primary': '' %>">
                   <td><%= Helper.format_date(move.createdAt) %></td>
                   <td class="text-left">
                     <%= move.concept %> <br>
@@ -72,7 +80,7 @@
                   <td><b>$<%= Helper.money_format(move.amount + move.last_amount) %></b></td>
                 </tr>
                 <% } else { %>
-                <tr class="table-secondary">
+                <tr class="<%= move.type == 'recolection' ? 'table-warning': 'table-danger' %>">
                   <td><%= Helper.format_date(move.createdAt) %></td>
                   <td class="text-left">
                     <%= move.concept %> <br>
@@ -81,7 +89,7 @@
 
                     <% if (permission.includes('reprint_petty_cash_vouchers')) { %>
 
-                      <br><br><span class="badge bg-danger" onclick="charge_iframe(`/financial/pettycash/printVoucher/<%= move.id %>`)"><i class="fas fa-print"></i> &nbsp;&nbsp;&nbsp;Volver a Imprimir</span>
+                    <br><br><span class="badge bg-danger" onclick="charge_iframe(`/financial/pettycash/printVoucher/<%= move.id %>`)"><i class="fas fa-print"></i> &nbsp;&nbsp;&nbsp;Volver a Imprimir</span>
                     <% } %>
 
                   </td>
@@ -100,6 +108,8 @@
 
     </div>
 
+
+
     <div class="modal fade" id="add_move" tabindex="-1" style="display: none;">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -110,13 +120,13 @@
             <div class="form-group">
               <label for="move_type">Tipo de Movimiento</label>
               <select name="move_type" id="move_type" class="form-control">
-                <optgroup label="caja Chica">
-                  <option value="extra">Ingreso Adicional</option>
+                <optgroup label="Caja Chica">
+                  <!-- <option value="extra">Ingreso Adicional</option> -->
                   <option value="out">Pagos o Gastos</option>
                 </optgroup>
                 <optgroup label="Caja de Efectivo">
-                  <option value="refill">Reposicion de Saldo</option>
-                  <option value="recolection">Recoleccion de Efectivo</option>
+                  <option value="refill">Reposicion de Saldo (Enviado DESDE otra Sucursal)</option>
+                  <option value="recolection">Recoleccion de Efectivo (Enviado HACIA otra Sucursal)</option>
                 </optgroup>
               </select>
             </div>
@@ -150,13 +160,28 @@
       </div>
     </div>
 
-    <div class="modal fade" id="recolection" tabindex="-1" style="display: none;">
+    <div class="modal fade" id="consignacion" tabindex="-1" style="display: none;">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Recoleccion Pendiente</h5>
+            <h5 class="modal-title">Saldo en consignacion $<%= Helper.money_format(sucursal.consigned_balance) %></h5>
           </div>
           <div class="modal-body">
+
+            <div class="form-group">
+              <label for="consigned">Monto a Consignar o devolver</label>
+              <input type="number" name="consigned" id="consigned" class="form-control" step="0.01" min="0.01">
+            </div>
+
+            <div>
+              <button class="btn btn-outline-primary" onclick="consignar(true)" data-bs-dismiss="modal">
+                Consignar
+              </button>
+
+              <button class="btn btn-outline-danger" onclick="consignar(false)" data-bs-dismiss="modal">
+                Devolver
+              </button>
+            </div>
 
           </div>
           <div class="modal-footer">
@@ -232,8 +257,7 @@
       }
 
       if (data.type == 'recolection') {
-        data.concept = 'Recolección de efectivo. ' + data.concept;
-        data.type = 'out';
+        data.concept = 'Recolección de efectivo: ' + data.concept;
       }
 
 
@@ -296,6 +320,32 @@
       });
     });
   });
+
+
+  consignar = (consignar = true) => {
+    let consignado = parseFloat(document.querySelector("#consigned").value);
+    if (isNaN(consignado) || consignado < 0.01) {
+      return errorMessage('El monto escrito es invalido');
+    }
+
+    postData('/financial/pettycash/consignar', {
+      amount: consignado,
+      cash: '<%= sucursal.id %>',
+      consignar,
+    }).then(data => {
+      console.log(data)
+      if (data.success) {
+        return successMessage(data.message);
+      } else {
+        return errorMessage(data.message);
+      }
+
+    }).catch(err => {
+      console.log(err);
+    });
+
+
+  };
 </script>
 <script>
   const ExcelBtn = document.getElementById('ExcelBtn');

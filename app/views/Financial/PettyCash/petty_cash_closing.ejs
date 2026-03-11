@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container py-4">
+      <h4 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-vault me-2"></i>Arqueo de Caja Diario <%= cash.name %> </h4>
+
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-bottom border-secondary bg-transparent py-3">
+              <h6 class="mb-0 fw-bold">Desglose de Efectivo</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-2" id="denominationsGrid">
+                <% const bills = [100, 50, 20, 10, 5]; %>
+                <% const coins = [1.00, 0.25, 0.10, 0.05, 0.01]; %>
+
+                <div class="col-12 mt-2"><small class="text-muted">Billetes</small></div>
+                <% bills.forEach(val => { %>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text  border-0" style="width: 75px;">$<%= Helper.money_format(val) %></span>
+                    <input type="number" class="form-control  denomination-input" data-value="<%= val %>" value="0" min="0" oninput="calculateTotal()">
+                  </div>
+                </div>
+                <% }) %>
+
+                <div class="col-12 mt-3"><small class="text-muted">Monedas</small></div>
+                <% coins.forEach(val => { %>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text  border-0" style="width: 75px;">$<%= Helper.money_format(val) %></span>
+                    <input type="number" class="form-control denomination-input" data-value="<%= val %>" value="0" min="0" oninput="calculateTotal()">
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3">Resumen de Cuadre</h6>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Total Físico:</span>
+                <span class="fw-bold h4" id="labelPhysical">$0.00</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2 text-info">
+                <span>En Consignación:</span>
+                <span class="fw-bold h4">$<%= Helper.money_format(cash.consigned_balance) %></span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Saldo en Sistema:</span>
+                <span class="fw-bold h4">$<%= Helper.money_format(cash.balance) %></span>
+              </div>
+              <div class="d-flex justify-content-between fs-5">
+                <span>Diferencia:</span>
+                <span class="fw-bold h3" id="labelDiff">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Notas de la Jornada</label>
+                <textarea id="notes" class="form-control border-secondary" rows="2"></textarea>
+              </div>
+              <button class="btn btn-primary w-100 py-2" onclick="processArqueo()">
+                Procesar
+              </button>
+              <br>
+              <button class="btn btn-danger w-100 py-2 mt-3" onclick="clearArqueoCache()">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+<script>
+  const systemBalance = parseFloat('<%= cash.balance %>');
+  const consignedAmount = parseFloat('<%= cash.consigned_balance %>');
+
+  // Clave única para esta caja (evita conflictos si abren dos cajas distintas)
+  const STORAGE_KEY = `arqueo_cache_<%= cash.id %>`;
+
+  function calculateTotal() {
+    let total = 0;
+    const currentCounts = {};
+
+    document.querySelectorAll('.denomination-input').forEach(input => {
+      const val = parseFloat(input.dataset.value);
+      const qty = parseInt(input.value) || 0;
+
+      total += (val * qty);
+
+      // Guardamos la cantidad en un objeto para el cache
+      if (qty > 0) currentCounts[input.dataset.value] = qty;
+    });
+
+    // GUARDAR EN MEMORIA (LocalStorage)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentCounts));
+
+    // Cálculos de la UI
+    const diff = (total + consignedAmount) - systemBalance;
+
+    document.getElementById('labelPhysical').innerText = '$' + money_format(total);
+    const diffLabel = document.getElementById('labelDiff');
+    diffLabel.innerText = '$' + money_format(diff);
+    diffLabel.className = 'fw-bold h3 ' + (diff < 0 ? 'text-danger' : 'text-success');
+  }
+
+  // Función para recuperar los datos al recargar la página
+  function loadSavedCounts() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+
+    try {
+      const counts = JSON.parse(saved);
+      console.log(counts)
+      document.querySelectorAll('.denomination-input').forEach(input => {
+        const val = input.dataset.value;
+        if (counts[val]) {
+          input.value = counts[val];
+        }
+      });
+      // Recalcular una vez cargados los valores
+      calculateTotal();
+    } catch (e) {
+      console.error("Error cargando cache de arqueo", e);
+    }
+  }
+
+  // Al enviar el formulario con éxito, debemos limpiar la memoria
+  function clearArqueoCache() {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  }
+
+  // Ejecutar carga al iniciar
+  document.addEventListener('DOMContentLoaded', loadSavedCounts);
+
+  async function processArqueo() {
+    // Recopilar denominaciones en un JSON
+    const denominations = {};
+    let physical_balance = 0;
+    document.querySelectorAll('.denomination-input').forEach(input => {
+      const qty = parseInt(input.value) || 0;
+      if (qty > 0) denominations[input.dataset.value] = qty;
+      physical_balance += (parseFloat(input.dataset.value) * qty);
+    });
+
+    const data = {
+      petty_cash_id: '<%= cash.id %>',
+      denominations,
+      physical_balance,
+      notes: document.getElementById('notes').value
+    };
+
+    postData('/financial/arqueo', data).then(data => {
+      if (data.status == 'success') {
+
+        // clearArqueoCache();
+        successMessage('Guardado')
+        window.location.reload();
+
+
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+  }
+</script>
+
+</html>

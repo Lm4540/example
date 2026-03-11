@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+</head>
+<style>
+  .timeline-deuda {
+    border-left: 4px solid #dc3545;
+  }
+
+  .timeline-pago {
+    border-left: 4px solid #198754;
+  }
+
+  .timeline-ajuste {
+    border-left: 4px solid #0dcaf0;
+  }
+
+  .dark .table-danger,
+  .dark .table-warning,
+  .dark .table-primary {
+    color: black !important;
+  }
+</style>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="container py-5">
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/financial/payables">Cuentas por Pagar</a></li>
+              <li class="breadcrumb-item">Historial de Proveedor</li>
+            </ol>
+          </nav>
+          <h2 class="fw-bold mt-2"><%= provider.name %></h2>
+          <span class="text-muted"><i class="fas fa-id-card me-3"></i> ID Proveedor: <%= provider.id %></span>
+        </div>
+        <div class="col-md-4 text-end">
+          <div class="card bg-primary shadow-sm">
+            <div class="card-body py-2">
+              <small class="d-block opacity-75">Saldo Actual Total</small>
+              <h3 class="mb-0 fw-bold">$<%= (parseFloat(provider.balance) - parseFloat(provider.payments)).toFixed(2) %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mb-4">
+        
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+          <i class="fa fa-print me-1"></i> Imprimir Estado
+        </button>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header py-3">
+          <h5 class="card-title mb-0 fw-bold">Hisatorial de Saldos</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="">
+                <tr>
+                  <th class="ps-4">Fecha</th>
+                  <th>Tipo</th>
+                  <th>Descripción / Ref.</th>
+                  <th class="text-end">Cargo (+)</th>
+                  <th class="text-end">Abono (-)</th>
+                  <th class="text-end pe-4">Saldo Acum.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% timeline.forEach(item => { %>
+                <tr class="<%= item.type === 'DEUDA' ? 'table-danger' : '' %>">
+                  <td class="ps-4">
+                    <small class="d-block"><%= new Date(item.date).toLocaleDateString() %></small>
+                    <small style="font-size: 0.7rem;"><%= new Date(item.date).toLocaleTimeString() %></small>
+                  </td>
+                  <td>
+                    <% 
+                                        let badgeColor = 'bg-secondary';
+                                        if(item.type === 'DEUDA') badgeColor = 'bg-danger';
+                                        if(item.type === 'PAGO') badgeColor = 'bg-success';
+                                        if(item.type === 'INTERES') badgeColor = 'bg-warning';
+                                        if(item.type === 'DESCUENTO') badgeColor = 'bg-purple';
+                                    %>
+                    <span class="badge <%= badgeColor %>" style="width: 90px;">
+                      <i class="fa <%= item.icon %> me-1"></i> <%= item.type %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="fw-semibold"><%= item.description %></span>
+                    <% if(item.type === 'DEUDA') { %>
+                        <br>
+
+                    <a href="/financial/account/<%= item.refId %>" class="badge bg-purple"> Ver detalle</a>
+                    <% } %>
+                  </td>
+                  <td class="text-end text-danger">
+                    <%= (item.type === 'DEUDA' || item.type === 'INTERES') ? '$' + item.amount.toFixed(2) : '--' %>
+                  </td>
+                  <td class="text-end text-success">
+                    <%= (item.type === 'PAGO' || item.type === 'DESCUENTO') ? '$' + item.amount.toFixed(2) : '--' %>
+                  </td>
+                  <td class="text-end pe-4 fw-bold">
+                    $<%= item.runningBalance.toFixed(2) %>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+
+
+</html>

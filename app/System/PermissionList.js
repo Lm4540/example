@@ -342,6 +342,35 @@ module.exports = [
         "group": "Finanzas",
         "permission": "admin_all_petty_cash"
     },
+
+    {
+        "name": "Crear Arqueo de Caja de Efectivo ",
+        "explication": "Permite abrir el proceso de Arqueo de caja de Efectivo",
+        "group": "Finanzas",
+        "permission": "create_petty_cash_clossing"
+    },
+
+    {
+        "name": "Verificar Arqueo de caja de Efectivo",
+        "explication": "Permite finalizar y cerrar el Arqueo de caja de efectivo",
+        "group": "Finanzas",
+        "permission": "verify_petty_cash_clossing"
+    },
+
+    {
+        "name": "Ver los Arqueos de caja de Efectivo",
+        "explication": "Permite ver los arqueos de caja de efectivo",
+        "group": "Finanzas",
+        "permission": "view_petty_cash_clossing"
+    },
+
+    {
+        "name": "Consignar saldo en caja",
+        "explication": "Permite Retirar y Devolver saldo en caja",
+        "group": "Finanzas",
+        "permission": "consignar_saldo_en_caja"
+    },
+
     {
         "name": "Reimprimir Vales de Caja",
         "explication": "Permite volver a imprimir los vales de caja chica, persimos disponible solo para los administradores",
@@ -353,6 +382,13 @@ module.exports = [
         "explication": "Permite forzar la apertura de la caja registradora, siempre y cuando no este bloqueada con llave",
         "group": "Finanzas",
         "permission": "force_cash_drawer_open"
+    },
+
+    {
+        "name": "Ver Reportes Contables",
+        "explication": "Este permiso unico y General, habilita el acceso a todos los reportes destinados para ayudar a agilizar el trabajo contable",
+        "group": "Finanzas",
+        "permission": "view_accounting_reports"
     },
     {
         "name": "Administrar Catálogos web",

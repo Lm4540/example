@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+</head>
+<style>
+  .timeline-steps {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .timeline-step {
+    position: relative;
+    padding-left: 45px;
+    margin-bottom: 25px;
+  }
+
+  .timeline-step::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: -25px;
+    width: 2px;
+    background: #dee2e6;
+  }
+
+  .timeline-step:last-child::before {
+    display: none;
+  }
+
+  .step-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+</style>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="container py-5">
+      <div class="row mb-4 align-items-center">
+        <div class="col-md-7">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+              <li class="breadcrumb-item"><a href="/financial/payables">Cuentas por Pagar</a></li>
+              <li class="breadcrumb-item">Detalle de Cuenta</li>
+            </ol>
+          </nav>
+          <h2 class="fw-bold mb-0">Cuenta ID <%= account.id %> <small class="text-muted fw-normal">| Ref Compra ID: <%= account.purchase || 'Manual' %></small></h2>
+        </div>
+        <div class="col-md-5 text-right">
+          <span class="badge rounded-pill p-2 px-3 <%= account._status === 'Pagado' ? 'bg-success' : (account._status === 'Parcial' ? 'bg-warning ' : 'bg-secondary') %>">
+            Estado: <%= account._status.toUpperCase() %>
+          </span>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body text-center py-4">
+              <div class="text-muted small text-uppercase fw-bold mb-1">Saldo Pendiente</div>
+              <h1 class="h2 fw-bold <%= currentBalance > 0 ? 'text-danger' : 'text-success' %>">
+                $<%= currentBalance.toFixed(2) %>
+              </h1>
+            </div>
+            <div class="list-group list-group-flush border-top">
+              <div class="list-group-item d-flex justify-content-between ">
+                <span class="text-muted">Monto Original:</span>
+                <span class="fw-bolder">$<%= Helper.money_format(account.amount) %></span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between ">
+                <span class="text-muted">Fecha Emisión/Venc:</span>
+                <span class="fw-bold"><%= account.account_date %></span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between ">
+                <span class="text-muted">Proveedor:</span>
+                <a href="/financial/provider/<%= provider.id %>" class="fw-bold text-primary  h4"><%= provider.name %></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <h6 class="fw-bold mb-3">Notas del Registro</h6>
+              <p class="text-muted mb-0"><%= account.notes || 'Sin observaciones registradas.' %></p>
+              <hr>
+              <div class="text-muted" >
+                <i class="fa fa-user me-1"></i> Creado por: <%= account.createdBy %><br>
+                <i class="fa fa-clock me-1"></i> El: <%= new Date(account.createdAt).toLocaleString() %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card shadow-sm border-0">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0 fw-bold">Línea de Tiempo de Abonos y Ajustes</h5>
+            </div>
+            <div class="card-body py-4">
+              <% if(account.payments.length > 0) { %>
+              <div class="timeline-steps">
+                <% const sortedPayments = account.payments.sort((a,b) => 
+                                    new Date(b.FinancialProviderReceipt.move_date) - new Date(a.FinancialProviderReceipt.move_date)
+                                );
+                                sortedPayments.forEach(p => { 
+                                    const r = p.FinancialProviderReceipt;
+                                    let icon = 'fas fa-money-bill-wave text-success';
+                                    let color = 'text-success';
+                                    if(r.type === 'Interes') { icon = 'fas fa-arrow-up text-danger'; color = 'text-danger'; }
+                                    if(r.type === 'Descuento') { icon = 'fas fa-tag text-info'; color = 'text-info'; }
+                            %>
+
+                            <div class="timeline-step">
+                  <div class="step-icon">
+                    <i class="<%= icon %>" style="font-size: 1rem;"></i>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="mb-0 fw-bold"><%= r.type %> - <%= r.payment_method %></h6>
+                      <small class="text-muted">Ref: <%= r.ref || 'N/A' %></small>
+                      <div class="text-muted" style="font-size: 0.75rem;">
+                        <i class="fa fa-calendar-day me-1"></i> <%= new Date(r.move_date).toLocaleString() %>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <span class="fs-5 fw-bold <%= color %>">
+                        <%= (r.type === 'Interes' ? '+' : '-') %>$<%= parseFloat(p.amount).toFixed(2) %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+              <% } else { %>
+              <div class="text-center py-5">
+                <i class="fa fa-history fa-3x text-light mb-3"></i>
+                <p class="text-muted">No se han registrado movimientos para esta cuenta.</p>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+
+
+</html>

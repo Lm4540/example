@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container py-4">
+      <div class="">
+        <h4 class="fw-bold mb-0">
+          Reporte de Arqueo de caja  <%= cash.name %><br>
+        </h4>
+        <h5>Creado por: <%= arqueo.cashier_user %> <small>(<%= Helper.format_date(arqueo.createdAt, true) %>)</small></h5>
+        <h5>Verificado por: <%= arqueo.verifier_user %> <small>(<%= Helper.format_date(arqueo.verifiedAt, true) %>)</small></h5>
+      </div>
+
+      <div class="row g-4 pt-2">
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header  bg-transparent py-3">
+              <h6 class="mb-0 fw-bold">Desglose registrado por: <span class="text-info"><%= arqueo.cashier_user %></span></h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-2">
+                <%  const _labels = {
+                    "100": "Billetes $100", "50": "Billetes $50", "20": "Billetes $20",
+                    "10": "Billetes $10", "5": "Billetes $5", "1": "Billetes $1",
+                    "0.25": "Monedas $0.25", "0.1": "Monedas $0.10", "0.05": "Monedas $0.05", "0.01": "Monedas $0.01"
+                };
+                           Object.entries(arqueo.denominations).forEach(([val, qty]) => { 
+                        %>
+                <div class="col-md-6 mb-2">
+                  <div class="p-2 border border-secondary rounded d-flex justify-content-between align-items-center">
+                    <span class="small text-muted"><%= _labels[val] || '$'+val %></span>
+                    <span class="fw-bold">x <%= qty %></span>
+                    <span class="text-primary fw-bold">$<%= (val * qty).toFixed(2) %></span>
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+            </div>
+            <div class="card-footer  text-center py-3">
+              <div class="small text-muted text-uppercase mb-1">Total Físico Reportado</div>
+              <h2 class="fw-bold mb-0">$<%= Helper.money_format(arqueo.physical_balance) %></h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3">Resumen de Diferencias</h6>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between bg-transparent px-0">
+                  <span>Efectivo + Consignación:</span>
+                  <span class="fw-bold">$<%= Helper.money_format(parseFloat(arqueo.physical_balance) + parseFloat(arqueo.consigned_amount)) %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between bg-transparent px-0">
+                  <span>Saldo en Sistema:</span>
+                  <span class="fw-bold">$<%= Helper.money_format(arqueo.system_balance) %></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between bg-transparent px-0 border-top-2">
+                  <span class="h5">Diferencia:</span>
+                  <% if (arqueo.difference < 0) { %>
+                  <span class="h5 fw-bold text-danger">
+                    FALTANTE: $<%= Helper.money_format(arqueo.difference) %>
+                  </span>
+
+                  <% } else if (arqueo.difference > 0) { %>
+                  <span class="h5 fw-bold text-primary">
+                    SOBRANTE: $<%= Helper.money_format(arqueo.difference) %>
+                  </span>
+
+                  <% } else { %>
+
+                  <span class="h5 fw-bold text-success">
+                    CUADRADO
+                  </span>
+                  <% } %>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm bg-warning-subtle">
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Nota de Verificación</label>
+                <p id="verifier_notes" class="form-control border-warning-subtle" rows="3" placeholder="Escriba observaciones encontradas durante la verificación..."><%= arqueo.notes %></p>
+              </div>
+
+
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+
+</html>

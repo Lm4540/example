@@ -95,7 +95,8 @@ const Provider = sequelize.define('Provider', {
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
     direction: DataTypes.STRING(500),
-    balance: DataTypes.DECIMAL(10, 2),
+    balance:{type: DataTypes.DECIMAL(10,2), defaultValue:0.00},
+    payments:{type: DataTypes.DECIMAL(10,2), defaultValue:0.00},
     delivery_locations:{ 
         type: DataTypes.TEXT,
         get() {
@@ -106,6 +107,12 @@ const Provider = sequelize.define('Provider', {
             this.setDataValue('delivery_locations', param == null ? null : JSON.stringify(param) );
         }
     },
+    deuda:{
+        type: DataTypes.VIRTUAL,
+        get(){
+            return parseFloat(this.getDataValue('balance')) - parseFloat(this.getDataValue('payments'));
+        }
+    }
 }, {
     tableName: 'inventory_provider',
 });

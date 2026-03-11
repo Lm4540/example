@@ -68,6 +68,7 @@
           </div>
         </a>
 
+        <% if (permission.includes('admin_payable_accounts')) { %>
 
         <a class="card icon-card" href="/financial">
           <img src="/assets/images/financial-icon.png" class="card-img-top" alt="Inventory Icon">
@@ -75,14 +76,20 @@
             <p class="card-text text-center icon-name">Finanzas</p>
           </div>
         </a>
+        <% } %>
 
+        <% if (permission.includes('view_accounting_reports')) { %>
 
-        <div class="card icon-card">
-          <img src="/assets/images/accounting-icon.png" class="card-img-top" alt="Inventory Icon">
+        <a class="card icon-card" href="/conta">
+         <img src="/assets/images/accounting-icon.png" class="card-img-top" alt="Inventory Icon">
           <div class="card-body">
-            <p class="card-text text-center icon-name">Conta</p>
+            <p class="card-text text-center icon-name">Reportes <br>Conta</p>
           </div>
-        </div> 
+        </a>
+        <% } %>
+
+
+      
 
       </div>
     </div>

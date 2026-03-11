@@ -35,6 +35,10 @@ const PettyCash = sequelize.define('PettyCash', {
         type: DataTypes.STRING(10),
         allowNull: true,
     },
+    consigned_balance: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+    }
 }, {
     tableName: 'financial_petty_cash',
 });

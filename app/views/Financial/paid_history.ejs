@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold"><i class="fas fa-archive mr-3"></i></i>Historial de Cuentas Pagadas</h3>
+          <p class="text-muted small">Registro histórico de obligaciones finalizadas</p>
+        </div>
+        <a href="/financial/payables" class="btn btn-outline-primary">
+          <i class="fas fa-arrow-left"></i> Volver a Pendientes
+        </a>
+      </div>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <form action="/financial/history" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Proveedor</label>
+              <select name="providerId" class="form-select form-select-sm">
+                <option value="">Todos los proveedores</option>
+                <% providers.forEach(p => { %>
+                <option value="<%= p.id %>" <%= filters.providerId == p.id ? 'selected' : '' %>><%= p.name %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Desde</label>
+              <input type="date" name="start" class="form-control form-control-sm" value="<%= filters.start %>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Hasta</label>
+              <input type="date" name="end" class="form-control form-control-sm" value="<%= filters.end %>">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+              <button type="submit" class="btn btn-sm btn-dark w-100">Filtrar</button>
+              <a href="/financial/history" class="btn btn-sm border w-100">Limpiar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr class="small">
+                <th class="ps-3">Proveedor / Compra</th>
+                <th>Registro</th>
+                <th>Vencimiento</th>
+                <th>Fecha Pago</th>
+                <th>Monto Original</th>
+                <th>Abonos Recibidos</th>
+                <th>Estado</th>
+                <th class="text-end pe-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if(accounts.length > 0) { %>
+              <% accounts.forEach(acc => { %>
+              <tr>
+                <td class="ps-3">
+                  <div class="fw-bold"><%= indexed_providers[acc.provider] %></div>
+                  <small class="text-muted">Ref: #<%= acc.purchase || 'Manual' %></small>
+                </td>
+                <td><%= acc.createdAt.toLocaleDateString() %></td>
+                <td><%= new Date(acc.account_date).toLocaleDateString() %></td>
+                <td>
+                  <span class="text-success fw-bold">
+                    <i class="fas fa-calendar-check me-1"></i>
+                    <%= acc.updatedAt.toLocaleDateString() %>
+                  </span>
+                </td>
+                <td>$<%= acc.amount %></td>
+                <td>
+                  <span class="badge bg-success-subtle text-success">
+                    <%= acc.payments.length %> abono(s)
+                  </span>
+                </td>
+                <td>
+                  <span class="badge rounded-pill <%= acc._status === 'Pagado' ? 'bg-success' : 'bg-danger' %>">
+                    <%= acc._status %>
+                  </span>
+                </td>
+                <td class="text-end pe-3">
+                  <a href="/financial/account/<%= acc.id %>" class="badge bg-purple" title="Ver Detalle">
+                    <i class="fas fa-file-check"></i> Ver detalle
+                  </a>
+                </td>
+              </tr>
+              <% }) %>
+              <% } else { %>
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">No se encontraron registros cerrados.</td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+</html>
