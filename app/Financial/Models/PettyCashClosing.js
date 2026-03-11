@@ -13,8 +13,14 @@ const PettyCashClosing = sequelize.define('PettyCashClosing', {
             allowNull: false,
             type: DataTypes.TEXT,
             get() {
-                  let prefe = this.getDataValue('denominations');
-                  return (prefe !== null && prefe !== undefined) ? JSON.parse(prefe) : {};
+                  const rawValue = this.getDataValue('denominations');
+                  if (!rawValue) return {};
+                  if (typeof rawValue === 'object') return rawValue;
+                  try {
+                        return JSON.parse(rawValue);
+                  } catch (e) {
+                        return {};
+                  }
             },
             set(param) {
                   this.setDataValue('denominations', JSON.stringify(param == null ? {} : param));
