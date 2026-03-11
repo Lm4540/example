@@ -219,6 +219,7 @@ const PettyCashController = {
                     }
                 })
                 if (arqueo) {
+                    console.log(arqueo)
                     const denominations = arqueo.denominations;
                     const _labels = {
                         "100": "Billetes $100.00", "50": "Billetes $50.00", "20": "Billetes $20.00",
