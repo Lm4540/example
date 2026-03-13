@@ -50,6 +50,11 @@ const SalePayment = sequelize.define('SalePayment', {
         defaultValue: Sequelize.fn('now'),
         allowNull: true,
     },
+    sucursal: {
+        type: DataTypes.INTEGER.UNSIGNED,
+        allowNull: true,
+    },
+
 }, {
     tableName: 'crm_sale_payment',
 });

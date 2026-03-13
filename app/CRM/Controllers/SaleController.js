@@ -613,6 +613,7 @@ const SaleController = {
                                 amount: data.amount,
                                 asigned_amount: data.amount,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal
                             }, { transaction: t });
 
                             caja.balance = Helper.fix_number(caja.balance + data.amount);
@@ -627,6 +628,7 @@ const SaleController = {
                                 bank: data.bank,
                                 reference: data.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal
                             }, { transaction: t });
 
 
@@ -736,6 +738,7 @@ const SaleController = {
                                 amount: data.amount,
                                 asigned_amount: 0.00,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal
                             }, { transaction: t });
 
                             caja.balance += data.amount;
@@ -750,6 +753,7 @@ const SaleController = {
                                 bank: data.bank,
                                 reference: data.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal,
                             }, { transaction: t });
 
 
@@ -2684,6 +2688,7 @@ const SaleController = {
                             amount: data.payment.money,
                             asigned_amount: data.payment.money,
                             createdBy: session.shortName,
+                            sucursal: session.employee.sucursal,
                         }, { transaction: t });
 
                         payments_ids.push({ id: id.id, amount: data.payment.money })
@@ -2709,6 +2714,7 @@ const SaleController = {
                                 bank: element.bank,
                                 reference: element.reference,
                                 createdBy: session.shortName,
+                                sucursal: session.employee.sucursal,
                             }, { transaction: t });
 
 
@@ -2733,6 +2739,7 @@ const SaleController = {
                                 bank: element.bank,
                                 reference: element.reference,
                                 createdBy: session.shortName,
+                                sucursal: session.employee.sucursal,
                             }, { transaction: t });
 
 

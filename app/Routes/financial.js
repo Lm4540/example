@@ -9,11 +9,11 @@ router.get('/payables', FinancialController.listPayableAccounts);
 router.get('/history', FinancialController.getPaidAccountsHistory);
 router.get('/provider/:id', FinancialController.getProviderHistory);
 router.get('/account/:id', FinancialController.getAccountDetail);
+router.get('/received-payments', FinancialController.getPaymentReceivedReport);
 
 // --- RUTAS DE API (JSON) ---
 router.get('/api/pending-accounts/:providerId', FinancialController.getPendingByProvider);
 router.post('/api/create-account', FinancialController.createAccount);
-router.post('/api/process-payment', FinancialController.processProviderPayment);
 router.post('/api/process-payment', FinancialController.processProviderPayment);
 
 router.get('/arqueo/:id', (req, res, next) => Auth.HasPermission(req, res, next, ['create_petty_cash_clossing']), PettyCashController.getArqueoView);

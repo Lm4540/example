@@ -19,7 +19,6 @@ module.exports = {
             const hoy = new Date();
             const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
-            // 1. Estadísticas Globales (KPIs)
             const totalDeuda = await FinancialPayableAccount.sum('amount', {
                 where: { _status: { [Op.in]: ['Pendiente', 'Parcial'] } }
             });
@@ -69,31 +68,22 @@ module.exports = {
                 providers[el.id] = el.name;
             });
 
-            //Reporte de Flujo de efectivo
-            const sieteDiasAtras = new Date();
-            sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
-            const efectivoSucursales = await sequelize.query(`
-        SELECT 
-            s.name as sucursal,
-            SUM(m.amount) as total
-        FROM financial_petty_cash_moves m
-        INNER JOIN financial_petty_cash c ON m.petty_cash = c.id
-        INNER JOIN system_sucursal s ON c.sucursal = s.id
-        WHERE m.type = 'payment' 
-          AND m.isin = 1 
-          AND m.createdAt >= :fecha
-        GROUP BY s.id
-        ORDER BY total DESC
-    `,      {
-                replacements: { fecha: sieteDiasAtras },
+            //calculo de ingresos Brutos del Mes
+            let tmp = await sequelize.query(`SELECT sum(amount) as amount FROM crm_sale_payment WHERE fecha BETWEEN :start AND :end and type = 'money'`, {
+                replacements: { start: inicioMes.toISOString().split('T')[0], end: hoy.toISOString().split('T')[0] },
                 type: QueryTypes.SELECT
             });
+            const money = tmp[0].amount;
 
-            const totalSemanaCaja = efectivoSucursales.reduce((acc, curr) => acc + parseFloat(curr.total), 0);
+            tmp = await sequelize.query(`SELECT sum(amount) as amount FROM crm_sale_payment WHERE fecha BETWEEN :start AND :end and type = 'transfer'`, {
+                replacements: { start: inicioMes.toISOString().split('T')[0], end: hoy.toISOString().split('T')[0] },
+                type: QueryTypes.SELECT
+            });
+            const deposit = tmp[0].amount;
+
 
             res.render('Financial/main', {
-                totalSemanaCaja,
-                efectivoSucursales, 
+                deposit, money,
                 title: 'Dashboard Financiero',
                 stats: {
                     totalDeuda: totalDeuda || 0,
@@ -450,7 +440,65 @@ module.exports = {
         } catch (error) {
             res.status(500).send("Error al cargar el detalle: " + error.message);
         }
-    }
+    },
+
+    getPaymentReceivedReport: async (req, res) => {
+        try {
+            let { start, end, type } = req.query;
+            const hoy = new Date();
+            const haceUnMes = new Date();
+            haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+            const fechaInicio = start || haceUnMes.toISOString().split('T')[0];
+            const fechaFin = end || hoy.toISOString().split('T')[0];
+
+            let filter = 'fecha BETWEEN :start AND :end';
+            const replacements = { start: fechaInicio, end: fechaFin };
+
+            if (type && type !== 'all') {
+                filter += " AND type = :type";
+                replacements.type = type;
+            }
+
+            const clientQuery = `SELECT id, name FROM crm_client WHERE id IN (SELECT DISTINCT(client) FROM crm_sale_payment WHERE ${filter})`;
+            const clientsRaw = await sequelize.query(clientQuery, { replacements, type: QueryTypes.SELECT });
+
+            const indexedClients = {};
+            clientsRaw.forEach(c => indexedClients[c.id] = c.name);
+
+            const order = " ORDER BY createdAt DESC";
+            const paymentsRaw = await sequelize.query(`SELECT * FROM crm_sale_payment WHERE ${filter} ${order}`, {
+                replacements,
+                type: QueryTypes.SELECT
+            });
+
+            const stats = { money: 0, transfer: 0, total: 0 };
+            const formattedPayments = paymentsRaw.map(p => {
+                const amount = parseFloat(p.amount) || 0;
+                stats.total += amount;
+                if (p.type === 'money') stats.money += amount;
+                if (p.type === 'transfer') stats.transfer += amount;
+
+                return {
+                    ...p,
+                    client_name: indexedClients[p.client] || 'Cliente no encontrado'
+                };
+            });
+
+            res.render('Financial/received_payments', {
+                title: 'Reporte de Ingresos Brutos',
+                payments: formattedPayments,
+                stats,
+                filters: { start: fechaInicio, end: fechaFin, type }
+            });
+
+        } catch (error) {
+            res.status(500).send("Error: " + error.message);
+        }
+    },
+
+   
+
+
 
 };
 

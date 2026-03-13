@@ -28,16 +28,16 @@
 
       <div class="row g-3 mb-4">
         <div class="col-md-4">
-          <div class="card border-0 shadow-sm bg-primary text-white">
+          <h4>Deudas y Abonos Realizados</h4>
+          <div class="card border-0 shadow-sm bg-danger text-white">
             <div class="card-body">
               <h6 class="text-uppercase small opacity-75">Deuda Total Pendiente</h6>
               <h2 class="fw-bold mb-0">$<%= stats.totalDeuda.toLocaleString() %></h2>
               <i class="fa fa-hand-holding-dollar position-absolute end-0 bottom-0 m-3 fs-1 opacity-25"></i>
             </div>
           </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card border-0 shadow-sm bg-success text-white">
+
+          <div class="card border-0 shadow-sm bg-warning text-white">
             <div class="card-body">
               <h6 class="text-uppercase small opacity-75">Pagos Realizados (Mes)</h6>
               <h2 class="fw-bold mb-0">$<%= stats.totalPagadoMes.toLocaleString() %></h2>
@@ -46,12 +46,38 @@
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card border-0 shadow-sm border-start border-4 border-warning">
+          <h4>Ingresos Brutos del Mes</h4>
+          <div class="card border-0 shadow-sm bg-primary text-white">
             <div class="card-body">
-              <h6 class="text-uppercase small text-muted">Acciones Rápidas</h6>
+              <h6 class="text-uppercase small opacity-75">Efectivo Recibido (Este Mes)</h6>
+              <h2 class="fw-bold mb-0">$<%= Helper.money_format(money) %></h2>
+              <i class="fa fa-hand-holding-dollar position-absolute end-0 bottom-0 m-3 fs-1 opacity-25"></i>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm bg-success text-white">
+            <div class="card-body">
+              <h6 class="text-uppercase small opacity-75">Depositos Recibidos (Este Mes)</h6>
+              <h2 class="fw-bold mb-0">$<%= Helper.money_format(deposit) %></h2>
+              <i class="fa fa-money-check-dollar position-absolute end-0 bottom-0 m-3 fs-1 opacity-25"></i>
+            </div>
+          </div>
+
+
+        </div>
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm border-start border-4 border-warning">
+            <h4>Acciones Rapidas</h4>
+            <div class="card-body">
               <div class="btn-group w-100">
                 <a href="/financial/payables" class="btn btn-sm btn-outline-warning">Gestionar CXP</a>
                 <a href="/financial/history" class="btn btn-sm btn-outline-secondary">Historial CXP</a>
+              </div>
+            </div>
+
+             <div class="card-body">
+              <div class="btn-group w-100">
+                <a href="/financial/received-payments" class="btn btn-sm btn-outline-success">Historial de Ingresos Brutos</a>
               </div>
             </div>
           </div>
@@ -76,7 +102,7 @@
           </div>
         </div>
       </div>
-  
+
       <div class="row mt-4">
         <div class="col-12">
           <div class="card border-0 shadow-sm">
@@ -204,19 +230,19 @@
     const darkModeControl = document.querySelector("#darkModeControl");
     if (darkModeControl.checked) {
       Chart.defaults.color = '#e9ecef';
-      Chart.defaults.scales.category.ticks.color = '#e9ecef'; 
-        Chart.defaults.scales.linear.ticks.color = '#e9ecef';
+      Chart.defaults.scales.category.ticks.color = '#e9ecef';
+      Chart.defaults.scales.linear.ticks.color = '#e9ecef';
     }
 
     darkModeControl.addEventListener("change", function() {
       if (this.checked) {
         Chart.defaults.color = '#e9ecef';
-        Chart.defaults.scales.category.ticks.color = '#e9ecef'; 
+        Chart.defaults.scales.category.ticks.color = '#e9ecef';
         Chart.defaults.scales.linear.ticks.color = '#e9ecef';
         Chart.defaults.scale.grid.color = 'rgba(233, 236, 239, 0.1)';
       } else {
         Chart.defaults.color = '#121110';
-        Chart.defaults.scales.category.ticks.color = '#121110'; 
+        Chart.defaults.scales.category.ticks.color = '#121110';
         Chart.defaults.scales.linear.ticks.color = '#121110';
         Chart.defaults.scale.grid.color = 'rgba(233, 236, 239, 0.1)';
       }

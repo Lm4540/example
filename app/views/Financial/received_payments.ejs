@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+  <style>
+
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+    <div class="container-fluid py-4">
+      <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+          <h3 class="fw-bold">Resumen de Ingresos Brutos</h3>
+        </div>
+       
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm h-100" style="min-height: 280px; background: rgba(255,255,255,0.02);">
+            <div class="card-body d-flex align-items-center justify-content-center p-4">
+              <canvas id="chartIngresos"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="row g-3 h-100">
+            <div class="col-md-6">
+              <div class="card border-0 shadow-sm h-100 border-start border-success border-4" style="background: rgba(255,255,255,0.02);">
+                <div class="card-body position-relative">
+                  <small class="text-muted text-uppercase fw-bold">Efectivo</small>
+                  <h2 class="fw-bold mt-2 mb-0">$<%= stats.money.toLocaleString(undefined, {minimumFractionDigits: 2}) %></h2>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-0 shadow-sm h-100 border-start border-info border-4" style="background: rgba(255,255,255,0.02);">
+                <div class="card-body position-relative">
+                  <small class="text-muted text-uppercase fw-bold">Transferencias Y depositos</small>
+                  <h2 class="fw-bold mt-2 mb-0">$<%= stats.transfer.toLocaleString(undefined, {minimumFractionDigits: 2}) %></h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4" style="background: rgba(255,255,255,0.03);">
+        <div class="card-body">
+          <form action="/financial/received-payments" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Rango de Fechas</label>
+              <div class="input-group">
+                <input type="date" name="start" class="form-control border-secondary text-white bg-transparent" value="<%= filters.start %>">
+                <span class="input-group-text border-secondary bg-transparent text-muted">a</span>
+                <input type="date" name="end" class="form-control border-secondary text-white bg-transparent" value="<%= filters.end %>">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-muted">Método de Pago</label>
+              <select name="type" class="form-select">
+                <option value="all" <%= filters.type === 'all' ? 'selected' : '' %>>Todos los métodos</option>
+                <option value="money" <%= filters.type === 'money' ? 'selected' : '' %>>Efectivo</option>
+                <option value="transfer" <%= filters.type === 'transfer' ? 'selected' : '' %>>Transferencia</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-secondary w-100">
+                <i class="fas fa-filter"></i>Filtrar Resultados
+              </button>
+            </div>
+            <div class="col-md-2 text-end">
+              <a href="/financial/received-payments" class="btn btn-link btn-sm text-muted">Limpiar filtros</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="bg-dark text-uppercase small">
+              <tr class="border-bottom border-secondary">
+                <th class="ps-4 py-3">Fecha / Hora</th>
+                <th>Cliente</th>
+                <th class="text-end pe-4">Monto</th>
+                <th>Método</th>
+                <th>Referencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (payments.length > 0) { %>
+              <% payments.forEach(p => { 
+                  console.log(p)
+            
+            %>
+              <tr class="border-bottom border-secondary" style="border-color: rgba(255,255,255,0.05) !important;">
+                <td class="ps-4">
+                  <div class="fw-bold"><%= new Date(p.fecha).toLocaleDateString() %></div>
+                  <small class="text-muted"><%= new Date(p.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                </td>
+                <td>
+                  <div class="fw-bold"><%= p.client_name %></div>
+                  <small class="text-muted">ID: <%= p.client %></small>
+                </td>
+                <td class="text-end pe-4">
+                  <span class="fw-bold fs-6">$<%= Helper.money_format(p.amount) %></span>
+                </td>
+                <td>
+                  <% if (p.type === 'money') { %>
+                  <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2">
+                    <i class="fas fa-money-bill"></i> EFECTIVO
+                  </span>
+                  <% } else { %>
+                  <span class="badge bg-info-subtle text-info border border-info border-opacity-25 px-2">
+                    <i class="fas fa-building"></i> TRANSFERENCIA/DEPOSITO
+                  </span>
+                  <% } %>
+                </td>
+                <td>
+                  <small class="fw-semibold"><%= p.bank || '--' %></small>
+                  <div class="text-muted" style="font-size: 0.75rem;"><%= p.reference || 'Sin Ref.' %></div>
+                </td>
+                
+              </tr>
+              <% }) %>
+              <% } else { %>
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                  No se encontraron pagos para los criterios seleccionados.
+                </td>
+              </tr>
+              <% } %>
+            </tbody>
+            <% if (payments.length > 0) { %>
+            <tfoot class="bg-dark-subtle border-top border-secondary">
+              <tr>
+                <th colspan="4" class="text-end py-3">SUMATORIA TOTAL:</th>
+                <th class="text-end pe-4 py-3 h4 mb-0 fw-bold text-primary">
+                  $<%= stats.total.toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                </th>
+              </tr>
+            </tfoot>
+            <% } %>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+<script src="assets/js/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('chartIngresos');
+
+    const money = parseFloat('<%= stats.money %>') || 0;
+    const transfer = parseFloat('<%= stats.transfer %>') || 0;
+    const totalValue = money + transfer;
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Efectivo', 'Transferencias'],
+        datasets: [{
+          data: [money, transfer],
+          backgroundColor: ['#198754', '#0dcaf0'],
+          borderWidth: 0,
+          hoverOffset: 15
+        }]
+      },
+      options: {
+        cutout: '75%',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true,
+              color: '#adb5bd' 
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'centerText',
+        beforeDraw: function(chart) {
+          if (totalValue > 0) {
+            const width = chart.width,
+              height = chart.height,
+              ctx = chart.ctx;
+            ctx.restore();
+            ctx.font = "bold 1.2em sans-serif";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#e9ecef"; 
+
+            const text = "$" + Math.round(totalValue).toLocaleString(),
+              textX = Math.round((width - ctx.measureText(text).width) / 2),
+              textY = height / 2 - 10;
+
+            ctx.fillText(text, textX, textY);
+            ctx.save();
+          }
+        }
+      }]
+    });
+  });
+</script>
+
+</html>

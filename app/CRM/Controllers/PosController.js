@@ -798,6 +798,7 @@ module.exports = {
                                 bank: pay.bank,
                                 reference: pay.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal,
                                 fecha: pay.fecha ? pay.fecha : new Date()
                             });
 
@@ -825,6 +826,7 @@ module.exports = {
                                 bank: pay.bank,
                                 reference: pay.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal,
                                 fecha: pay.fecha ? pay.fecha : new Date(),
                             });
 
@@ -852,6 +854,7 @@ module.exports = {
                                 bank: pay.bank,
                                 reference: pay.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal,
                                 fecha: pay.fecha ? pay.fecha : new Date(),
                             });
 
@@ -879,6 +882,7 @@ module.exports = {
                                 bank: pay.bank,
                                 reference: pay.reference,
                                 createdBy: req.session.userSession.shortName,
+                                sucursal: caja.sucursal,
                                 fecha: pay.fecha ? pay.fecha : new Date(),
                             });
                             bitcoin = Helper.fix_number(asigned_amount + bitcoin, 2);
@@ -909,6 +913,7 @@ module.exports = {
                     bank: null,
                     reference: null,
                     createdBy: req.session.userSession.shortName,
+                    sucursal: caja.sucursal,
                     fecha: new Date()
                 });
 

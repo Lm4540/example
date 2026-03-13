@@ -340,7 +340,7 @@ const PettyCashController = {
 
         let arqueos = await PettyCashClosing.findAll({
             where: whereClause,
-            orderorder: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
 
         cash = await PettyCash.findByPk(cash);
