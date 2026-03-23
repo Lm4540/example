@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <!-- <link rel="stylesheet" href="assets/libs/choices/base.min.css"> -->
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+  <%# custom styles %>
+  <style>
+    .x-small {
+      font-size: 0.75rem;
+    }
+
+    .item-combo-wrapper {
+      transition: transform 0.2s;
+    }
+
+    .item-combo-wrapper:hover {
+      border-color: rgba(150, 150, 150, 0.5) !important;
+    }
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/sales">Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container py-4">
+      <div class="d-flex justify-content-between mb-4">
+        <h3>Promociones Registradas</h3>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">Nueva Promoción</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle table-sm table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Resumen</th>
+              <th>Precio</th>
+              <th>Vigencia</th>
+              <th>Validar</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% 
+                  let unMesAtras = new Date();
+                  unMesAtras.setMonth(unMesAtras.getMonth() - 1);
+
+            promotions.forEach(promo => { %>
+            <tr>
+              <td>
+                <strong><%= promo.name %></strong><br>
+                <small><%= promo.summary %></small>
+              </td>
+              <td>$<%= promo.combo_price %></td>
+              <td>
+                Desde: <%= Helper.format_date(promo.start_date) %>
+                <br>Hasta: <%= Helper.format_date(promo.end_date) %>
+              </td>
+              <td><span class="badge bg-blue" data-bs-target="#viewComboModal" data-bs-toggle="modal" onclick="checkStock('<%= promo.id %>', 'local')">Sucursal</span>
+                <span class="badge bg-green" data-bs-target="#viewComboModal" data-bs-toggle="modal" onclick="checkStock('<%= promo.id %>', 'global')">Global</span>
+              </td>
+              <td>
+                <% if(promo.promo_link) { %>
+                <a href="<%= promo.promo_link %>" target="_blank" class="badge bg-purple">Ver Video</a>
+                <% } %>
+
+
+                <% if (new Date(promo.createdAt) < unMesAtras) { %>
+                <span class="badge bg-danger" onclick="deletePromotion('<%= promo.id %>')">Eliminar</span>
+                <% } %>
+
+                <% if (permission.includes('allow_promotion')) { %>
+
+                <%- promo.status == 1 ? `<span class="bg-warning badge" onclick="togglePromotion(${promo.id })">Desactivar</span>` : `<span class="bg-success badge" onclick="togglePromotion('${promo.id}')">Activar</span>` %>
+                <% } %>
+
+
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal fade" id="promoModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5>Crear Promoción/Combo</h5>
+          </div>
+          <div class="modal-body">
+            <form id="promoForm">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label>Nombre</label>
+                  <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label>Precio Combo</label>
+                  <input type="number" step="0.01" id="combo_price" name="combo_price" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label>Inicio</label>
+                  <input type="datetime-local" name="start_date" class="form-control" required value="<%= fechaInicio %>">
+                </div>
+                <div class="col-md-6">
+                  <label>Fin</label>
+                  <input type="datetime-local" name="end_date" class="form-control" required value="<%= fechaFin %>">
+                </div>
+                <div class="col-6">
+                  <label>Link TikTok</label>
+                  <input type="url" name="promo_link" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <input class="mt-3 form-check-input fs-3 text" type="checkbox" name="alter" id="alter" checked>
+                  <label class="mt-3">¿Se permiten Alternativas?</label>
+                </div>
+                <div class="col-12"><label>Resumen/Codigos/Restricciones</label><textarea name="summary" class="form-control"></textarea></div>
+              </div>
+
+              <hr class="mt-3">
+              <h6 class="mt-5">Productos del Combo</h6>
+              <div class="row g-2 mb-3">
+                <div class="col-md-8">
+                  <label>Buscar Producto</label>
+                  <select id="productSelect" class="form-control"></select>
+                </div>
+                <div class="col-md-4">
+                  <label>Cantidad</label>
+                  <input type="number" id="tempQty" value="1" class="form-control" placeholder="Cant">
+                </div>
+
+                <div class="col-md-6">
+                  <input class="mt-3 form-check-input fs-3 text" type="checkbox" name="alternatives_allowed_check" id="alternatives_allowed_check" checked>
+                  <label for="alternatives_allowed_check" class="mt-3">¿Permitir Variantes como Alternativa?</label>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-success w-100" onclick="addItem(this)">Agregar</button>
+                </div>
+              </div>
+              <table class="table-sm mt-5">
+                <tbody id="itemList">
+
+                </tbody>
+
+              </table>
+            </form>
+          </div>
+          <div class="modal-body">
+            <div id="valid">
+            </div>
+          </div>
+          <div class="modal-footer center-text text-center">
+            <button type="button" class="btn btn-warning" onclick="validatePromo()">Validar</button>
+            <button type="button" class="btn btn-primary" id="saveBtn" disabled onclick="savePromo()">Guardar Promoción</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="viewComboModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="viewComboModalLabel"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="notestextareaonlyread">Notas/ Resumen</label>
+              <textarea name="notestextareaonlyread" id="notestextareaonlyread" class="form-control" disabled></textarea>
+            </div>
+
+            <div class="mt-2" id="viewPromoLink">
+              <a href=""></a>
+            </div>
+          </div>
+          <div class="modal-body">
+
+            <div id="combo_products_container">
+
+
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  let selectedItems = [];
+  var product_in_select2 = {}; // Se llena en doSearchProduct
+  let product_last_val = '';
+
+  const selectProduct = document.querySelector('#productSelect');
+  const choices_product = new Choices(selectProduct, {
+    searchResultLimit: 15,
+    searchChoices: false,
+    searchFloor: 2,
+  });
+
+  const doSearchProduct = async (val) => {
+    const response = await fetch(`/sales/promos/select2?search=${encodeURIComponent(val)}&onlystock=true`, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    });
+    let res = await response.json();
+    product_in_select2 = {};
+    res.forEach(element => product_in_select2[element.id] = element);
+    return res;
+  }
+
+  let timer_product;
+  selectProduct.addEventListener('search', async (e) => {
+    let valor_actual = e.detail.value;
+    if (product_last_val !== valor_actual) {
+      product_last_val = valor_actual;
+      clearTimeout(timer_product);
+      timer_product = setTimeout(async () => {
+        let data = await doSearchProduct(valor_actual);
+        choices_product.setChoices(data, 'value', 'label', true);
+      }, 500);
+    }
+  });
+
+  function addItem(element) {
+    element.disabled = true;
+    const pId = selectProduct.value;
+    const qty = document.getElementById('tempQty').value;
+    const prod = product_in_select2[pId];
+    const at = document.getElementById('alternatives_allowed_check').checked;
+
+
+    if (!prod) {
+      element.disabled = false;
+      return
+    };
+
+    selectedItems.push({
+      product_id: pId,
+      quantity: qty,
+      cost: prod.cost,
+      sku: prod.internal_code,
+      provider_code: prod.provider_code,
+      label: prod.label,
+      alternatives_allowed: at,
+    });
+    choices_product.removeActiveItems();
+    document.getElementById('tempQty').value = 1;
+
+    element.disabled = false;
+
+    renderItems();
+  }
+
+  function renderItems() {
+    const list = document.getElementById('itemList');
+    list.innerHTML = selectedItems.map((item, index) => `<tr><td>${item.label}</td><td>Cant: ${item.quantity}</td><td><button class="btn btn-sm btn-danger" onclick="selectedItems.splice(${index},1); renderItems();">x</button></td></tr>`).join('');
+    document.getElementById('saveBtn').disabled = true;
+  }
+
+  async function validatePromo() {
+    const price = parseFloat(document.getElementById('combo_price').value);
+    let totalCost = 0;
+    selectedItems.forEach(i => totalCost += (i.cost * i.quantity));
+
+    if (isNaN(price) || isNaN(totalCost)) {
+      return errorMessage('Primero llena los campos');
+    }
+
+    if (price < totalCost) {
+      document.getElementById('saveBtn').disabled = true;
+      return errorMessage("Error: El precio de la promocion es inferior al costo de los productos.");
+      document.getElementById('valid').innerHTML = '<h3 class="text-danger">No Valido</h3>';
+    } else if (price < (totalCost * 1.35)) {
+      if (confirm(`Alerta: El precio está por debajo del margen minimo sugerido. ¿Habilitar Guardado?`)) {
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('valid').innerHTML = '<h3 class="text-success">Valido</h3>';
+      }
+    } else {
+      document.getElementById('saveBtn').disabled = false;
+      document.getElementById('valid').innerHTML = '<h3 class="text-success">Valido</h3>';
+      return;
+    }
+
+
+
+  }
+
+  async function savePromo() {
+    const formData = new FormData(document.getElementById('promoForm'));
+    const data = Object.fromEntries(formData.entries());
+    data.alternatives_allowed = document.getElementById('alter').checked;
+
+    data.items = selectedItems.map(i => ({
+      product_id: i.product_id,
+      quantity: i.quantity,
+      sku: i.sku,
+      provider_code: i.provider_code,
+      cost: i.cost,
+      alternatives_allowed: i.alternatives_allowed,
+    }));
+    document.querySelector("#saveBtn").disabled = true;
+
+    const res = await fetch('/sales/promos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) location.reload();
+  }
+
+
+
+  // Cambiar estado Activo/Inactivo
+  async function togglePromotion(id) {
+    try {
+      const res = await fetch(`/sales/promos/${id}/toggle`, {
+        method: 'PATCH'
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Recarga simple o puedes manipular el DOM para cambiar el color del badge
+        location.reload();
+      }
+    } catch (err) {
+      alert("Error al cambiar el estado");
+    }
+  }
+
+  // Eliminar promoción (El servidor validará si tiene más de un mes)
+  async function deletePromotion(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta promoción?")) return;
+
+    try {
+      const res = await fetch(`/sales/promos/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        successMessage(data.message);
+        location.reload();
+      }
+    } catch (err) {
+      ErrorMessage("Error al procesar la eliminación");
+    }
+  }
+
+  // Función de Verificación de Stock (Actualizada para manejar los datos de la Raw Query)
+  async function checkStock(id, mode) {
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Cargando...";
+    btn.disabled = true;
+
+
+    const res = await fetch(`/sales/promos/${id}/verify-stock?mode=${mode}`);
+    const results = await res.json();
+
+    document.getElementById("viewComboModalLabel").innerHTML = ` Promoción:  ${results.promo.name}  $${money_format(results.promo.combo_price)}`;
+    document.getElementById("notestextareaonlyread").value = results.promo.summary;
+    document.getElementById("notestextareaonlyread").value = results.promo.summary;
+
+
+    let itemhtml = '';
+    let determina = null;
+    let min = 10000;
+
+    results.details.forEach(dt => {
+      let acumulador = 0;
+      if (dt.stock != null || dt.stock != undefined) {
+        acumulador = dt.stock.stock;
+        itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
+          <div class="row align-items-center">
+            <div class="col-12 col-sm-3 text-center mb-3 mb-sm-0">
+              <img src="/upload/images/${dt.stock.image}" class="img-fluid rounded border" style="max-height: 120px; object-fit: cover;" alt="Producto">
+            </div>
+
+            <div class="col-12 col-sm-9">
+              <h6 class="fw-bold mb-1">${dt.stock.name}</h6>
+              <div class="row">
+                <div class="col-6">
+                  <small class="d-block">Código Interno:</small>
+                  <code class="fw-bold">${dt.internal_code}</code>
+                </div>
+                <div class="col-6">
+                  <small class="d-block">Código Proveedor:</small>
+                  <code class="fw-bold">${dt.provider_code}</code>
+                </div>
+              </div>
+              <div class="mt-2 text-end">
+                <span class="badge bg-purple text-secondary">Requerido: ${dt.quantity}</span>
+              </div>
+              <div class="mt-2 text-end">
+                <span class="badge bg-success text-secondary">Stock Disponible: ${dt.stock.stock}</span>
+              </div>
+            </div>
+          </div>`;
+
+
+
+      } else {
+        //poner el html cuando el principal no tiene registro de stock
+
+        itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
+          <div class="row align-items-center">
+            <div class="col-12 text-center mb-3 mb-sm-0">
+              <h5> El producto SKU: ${dt.internal_code} no cuenta con Stock Disponible.</h5>
+              <div class="mt-2 text-end">
+                <span class="badge bg-danger text-secondary">Requerido: ${dt.quantity}</span>
+              </div>
+              
+            </div>
+          </div>`;
+      }
+
+      let a = getAlternativesHtml(dt.alternatives);
+      itemhtml += a.html;
+      acumulador += a.suma;
+
+      acumulador = acumulador / dt.quantity;
+      if (acumulador < min) {
+        min = acumulador;
+        determina = dt.internal_code;
+      };
+
+      itemhtml += `</div>`;
+    });
+
+
+    document.querySelector("#combo_products_container").innerHTML = itemhtml;
+    document.getElementById("viewPromoLink").innerHTML = `
+    <p>Link del Video: <a href="${results.promo.promo_link}" target="_blank" class="badge bg-purple">Ver Video</a></p>
+    <p>
+      Promociones Disponibles: 
+      <code class="ml-2 mr-2 " style="font-size:1.25 rem; font-weight: 600" >  ${min}</code>
+    </p>
+    <p>
+      Existencias mas bajas:
+      <code class="ml-2 mr-2 " >  ${determina}</code>
+    </p>`;
+
+
+    try {
+
+
+      console.log(results)
+    } catch (err) {
+      console.log(err)
+    } finally {
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  const getAlternativesHtml = (alternatives) => {
+    let result = {
+      html: '',
+      suma: 0
+    };
+    if (Array.isArray(alternatives) && alternatives.length > 0) {
+
+      result.html += `<div class="alternatives-section mt-3 pt-3 border-top">
+                <p class="small fw-bold mb-2">
+                  <i class="bi bi-arrow-return-right"></i> Sugerencias Alternativas :
+                </p>
+                <div class="row g-2">`;
+      alternatives.forEach(alt => {
+        result.suma += alt.stock;
+        result.html += `
+          <div class="col-6 col-md-4">
+            <div class="d-flex align-items-center rounded p-2">
+              <img src="/upload/images/${alt.image}" class="rounded me-2 ml-2 mr-2" style="width: 40px; height: 40px; object-fit: cover;">
+              <div style="overflow: hidden;">
+                <small class="d-block text-truncate fw-bold" title="Nombre Alternativa">${alt.name}</small>
+                <small class="d-block x-small">SKU: ${alt.internal_code}</small>
+                <small class="d-block x-small">Disponible: ${alt.stock}</small>
+              </div>
+            </div>
+          </div>`;
+      });
+      result.html += `</div>
+              </div>`;
+
+    }
+
+    return result;
+
+  };
+</script>
+
+</html>

@@ -3,10 +3,11 @@ const ClientController = require('../CRM/Controllers/ClientController');
 const SaleController = require('../CRM/Controllers/SaleController');
 const InvoiceController = require('../CRM/Controllers/InvoiceController');
 const Auth = require("../System/Middleware/Auth");
+const PromotionController = require('../CRM/Controllers/PromotionController');
 
 // Home page route.
 router.get("/", function (req, res) {
-    res.render('CRM/index.ejs', {pageTitle: 'Modulo CRM'});
+    res.render('CRM/index.ejs', { pageTitle: 'Modulo CRM' });
 });
 
 
@@ -67,7 +68,7 @@ router.post('/update_invoice', InvoiceController.update_invoice);
 router.post('/invoice/create_invoice', InvoiceController.create_invoice);
 router.post('/invoice/revoke_invoice', InvoiceController.revoke_invoice);
 router.get('/invoices', InvoiceController.invoice_report);
-router.get('/invoices_with_costs',  (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), InvoiceController.invoice_report2);
+router.get('/invoices_with_costs', (req, res, next) => Auth.HasPermission(req, res, next, ['view_invoice_report_with_cost']), InvoiceController.invoice_report2);
 router.get('/invoices_details', InvoiceController.invoice_report_details);
 router.get('/invoices_details2', InvoiceController.invoice_report_details2);
 router.get('/invoices_payments', InvoiceController.invoices_payments);
@@ -89,7 +90,13 @@ router.post('/update_price', (req, res, next) => Auth.HasPermission(req, res, ne
 
 
 
-
+// Promociones
+router.get('/promos', PromotionController.index);
+router.post('/promos', PromotionController.store);
+router.patch('/promos/:id/toggle', (req, res, next) => Auth.HasPermission(req, res, next, ['allow_promotion']), PromotionController.toggleStatus);
+router.delete('/promos/:id', PromotionController.destroy);
+router.get('/promos/:id/verify-stock', PromotionController.verifyStock);
+router.get('/promos/select2', PromotionController.select2);
 
 
 

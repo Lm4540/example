@@ -1,9 +1,6 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../../DataBase/DataBase");
-const Stock = require("./Stock");
-const Movement = require("./Movement");
-const ProductClassification = require("./ProductClassification");
-const Provider = require("./Provider");
+
 
 
 const Product = sequelize.define('Product', {
@@ -148,16 +145,4 @@ const Product = sequelize.define('Product', {
     tableName: 'inventory_product',
 });
 
-// Product.hasMany(Stock, {
-//     foreignKey: 'product',
-//     sourceKey: 'id'
-// });
-
-// Stock.belongsTo(Product, {
-//     foreignKey: 'product',
-//     targetId: 'id'
-// })
-
-
 module.exports = Product;
-// alter table `inventory_product` add color varchar(25), add parent_product int unsigned null

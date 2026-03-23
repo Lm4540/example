@@ -244,6 +244,13 @@ module.exports = [
         "permission": "view_commission_report"
     },
 
+    {
+        "name": "Habilitar/inhabilitar promociones",
+        "explication": "Permite Habilitar y deshabilitar las promociones",
+        "group": "Ventas",
+        "permission": "allow_promotion"
+    },
+
 
 
 

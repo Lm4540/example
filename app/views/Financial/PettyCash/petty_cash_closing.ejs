@@ -107,9 +107,10 @@
 
   // Clave única para esta caja (evita conflictos si abren dos cajas distintas)
   const STORAGE_KEY = `arqueo_cache_<%= cash.id %>`;
+  const diffLabel = document.getElementById('labelDiff');
 
   function calculateTotal() {
-    let total = 0;
+    let total = 0.00;
     const currentCounts = {};
 
     document.querySelectorAll('.denomination-input').forEach(input => {
@@ -129,9 +130,21 @@
     const diff = (total + consignedAmount) - systemBalance;
 
     document.getElementById('labelPhysical').innerText = '$' + money_format(total);
-    const diffLabel = document.getElementById('labelDiff');
-    diffLabel.innerText = '$' + money_format(diff);
-    diffLabel.className = 'fw-bold h3 ' + (diff < 0 ? 'text-danger' : 'text-success');
+
+    if(diff > 0){
+      diffLabel.innerText = 'Sobrante $' + money_format(diff);
+      diffLabel.className = 'fw-bold h3 text-primary';
+
+    }else if(diff < 0){
+      diffLabel.innerText = 'Faltante $' + money_format(-1*diff);
+      diffLabel.className = 'fw-bold h3 text-danger';
+
+    }else{
+      
+      diffLabel.innerText = 'Cuadrardo :D';
+      diffLabel.className = 'fw-bold h3 text-success';
+    }
+
   }
 
   // Función para recuperar los datos al recargar la página
