@@ -1,9 +1,11 @@
-const { Op, QueryTypes, where } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
 const sequelize = require('../../DataBase/DataBase');
 const Sucursal = require('../../Inventory/Models/Sucursal');
 const PettyCashMoves = require('../Models/PettyCashMoves');
 const PettyCash = require('../Models/PettyCash');
 const PettyCashClosing = require('../Models/PettyCashClosing');
+const PettyCashConsignment = require('../Models/PettyCashConsignment');
+
 const Helper = require('../../System/Helpers');
 const Sale = require('../../CRM/Models/Sale');
 const SalePayment = require('../../CRM/Models/SalePayment');
@@ -359,36 +361,89 @@ const PettyCashController = {
     },
 
     ConsignarSaldo: async (req, res) => {
-        let data = req.body;
-        data.amount = Number.parseFloat(data.amount);
-        console.log(data)
+        let { amount, cash, consignar, comment } = req.body;
+        amount = Number.parseFloat(amount);
+        const createdBy = req.session.userSession.name;
 
-        if (isNaN(data.amount)) {
+        if (isNaN(amount) || amount <= 0) {
             return res.json({ success: false, message: 'Monto no válido' });
         }
-        let cash = await PettyCash.findByPk(data.cash);
-        if (cash) {
-            try {
 
-                if (data.consignar) {
-                    await PettyCash.increment('consigned_balance', {
-                        by: data.amount,
-                        where: { id: cash.id },
-                    });
-                } else {
-                    await PettyCash.decrement('consigned_balance', {
-                        by: data.amount,
-                        where: { id: cash.id },
-                    });
-                }
-                return res.json({ success: true, message: 'Registrado' });
-            } catch (error) {
+        const t = await sequelize.transaction();
+        try {
+            cash = await PettyCash.findByPk(cash, { transaction: t });
+            if (!cash) throw new Error('Caja Chica Not Found!');
 
-                return res.json({ success: false, message: error.message });
+            // 1. Registrar el movimiento en el historial
+            let move = await PettyCashConsignment.create({
+                petty_cash_id: cash.id,
+                is_consignment: consignar,
+                amount: amount,
+                previous_balance: cash.consigned_balance,
+                comment: comment || (consignar ? 'Consignación de efectivo' : 'Devolución de efectivo'),
+                createdBy
+            }, { transaction: t });
+
+            // 2. Actualizar el saldo en la tabla padre
+            if (consignar) {
+                await cash.increment('consigned_balance', { by: amount, transaction: t });
+            } else {
+                if (cash.consigned_balance < amount) throw new Error('El Monto a devolver no puede ser mayor al saldo en consignación');
+                await cash.decrement('consigned_balance', { by: amount, transaction: t });
             }
+
+            await t.commit();
+            return res.json({ success: true, message: 'Movimiento registrado con éxito' });
+
+        } catch (error) {
+            await t.rollback();
+            return res.json({ success: false, message: error.message });
         }
-        return res.json({ success: false, message: 'Caja Chica Not Found!' });
     },
+
+    GetConsignedHistory: async (req, res) => {
+        try {
+            //los ultimos 50 movimientos
+            const history = await PettyCashConsignment.findAll({
+                where: { petty_cash_id: req.params.id },
+                limit: 50,
+                order: [['createdAt', 'DESC']],
+                raw: true
+            });
+            return res.json({ success: true, history });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
+    },
+
+    ClearConsignedHistory: async (req, res) => {
+        try {
+            const cashId = req.params.id;
+
+            // Buscamos el ID del 10mo registro más reciente
+            const lastToKeep = await PettyCashConsignment.findOne({
+                where: { petty_cash_id: cashId },
+                offset: 9, // El décimo
+                order: [['createdAt', 'DESC']],
+                attributes: ['id']
+            });
+
+            if (lastToKeep) {
+                await PettyCashConsignment.destroy({
+                    where: {
+                        petty_cash_id: cashId,
+                        id: { [Op.lt]: lastToKeep.id }
+                    }
+                });
+            }
+
+            return res.json({ success: true, message: 'Historial depurado' });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
+    },
+
+
 };
 
 module.exports = PettyCashController;

@@ -32,6 +32,8 @@ router.post("/pettycash/create", (req, res, next) => Auth.HasPermission(req, res
 router.get("/pettycash/printVoucher/:id(\\d+)", (req, res, next) => Auth.HasPermission(req, res, next, ['admin_petty_cash', 'view_petty_cash', 'admin_all_petty_cash']), PettyCashController.printVoucher);
 
 router.post("/pettycash/consignar", (req, res, next) => Auth.HasPermission(req, res, next, ['consignar_saldo_en_caja']), PettyCashController.ConsignarSaldo);
+router.get("/pettycash/consignar-historial/:id(\\d+)", (req, res, next) => Auth.HasPermission(req, res, next, ['consignar_saldo_en_caja']), PettyCashController.GetConsignedHistory);
+router.get("/pettycash/clear-consignar-historial/:id(\\d+)", (req, res, next) => Auth.HasPermission(req, res, next, ['consignar_saldo_en_caja']), PettyCashController.ClearConsignedHistory);
 
 router.get("/saldos_a_favor", PettyCashController.saldos_a_favor);
 

@@ -358,7 +358,6 @@
 
       document.querySelector("#btn_save").disabled = true;
 
-      console.log(data);
       postData('/inventory/requisition', data).then(data => {
         if (data.status == 'success') {
           successMessage(data.message);

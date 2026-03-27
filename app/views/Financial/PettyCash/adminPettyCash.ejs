@@ -160,32 +160,66 @@
       </div>
     </div>
 
-    <div class="modal fade" id="consignacion" tabindex="-1" style="display: none;">
+    <div class="modal fade" id="consignacion" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Saldo en consignacion $<%= Helper.money_format(sucursal.consigned_balance) %></h5>
+            <h5 class="modal-title">Saldo en Consignación $(<%= Helper.money_format(sucursal.consigned_balance || 0) %>)</h5>
           </div>
           <div class="modal-body">
-
-            <div class="form-group">
-              <label for="consigned">Monto a Consignar o devolver</label>
-              <input type="number" name="consigned" id="consigned" class="form-control" step="0.01" min="0.01">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Monto</label>
+              <input type="number" id="consigned_amount" class="form-control" step="0.01" placeholder="0.00">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Comentario / Motivo / Referencia</label>
+              <input type="text" id="consigned_comment" class="form-control" maxlength="100">
             </div>
 
-            <div>
-              <button class="btn btn-outline-primary" onclick="consignar(true)" data-bs-dismiss="modal">
+            <div class="modal-footer">
+              <button class="btn btn-outline-success mr-2 mr-2" onclick="verHistorial()" data-bs-target="#modalHistorialConsignacion" data-bs-toggle="modal">Ver Historial</button>
+              <button class="btn btn-outline-primary mr-2 mr-2" onclick="consignar(true)" data-bs-dismiss="modal">
                 Consignar
               </button>
 
-              <button class="btn btn-outline-danger" onclick="consignar(false)" data-bs-dismiss="modal">
+              <button class="btn btn-outline-danger mr-2 mr-2" onclick="consignar(false)" data-bs-dismiss="modal">
                 Devolver
               </button>
             </div>
 
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">cerrar</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="modal fade" id="modalHistorialConsignacion" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header d-flex justify-content-between align-items-center">
+            <h5 class="modal-title">Historial de Consignaciones</h5>
+            <button class="btn btn-sm btn-outline-warning" onclick="limpiarHistorial()">
+              Limpiar historial (deja ultimos 10)
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive" style="max-height: 400px;">
+              <table class="table table-sm table-hover mb-0 small">
+                <thead class="sticky-top bg-dark">
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                    <th>Saldo en Consignación</th>
+                    <th>Comentario</th>
+                    <th>Usuario</th>
+                  </tr>
+                </thead>
+                <tbody id="listaHistorialConsignacion">
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -322,30 +356,77 @@
   });
 
 
-  consignar = (consignar = true) => {
-    let consignado = parseFloat(document.querySelector("#consigned").value);
-    if (isNaN(consignado) || consignado < 0.01) {
-      return errorMessage('El monto escrito es invalido');
+
+
+  async function consignar(isConsignar) {
+    const data = {
+      amount: document.getElementById('consigned_amount').value,
+      comment: document.getElementById('consigned_comment').value,
+      consignar: isConsignar,
+      cash: '<%= sucursal.id %>',
+    };
+
+    const res = await fetch('/financial/pettycash/consignar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then(r => r.json());
+
+    if (res.success) {
+      location.reload();
+    } else {
+      errorMessage(res.message);
+    }
+  }
+
+  async function verHistorial() {
+    const res = await fetch(`/financial/pettycash/consignar-historial/<%= sucursal.id %>`).then(r => r.json());
+    const tbody = document.getElementById('listaHistorialConsignacion');
+    tbody.innerHTML = '';
+
+    res.history.forEach(item => {
+
+      let amount = parseFloat(item.amount);
+      let previous_balance = parseFloat(item.previous_balance);
+
+      const row = item.is_consignment ? `
+            <tr>
+                <td>${date_to_spanish(item.createdAt)}</td>
+                <td>
+                    <span class="badge bg-danger">CONSIGNACIÓN</span>
+                </td>
+                <td class="fw-bold">$${money_format(amount)}</td>
+                <td class="fw-bold">$${money_format(previous_balance + amount)}</td>
+                <td>${item.comment}</td>
+                <td class="text-muted">${item.createdBy}</td>
+            </tr>
+        ` : `<tr>
+                <td>${date_to_spanish(item.createdAt)}</td>
+                <td>
+                    <span class="badge bg-success">DEVOLUCIÓN</span>
+                </td>
+                <td class="fw-bold">$${money_format(amount)}</td>
+                <td class="fw-bold">$${money_format(previous_balance - amount)}</td>
+                <td>${item.comment}</td>
+                <td class="text-muted">${item.createdBy}</td>
+            </tr>
+        `;
+      tbody.innerHTML += row;
+    });
+  }
+
+
+  async function limpiarHistorial() {
+    const res = await fetch(`/financial/pettycash/clear-consignar-historial/<%= sucursal.id %>`).then(r => r.json());
+    if (res.success) {
+      verHistorial();
+      return successMessage(res.message);
     }
 
-    postData('/financial/pettycash/consignar', {
-      amount: consignado,
-      cash: '<%= sucursal.id %>',
-      consignar,
-    }).then(data => {
-      console.log(data)
-      if (data.success) {
-        return successMessage(data.message);
-      } else {
-        return errorMessage(data.message);
-      }
-
-    }).catch(err => {
-      console.log(err);
-    });
-
-
-  };
+    return errorMessage(res.message);
+  }
 </script>
 <script>
   const ExcelBtn = document.getElementById('ExcelBtn');

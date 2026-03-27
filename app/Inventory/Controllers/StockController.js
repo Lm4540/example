@@ -344,11 +344,8 @@ const StockController = {
 
                         tmp.forEach(prod => stocks[prod.product] = prod);
 
-                        //recorrer los detalles
-
                         var len = data.details.length;
-
-                        if (requisition) {
+                        if (requisition && requisition._status == 'open') {
                             return await sequelize.transaction(async (t) => {
                                 for (let index = 0; index < len; index++) {
                                     let dt = data.details[index],
@@ -364,16 +361,16 @@ const StockController = {
                                     if (dt.cant > max) {
                                         dt.cant = max;
                                     }
-                                    //redactar el cuerpo del detalle
-                                    //Buscar el detalle a ver si existe
+
                                     let detail = await RequisitionDetail.findOne({
                                         where: {
                                             requisition: requisition.id,
                                             product: dt.product,
+                                            client: { [Op.is]: null },
+                                            user: userid,
                                             sale_detail: { [Op.is]: null }
                                         }
                                     });
-
 
                                     if (detail) {
                                         detail.cant = Number.parseInt(detail.cant + dt.cant);
@@ -479,9 +476,6 @@ const StockController = {
                         return { status: 'error', message: error.message }
                     }
                 }
-                //Verificar si ya existe una orden de traslado con las sucursales de origien y destino
-
-
 
                 break;
             case 'addDetail':
@@ -794,7 +788,6 @@ const StockController = {
                             product = products[dt.product],
                             stock = stocks[dt.product],
                             reserve = reserves[dt.id];
-                        console.log(product, stock, reserve);
                         if (product == undefined || stock == undefined || reserve == undefined) {
                             throw `Product or Stock not Found ${dt.id}`;
                         }
@@ -842,7 +835,8 @@ const StockController = {
                             if (dt.sale_detail !== undefined && dt.sale_detail !== null) {
                                 details_bodyes[dt.product].sale_detail.push({
                                     id: dt.sale_detail,
-                                    cant: dt.cant
+                                    cant: dt.cant,
+                                    by: dt.createdBy,
                                 });
                             }
                         }
@@ -2047,14 +2041,12 @@ const StockController = {
         let data = req.body;
         let shipment = await Shipment.findByPk(data.shipment).catch(err => next(err));
         if (shipment != null) {
-            console.log(shipment.isIn)
             if (shipment.isIn == true || shipment.isIn == 1) {
                 return Helper.notFound(req, res, 'Transaccion Duplicada');
             }
 
 
             let details = await ShipmentDetail.findAll({ where: { shipment: shipment.id } });
-
             let tmp = await Product.findAll({
                 where: { id: { [Op.in]: sequelize.literal(`(SELECT product FROM inventory_shipment_detail WHERE shipment = ${shipment.id})`,), } }
             });
@@ -2105,16 +2097,32 @@ const StockController = {
                                     await _sale_detail.save({ transaction: t });
 
                                     //Crear la reserva
+                                    let reserve = await StockReserve.findOne({
+                                        where: {
+                                            type: 'sale',
+                                            saleId: _sale_detail.sale,
+                                            product: _sale_detail.product,
+                                            sucursal: shipment.destinoSucursal,
+                                        },
+                                        transaction: t,
+                                    });
 
-                                    let reserve = await StockReserve.create({
-                                        cant: detail.sale_detail[_f].cant,
-                                        createdBy: detail.sale_detail[_f].by ?? req.session.userSession.shortName,
-                                        concept: `Reserva por venta id ${_sale_detail.sale}`,
-                                        type: 'sale',
-                                        saleId: _sale_detail.id,
-                                        product: _sale_detail.product,
-                                        sucursal: shipment.destinoSucursal,
-                                    }, { transaction: t });
+                                    if (reserve) {
+                                        reserve.cant += detail.sale_detail[_f].cant;
+                                        await reserve.save({ transaction: t });
+                                    } else {
+                                        reserve = await StockReserve.create({
+                                            cant: detail.sale_detail[_f].cant,
+                                            createdBy: detail.sale_detail[_f].by ?? req.session.userSession.shortName,
+                                            concept: `Reserva por venta id ${_sale_detail.sale}`,
+                                            type: 'sale',
+                                            saleId: _sale_detail.id,
+                                            product: _sale_detail.product,
+                                            sucursal: shipment.destinoSucursal,
+                                        }, { transaction: t });
+
+                                    }
+
 
 
                                     reserved += detail.sale_detail[_f].cant;

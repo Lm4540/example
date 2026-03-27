@@ -1197,8 +1197,6 @@ const SaleController = {
                         ]
                     });
 
-                    console.log('ESTA ES LA INFORMACION DE LA ULTIMA COMPRA', last_sale);
-
 
                     sale = await Sale.create({
                         client: client.id,
@@ -1778,7 +1776,7 @@ const SaleController = {
         }
     },
 
-    quit_detail_revised: async (req, res) => {
+    quit_detail_revised_old: async (req, res) => {
 
         //Buscar el detalle
         let detail = await SaleDetail.findByPk(req.body.detail_id);
@@ -1799,6 +1797,7 @@ const SaleController = {
                     let count = await SaleDetail.count({ where: { sale: sale.id } });
 
                     return await sequelize.transaction(async (t) => {
+
                         sale.balance -= Helper.fix_number(Number.parseInt(detail.cant) * Number.parseFloat(detail.price))
 
                         //Buscar el producto, el Stock y la reserva
@@ -1883,6 +1882,122 @@ const SaleController = {
         }
     },
 
+    quit_detail_revised: async (req, res) => {
+        let detail = await SaleDetail.findByPk(req.body.detail_id);
+        let cant = parseInt(req.body.cant);
+        if (detail) {
+            //Buscar la venta
+            let sale = await Sale.findByPk(detail.sale).catch(err => next(err));
+            if (sale) {
+                if (sale._status != 'process') {
+                    return res.json({
+                        status: 'errorMessage', message: 'Ya no se puede modificar esta venta',
+                    });
+                }
+                try {
+                    //contar si la venta tiene mas detalles
+                    let count = await SaleDetail.count({ where: { sale: sale.id } });
+
+                    return await sequelize.transaction(async (t) => {
+
+                        sale.balance -= Helper.fix_number(Number.parseInt(detail.cant) * Number.parseFloat(detail.price))
+
+                        let product = await Product.findByPk(detail.product);
+                        let stock = await Stock.findOne({
+                            where: {
+                                product: detail.product,
+                                sucursal: sale.sucursal,
+                            }
+                        });
+                        let reserves = await StockReserve.findAll({
+                            where: {
+                                [Op.and]: {
+                                    saleId: detail.id,
+                                    product: detail.product
+                                }
+                            },
+                            order: [['id', 'DESC']]
+                        });
+
+                        let largo = reserves.length;
+                        if (largo > 0 && product && stock) {
+                            cant = detail.cant < cant ? detail.cant : cant;
+
+                            product.reserved -= cant;
+                            product.save({ transaction: t });
+                            stock.reserved -= cant;
+                            stock.save({ transaction: t });
+
+                            if (cant == detail.cant) {
+
+                                await StockReserve.destroy({
+                                    where: {
+                                        saleId: detail.id,
+                                        product: detail.product
+                                    },
+                                    transaction: t
+                                });
+
+                                detail.destroy({ transaction: t });
+                                count == 1 ? await sale.destroy({ transaction: t }) : await sale.save({ transaction: t });
+
+                                return res.json({
+                                    status: 'success', message: 'Guardado',
+                                });
+                            }
+
+                            let acumulador = cant;
+                            for (let index = 0; index < largo; index++) {
+                                let reserve = reserves[index];
+                                if (acumulador > 0) {
+                                    if (reserve.cant > acumulador) {
+                                        reserve.cant -= acumulador;
+                                        await reserve.save({ transaction: t });
+                                        acumulador = 0;
+                                    } else {
+                                        acumulador -= reserve.cant;
+                                        await reserve.destroy({ transaction: t });
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                            //actualizamos el detalle
+                            detail.cant -= cant;
+                            detail.reserved -= cant;
+                            detail.ready -= cant;
+                            await detail.save({ transaction: t });
+                            await sale.save({ transaction: t });
+
+                            return res.json({
+                                status: 'success', message: 'Guardado',
+                            });
+
+                        }
+                        return res.json({
+                            status: 'error', message: 'Recursos no Encontrados',
+                        });
+                    });
+                } catch (error) {
+                    console.error(error);
+                    return res.json({
+                        status: 'errorMessage', message: 'Venta o Pedido no encontrado', data: error.message
+                    });
+
+                }
+            }
+            return res.json({
+                status: 'errorMessage', message: 'Venta o Pedido no encontrado'
+            });
+
+        }
+        return res.json({
+            status: 'errorMessage', message: 'Detalle no encontrado'
+        });
+    },
+
+
+    //
     add_detail_from_request_tranfer: async (req, res) => {
         let data = req.body;
         let session = req.session.userSession;
@@ -2093,7 +2208,7 @@ const SaleController = {
                             where: {
                                 product: data.product,
                                 sucursal: stock.sucursal,
-                                orderId: req_detail.id
+                                orderId: req_detail.id,
                             }
                         });
 
@@ -2355,6 +2470,7 @@ const SaleController = {
                 if (sale._status != 'process') {
                     return { status: 'errorMessage', message: 'Ya no se puede modificar esta venta' };
                 }
+                sale.balance = Helper.fix_number(sale.balance - (data.cant * detail.price));
                 //Verificar si la venta tiene mas detalles
                 let count = await SaleDetail.count({
                     where: {
@@ -2376,8 +2492,8 @@ const SaleController = {
                 }
 
 
-                //Busca la reserva en la sucursal de la venta
-                let reserve = await StockReserve.findOne({
+                //Busca la reserva en las sucursal de la venta
+                let reserves = await StockReserve.findAll({
                     where: {
                         [Op.and]: {
                             saleId: detail.id,
@@ -2391,30 +2507,48 @@ const SaleController = {
                     where: {
                         product: detail.product,
                         sucursal: sale.sucursal
-                    }
+                    },
+                    order: [
+                        ['id', 'DESC']
+                    ]
                 });
                 //buscar el producto
                 let product = await Product.findByPk(detail.product);
-                if (product && stock && reserve) {
+                if (product && stock && reserves.length > 0) {
                     try {
-
                         return await sequelize.transaction(async (t) => {
-                            //actualizar y guardar venta
-                            sale.balance = Helper.fix_number(sale.balance - (data.cant * detail.price));
 
                             if (data.cant == detail.cant) {
                                 // destuir detalle y reserva
                                 await detail.destroy({ transaction: t });
-                                await reserve.destroy({ transaction: t });
+                                let reserves = await StockReserve.destroy({
+                                    where: {
+                                        saleId: detail.id,
+                                        product: detail.product,
+                                        sucursal: sale.sucursal
+                                    },
+                                    transaction: t
+                                });
 
                                 detail = null;
                             } else {
-                                //Disminuir reserva
-                                if (reserve.cant > data.cant) {
-                                    reserve.cant = Number.parseInt(reserve.cant - data.cant);
-                                    await reserve.save({ transaction: t });
-                                } else {
-                                    reserve.destroy({ transaction: t });
+
+                                let acumulador = data.cant;
+                                const largo = reserves.length;
+                                for (let index = 0; index < largo; index++) {
+                                    if (acumulador < 1) {
+                                        break;
+                                    }
+
+                                    let reserve = reserves[index];
+                                    if (reserve.cant > acumulador) {
+                                        reserve.cant = Number.parseInt(reserve.cant - acumulador);
+                                        await reserve.save({ transaction: t });
+                                        acumulador = 0;
+                                    } else {
+                                        reserve.destroy({ transaction: t });
+                                        acumulador = Number.parseInt(acumulador - reserve.cant);
+                                    }
                                 }
                                 //Disminuir Detalle
                                 detail.cant = Number.parseInt(detail.cant - data.cant);
@@ -2422,8 +2556,7 @@ const SaleController = {
                                 await detail.save({ transaction: t });
                             }
 
-
-                            //Actualizar Stock y  Actuañlizar Producto
+                            //actualizar el stock y el producto
                             await sequelize.query(
                                 "UPDATE `inventory_product_stock` SET `reserved` = reserved - :cant WHERE id = :stock_id",
                                 {
@@ -2446,6 +2579,8 @@ const SaleController = {
                                     transaction: t
                                 }
                             );
+
+
 
                             let _sale_id = sale.id;
                             if (count < 1 && detail == null) {
