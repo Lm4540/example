@@ -250,6 +250,12 @@ module.exports = [
         "group": "Ventas",
         "permission": "allow_promotion"
     },
+    {
+        "name": "Eliminar promociones",
+        "explication": "Eliminar las promociones",
+        "group": "Ventas",
+        "permission": "destroy_promotion"
+    },
 
 
 

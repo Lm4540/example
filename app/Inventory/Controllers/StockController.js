@@ -2642,6 +2642,14 @@ const StockController = {
         let sucursals = await Sucursal.findAll();
         res.render('Inventory/Product/inStock', { pageTitle: 'Productos disponibles', limit: 10, sucursals });
     },
+
+     specialSetLocationsView: async (req, res) => {
+        let sucursals = [
+            {id: 1, name: 'Matriz'}
+        ]
+        res.render('Inventory/Product/specialSetLocations', { pageTitle: 'Productos disponibles', limit: 10, sucursals });
+    },
+
     productInStock: async (req, res) => {
         let search = req.query.search;
         let sucursal = req.query.sucursal;

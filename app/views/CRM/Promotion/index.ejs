@@ -355,16 +355,21 @@
 
     try {
       const res = await fetch(`/sales/promos/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       const data = await res.json();
 
       if (data.success) {
         successMessage(data.message);
-        location.reload();
+        window.location.reload();
       }
+
+      
     } catch (err) {
-      ErrorMessage("Error al procesar la eliminación");
+      errorMessage("No tienes permiso para eliminar este recurso, se eliminara de forma automatica o por alguien autorizado");
     }
   }
 
@@ -375,24 +380,24 @@
     btn.innerText = "Cargando...";
     btn.disabled = true;
 
+    try {
+      const res = await fetch(`/sales/promos/${id}/verify-stock?mode=${mode}`);
+      const results = await res.json();
 
-    const res = await fetch(`/sales/promos/${id}/verify-stock?mode=${mode}`);
-    const results = await res.json();
-
-    document.getElementById("viewComboModalLabel").innerHTML = ` Promoción:  ${results.promo.name}  $${money_format(results.promo.combo_price)}`;
-    document.getElementById("notestextareaonlyread").value = results.promo.summary;
-    document.getElementById("notestextareaonlyread").value = results.promo.summary;
+      document.getElementById("viewComboModalLabel").innerHTML = ` Promoción:  ${results.promo.name}  $${money_format(results.promo.combo_price)}`;
+      document.getElementById("notestextareaonlyread").value = results.promo.summary;
+      // document.getElementById("notestextareaonlyread").value = results.promo.summary;
 
 
-    let itemhtml = '';
-    let determina = null;
-    let min = 10000;
+      let itemhtml = '';
+      let determina = null;
+      let min = 10000;
 
-    results.details.forEach(dt => {
-      let acumulador = 0;
-      if (dt.stock != null || dt.stock != undefined) {
-        acumulador = dt.stock.stock;
-        itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
+      results.details.forEach(dt => {
+        let acumulador = 0;
+        if (dt.stock != null || dt.stock != undefined) {
+          acumulador = dt.stock.stock;
+          itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
           <div class="row align-items-center">
             <div class="col-12 col-sm-3 text-center mb-3 mb-sm-0">
               <img src="/upload/images/${dt.stock.image}" class="img-fluid rounded border" style="max-height: 120px; object-fit: cover;" alt="Producto">
@@ -421,10 +426,10 @@
 
 
 
-      } else {
-        //poner el html cuando el principal no tiene registro de stock
+        } else {
+          //poner el html cuando el principal no tiene registro de stock
 
-        itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
+          itemhtml += `<div class="item-combo-wrapper border rounded p-3 mb-4">
           <div class="row align-items-center">
             <div class="col-12 text-center mb-3 mb-sm-0">
               <h5> El producto SKU: ${dt.internal_code} no cuenta con Stock Disponible.</h5>
@@ -434,39 +439,55 @@
               
             </div>
           </div>`;
+        }
+
+        let a = getAlternativesHtml(dt.alternatives);
+        itemhtml += a.html;
+        acumulador += a.suma;
+
+        acumulador = acumulador / dt.quantity;
+        if (acumulador < min) {
+          min = acumulador;
+          determina = dt.internal_code;
+        };
+
+        itemhtml += `</div>`;
+      });
+
+
+      document.querySelector("#combo_products_container").innerHTML = itemhtml;
+
+      const hoy = new Date(),
+        vencimiento = new Date(results.promo.end_date);
+      let vencimiento_html = `<p>
+          Fecha de Vencimiento:
+          <code class="ml-2 mr-2 " >  ${date_to_spanish(results.promo.end_date)} </code>
+          <b class="text-success">VIGENTE<b/>
+        </p>`
+      if (hoy > vencimiento) {
+        vencimiento_html = `<p>
+        Fecha de Vencimiento:<code class="ml-2 mr-2 " >  ${date_to_spanish(results.promo.end_date)} </code>
+          <br><b class="text-danger">PROMOCION VENCIDA<b/>
+          &nbsp; &nbsp;<span class="badge bg-danger" onclick="deletePromotion('${results.promo.id}')">Eliminar</span>
+      </p>`
       }
 
-      let a = getAlternativesHtml(dt.alternatives);
-      itemhtml += a.html;
-      acumulador += a.suma;
-
-      acumulador = acumulador / dt.quantity;
-      if (acumulador < min) {
-        min = acumulador;
-        determina = dt.internal_code;
-      };
-
-      itemhtml += `</div>`;
-    });
-
-
-    document.querySelector("#combo_products_container").innerHTML = itemhtml;
-    document.getElementById("viewPromoLink").innerHTML = `
+      document.getElementById("viewPromoLink").innerHTML = `
     <p>Link del Video: <a href="${results.promo.promo_link}" target="_blank" class="badge bg-purple">Ver Video</a></p>
     <p>
       Promociones Disponibles: 
-      <code class="ml-2 mr-2 " style="font-size:1.25 rem; font-weight: 600" >  ${min}</code>
+      <code class="ml-2 mr-2 " style="font-size:1.25 rem; font-weight: 600" >  ${parseInt(min)}</code>
     </p>
     <p>
       Existencias mas bajas:
       <code class="ml-2 mr-2 " >  ${determina}</code>
-    </p>`;
+    </p>
+  ${vencimiento_html}
+    `;
 
 
-    try {
 
 
-      console.log(results)
     } catch (err) {
       console.log(err)
     } finally {

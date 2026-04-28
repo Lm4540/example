@@ -68,6 +68,7 @@ router.post('/product/in/:id(\\d+)', StockController.SaveIn);
 router.get('/product/out/:id(\\d+)', StockController.out);
 router.post('/product/out/:id(\\d+)', StockController.SaveOut);
 router.get('/product/viewstock', StockController.viewInStock);
+router.get('/product/setSpecialLocations', StockController.specialSetLocationsView);
 router.get('/product/stock', StockController.productInStock);
 router.get('/product/divide', StockController.divideProductView);
 router.post('/product/divide', StockController.divideProduct);

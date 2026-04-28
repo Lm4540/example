@@ -1774,6 +1774,8 @@ const SaleController = {
                 }
             }
         }
+
+        return res.json({code: 404, message: 'sale not Found'})
     },
 
     quit_detail_revised_old: async (req, res) => {

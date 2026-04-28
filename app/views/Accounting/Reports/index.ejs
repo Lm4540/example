@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+    .icon-card i {
+      font-size: 4rem;
+      padding-top: 20%;
+    }
+
+    .icon-card p {
+      padding-top: 60%;
+      font-weight: 550;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      ;
+    }
+
+    .modal {
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-12">
+          <h2 class="text-center">Reportes</h2>
+
+          <div class="row justify-content-center">
+
+            <a class="card icon-card text-center" href="/conta/sales_book">
+              <i class="fas fa-book"></i>
+              <p>Libro de Ventas</p>
+            </a>
+
+            <a class="card icon-card text-center" href="/conta/dte_cost">
+              <i class="fas fa-balance-scale-left"></i>
+              <p>Costo de ventas</p>
+            </a>
+
+            <a class="card icon-card text-center" href="/conta/registered_payments">
+              <i class="fas fa-comment-alt-dollar"></i>
+              <p>Cobros realizados</p>
+            </a>
+
+            <a class="card icon-card text-center" href="/conta/generated_dte">
+              <i class="fas fa-file-csv"></i>
+              <p>DTE Generados</p>
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+
+</html>

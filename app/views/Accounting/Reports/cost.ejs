@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+</head>
+
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="container-fluid">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title text-center">
+            Reporte de DTE's generados
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="tipo">Tipo de DTE</label>
+                <select name="tipo" id="tipo" class="form-control">
+                  <option value="01">Factura Electronica</option>
+                  <option value="03">Comprobante de Credito Fiscal Electronico</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="form-group">
+                <label for="desde">Desde</label>
+                <input type="date" name="desde" id="desde" class="form-control" min="2025-07-01" value="<%= Helper.date_to_input(null, true) %>">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="hasta">Hasta</label>
+                <input type="date" name="hasta" id="hasta" class="form-control" max="<%= Helper.date_to_input() %>" value="<%= Helper.date_to_input() %>">
+              </div>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="sucursal">Sucursal</label>
+                <select name="sucursal" id="sucursal" class="form-control">
+                  <% sucursals.forEach(suc => { %>
+                  <option value="<%= suc.id %>"><%= suc.name %></option>
+                  <% }) %>
+                  <option value="all">Todas las Sucursales</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="report">Tipo de Reporte</label>
+                <select name="report" id="report" class="form-control">
+                  <option value="simple">Simple (solo costo de venta)</option>
+                  <option value="grupo">Detallado por Grupo</option>
+                  <option value="class">Detallado por Clasificacion</option>
+                  <option value="line">Detallado por producto</option>
+                </select>
+              </div>
+            </div>
+            <div class="col text-center align-items-center">
+              <button class="btn btn-outline-primary mt-3 round" id="generarBtn">Generar Reporte</button>
+              <button class="btn btn-outline-success mt-3 round" id="ExcelBtn">Descargar XLSX</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+        </div>
+      </div>
+
+
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover table-sm" id="tablaReporte">
+          <thead id="reportHeader">
+
+          </thead>
+          <tbody id="reportData">
+            <!-- Data will be populated here -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/js/xlsx.mini.min.js"></script>
+<script>
+  var report_data = null;
+  var _data = null;
+  const _sucursales = JSON.parse('<%- JSON.stringify(_sucursals) %>');
+  const dte_types = JSON.parse('<%- JSON.stringify(dte_types) %>');
+
+  const f_date = date => {
+    if (!date) return '';
+    const d = new Date(date + ' 06:01:00');
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  const obtenerContenidoTabla = (tableId) => {
+    const tabla = document.getElementById(tableId);
+    if (!tabla) {
+      console.error(`No se encontró ninguna tabla con el ID: ${tableId}`);
+      return [];
+    }
+
+    const filas = tabla.querySelectorAll('tr'); // Obtener todos los <tr>
+    const datosTabla = [];
+
+    filas.forEach(fila => {
+      const celdas = fila.querySelectorAll('td, th'); // Obtener todos los <td> o <th> de la fila actual
+      const contenidoFila = [];
+
+      celdas.forEach(celda => {
+        contenidoFila.push(celda.textContent.trim()); // Obtener el texto de la celda y limpiar espacios
+      });
+
+      datosTabla.push(contenidoFila); // Agregar el arreglo de celdas al arreglo principal
+    });
+
+    return datosTabla;
+  }
+
+  const generar_reporte = () => {
+    const headerElement = document.getElementById('reportHeader');
+    const bodyElement = document.getElementById('reportData');
+
+    headerElement.innerHTML = '';
+    bodyElement.innerHTML = '';
+
+    if (!report_data || !report_data.dtes || report_data.dtes.length === 0) {
+      bodyElement.innerHTML = `<tr><td colspan="11" class="text-center text-danger">No se encontraron datos para el reporte</td></tr>`;
+      return errorMessage('No se encontraron datos para el reporte');
+    }
+
+    const tipo_reporte = document.getElementById('report').value;
+    const {
+      dtes,
+      sales,
+      categories
+    } = report_data;
+
+    let columns = [];
+    let filasParaExcel = [];
+
+    // 1. Configuración de encabezados con nuevos campos
+    const baseHeaders = ['Fecha', 'N° Control', 'Código de Generación', 'Invalidado', 'Ajustado', 'ID Venta'];
+
+    switch (tipo_reporte) {
+      case 'simple':
+        columns = [...baseHeaders, 'Costo Total'];
+        break;
+      case 'grupo':
+        columns = [...baseHeaders, 'Grupo', 'Cant. Artículos', 'Costo Total'];
+        break;
+      case 'class':
+        columns = [...baseHeaders, 'Clasificación', 'Cant. Artículos', 'Costo Total'];
+        break;
+      case 'line':
+        columns = [...baseHeaders, 'Descripción Producto', 'Cant.', 'Costo Unit.', 'Subtotal'];
+        break;
+    }
+
+    filasParaExcel.push(columns);
+
+    // Renderizar Header en DOM
+    let trH = document.createElement('tr');
+    columns.forEach(col => {
+      let th = document.createElement('th');
+      th.textContent = col;
+      trH.appendChild(th);
+    });
+    headerElement.appendChild(trH);
+
+    let htmlBuffer = '';
+
+    // 2. Procesamiento eficiente de DTEs
+    dtes.forEach(item => {
+      const dteInfo = item.dte.identificacion;
+      const venta = sales[item.sale];
+      const fechaFmt = f_date(dteInfo.fecEmi);
+
+      // Banderas de estado
+      const isInvalid = item.invalidacion !== null;
+      const isAdjusted = item.nc !== null;
+
+      // Factor de costo: si está invalidado, todo costo se vuelve 0
+      const costMult = isInvalid ? 0 : 1;
+
+      // Valores fijos de la fila
+      const rowBase = [
+        fechaFmt,
+        dteInfo.numeroControl,
+        dteInfo.codigoGeneracion,
+        isInvalid ? 'SI' : 'NO',
+        isAdjusted ? 'SI' : 'NO',
+        item.sale
+      ];
+
+      if (tipo_reporte === 'simple') {
+        const costoFinal = venta ? parseFloat(venta.cost) * costMult : 0;
+        const row = [...rowBase, costoFinal.toFixed(2)];
+        filasParaExcel.push(row);
+        htmlBuffer += `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`;
+      } else if (tipo_reporte === 'grupo' || tipo_reporte === 'class') {
+        const agrupados = {};
+        const esGrupo = tipo_reporte === 'grupo';
+
+        if (venta && venta.details) {
+          venta.details.forEach(det => {
+            const key = esGrupo ? det.g : det.class;
+            const label = esGrupo ? (det.g || 'S/G') : (categories[det.class]?.name || 'S/C');
+
+            if (!agrupados[key]) {
+              agrupados[key] = {
+                label,
+                cant: 0,
+                costo: 0
+              };
+            }
+
+            const c = parseFloat(det.cant) * costMult;
+            const u = parseFloat(det.cost);
+            agrupados[key].cant += c;
+            agrupados[key].costo += (c * u);
+          });
+        }
+
+        Object.values(agrupados).forEach(obj => {
+          const row = [...rowBase, obj.label, obj.cant, obj.costo.toFixed(2)];
+          filasParaExcel.push(row);
+          htmlBuffer += `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`;
+        });
+      } else if (tipo_reporte === 'line') {
+        if (venta && venta.details) {
+          venta.details.forEach(det => {
+            const c = parseFloat(det.cant) * costMult;
+            const u = parseFloat(det.cost);
+            const sub = c * u;
+            const row = [...rowBase, det.description, c, u.toFixed(2), sub.toFixed(2)];
+            filasParaExcel.push(row);
+            htmlBuffer += `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`;
+          });
+        }
+      }
+    });
+
+    bodyElement.innerHTML = htmlBuffer;
+    _data = filasParaExcel; // Exportación directa a Excel
+  };
+
+
+
+
+  document.addEventListener('DOMContentLoaded', event => {
+    const generarBtn = document.getElementById('generarBtn');
+    const ExcelBtn = document.getElementById('ExcelBtn');
+
+    generarBtn.addEventListener('click', e => {
+      _data = null;
+
+      document.getElementById('reportData').innerHTML = `<div class="d-flex flex-column justify-content-center align-items-center" style="height: 150px; border: 1px dashed #ccc; margin-top: 20px;">
+            <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden"></span>
+            </div>
+            <p class="mt-2">Generando Reporte...</p>
+            </div>`;
+
+      let data = {
+        tipo: document.getElementById('tipo').value,
+        desde: document.getElementById('desde').value,
+        hasta: document.getElementById('hasta').value,
+        sucursal: document.getElementById('sucursal').value,
+        report: document.getElementById('report').value,
+      }
+
+
+      postData('/conta/dte_cost_data', data).then(data => {
+        if (data.status == 'success') {
+          report_data = data;
+          generar_reporte();
+        } else if (data.status == 'errorMessage') {
+          return errorMessage(data.message);
+        } else {
+          console.log(data)
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+        }
+
+      });
+    });
+
+    ExcelBtn.addEventListener('click', e => {
+
+      // obtener todos los TR de la tabla y pasarlos a celdas de excel
+      let name = `Reporte_DTE_${document.getElementById('tipo').value}_${document.getElementById('desde').value}_${document.getElementById('hasta').value}`;
+      let archivos = obtenerContenidoTabla('tablaReporte');
+
+      var wb = XLSX.utils.book_new();
+
+      // const wb = XLSX.utils.table_to_book(document.querySelector("#tablaReporte"));
+      wb.SheetNames.push("reporte");
+      wb.Sheets["reporte"] = XLSX.utils.aoa_to_sheet(_data);
+      XLSX.writeFile(wb, `${name}.xlsx`);
+
+    });
+  });
+</script>
+
+</html>

@@ -7,3 +7,4 @@ node_modules
 public/upload/images
 app/notas.ejs
 app/sql por ejecutar.sql
+ejemplo.json

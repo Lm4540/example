@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+    /* .table-responsive { max-height: 600px; overflow-y: auto; }
+        /* .table thead th { position: sticky; top: 0;  z-index: 10; font-size: 0.75rem; text-transform: uppercase; } */
+    /* .dte-cell { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem;  } */
+    /* .dte-cell:hover { white-space: normal; word-break: break-all; max-width: none; position: absolute; z-index: 100;  padding: 2px; }  */
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container-fluid">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0">Libros de IVA - DTE</h4>
+            <span id="labelPeriodo" class="text-muted small">Seleccione un periodo para consultar</span>
+          </div>
+          <div class="d-flex gap-2">
+            <input type="month" id="inputPeriodo" class="form-control form-control-sm">
+            <button onclick="consultarDatos()" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+            <button onclick="exportarExcel()" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i></i> Exportar</button>
+          </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-consumidor" type="button">Consumidor Final</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contribuyente" type="button">Contribuyentes (CCF)</button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane fade show active p-3" id="tab-consumidor">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered table-striped">
+              <thead class="text-center">
+                <tr class="text-center">
+                  <th>Fecha</th>
+                  <th>Cantidad</th>
+                  <th>Del</th>
+                  <th>Al</th>
+                  <th>Cod. Inicial</th>
+                  <th>Cod. Final</th>
+                  <th>Exentas</th>
+                  <th>Gravadas</th>
+                  <th>Export.</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyConsumidor" class="text-end"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-pane fade p-3" id="tab-contribuyente">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover table-bordered table-striped">
+              <thead class=" text-center">
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Cod. Generación</th>
+                  <th>Control</th>
+                  <th>Cliente</th>
+                  <th>NRC</th>
+                  <th>Gravadas</th>
+                  <th>Débito</th>
+                  <th>Ret.</th>
+                  <th>Perc.</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyContribuyente" class="text-end"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content">
+            <div class="modal-body text-center py-4">
+              <div class="spinner-grow" style="width: 6rem; height: 6rem;" role="status">
+                <span class="visually-hidden"></span>
+              </div>
+              <h5 class="m-0">Cargando...</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/js/xlsx.mini.min.js"></script>
+<script>
+  let globalData = null;
+  const modalElement = document.getElementById('loadingModal');
+  const loadingModal = new bootstrap.Modal(modalElement);
+
+  const consultarDatos = async () => {
+    loadingModal.show();
+
+    globalData = await fetch('/conta/sales_book_data?init=' + document.getElementById('inputPeriodo').value)
+      .then(response => response.json());
+
+    document.getElementById('labelPeriodo').innerText = `Mostrando datos de: ${globalData.metadata.periodo}`;
+    renderTables();
+    loadingModal.hide();
+  }
+
+  function renderTables() {
+    const bodyCons = document.getElementById('tbodyConsumidor');
+    bodyCons.innerHTML = globalData.consumidor.map(d => `
+            <tr>
+                <td class="text-center">${d.fecha}</td>
+                <td class="text-center">${d.cantidad}</td>
+                <td class="text-center">${d.cod_inicial}</td>
+                <td class="text-center">${d.cod_final}</td>
+                <td><div class="dte-cell">${d.control_inicial}</div></td>
+                <td><div class="dte-cell">${d.control_final}</div></td>
+                <td>$${d.exentas.toFixed(2)}</td>
+                <td>$${d.gravadas.toFixed(2)}</td>
+                <td>$${d.exportaciones.toFixed(2)}</td>
+                <td class="fw-bold">$${d.venta_total.toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+    const bodyCont = document.getElementById('tbodyContribuyente');
+    bodyCont.innerHTML = globalData.contribuyente.map(d => `
+            <tr>
+                <td class="text-center">${d.num}</td>
+                <td class="text-center">${d.fecha}</td>
+                <td><div class="dte-cell">${d.cod_generacion}</div></td>
+                <td class="text-center">${d.control}</td>
+                <td class="text-start">${d.cliente}</td>
+                <td class="text-center">${d.NRC}</td>
+                <td>$${d.gravadas.toFixed(2)}</td>
+                <td>$${d.debito_fiscal.toFixed(2)}</td>
+                <td>$${d.retenido.toFixed(2)}</td>
+                <td>$${d.percibido.toFixed(2)}</td>
+                <td class="fw-bold">$${d.venta_total.toFixed(2)}</td>
+            </tr>
+        `).join('');
+  }
+
+  function exportarExcel() {
+    if (!globalData) return alert("Consulte datos primero");
+
+    const wb = XLSX.utils.book_new();
+
+    // Creamos las hojas a partir de los arrays de datos
+    const wsCons = XLSX.utils.json_to_sheet(globalData.consumidor);
+    const wsCont = XLSX.utils.json_to_sheet(globalData.contribuyente);
+
+    // Añadir las hojas al libro de trabajo
+    XLSX.utils.book_append_sheet(wb, wsCons, "Ventas_Consumidor");
+    XLSX.utils.book_append_sheet(wb, wsCont, "Ventas_Contribuyente");
+
+    // Guardar archivo
+    XLSX.writeFile(wb, `Reporte IVA ${globalData.metadata.periodo}.xlsx`);
+  }
+</script>
+
+</html>

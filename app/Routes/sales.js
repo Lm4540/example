@@ -94,7 +94,7 @@ router.post('/update_price', (req, res, next) => Auth.HasPermission(req, res, ne
 router.get('/promos', PromotionController.index);
 router.post('/promos', PromotionController.store);
 router.patch('/promos/:id/toggle', (req, res, next) => Auth.HasPermission(req, res, next, ['allow_promotion']), PromotionController.toggleStatus);
-router.delete('/promos/:id', PromotionController.destroy);
+router.delete('/promos/:id', (req, res, next) => Auth.HasPermission(req, res, next, ['destroy_promotion']),  PromotionController.destroy);
 router.get('/promos/:id/verify-stock', PromotionController.verifyStock);
 router.get('/promos/select2', PromotionController.select2);
 

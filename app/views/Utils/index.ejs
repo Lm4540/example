@@ -118,7 +118,13 @@
 
 
    };
+   var asignando = false;
    const asignar_pagos = async () => {
+      if (asignando) {
+         return;
+      }
+      asignando = true;
+      
       document.querySelector("#results_or_process").innerHTML =
          ` <div class="text-center mt-5">
             <div class="spinner-border text-success" role="status" style="width: 150px; height: 150px;">
@@ -292,7 +298,7 @@
          })
          .then(data => {
             if (data.status == 'success') {
-               successMessage('Pedido Anulado');
+               successMessage('Exito, redirigiendo');
                document.querySelector("#results_or_process").innerHTML =
                   ` <div class="text-center mt-5">
               <i class="fas fa-check-circle" style="font-size:500%; color:green"></i>

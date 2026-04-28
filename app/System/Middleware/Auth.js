@@ -14,8 +14,8 @@ const Auth = {
                 id: req.session.userSession.id,
                 name: req.session.userSession.shortName,
                 preferences: req.session.userSession.preferences,
-                sucursal:  req.session.userSession.employee.sucursal,
-                employee:  req.session.userSession.employee.id,
+                sucursal: req.session.userSession.employee.sucursal,
+                employee: req.session.userSession.employee.id,
             }
             res.locals.darkMode = req.session.userSession.preferences.darkmode != undefined ? req.session.userSession.preferences.darkmode : '';
             res.locals.permission = req.session.userSession.permission;
@@ -30,7 +30,7 @@ const Auth = {
     Authorized: (req, res, next, permission) => {
 
         return req.session.userSession.permission.includes(permission)
-            ? next() : (req.xhr
+            ? next() : (req.get('Accept') === 'application/json'
                 ? res.render('Common/403')
                 : res.status(403).json({ error: 403, message: '403 Forbidden', status: 'error' }));
     },
@@ -38,13 +38,14 @@ const Auth = {
     HasPermission: (req, res, next, permission) => {
         let has_permission = false;
         permission.forEach(element => {
-            if(has_permission == false){
+            if (has_permission == false) {
                 has_permission = req.session.userSession.permission.includes(element);
             }
         });
 
+
         return has_permission
-            ? next() : (req.xhr
+            ? next() : (req.get('Accept') === 'application/json'
                 ? res.status(403).json({ error: 403, message: '403 Forbidden', status: 'error' })
                 : res.render('Common/403'));
     },
@@ -102,8 +103,8 @@ const Auth = {
         //obtener los permisos
         let permission = [];
         //verififcar la fecha de los permisos Temporales
-        if(user.temporalPermission.length > 0){
-            if(new Date(user.temporalDate).getTime() > new Date().getTime()){
+        if (user.temporalPermission.length > 0) {
+            if (new Date(user.temporalDate).getTime() > new Date().getTime()) {
                 permission = user.temporalPermission;
             }
         }
@@ -203,7 +204,7 @@ const Auth = {
             type: QueryTypes.DELETE
         }).catch(e => console.log(e));
 
-       
+
     },
 
     socketAuth: async (socket, next) => {
@@ -211,7 +212,7 @@ const Auth = {
         if (session.userSession !== undefined && session.userSession !== null) {
             next();
         } else {
-            
+
             next(new Error("unauthorized"));
         }
     },

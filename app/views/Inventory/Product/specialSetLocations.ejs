@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <style>
+    .product_item .card,
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
+
+    .product_item {
+      font-size: 110%;
+      min-height: 150px;
+    }
+
+    .product_item img {
+      border-radius: 1.5em !important;
+    }
+
+    .product_item .product_name {
+      margin-top: 15px;
+    }
+
+    .product_item .product_price {
+      color: #d82e04;
+      font-size: 150%;
+    }
+
+    .product_item .product_stock {
+      cursor: pointer;
+      color: #0d703e;
+    }
+
+    body.dark .product_item .product_stock {
+      color: #39da8a;
+    }
+
+    @media print {
+      .product_item {
+        border: none;
+        page-break-inside: avoid;
+      }
+
+    }
+  </style>
+</head>
+<% options = `<a class="ml-5" href="/inventory" style="width: 150px;"><i class="fas fa-arrow-alt-circle-left mr-3"></i>Atrás</a>`; %>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+    <div class="main-content container">
+      <div class="row justify-content-center">
+
+        <div class="col-12 col-md-6 mt-4">
+          <div class="form-group">
+            <label for="searchBox">Terminos de busqueda</label>
+            <input type="search" class="form-control" name="searchBox" id="searchBox">
+            <small>Write the SKU or Name to search</small>
+          </div>
+        </div>
+        <div class="col-12 col-md-3 mt-4">
+          <div class="form-group">
+            <label for="Selectsucursal">Sucursal</label>
+            <select class="form-control" name="Selectsucursal" id="Selectsucursal">
+              <% sucursals.forEach(suc => { %>
+              <option value="<%= suc.id %>"><%= suc.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="col-12 col-md-3 mt-4 text-center">
+          <label for="location">Ubicacion</label>
+          <input type="text" class="form-control" id="location">
+        </div>
+      </div>
+      <div class="row justify-content-center" id="printing_div">
+        <div class="col-12">
+          <div class="row" id="product_div"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- modales -->
+
+
+
+
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script>
+  //obtener las sucursales
+  var sucursal = {},
+    query_offset = 0,
+    query_limit = Number.parseInt('<%= limit %>'),
+    search_last_val = "",
+    last_query = '',
+    more = true,
+    last_product,
+    details = {};
+
+  var last_html = null;
+
+
+
+  const observer = new IntersectionObserver((observed, observer) => {
+    observed.forEach((entry => {
+      if (entry.isIntersecting) {
+        console.log(`Mostrando ${query_offset} entradas`);
+        getproducts(false);
+      }
+    }));
+  }, {
+    rootMargin: '0px 0px 0px 0px',
+    threshold: 1.0,
+  });
+
+
+
+  const saveNewLocation = (id) => {
+    if (document.querySelector("#location").value == "") {
+      return errorMessage('Escriba una ubicación');
+    }
+    postData('/inventory/product/locations', {
+      product: id,
+      location: document.querySelector("#location").value
+    }).then(data => {
+      if (data.status == 'success') {
+
+        successMessage('Agregado');
+
+      } else if (data.status == 'errorMessage') {
+        e.target.disabled = false;
+        return errorMessage(data.message);
+      } else {
+        errorMessage(data.message);
+        return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+      }
+    });
+
+  }
+
+
+
+
+  const getproducts = async (reset = false) => {
+    let parent = document.querySelector('#product_div');
+    if (reset) {
+      more = true;
+      query_offset = 0;
+    } else if (more == false) {
+      return false;
+    }
+    //Construir la Url
+    //Verificar si hay terminos de busqueda
+    let query = search_last_val.length > 2 ?
+      `/inventory/product/stock?search=${encodeURIComponent(search_last_val)}&offset=${query_offset}` :
+      `/inventory/product/stock?offset=${query_offset}`;
+
+    let _sucursal = document.querySelector('#Selectsucursal');
+    if (_sucursal.value > 0) {
+      query += `&sucursal=${_sucursal.value}`;
+    }
+
+    if (last_query == query) {
+      return false;
+    } else {
+      if (reset) {
+        parent.innerHTML = '';
+      }
+      last_query = query;
+    }
+
+    let data = await fetch(query, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+      })
+      .then(response => response.json())
+      .then(data => {
+
+        console.log(data);
+        let len = data.length;
+        if (len > 0) {
+          data.forEach(element => {
+            details[element.id] = element.stocks;
+
+            let div = document.createElement('div');
+            div.classList.add('col-6', 'col-sm-4', 'col-md-3', 'product_item');
+            div.innerHTML = `<div class="card">
+            <div class="card-body">
+              <img src="${element.image}" alt="Image" class="product_image" style="width: 100%; " onclick="show_image(this.src)"><br>
+              <span class="product_name" style="cursor:pointer;">${element.name} </span> <br> <span style="cursor:pointer"  onclick="copy('${element.sku}')">#SKU ${element.sku}</span><br>
+             
+              <span class="badge bg-danger" onclick="saveNewLocation(${element.id})">Agregar</span>
+            </div>
+          </div>`;
+            parent.appendChild(div);
+          });
+        }
+        query_offset += len;
+
+        if (last_product !== undefined) {
+          observer.unobserve(last_product);
+        }
+        if (len < query_limit) {
+          let div = document.createElement('div');
+          div.classList.add('col-12');
+          div.innerHTML = `<h4 class="text-center"> < < Fin de la lista > ></h4>`;
+          parent.appendChild(div);
+          more = false;
+        } else {
+          let to_observe = document.querySelectorAll('.product_item');
+          last_product = to_observe[to_observe.length - 1];
+          observer.observe(last_product);
+        }
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", (event) => {
+    getproducts();
+
+
+    var timer_search;
+    document.querySelector('#searchBox').addEventListener('input', async (e) => {
+      let val = e.target.value;
+      if (search_last_val !== val) {
+        search_last_val = val;
+        clearTimeout(timer_search);
+        timer_search = setTimeout(async () => {
+          getproducts(true);
+        }, 500);
+      }
+
+    });
+
+
+  });
+</script>
+
+</html>

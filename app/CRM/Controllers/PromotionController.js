@@ -88,7 +88,7 @@ const PromotionController = {
             try {
                   const { id } = req.params;
                   const [results, metadata] = await sequelize.query(
-                        `DELETE FROM inventory_promotion WHERE id = ? AND createdAt < DATE_SUB(NOW(), INTERVAL 1 MONTH)`,
+                        `DELETE FROM inventory_promotion WHERE id = ? `,
                         { replacements: [id] }
                   );
 
