@@ -150,6 +150,12 @@ module.exports = [
         "permission": "view_kardex"
     },
     {
+        "name": "Trasladar existencias",
+        "explication": "Permite trasladar las existencias de un producto a otro",
+        "group": "Inventario",
+        "permission": "transfer_stock"
+    },
+    {
         "name": "Actualizar precios de los productos",
         "explication": "Permite Actualizar los precios de los productos desde la vista simpleficada",
         "group": "Inventario/Ventas",

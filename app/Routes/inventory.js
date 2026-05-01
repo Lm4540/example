@@ -74,6 +74,8 @@ router.get('/product/divide', StockController.divideProductView);
 router.post('/product/divide', StockController.divideProduct);
 router.get('/product/join', StockController.joinProductView);
 router.post('/product/join', StockController.joinProduct);
+router.get('/product/switch', (req, res, next) => Auth.HasPermission(req, res, next, ['transfer_stock']), StockController.switchExistenceView);
+router.post('/product/switch', (req, res, next) => Auth.HasPermission(req, res, next, ['transfer_stock']),  StockController.switchExistence);
 
 router.get('/product/recount', StockController.getRecountView);
 router.post('/product/recount', StockController.createNewRecount);

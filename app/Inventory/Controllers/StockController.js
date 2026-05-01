@@ -2643,9 +2643,9 @@ const StockController = {
         res.render('Inventory/Product/inStock', { pageTitle: 'Productos disponibles', limit: 10, sucursals });
     },
 
-     specialSetLocationsView: async (req, res) => {
+    specialSetLocationsView: async (req, res) => {
         let sucursals = [
-            {id: 1, name: 'Matriz'}
+            { id: 1, name: 'Matriz' }
         ]
         res.render('Inventory/Product/specialSetLocations', { pageTitle: 'Productos disponibles', limit: 10, sucursals });
     },
@@ -4048,7 +4048,136 @@ const StockController = {
             message: 'proceso no encontrado'
         });
 
-    }
+    },
+
+    switchExistenceView: async (req, res) => {
+        let sucursals = await Sucursal.findAll({ attributes: ['id', 'name'] })
+        res.render('Inventory/Product/switchExistence', {
+            pageTitle: 'Pasar Existencias Productos', sucursals
+        });
+    },
+
+    switchExistence: async (req, res) => {
+        var data = req.body;
+
+        const origin = await Product.findByPk(data.origin);
+        const destino = await Product.findByPk(data.destino);
+        if (origin == null || destino == null) { return Helper.notFound(req, res, 'Product not Found'); }
+
+        const sucursal = await Sucursal.findByPk(data.sucursal);
+        if (sucursal == null) {
+            return Helper.notFound(req, res, 'Sucursal not Found')
+        }
+
+        const origin_stock = await Stock.findOne({
+            where: {
+                [Op.and]: [
+                    { 'product': origin.id },
+                    { 'sucursal': data.sucursal }
+                ],
+            }
+        });
+
+        if (!origin_stock) {
+            return res.json({ status: 'errorMessage', message: 'Existencias del producto no encontradas' });
+        }
+
+        var cant = Number.parseInt(data.cant);
+        if (isNaN(cant)) {
+            return res.json({ status: 'errorMessage', message: 'Proporcione una cantidad' });
+        }
+        cant = cant > (origin_stock.cant - origin_stock.reserved) ? (origin_stock.cant - origin_stock.reserved) : cant;
+
+        let destino_stock = await Stock.findOne({
+            where: {
+                [Op.and]: [
+                    { 'product': destino.id },
+                    { 'sucursal': data.sucursal }
+                ],
+            }
+        });
+
+        const createdBy = req.session.userSession.shortName;
+
+
+        try {
+            const result = await sequelize.transaction(async (t) => {
+                let new_cost = (destino.cost * destino.stock) + (cant * origin.cost);
+
+                let destino_original_stock = 0;
+                if (destino_stock) {
+                    destino_original_stock = destino_stock.cant;
+                    destino_stock.cant += cant;
+                    await destino_stock.save({ 'transaction': t });
+
+                } else {
+                    let stock = await Stock.create({
+                        product: destino.id,
+                        sucursal: sucursal.id,
+                        cant,
+                        reserved: 0,
+                    }, { transaction: t });
+                }
+
+                let move = await Movement.bulkCreate([{
+                    last_sucursal_stock: origin_stock.cant,
+                    last_product_stock: origin.stock,
+                    cant: cant,
+                    cost: origin.cost,
+                    last_cost: origin.cost,
+                    in: false,
+                    product: origin.id,
+                    concept: `Existencia pasa a producto id ${destino.id}, SKU ${destino.internal_code}`,
+                    sucursal: sucursal.id,
+                    createdBy,
+                },
+                //registrar movimiento de ingreso
+                {
+                    last_sucursal_stock: destino_original_stock,
+                    last_product_stock: destino.stock,
+                    cant: cant,
+                    cost: origin.cost,
+                    last_cost: destino.cost,
+                    in: true,
+                    product: destino.id,
+                    concept: `Existencia viene del  producto id ${origin.id}, SKU ${origin.internal_code}`,
+                    sucursal: sucursal.id,
+                    createdBy,
+                }
+
+                ], { transaction: t });
+
+
+                //Actualizar el Stock
+                origin_stock.cant -= cant;
+                await origin_stock.save({ 'transaction': t });
+
+                //Actualizar el producto
+                origin.stock -= cant;
+                await origin.save({ transaction: t });
+
+                //Actualizar el producto
+                destino.stock += cant;
+                destino.last_cost = destino.cost;
+                destino.cost = Number.parseFloat(new_cost / destino.stock);
+
+                await destino.save({ transaction: t });
+
+                //transaction commit
+                return res.json({
+                    status: 'success',
+                    data: destino.id,
+                });
+
+            });
+
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({ 'error': 'Internal Server Error' });
+        }
+
+
+    },
 };
 
 
