@@ -223,18 +223,27 @@ const PettyCashController = {
                 if (arqueo) {
                     console.log(arqueo)
                     const denominations = arqueo.denominations;
-                    const _labels = {
-                        "100": "Billetes $100.00", "50": "Billetes $50.00", "20": "Billetes $20.00",
-                        "10": "Billetes $10.00", "5": "Billetes $5.00", "1": "Billetes/Moneda $1.00",
-                        "0.25": "Monedas $0.25", "0.1": "Monedas $0.10", "0.05": "Monedas $0.05", "0.01": "Monedas $0.01"
-                    };
+                    
+
+                    let lb = [
+                        ["Billetes $100.00", 100, denominations[100] || 0],
+                        ["Billetes $50.00", 50, denominations[50] || 0],
+                        ["Billetes $20.00", 20, denominations[20] || 0],
+                        ["Billetes $10.00", 10, denominations[10] || 0],
+                        ["Billetes $5.00", 5, denominations[5] || 0],
+                        ["Billetes/Monedas $1.00", 1, denominations[1] || 0],
+                        ["Monedas $0.25", 0.25, denominations[0.25] || 0],
+                        ["Monedas $0.10", 0.1, denominations[0.1] || 0],
+                        ["Monedas $0.05", 0.05, denominations[0.05] || 0],
+                        ["Monedas $0.01", 0.01, denominations[0.01] || 0]
+                     
+                    ]
 
                     return res.render('Financial/PettyCash/verify_arqueo', {
                         title: 'Cuentas por Pagar',
                         arqueo,
                         denominations,
-                        _labels,
-                        cash
+                        cash, lb
                     });
                 }
 
