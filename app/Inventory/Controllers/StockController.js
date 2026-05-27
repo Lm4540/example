@@ -4060,6 +4060,10 @@ const StockController = {
     switchExistence: async (req, res) => {
         var data = req.body;
 
+        if(data.origin == data.destino){
+             return res.json({ status: 'errorMessage', message: 'El producto de origen y destino no puede ser el mismo' });
+        }
+
         const origin = await Product.findByPk(data.origin);
         const destino = await Product.findByPk(data.destino);
         if (origin == null || destino == null) { return Helper.notFound(req, res, 'Product not Found'); }

@@ -9,6 +9,7 @@ const { validateDteData } = require('../dteValidator');
 const { response } = require('express');
 const variables = process.env;
 const cache = require("memory-cache");
+const sequelize = require('../../DataBase/DataBase');
 
 // --- Constantes y Configuración ---
 const SIGNER_URL = variables.SIGNER_URL;
@@ -38,7 +39,17 @@ function getMhApiUrl(endpoint) {
  * @returns {string} UUID v4 en mayúsculas.
  */
 function generarCodigoGeneracion() {
-    return uuidv4().toUpperCase();
+    generacion =  uuidv4().toUpperCase();
+    sequelize.query('INSERT INTO `crm_dte_generacion_asignados` (`id`, `code_`, `createdAt`) VALUES (NULL, :_code, :_date)', {
+        replacements: {
+            _code: generacion,
+            _date: new Date()
+        },
+        type: sequelize.QueryTypes.INSERT
+    });
+
+    
+    return generacion;
 }
 
 // --- Función Placeholder para Correlativo ---
