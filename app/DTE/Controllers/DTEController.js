@@ -254,7 +254,7 @@ async function transmitDTEWithRetry(dteData) {
     if (!receptionUrl) throw new Error("URL de recepción MH no configurada.");
 
     let dteFirmado = await signDTE(dteData, false);
-    if (dteFirmado.status !== 'success') {
+    if (dteFirmado.status == undefined || dteFirmado.status !== 'success') {
         return {
             status: 'errorFirma',
             message: `Error al firmar el DTE: ${dteFirmado.message}`,
@@ -301,7 +301,7 @@ async function transmitDTEWithRetry(dteData) {
             });
 
             // Procesar respuesta exitosa
-            if (response.status === 200 && response.data && (response.data.estado === 'PROCESADO' || response.data.estado === 'RECIBIDO')) {
+            if (response.status && response.status === 200 && response.data && (response.data.estado === 'PROCESADO' || response.data.estado === 'RECIBIDO')) {
                 return {
                     status: 'success',
                     message: `DTE ${payload.codigoGeneracion} transmitido exitosamente. Estado: ${response.data.descripcionMsg}`,
@@ -309,10 +309,12 @@ async function transmitDTEWithRetry(dteData) {
                     firma: dteFirmado.data,
                 }
             }
+
+            
             return {
                 status: 'errorFatal',
                 message: `Error no procesado, comuniquelo al desarrollador del Sistema`,
-                data: response.data,
+                data: response,
             };
 
 

@@ -15,6 +15,16 @@
       <h3 class="text-center">Lista de Reservas</h3>
 
 
+      <div class="mt-2 mb-2 from-group">
+        <label for="filtroProducto">Filtar por</label>
+        <select id="filtroProducto" class="form-select mb-3" onchange="filtrarTabla()">
+          <option value="todos">Todos los productos</option>
+          <option value="tienda">Disponibles en Tienda</option>
+          <option value="envio">Disponibles para Envío</option>
+        </select>
+      </div>
+
+
       <table class="table table-sm table-hover table-stripped">
         <thead>
           <tr>
@@ -22,15 +32,15 @@
             <th>Producto</th>
           </tr>
         </thead>
-        <tbody>
-          
+        <tbody id="#buscarElementos">
+
 
           <% let keys = Object.keys(products);
               keys.forEach(key => {
                   let prod = products[key] 
 
                   if(prod.cant > 0){ %>
-          <tr>
+          <tr data-tienda="<%= prod.local %>" data-envio="<%= prod.delivery %>" class="fila_filtrada">
             <td>
               <img src="<%= prod.image %>" alt="Image" class="round" style="width: 150px; ">
             </td>
@@ -46,8 +56,8 @@
               Tienda: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.local %></span>
               <br>
               Envio: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.delivery %></span>
-             
-              
+
+
 
             </td>
           </tr>
@@ -184,6 +194,24 @@
     });
   }
 
+
+  const filtrarTabla = () => {
+    const filtro = document.getElementById('filtroProducto').value;
+    const filas = document.querySelectorAll('.fila_filtrada');
+    filas.forEach(fila => {
+      const cantidadTienda = parseInt(fila.getAttribute('data-tienda')) || 0;
+      const cantidadEnvio = parseInt(fila.getAttribute('data-envio')) || 0;
+      if (filtro === 'todos') {
+        fila.style.display = ''; // Muestra la fila (vuelve al estado original)
+      } else if (filtro === 'tienda' && cantidadTienda > 0) {
+        fila.style.display = ''; // Muestra si tiene stock en tienda
+      } else if (filtro === 'envio' && cantidadEnvio > 0) {
+        fila.style.display = ''; // Muestra si tiene stock en envío
+      } else {
+        fila.style.display = 'none'; // Oculta si no cumple la condición
+      }
+    });
+  }
 
   document.addEventListener('DOMContentLoaded', event => {
 
