@@ -46,16 +46,24 @@
             </td>
             <td>
               <%= prod.name %><br>
-              Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br>
+              Codigo: <%= prod.provider_code %> SKU #<%= prod.internal_code %><br><br>
               <a class="badge bg-primary mt-1" href="/inventory/product/view/<%= prod.id %>" target="_blank"> Ver Producto</a><br>
               <a class="badge bg-danger mt-1" href="/inventory/product/<%= prod.id %>/reserveList" target="_blank"> Reservar</a><br>
-              <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= user.sucursal %>', 'Tu Sucursal', '<%= prod.id %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span><br>
+              <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= user.sucursal %>', 'Tu Sucursal', '<%= prod.id %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span><br><br>
               Cantidad Pendiente de Reservar: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: 1.5em;"><%= prod.cant %></span>
-
               <br>
               Tienda: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.local %></span>
               <br>
               Envio: <span style="color:rgb(156, 23, 23); font-weight: bolder; font-size: larger;"><%= prod.delivery %></span>
+
+              <br>
+              <br>
+              <% if (prod.locations.length > 0) { %>
+                <code class="text-danger mt-4">UBUCACIONES REGISTRADAS:</code>
+              <ul class="list-group">
+                <% prod.locations.forEach(loc => { %><li class="list-group-item"><code class="text-success"><%= loc %></code></li> <% }) %>
+              </ul>
+              <% } %>
 
 
 
