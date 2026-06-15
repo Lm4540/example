@@ -56,12 +56,27 @@ const StockController = {
     ProductreserveList: async (req, res) => {
 
         let sucursal = req.session.userSession.employee.sucursal;
-        let tmp = await Product.findAll({
+        let tmp = await sequelize.query(`select * from inventory_product_stock_locations where product in (SELECT product FROM crm_sale_detail WHERE reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`, {
+            type: QueryTypes.SELECT,
+        });
+
+        locations = {};
+        tmp.forEach(loc => {
+            if (locations[loc.product] == undefined) {
+                locations[loc.product] = [];
+            }
+
+            locations[loc.product].push(loc.location)
+        })
+
+
+        tmp = await Product.findAll({
             where: {
-                id: { [Op.in]: sequelize.literal(`(SELECT product FROM crm_sale_detail WHERE cant > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`) }
+                id: { [Op.in]: sequelize.literal(`(SELECT product FROM crm_sale_detail WHERE reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`) }
             },
             order: [['name', 'ASC']],
         });
+
 
         let products = {};
         tmp.forEach(prod => {
@@ -74,6 +89,7 @@ const StockController = {
                 id: prod.id,
                 local: 0,
                 delivery: 0,
+                locations: locations[prod.id] ? locations[prod.id] : []
             }
         })
 
@@ -4060,8 +4076,8 @@ const StockController = {
     switchExistence: async (req, res) => {
         var data = req.body;
 
-        if(data.origin == data.destino){
-             return res.json({ status: 'errorMessage', message: 'El producto de origen y destino no puede ser el mismo' });
+        if (data.origin == data.destino) {
+            return res.json({ status: 'errorMessage', message: 'El producto de origen y destino no puede ser el mismo' });
         }
 
         const origin = await Product.findByPk(data.origin);

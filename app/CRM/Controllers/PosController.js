@@ -1264,7 +1264,7 @@ module.exports = {
             try {
 
                 let enviado = await DTEController.transmitDTEWithRetry(dte_json);
-                consol.log(enviado)
+                console.log(enviado)
                 if (enviado.status === 'errorFirma') {
                     throw new Error("Error al firmar el DTE, verifique la configuracion de la firma electronica");
                 } else if (enviado.status === 'errorToken') {
