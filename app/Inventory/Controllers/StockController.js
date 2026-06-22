@@ -222,6 +222,23 @@ const StockController = {
 
         if (requisition) {
 
+            locations = {};
+            tmp = await sequelize.query('SELECT * FROM `inventory_product_stock_locations` WHERE sucursal = :_sucursal and product in (select product from inventory_requisition_detail where requisition = :_requisition)', {
+                type: QueryTypes.SELECT,
+                replacements: {
+                    _requisition: requisition.id,
+                    _sucursal: requisition.origin
+                }
+            });
+
+            tmp.forEach(loc => {
+                if (locations[loc.product] == undefined) {
+                    locations[loc.product] = [];
+                }
+
+                locations[loc.product].push(loc.location)
+            })
+
 
             let products = {};
             tmp = await sequelize.query('SELECT * FROM `inventory_product` WHERE id in (select product from inventory_requisition_detail where requisition = :_requisition)order by name ASC', {
@@ -232,6 +249,8 @@ const StockController = {
                 }
             });
 
+
+
             tmp.forEach(prod => {
                 products[prod.id] = {
                     name: prod.name,
@@ -239,7 +258,8 @@ const StockController = {
                     details: [],
                     provider_code: prod.provider_code,
                     sku: prod.internal_code,
-                    cant: 0
+                    cant: 0,
+                    locations: locations[prod.id] ? locations[prod.id] : []
                 }
             });
 

@@ -52,7 +52,13 @@
                   Codigo: <%= prod.provider_code %><br>
                   <a href="/inventory/product/view/<%= key %>" class="badge bg-secondary round mt-1"> Ver Producto</a><br>
                   <span class="badge bg-green mt-1" onclick="viewStockLocations('<%= requisition.origin%>', 'Santa Tecla', '<%= key %>')" data-bs-target="#stockLocationsModal" data-bs-toggle="modal">Ver Ubicaciones</span><br>
-
+                  <%
+                  if (prod.locations.length > 0) { %>
+                  <code class="text-danger mt-4">UBUCACIONES REGISTRADAS:</code>
+                  <ul class="list-group">
+                    <% prod.locations.forEach(loc => { %><li class="list-group-item"><code class="text-success"><%= loc %></code></li> <% }) %>
+                  </ul>
+                  <% } %>
                 </td>
                 <td class="text-center"><%= prod.cant %></td>
                 <td class="text-center">
@@ -237,7 +243,7 @@
       </div>
     </div>
   <%- include('../../Layouts/Footer.ejs') %>
-  </div>
+        </div>
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
