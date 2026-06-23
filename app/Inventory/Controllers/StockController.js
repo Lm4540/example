@@ -56,7 +56,7 @@ const StockController = {
     ProductreserveList: async (req, res) => {
 
         let sucursal = req.session.userSession.employee.sucursal;
-        let tmp = await sequelize.query(`select * from inventory_product_stock_locations where product in (SELECT product FROM crm_sale_detail WHERE reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`, {
+        let tmp = await sequelize.query(`select * from inventory_product_stock_locations where sucursal = ${sucursal} and product in (SELECT product FROM crm_sale_detail WHERE reserved > ready and sale in (SELECT id FROM crm_sale WHERE sucursal = ${sucursal} and  _status = 'process'))`, {
             type: QueryTypes.SELECT,
         });
 

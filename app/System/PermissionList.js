@@ -263,8 +263,38 @@ module.exports = [
         "permission": "destroy_promotion"
     },
 
+    {
+        "name": "Acceso al modulo de Facturacion RRHH",
+        "explication": "Permiso para acceder al modulo de Recursos Humanos",
+        "group": "Recursos Humanos",
+        "permission": "access_to_rrhh"
+    },
+    {
+        "name": "Acceso al modulo de Facturacion Compras",
+        "explication": "Permiso para acceder al modulo de Compras",
+        "group": "Utilidades",
+        "permission": "access_to_purchases"
+    },
 
+    {
+        "name": "Acceso al modulo de Facturacion Modo POS",
+        "explication": "Permiso para acceder al modulo POS",
+        "group": "Utilidades",
+        "permission": "access_to_POS_mode"
+    },
+    {
+        "name": "Acceso al modulo de Utilidades",
+        "explication": "Permiso para acceder al modulo de logistica",
+        "group": "Utilidades",
+        "permission": "access_to_tools"
+    },
 
+    {
+        "name": "Acceso al modulo de Logistica",
+        "explication": "Permiso para acceder al modulo de logistica",
+        "group": "Logistica",
+        "permission": "access_to_logistics"
+    },
 
     {
         "name": "marcar Reservas realizadas",
