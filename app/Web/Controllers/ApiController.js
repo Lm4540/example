@@ -545,7 +545,8 @@ const ApiController = {
                   const safeImageName = path.basename(imageName);
                   const location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', safeImageName);
 
-                  const stats = await fs.stat(location).catch(() => null);
+                  // const stats = await fs.stat(location).catch(() => null);
+                  const stats = await fs.promises.stat(location).catch(() => null);
                   if (!stats || stats.size === 0) {
                         return res.status(404).json({
                               status: 'error',
