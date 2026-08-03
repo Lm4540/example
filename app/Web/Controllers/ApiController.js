@@ -535,8 +535,50 @@ const ApiController = {
       },
 
       getProductImage2: async (req, res) => {
+            try {
+                  const imageName = req.query.img;
+                  if (!imageName) {
+                        return res.status(400).json({ status: 'error', message: 'Imagen no especificada' });
+                  }
+
+                  // Prevenir Vulnerabilidad de Path Traversal (seguridad)
+                  const safeImageName = path.basename(imageName);
+                  const location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', safeImageName);
+
+                  const stats = await fs.stat(location).catch(() => null);
+                  if (!stats || stats.size === 0) {
+                        return res.status(404).json({
+                              status: 'error',
+                              message: 'La imagen no existe o está vacía/corrupta'
+                        });
+                  }
+
+                  const image = sharp(location);
+                  const metadata = await image.metadata();
+                  const size = getNormalSize(metadata);
+
+                  if (size.width > 800 || size.height > 800) {
+                        const resizedBuffer = await image.resize(800, 800).toBuffer();
+                        await fs.writeFile(location, resizedBuffer);
+                  }
+
+                  return res.json({
+                        status: 'success',
+                        image: base64_encode(location),
+                  });
+
+            } catch (error) {
+                  console.error('Error al procesar la imagen:', error);
+                  return res.status(500).json({
+                        status: 'error',
+                        message: 'Error interno al procesar la imagen'
+                  });
+            }
+      },
+
+      getProductImage2_old: async (req, res) => {
             let location = path.join(__dirname, '..', '..', '..', 'public', 'upload', 'images', req.query.img);
-            
+
             if (fs.existsSync(location)) {
                   try {
                         return await fs.readFile(location, async (err, data) => {

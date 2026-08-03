@@ -51,6 +51,13 @@ const Auth = {
     },
 
     Login: async (req, res) => {
+        if (req.body.username.length < 5) {
+            return res.json({
+                status: 'errorMessage',
+                message: 'Proporcione un email válido'
+            });
+        }
+
         //buscar el Usuario
         let user = await User.findOne({
             where: {
