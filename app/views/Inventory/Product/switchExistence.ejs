@@ -56,7 +56,7 @@
         <label class="form-check-label" for="switchCheckDefault">Redirigir</label>
       </div>
 
-      <button onclick="procesar()" class="btn btn-outline-success mt-5">
+      <button onclick="procesar(this)" class="btn btn-outline-success mt-5">
         Procesar
       </button>
 
@@ -150,7 +150,11 @@
     });
   });
 
-  const procesar = async () => {
+  const procesar = async (element) => {
+    element.disabled = true;
+    element.innerHTML = `
+      Procesando... <span class="spinner-border spinner-border-sm"></span>
+    `;
 
     let data = {
       destino: destinoSelect.value,
@@ -163,6 +167,8 @@
       .then(data => {
         if (data.status == 'success') {
           successMessage('Operación exitosa');
+          element.disabled = false;
+          element.innerHTML = "Procesar";
           /**Redirigir a la pagina del Proveedor*/
           setTimeout(() => {
             if (document.querySelector('#switchCheckDefault').checked) {
