@@ -75,7 +75,7 @@
             <div class="card-body text-center py-4">
               <div class="text-muted small text-uppercase fw-bold mb-1">Saldo Pendiente</div>
               <h1 class="h2 fw-bold <%= currentBalance > 0 ? 'text-danger' : 'text-success' %>">
-                $<%= currentBalance.toFixed(2) %>
+                $<%= Helper.money_format(currentBalance) %>
               </h1>
             </div>
             <div class="list-group list-group-flush border-top">
@@ -85,7 +85,7 @@
               </div>
               <div class="list-group-item d-flex justify-content-between ">
                 <span class="text-muted">Fecha Emisión/Venc:</span>
-                <span class="fw-bold"><%= account.account_date %></span>
+                <span class="fw-bold"><%= Helper.format_date(account.account_date, false) %></span>
               </div>
               <div class="list-group-item d-flex justify-content-between ">
                 <span class="text-muted">Proveedor:</span>
@@ -101,7 +101,7 @@
               <hr>
               <div class="text-muted" >
                 <i class="fa fa-user me-1"></i> Creado por: <%= account.createdBy %><br>
-                <i class="fa fa-clock me-1"></i> El: <%= new Date(account.createdAt).toLocaleString() %>
+                <i class="fa fa-clock me-1"></i> El: <%= Helper.format_date(account.createdAt, true) %>
               </div>
             </div>
           </div>
@@ -135,12 +135,12 @@
                       <h6 class="mb-0 fw-bold"><%= r.type %> - <%= r.payment_method %></h6>
                       <small class="text-muted">Ref: <%= r.ref || 'N/A' %></small>
                       <div class="text-muted" style="font-size: 0.75rem;">
-                        <i class="fa fa-calendar-day me-1"></i> <%= new Date(r.move_date).toLocaleString() %>
+                        <i class="fa fa-calendar-day me-1"></i> <%= Helper.format_date(r.move_date, true) %>
                       </div>
                     </div>
                     <div class="text-end">
                       <span class="fs-5 fw-bold <%= color %>">
-                        <%= (r.type === 'Interes' ? '+' : '-') %>$<%= parseFloat(p.amount).toFixed(2) %>
+                        <%= (r.type === 'Interes' ? '+' : '-') %>$<%= Helper.money_format(p.amount) %>
                       </span>
                     </div>
                   </div>

@@ -96,7 +96,7 @@
                 <td><small class="text-muted">#<%= acc.purchase || 'S/N' %></small></td>
                 <td>
                   <span class="badge <%= new Date(acc.account_date) < new Date() ? 'bg-danger-subtle text-danger' : 'bg-secondary' %>">
-                    <i class="far fa-calendar-alt me-1"></i> <%= acc.account_date %>
+                    <i class="far fa-calendar-alt me-1"></i> <%= Helper.format_date(acc.account_date, false) %>
                   </span>
                 </td>
                 <td>$<%= Helper.money_format(acc.amount) %></td>

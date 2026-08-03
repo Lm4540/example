@@ -1,15 +1,11 @@
-// Reutilizamos el ESCPOSBuilder de las respuestas anteriores,
-// ya que los comandos ESC/POS son independientes del método de conexión.
+
 class ESCPOSBuilder {
       constructor() {
             this.buffer = [];
-            this.currentFont = 'A'; // Predeterminado a Font A
-            this.lineLength = 40;   // Predeterminado a 42 caracteres para Font A
+            this.currentFont = 'A'; 
+            this.lineLength = 40;  
       }
 
-      // ... (Métodos existentes: initialize, align, text, newLine, newLineN, bold, doubleHeightWidth, cut, cashDrawer) ...
-
-      // --- Nuevos métodos para la Fuente y el Largo de Línea ---
 
       /**
        * Selecciona la fuente de la impresora (Font A o Font B).
@@ -330,24 +326,13 @@ class ESCPOSBuilder {
                         bitmap[byteIndex++] = currentByte;
                   }
             }
-
-            // Comandos para imprimir gráficos raster bit-image (GS v 0)
-            // GS v 0 m xL xH yL yH d1...dk
-            // m = 0 para modo normal
-            // xL, xH = ancho en bytes (paddedWidth / 8)
-            // yL, yH = altura en puntos (height)
-            // d1...dk = datos de la imagen
-
             const xL = bytesPerRow & 0xFF;
             const xH = (bytesPerRow >> 8) & 0xFF;
             const yL = height & 0xFF;
             const yH = (height >> 8) & 0xFF;
-
             this.buffer.push(0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH, ...Array.from(bitmap));
             return this;
       }
-
-
       build() { return new Uint8Array(this.buffer); }
 }
 

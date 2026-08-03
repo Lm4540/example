@@ -130,58 +130,7 @@ const EmployeeController = {
     },
 
     
-    /*searchEmployee: async (req, res) => {
-        let params = req.query;
-        var query_options = {};
-
-        //Si hay terminos de busqueda, lo agregamos a la SQL
-        if (params.search !== undefined && params.search.length > 3) {
-            query_options.where = {
-                [Op.or]: [
-                    { name: { [Op.substring]: params.search } },
-                    { NRC: { [Op.substring]: params.search } },
-                    { phone: { [Op.substring]: params.search } },
-                    { NIT_DUI: { [Op.substring]: params.search } },
-                    { email: { [Op.substring]: params.search } },
-                ]
-            }
-        }
-
-        //Si Hay parametros de Ordenamiento
-        if (params.order !== undefined) {
-            query_options.order = [[params.order, params.dir],];
-        } else {
-            query_options.order = [['id', 'ASC'],];
-        }
-        try {
-            let result = {
-                params: params,
-            };
-            result.total_rows = query_options;
-            result.total_rows.col = 'id';
-            result.total_rows = await Provider.count(result.total_rows);
-
-            query_options.offset = parseInt(params.offset);
-            query_options.limit = parseInt(params.limit);
-            result.data = await Provider.findAll(query_options);
-
-            //Formatear y regresar el arreglo
-            return res.json(result);
-        } catch (error) {
-            return res.status(500).json({ 'error': 'Internal Server Error' });
-        }
-
-    },
-
     
-    viewEmployee: async (req, res) => {
-
-    },
-    updateEmployee: async (req, res) => {
-        
-    },
-
-    */
 };
 
 module.exports = EmployeeController;

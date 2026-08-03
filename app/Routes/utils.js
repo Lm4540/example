@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const UtilsController = require('../System/Controllers/utilsController');
+const Auth = require('../System/Middleware/Auth');
 // Home page route.
 router.get("/image_from_url", UtilsController.getImageFromUrl);
 router.get('', UtilsController.index);

@@ -34,32 +34,35 @@
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
               <li class="breadcrumb-item"><a href="/financial/payables">Cuentas por Pagar</a></li>
-              <li class="breadcrumb-item">Historial de Proveedor</li>
+              <li class="breadcrumb-item"><a href="/financial/providers">Proveedores</a></li>
+              <li class="breadcrumb-item active">Historial de Proveedor</li>
             </ol>
           </nav>
           <h2 class="fw-bold mt-2"><%= provider.name %></h2>
           <span class="text-muted"><i class="fas fa-id-card me-3"></i> ID Proveedor: <%= provider.id %></span>
         </div>
         <div class="col-md-4 text-end">
-          <div class="card bg-primary shadow-sm">
+          <div class="card bg-primary shadow-sm text-white">
             <div class="card-body py-2">
-              <small class="d-block opacity-75">Saldo Actual Total</small>
-              <h3 class="mb-0 fw-bold">$<%= (parseFloat(provider.balance) - parseFloat(provider.payments)).toFixed(2) %></h3>
+              <small class="d-block opacity-75">Saldo Actual Total (Neto)</small>
+              <h3 class="mb-0 fw-bold">$<%= Helper.money_format(parseFloat(provider.balance) - parseFloat(provider.payments)) %></h3>
             </div>
           </div>
         </div>
       </div>
 
       <div class="d-flex gap-2 mb-4">
-        
         <button class="btn btn-outline-secondary" onclick="window.print()">
           <i class="fa fa-print me-1"></i> Imprimir Estado
         </button>
+        <a href="/financial/providers" class="btn btn-outline-primary">
+          <i class="fa fa-truck-moving me-1"></i> Lista de Proveedores
+        </a>
       </div>
 
       <div class="card shadow-sm border-0">
         <div class="card-header py-3">
-          <h5 class="card-title mb-0 fw-bold">Hisatorial de Saldos</h5>
+          <h5 class="card-title mb-0 fw-bold">Historial de Saldos y Movimientos</h5>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -78,17 +81,16 @@
                 <% timeline.forEach(item => { %>
                 <tr class="<%= item.type === 'DEUDA' ? 'table-danger' : '' %>">
                   <td class="ps-4">
-                    <small class="d-block"><%= new Date(item.date).toLocaleDateString() %></small>
-                    <small style="font-size: 0.7rem;"><%= new Date(item.date).toLocaleTimeString() %></small>
+                    <small class="d-block"><%= Helper.format_date(item.date, true) %></small>
                   </td>
                   <td>
                     <% 
-                                        let badgeColor = 'bg-secondary';
-                                        if(item.type === 'DEUDA') badgeColor = 'bg-danger';
-                                        if(item.type === 'PAGO') badgeColor = 'bg-success';
-                                        if(item.type === 'INTERES') badgeColor = 'bg-warning';
-                                        if(item.type === 'DESCUENTO') badgeColor = 'bg-purple';
-                                    %>
+                      let badgeColor = 'bg-secondary';
+                      if(item.type === 'DEUDA') badgeColor = 'bg-danger';
+                      if(item.type === 'PAGO') badgeColor = 'bg-success';
+                      if(item.type === 'INTERES') badgeColor = 'bg-warning';
+                      if(item.type === 'DESCUENTO') badgeColor = 'bg-purple';
+                    %>
                     <span class="badge <%= badgeColor %>" style="width: 90px;">
                       <i class="fa <%= item.icon %> me-1"></i> <%= item.type %>
                     </span>
@@ -96,19 +98,27 @@
                   <td>
                     <span class="fw-semibold"><%= item.description %></span>
                     <% if(item.type === 'DEUDA') { %>
-                        <br>
-
+                    <br>
                     <a href="/financial/account/<%= item.refId %>" class="badge bg-purple"> Ver detalle</a>
+                    <% } %>
+                    <% if(item.type === 'PAGO' && item.unassignedAmount > 0.001) { %>
+                    <br>
+                    <span class="badge bg-warning text-dark me-1">
+                      <i class="fa fa-info-circle"></i> Saldo a favor sin aplicar: $<%= Helper.money_format(item.unassignedAmount) %>
+                    </span>
+                    <button class="btn btn-sm btn-success py-0 px-2 mt-1" onclick="abrirModalDistribuir('<%= item.refId %>', '<%= item.unassignedAmount %>')">
+                      <i class="fa fa-sitemap me-1"></i> Distribuir Abono
+                    </button>
                     <% } %>
                   </td>
                   <td class="text-end text-danger">
-                    <%= (item.type === 'DEUDA' || item.type === 'INTERES') ? '$' + item.amount.toFixed(2) : '--' %>
+                    <%= (item.type === 'DEUDA' || item.type === 'INTERES') ? '$' + Helper.money_format(item.amount) : '--' %>
                   </td>
                   <td class="text-end text-success">
-                    <%= (item.type === 'PAGO' || item.type === 'DESCUENTO') ? '$' + item.amount.toFixed(2) : '--' %>
+                    <%= (item.type === 'PAGO' || item.type === 'DESCUENTO') ? '$' + Helper.money_format(item.amount) : '--' %>
                   </td>
                   <td class="text-end pe-4 fw-bold">
-                    $<%= item.runningBalance.toFixed(2) %>
+                    $<%= Helper.money_format(item.runningBalance) %>
                   </td>
                 </tr>
                 <% }) %>
@@ -119,10 +129,99 @@
       </div>
     </div>
 
+    <!-- Modal Distribuir Abono -->
+    <div class="modal fade" id="modalDistribuirAbono" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Distribuir Abono (Saldo a Favor)</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="distributeReceiptId">
+            <div class="alert alert-info">
+              Disponible para aplicar: <strong id="distributeAvailableAmount">$0.00</strong>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Criterio de Distribución</label>
+              <select class="form-select" id="distributeCriteria">
+                <option value="oldest">Obligaciones más antiguas primero</option>
+                <option value="dueDate">Fecha de vencimiento más próxima primero</option>
+              </select>
+              <div class="form-text">
+                <p>
+                  ->El saldo a favor se irá aplicando automáticamente a las facturas y compras pendientes hasta cubrir el monto o agotar el saldo.
+                </p>
+                <p>->Los montos no se pueden cambiar, la distribución es automática</p>
+                <p>-> Si Elige Oblicaciones mas antiguas primero, el saldo ira a la oblicación registrada con mayor antiguedad aunque su fecha de vencimiento este mas lejos</p>
+                <p>-> Si Elige Fecha de vencimiento mas próxima primero, el saldo ira a la oblicación registrada con fecha de vencimiento mas cercana a vencer</p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-success" id="btnEjecutarDistribucion" onclick="ejecutarDistribucion()">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              Aplicar Distribución
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <%- include('../Layouts/Footer.ejs') %>
   </div>
 </body>
 <%- include('../Layouts/Scripts.ejs') %>
+<script>
+  let modalDistribuir = null;
+  document.addEventListener('DOMContentLoaded', () => {
+    modalDistribuir = new bootstrap.Modal(document.getElementById('modalDistribuirAbono'));
+  });
 
+  function abrirModalDistribuir(receiptId, unassignedAmount) {
+    document.getElementById('distributeReceiptId').value = receiptId;
+    document.getElementById('distributeAvailableAmount').textContent = '$' + parseFloat(unassignedAmount).toFixed(2);
+    modalDistribuir.show();
+  }
+
+  async function ejecutarDistribucion() {
+    const receipt_id = document.getElementById('distributeReceiptId').value;
+    const criteria = document.getElementById('distributeCriteria').value;
+    const btn = document.getElementById('btnEjecutarDistribucion');
+    const spinner = btn.querySelector('.spinner-border');
+
+    try {
+      btn.disabled = true;
+      spinner.classList.remove('d-none');
+
+      const response = await fetch('/financial/api/distribute-receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          receipt_id,
+          criteria
+        })
+      });
+
+      const res = await response.json();
+      if (res.success) {
+        modalDistribuir.hide();
+        location.reload();
+      } else {
+        alert(res.message || "Error al distribuir el saldo.");
+      }
+    } catch (error) {
+      console.error("Error Fetch:", error);
+      alert("Error de conexión al servidor.");
+    } finally {
+      btn.disabled = false;
+      spinner.classList.add('d-none');
+    }
+  }
+</script>
 
 </html>

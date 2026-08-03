@@ -6,6 +6,7 @@ const Auth = require('../System/Middleware/Auth');
 // Home page route.
 router.get("/", FinancialController.main);
 router.get('/payables', FinancialController.listPayableAccounts);
+router.get('/providers', FinancialController.listProviders);
 router.get('/history', FinancialController.getPaidAccountsHistory);
 router.get('/provider/:id', FinancialController.getProviderHistory);
 router.get('/account/:id', FinancialController.getAccountDetail);
@@ -15,6 +16,7 @@ router.get('/received-payments', FinancialController.getPaymentReceivedReport);
 router.get('/api/pending-accounts/:providerId', FinancialController.getPendingByProvider);
 router.post('/api/create-account', FinancialController.createAccount);
 router.post('/api/process-payment', FinancialController.processProviderPayment);
+router.post('/api/distribute-receipt', FinancialController.distributeProviderReceipt);
 
 router.get('/arqueo/:id', (req, res, next) => Auth.HasPermission(req, res, next, ['create_petty_cash_clossing']), PettyCashController.getArqueoView);
 router.post('/arqueo', (req, res, next) => Auth.HasPermission(req, res, next, ['create_petty_cash_clossing']), PettyCashController.createArqueo);

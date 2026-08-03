@@ -32,7 +32,7 @@
           <div class="card border-0 shadow-sm bg-danger text-white">
             <div class="card-body">
               <h6 class="text-uppercase small opacity-75">Deuda Total Pendiente</h6>
-              <h2 class="fw-bold mb-0">$<%= stats.totalDeuda.toLocaleString() %></h2>
+              <h2 class="fw-bold mb-0">$<%= Helper.money_format(stats.totalDeuda) %></h2>
               <i class="fa fa-hand-holding-dollar position-absolute end-0 bottom-0 m-3 fs-1 opacity-25"></i>
             </div>
           </div>
@@ -40,7 +40,7 @@
           <div class="card border-0 shadow-sm bg-warning text-white">
             <div class="card-body">
               <h6 class="text-uppercase small opacity-75">Pagos Realizados (Mes)</h6>
-              <h2 class="fw-bold mb-0">$<%= stats.totalPagadoMes.toLocaleString() %></h2>
+              <h2 class="fw-bold mb-0">$<%= Helper.money_format(stats.totalPagadoMes) %></h2>
               <i class="fa fa-money-check-dollar position-absolute end-0 bottom-0 m-3 fs-1 opacity-25"></i>
             </div>
           </div>
@@ -69,13 +69,13 @@
           <div class="card border-0 shadow-sm border-start border-4 border-warning">
             <h4>Acciones Rapidas</h4>
             <div class="card-body">
-              <div class="btn-group w-100">
+              <div class="btn-group w-100 mb-2">
                 <a href="/financial/payables" class="btn btn-sm btn-outline-warning">Gestionar CXP</a>
                 <a href="/financial/history" class="btn btn-sm btn-outline-secondary">Historial CXP</a>
               </div>
-            </div>
-
-             <div class="card-body">
+              <div class="btn-group w-100 mb-2">
+                <a href="/financial/providers" class="btn btn-sm btn-outline-primary"><i class="fas fa-truck-moving me-1"></i> Lista Proveedores</a>
+              </div>
               <div class="btn-group w-100">
                 <a href="/financial/received-payments" class="btn btn-sm btn-outline-success">Historial de Ingresos Brutos</a>
               </div>
@@ -142,17 +142,14 @@
                       <span class="fw-bold"><%= providers[acc.provider] %></span>
                     </td>
                     <td><span class="badge bg-primary  border">#<%= acc.purchase || 'Manual' %></span></td>
-                    <td><%= acc.account_date %></td>
+                    <td><%= Helper.format_date(acc.account_date, false) %></td>
                     <td>
                       <span class="badge <%= badgeClass %>">
                         <%= diffDays < 0 ? 'Vencida (' + Math.abs(diffDays) + 'd)' : (diffDays === 0 ? 'Vence hoy' : 'En ' + diffDays + ' días') %>
                       </span>
                     </td>
-                    <td class="text-end fw-bold">
-                      <% 
-                                        const saldo = parseFloat(acc.amount); 
-                                    %>
-                      $<%= saldo.toFixed(2) %>
+                    <td class="text-end fw-bold text-danger">
+                      $<%= Helper.money_format(acc.currentBalance) %>
                     </td>
                     <td class="text-center">
 

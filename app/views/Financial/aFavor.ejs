@@ -43,7 +43,7 @@
                          (Pago id: <%= pm.id %>)<br>
                          Monto:  $<%= Helper.money_format(pm.amount) %>
                          <br>
-                          Saldo a favor: $<%= Helper.money_format((pm.amount - pm.asigned_amount).toFixed(2)) %>
+                          Saldo a favor: $<%= Helper.money_format(pm.amount - pm.asigned_amount) %>
                           </li>
                           <% }) %>
                          

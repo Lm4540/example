@@ -60,7 +60,7 @@ const StockController = {
             type: QueryTypes.SELECT,
         });
 
-        locations = {};
+        let locations = {};
         tmp.forEach(loc => {
             if (locations[loc.product] == undefined) {
                 locations[loc.product] = [];
@@ -345,9 +345,9 @@ const StockController = {
             case 'create':
                 //verificar los datos
                 if (data.details.length < 1) {
-                    return { status: 'error', message: 'Agregue los productos que va a trasladar' }
+                    return res.json({ status: 'error', message: 'Agregue los productos que va a trasladar' });
                 } else if (data.sucursal == data.destino) {
-                    return { status: 'error', message: 'La sucursal de origen y destino deben ser diferentes' }
+                    return res.json({ status: 'error', message: 'La sucursal de origen y destino deben ser diferentes' });
                 } else {
                     var sucursal = await Sucursal.findByPk(data.sucursal);
                     var destino = await Sucursal.findByPk(data.destino);
@@ -392,7 +392,7 @@ const StockController = {
                                         throw "Product or Stock not Found";
                                     }
 
-                                    let max = stock.cant - stock.reserved;
+                                    let max = Math.max(0, stock.cant - stock.reserved);
 
                                     if (dt.cant > max) {
                                         dt.cant = max;
@@ -419,8 +419,10 @@ const StockController = {
                                                 orderId: detail.id,
                                             }
                                         });
-                                        reserve.cant = Number.parseInt(reserve.cant + dt.cant);
-                                        await reserve.save({ transaction: t });
+                                        if (reserve) {
+                                            reserve.cant = Number.parseInt(reserve.cant + dt.cant);
+                                            await reserve.save({ transaction: t });
+                                        }
                                     } else {
                                         detail = await RequisitionDetail.create({
                                             requisition: requisition.id,
@@ -471,7 +473,7 @@ const StockController = {
                                         throw "Product or Stock not Found";
                                     }
 
-                                    let max = stock.cant - stock.reserved;
+                                    let max = Math.max(0, stock.cant - stock.reserved);
 
                                     if (dt.cant > max) {
                                         dt.cant = max;
@@ -509,7 +511,7 @@ const StockController = {
                         }
                     } catch (error) {
                         console.error(error);
-                        return { status: 'error', message: error.message }
+                        return res.json({ status: 'error', message: error.message });
                     }
                 }
 
@@ -557,8 +559,10 @@ const StockController = {
                                             orderId: detail.id,
                                         }
                                     });
-                                    reserve.cant = Number.parseInt(reserve.cant + data.cant);
-                                    await reserve.save({ transaction: t });
+                                    if (reserve) {
+                                        reserve.cant = Number.parseInt(reserve.cant + data.cant);
+                                        await reserve.save({ transaction: t });
+                                    }
                                 } else {
                                     detail = await RequisitionDetail.create({
                                         requisition: requisition.id,
@@ -593,7 +597,7 @@ const StockController = {
                     return Helper.notFound(req, res, 'Requisition not Found');
                 } catch (error) {
                     console.error(error);
-                    return { status: 'error', message: error.message }
+                    return res.json({ status: 'error', message: error.message });
                 }
 
                 break;
@@ -647,7 +651,6 @@ const StockController = {
                                         }
                                     });
 
-                                    console.log('\n\n', more_details, 'Esta es la cantidad de otros detalles que hay en la chingadera esta')
 
                                     let sale = await Sale.findByPk(sale_detail.sale);
                                     if (sale !== null) {
@@ -681,15 +684,16 @@ const StockController = {
 
                             }
 
-                            //TOKEN
-
-
                             if (cant == detail.cant) {
-                                await reserve.destroy({ transaction: t });
+                                if (reserve) {
+                                    await reserve.destroy({ transaction: t });
+                                }
                                 await detail.destroy({ transaction: t });
                             } else {
-                                reserve.cant = Number.parseInt(reserve.cant - cant);
-                                await reserve.save({ transaction: t });
+                                if (reserve) {
+                                    reserve.cant = Number.parseInt(reserve.cant - cant);
+                                    await reserve.save({ transaction: t });
+                                }
                                 detail.cant = Number.parseInt(detail.cant - cant);
                                 await detail.save({ transaction: t });
                             }
@@ -709,7 +713,7 @@ const StockController = {
                     return Helper.notFound(req, res, 'Requisition or detail not Found');
                 } catch (error) {
                     console.error(error);
-                    return { status: 'error', message: error.message }
+                    return res.json({ status: 'error', message: error.message });
                 }
                 break;
             case 'commentary':
@@ -722,10 +726,10 @@ const StockController = {
                         return res.json({ status: 'success', message: '¡Actualizado!', data: requisition.id });
 
                     }
-                    return Helper.notFound(req, res, 'Requisition not Found');
+                    return res.json({ status: 'notFound', message: 'Requisition not Found' });
                 } catch (error) {
                     console.error(error);
-                    return { status: 'error', message: error.message }
+                    return res.json({ status: 'error', message: error.message });
                 }
 
                 break;
@@ -1778,7 +1782,7 @@ const StockController = {
                             throw "Product or Stock not Found";
                         }
 
-                        let max = stock.cant - stock.reserved;
+                        let max = Math.max(0, stock.cant - stock.reserved)
 
                         if (dt.cant > max) {
                             dt.cant = max;
@@ -1832,13 +1836,13 @@ const StockController = {
     saveTransferShipment: async (data, session) => {
         //verificar los datos
         if (data.details.length < 1) {
-            return { status: 'error', message: 'Agregue los productos que va a trasladar' }
+            return { status: 'error', message: 'Agregue los productos que va a trasladar' };
         } else if (data.sucursal == data.destino) {
-            return { status: 'error', message: 'La sucursal de origen y destino deben ser diferentes' }
+            return { status: 'error', message: 'La sucursal de origen y destino deben ser diferentes' };
         } else if (data.requestedBy.length < 5) {
-            return { status: 'error', message: 'Indique quien ha solicitado el traslado' }
+            return { status: 'error', message: 'Indique quien ha solicitado el traslado' };
         } else if (data.trasnportedBy.length < 5) {
-            return { status: 'error', message: 'Indique quien realizara el traslado' }
+            return { status: 'error', message: 'Indique quien realizara el traslado' };
         } else {
             var sucursal = await Sucursal.findByPk(data.sucursal);
             var destino = await Sucursal.findByPk(data.destino);
@@ -1891,7 +1895,7 @@ const StockController = {
                             throw "Product or Stock not Found";
                         }
 
-                        let max = stock.cant - stock.reserved;
+                        let max = Math.max(0, stock.cant - stock.reserved);
 
                         if (dt.cant > max) {
                             dt.cant = max;
@@ -1933,11 +1937,11 @@ const StockController = {
 
                     }
 
-                    return { status: 'success', message: 'Guardado', shipment, _details }
+                    return { status: 'success', message: 'Guardado', shipment, _details };
                 });
             } catch (error) {
                 console.error(error);
-                return { status: 'error', message: error.message }
+                return { status: 'error', message: error.message };
             }
         }
 

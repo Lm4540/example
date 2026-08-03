@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+  <style>
+    .card-provider {
+      transition: transform 0.2s ease, shadow 0.2s ease;
+    }
+    .card-provider:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold">Lista de Proveedorees</h3>
+          <p class="text-muted small mb-0">Gestión de proveedores, saldos vigentes y abonos disponibles</p>
+        </div>
+        <div>
+          <a href="/financial/payables" class="btn btn-outline-warning me-2">
+            <i class="fas fa-balance-scale-right me-1"></i> Ver Cuentas por Pagar
+          </a>
+          <a href="/financial" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Atras
+          </a>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="inputSearchProvider" class="form-control" placeholder="Buscar por nombre, NRC o NIT..." onkeyup="filtrarTablaProveedores()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                <select id="selectFilterBalance" class="form-select" onchange="filtrarTablaProveedores()">
+                  <option value="with_balance" selected>Con saldo pendiente o a favor</option>
+                  <option value="all">Todos los proveedores</option>
+                  <option value="without_balance">Sin saldo pendiente ni a favor</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3 text-end">
+              <span class="badge bg-primary fs-6" id="badgeTotalProveedores">
+                Total Proveedores: <%= providers.length %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="tablaProveedores">
+            <thead>
+              <tr class="small text-uppercase">
+                <th class="ps-4">ID</th>
+                <th>Proveedor</th>
+                <th>Identificación</th>
+                <th>Contacto</th>
+                <th class="text-end">Deuda Cargada</th>
+                <th class="text-end">Pagos Realizados</th>
+                <th class="text-end">Deuda Neta</th>
+                <th class="text-end">Saldo a Favor</th>
+                <th class="text-center">Obligaciones</th>
+                <th class="text-end pe-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if(providers.length > 0) { %>
+              <% providers.forEach(p => { 
+                const hasBalance = (p.deudaNet > 0 || (p.realDebt && p.realDebt > 0) || p.unassignedBalance > 0 || p.pendingCount > 0);
+              %>
+              <tr data-has-balance="<%= hasBalance ? 'true' : 'false' %>">
+                <td class="ps-4 fw-bold">#<%= p.id %></td>
+                <td>
+                  <a href="/financial/provider/<%= p.id %>" class="fw-bold text-decoration-none">
+                    <%= p.name %>
+                  </a>
+                </td>
+                <td>
+                  <small class="d-block text-muted">
+                    <%= p.NRC ? 'NRC: ' + p.NRC : '' %>
+                  </small>
+                  <small class="d-block text-muted">
+                    <%= p.NIT_DUI ? 'NIT/DUI: ' + p.NIT_DUI : '' %>
+                  </small>
+                </td>
+                <td>
+                  <small class="d-block"><%= p.phone ? 'Tel: ' + p.phone : '--' %></small>
+                  <small class="d-block text-muted"><%= p.email || '' %></small>
+                </td>
+                <td class="text-end fw-semibold text-danger">
+                  $<%= Helper.money_format(p.balance) %>
+                </td>
+                <td class="text-end fw-semibold text-success">
+                  $<%= Helper.money_format(p.payments) %>
+                </td>
+                <td class="text-end fw-bold <%= p.deudaNet > 0 ? 'text-danger' : 'text-success' %>">
+                  $<%= Helper.money_format(p.deudaNet) %>
+                </td>
+                <td class="text-end">
+                  <% if(p.unassignedBalance > 0) { %>
+                    <span class="badge bg-success">
+                      $<%= Helper.money_format(p.unassignedBalance) %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-muted">--</span>
+                  <% } %>
+                </td>
+                <td class="text-center">
+                  <% if(p.pendingCount > 0) { %>
+                    <span class="badge bg-warning text-dark">
+                      <%= p.pendingCount %> pend.
+                    </span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">0 pend.</span>
+                  <% } %>
+                </td>
+                <td class="text-end pe-4">
+                  <div class="btn-group btn-group-sm">
+                    <a href="/financial/provider/<%= p.id %>" class="btn btn-outline-primary" title="Ver Historial y Saldo">
+                      <i class="fas fa-history"></i> Historial
+                    </a>
+                    
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+              <tr id="noResultsRow" style="display: none;">
+                <td colspan="10" class="text-center py-4 text-muted">No se encontraron proveedores con los filtros aplicados.</td>
+              </tr>
+              <% } else { %>
+              <tr>
+                <td colspan="10" class="text-center py-4 text-muted">No hay proveedores registrados.</td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+<script>
+  function filtrarTablaProveedores() {
+    const filterText = document.getElementById('inputSearchProvider').value.toLowerCase();
+    const filterBalance = document.getElementById('selectFilterBalance').value;
+    const trs = document.querySelectorAll('#tablaProveedores tbody tr[data-has-balance]');
+    let count = 0;
+
+    trs.forEach(tr => {
+      const text = tr.textContent.toLowerCase();
+      const hasBalance = tr.getAttribute('data-has-balance') === 'true';
+      
+      const matchesText = text.includes(filterText);
+      let matchesBalance = true;
+
+      if (filterBalance === 'with_balance') {
+        matchesBalance = hasBalance;
+      } else if (filterBalance === 'without_balance') {
+        matchesBalance = !hasBalance;
+      }
+
+      if (matchesText && matchesBalance) {
+        tr.style.display = '';
+        count++;
+      } else {
+        tr.style.display = 'none';
+      }
+    });
+
+    const noResultsRow = document.getElementById('noResultsRow');
+    if (noResultsRow) {
+      noResultsRow.style.display = (count === 0 && trs.length > 0) ? '' : 'none';
+    }
+
+    const badge = document.getElementById('badgeTotalProveedores');
+    if (badge) {
+      badge.textContent = `Total Proveedores: ${count}`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', filtrarTablaProveedores);
+</script>
+</html>

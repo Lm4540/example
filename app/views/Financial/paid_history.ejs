@@ -71,15 +71,15 @@
                   <div class="fw-bold"><%= indexed_providers[acc.provider] %></div>
                   <small class="text-muted">Ref: #<%= acc.purchase || 'Manual' %></small>
                 </td>
-                <td><%= acc.createdAt.toLocaleDateString() %></td>
-                <td><%= new Date(acc.account_date).toLocaleDateString() %></td>
+                <td><%= Helper.format_date(acc.createdAt, false) %></td>
+                <td><%= Helper.format_date(acc.account_date, false) %></td>
                 <td>
                   <span class="text-success fw-bold">
                     <i class="fas fa-calendar-check me-1"></i>
-                    <%= acc.updatedAt.toLocaleDateString() %>
+                    <%= Helper.format_date(acc.updatedAt, false) %>
                   </span>
                 </td>
-                <td>$<%= acc.amount %></td>
+                <td>$<%= Helper.money_format(acc.amount) %></td>
                 <td>
                   <span class="badge bg-success-subtle text-success">
                     <%= acc.payments.length %> abono(s)

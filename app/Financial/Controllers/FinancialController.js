@@ -19,9 +19,20 @@ module.exports = {
             const hoy = new Date();
             const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
-            const totalDeuda = await FinancialPayableAccount.sum('amount', {
-                where: { _status: { [Op.in]: ['Pendiente', 'Parcial'] } }
-            });
+            // 1. Deuda Total Pendiente (Neto desglosado abonado)
+            const totalDeudaRes = await sequelize.query(`
+                SELECT COALESCE(SUM(a.amount - (
+                    SELECT COALESCE(SUM(
+                        CASE WHEN r.type = 'Interes' THEN -d.amount ELSE d.amount END
+                    ), 0)
+                    FROM financial_payment_detail d
+                    INNER JOIN financial_provider_receipt r ON d.receipt_id = r.id
+                    WHERE d.account_id = a.id
+                )), 0) as totalDeuda
+                FROM financial_payable_account a
+                WHERE a._status IN ('Pendiente', 'Parcial')
+            `, { type: QueryTypes.SELECT });
+            const totalDeuda = parseFloat(totalDeudaRes[0]?.totalDeuda || 0);
 
             const totalPagadoMes = await FinancialProviderReceipt.sum('total_amount', {
                 where: {
@@ -31,35 +42,70 @@ module.exports = {
             });
 
             // 2. Datos para Gráfico: Deuda por Proveedor (Top 5)
-            // Usamos Query directa para mayor facilidad en el agrupamiento
             const deudaPorProveedor = await sequelize.query(`
-            SELECT p.name, SUM(a.amount - (SELECT COALESCE(SUM(d.amount),0) FROM financial_payment_detail d WHERE d.account_id = a.id)) as saldo
-            FROM financial_payable_account a
-            INNER JOIN inventory_provider p ON a.provider = p.id
-            WHERE a._status IN ('Pendiente', 'Parcial')
-            GROUP BY p.id ORDER BY saldo DESC LIMIT 5
-        `, { type: QueryTypes.SELECT });
+                SELECT p.name, 
+                SUM(a.amount - (
+                    SELECT COALESCE(SUM(
+                        CASE WHEN r.type = 'Interes' THEN -d.amount ELSE d.amount END
+                    ), 0)
+                    FROM financial_payment_detail d
+                    INNER JOIN financial_provider_receipt r ON d.receipt_id = r.id
+                    WHERE d.account_id = a.id
+                )) as saldo
+                FROM financial_payable_account a
+                INNER JOIN inventory_provider p ON a.provider = p.id
+                WHERE a._status IN ('Pendiente', 'Parcial')
+                GROUP BY p.id, p.name
+                HAVING saldo > 0
+                ORDER BY saldo DESC LIMIT 5
+            `, { type: QueryTypes.SELECT });
 
             // 3. Datos para Gráfico: Proyección de Vencimientos (Próximos 30 días)
-            const vencimientos = await FinancialPayableAccount.findAll({
-                attributes: [
-                    [fn('DATE_FORMAT', col('account_date'), '%Y-%m-%d'), 'fecha'],
-                    [fn('SUM', col('amount')), 'total']
-                ],
-                where: {
-                    _status: { [Op.in]: ['Pendiente', 'Parcial'] },
-                    account_date: { [Op.gte]: hoy }
-                },
-                group: [fn('DATE_FORMAT', col('account_date'), '%Y-%m-%d')],
-                limit: 10
+            const vencimientos = await sequelize.query(`
+                SELECT DATE_FORMAT(a.account_date, '%Y-%m-%d') as fecha,
+                SUM(a.amount - (
+                    SELECT COALESCE(SUM(
+                        CASE WHEN r.type = 'Interes' THEN -d.amount ELSE d.amount END
+                    ), 0)
+                    FROM financial_payment_detail d
+                    INNER JOIN financial_provider_receipt r ON d.receipt_id = r.id
+                    WHERE d.account_id = a.id
+                )) as total
+                FROM financial_payable_account a
+                WHERE a._status IN ('Pendiente', 'Parcial') AND a.account_date >= :hoy
+                GROUP BY DATE_FORMAT(a.account_date, '%Y-%m-%d')
+                HAVING total > 0
+                ORDER BY fecha ASC
+                LIMIT 10
+            `, {
+                replacements: { hoy: hoy.toISOString().split('T')[0] },
+                type: QueryTypes.SELECT
             });
 
-            const proximosVencimientosList = await FinancialPayableAccount.findAll({
+            const accountsList = await FinancialPayableAccount.findAll({
                 where: {
                     _status: { [Op.in]: ['Pendiente', 'Parcial'] }
                 },
+                include: [
+                    {
+                        model: FinancialPaymentDetail,
+                        as: 'payments',
+                        include: [{ model: FinancialProviderReceipt }]
+                    }
+                ],
                 order: [['account_date', 'ASC']], // Las más viejas o cercanas primero
-                limit: 8 // Suficientes para llenar una tabla pequeña
+                limit: 8
+            });
+
+            const proximosVencimientosList = accountsList.map(acc => {
+                const data = acc.toJSON();
+                const totalApplied = (data.payments || []).reduce((sum, p) => {
+                    const type = p.FinancialProviderReceipt ? p.FinancialProviderReceipt.type : 'Pago';
+                    if (type === 'Interes') return sum - parseFloat(p.amount);
+                    return sum + parseFloat(p.amount);
+                }, 0);
+                data.currentBalance = parseFloat(data.amount) - totalApplied;
+                return data;
             });
 
             let providers = {};
@@ -73,13 +119,13 @@ module.exports = {
                 replacements: { start: inicioMes.toISOString().split('T')[0], end: hoy.toISOString().split('T')[0] },
                 type: QueryTypes.SELECT
             });
-            const money = tmp[0].amount;
+            const money = tmp[0]?.amount || 0;
 
             tmp = await sequelize.query(`SELECT sum(amount) as amount FROM crm_sale_payment WHERE fecha BETWEEN :start AND :end and type = 'transfer'`, {
                 replacements: { start: inicioMes.toISOString().split('T')[0], end: hoy.toISOString().split('T')[0] },
                 type: QueryTypes.SELECT
             });
-            const deposit = tmp[0].amount;
+            const deposit = tmp[0]?.amount || 0;
 
 
             res.render('Financial/main', {
@@ -157,13 +203,15 @@ module.exports = {
             const accounts = await FinancialPayableAccount.findAll({
                 where: { _status: { [Op.in]: ['Pendiente', 'Parcial'] } },
                 include: [
-                    { model: FinancialPaymentDetail, as: 'payments' }
+                    {
+                        model: FinancialPaymentDetail,
+                        as: 'payments',
+                        include: [{ model: FinancialProviderReceipt }]
+                    }
                 ],
                 order: orderClause,
 
             });
-
-
 
             let indexed_providers = {};
             // Obtener proveedores para el select del modal
@@ -182,7 +230,6 @@ module.exports = {
             const formattedAccounts = accounts.map(acc => {
                 const data = acc.toJSON();
                 const totalApplied = data.payments.reduce((sum, p) => {
-                    // IMPORTANTE: p.FinancialProviderReceipt.type debe estar disponible
                     const type = p.FinancialProviderReceipt ? p.FinancialProviderReceipt.type : 'Pago';
                     if (type === 'Interes') return sum - parseFloat(p.amount); // Restamos de la resta (suma deuda)
                     return sum + parseFloat(p.amount); // Pagos y Descuentos restan deuda
@@ -194,8 +241,6 @@ module.exports = {
 
                 return data;
             });
-
-
 
             res.render('Financial/payables', {
                 accounts: formattedAccounts,
@@ -285,6 +330,94 @@ module.exports = {
         }
     },
 
+    distributeProviderReceipt: async (req, res) => {
+        const t = await sequelize.transaction();
+        try {
+            const { receipt_id, criteria } = req.body; // criteria: 'oldest' | 'dueDate'
+            if (!receipt_id) {
+                return res.status(400).json({ success: false, message: "ID de recibo requerido." });
+            }
+
+            const receipt = await FinancialProviderReceipt.findByPk(receipt_id, { transaction: t });
+            if (!receipt) {
+                await t.rollback();
+                return res.status(404).json({ success: false, message: "Recibo no encontrado." });
+            }
+
+            let unassigned = parseFloat(receipt.total_amount) - parseFloat(receipt.assigned_amount);
+            if (unassigned <= 0.001) {
+                await t.rollback();
+                return res.status(400).json({ success: false, message: "Este recibo no tiene saldo a favor pendiente por distribuir." });
+            }
+
+            // Criterio de ordenamiento
+            let orderClause = [['createdAt', 'ASC'], ['id', 'ASC']];
+            if (criteria === 'dueDate') {
+                orderClause = [['account_date', 'ASC'], ['id', 'ASC']];
+            }
+
+            const pendingAccounts = await FinancialPayableAccount.findAll({
+                where: {
+                    provider: receipt.provider_id,
+                    _status: { [Op.in]: ['Pendiente', 'Parcial'] }
+                },
+                include: [{
+                    model: FinancialPaymentDetail,
+                    as: 'payments',
+                    include: [{ model: FinancialProviderReceipt }]
+                }],
+                order: orderClause,
+                transaction: t
+            });
+
+            if (pendingAccounts.length === 0) {
+                await t.rollback();
+                return res.status(400).json({ success: false, message: "El proveedor no tiene cuentas pendientes para aplicar este saldo." });
+            }
+
+            let appliedTotal = 0;
+            for (const account of pendingAccounts) {
+                if (unassigned <= 0.001) break;
+
+                const totalApplied = account.payments.reduce((sum, p) => {
+                    const type = p.FinancialProviderReceipt ? p.FinancialProviderReceipt.type : 'Pago';
+                    if (type === 'Interes') return sum - parseFloat(p.amount);
+                    return sum + parseFloat(p.amount);
+                }, 0);
+
+                const currentBalance = parseFloat(account.amount) - totalApplied;
+                if (currentBalance <= 0.001) continue;
+
+                const amountToApply = Math.min(unassigned, currentBalance);
+
+                await FinancialPaymentDetail.create({
+                    receipt_id: receipt.id,
+                    account_id: account.id,
+                    amount: amountToApply
+                }, { transaction: t });
+
+                unassigned -= amountToApply;
+                appliedTotal += amountToApply;
+            }
+
+            if (appliedTotal === 0) {
+                await t.rollback();
+                return res.status(400).json({ success: false, message: "No se encontró saldo pendiente por saldar en las obligaciones del proveedor." });
+            }
+
+            await t.commit();
+            res.status(200).json({
+                success: true,
+                message: `Se distribuyó un total de $${appliedTotal.toFixed(2)} entre las obligaciones del proveedor.`
+            });
+
+        } catch (error) {
+            await t.rollback();
+            console.error("Error al distribuir recibo:", error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
     getProviderHistory: async (req, res) => {
         try {
             const { id } = req.params;
@@ -317,14 +450,21 @@ module.exports = {
                     refId: a.id,
                     icon: 'fa-file-invoice'
                 })),
-                ...receipts.map(r => ({
-                    date: r.move_date,
-                    type: r.type.toUpperCase(), // PAGO, INTERES, DESCUENTO
-                    description: `${r.payment_method} - Ref: ${r.ref || 'N/A'}`,
-                    amount: parseFloat(r.total_amount),
-                    refId: r.id,
-                    icon: r.type === 'Pago' ? 'fa-money-bill-1' : (r.type === 'Interes' ? 'fa-arrow-up-right-dots' : 'fa-tags')
-                }))
+                ...receipts.map(r => {
+                    const totalAmount = parseFloat(r.total_amount);
+                    const assignedAmount = parseFloat(r.assigned_amount);
+                    const unassignedAmount = Math.max(0, totalAmount - assignedAmount);
+                    return {
+                        date: r.move_date,
+                        type: r.type.toUpperCase(), // PAGO, INTERES, DESCUENTO
+                        description: `${r.payment_method} - Ref: ${r.ref || 'N/A'}`,
+                        amount: totalAmount,
+                        assignedAmount: assignedAmount,
+                        unassignedAmount: unassignedAmount,
+                        refId: r.id,
+                        icon: r.type === 'Pago' ? 'fa-money-bill-1' : (r.type === 'Interes' ? 'fa-arrow-up-right-dots' : 'fa-tags')
+                    };
+                })
             ];
 
             // Ordenar cronológicamente
@@ -496,9 +636,74 @@ module.exports = {
         }
     },
 
-   
+    listProviders: async (req, res) => {
+        try {
+            const providers = await InventoryProvider.findAll({
+                order: [['name', 'ASC']],
+                raw: true
+            });
 
+            // Obtener para cada proveedor el total de cuentas pendientes/parciales y saldos a favor
+            const financialStats = await sequelize.query(`
+                SELECT 
+                    p.id as provider_id,
+                    COUNT(a.id) as pending_accounts_count,
+                    COALESCE(SUM(a.amount - (
+                        SELECT COALESCE(SUM(CASE WHEN r.type = 'Interes' THEN -d.amount ELSE d.amount END), 0)
+                        FROM financial_payment_detail d
+                        INNER JOIN financial_provider_receipt r ON d.receipt_id = r.id
+                        WHERE d.account_id = a.id
+                    )), 0) as real_pending_debt
+                FROM inventory_provider p
+                LEFT JOIN financial_payable_account a ON a.provider = p.id AND a._status IN ('Pendiente', 'Parcial')
+                GROUP BY p.id
+            `, { type: QueryTypes.SELECT });
 
+            const unassignedStats = await sequelize.query(`
+                SELECT 
+                    provider_id,
+                    COALESCE(SUM(total_amount - assigned_amount), 0) as unassigned_balance
+                FROM financial_provider_receipt
+                WHERE type = 'Pago' AND (total_amount - assigned_amount) > 0.001
+                GROUP BY provider_id
+            `, { type: QueryTypes.SELECT });
+
+            const statsMap = {};
+            financialStats.forEach(item => {
+                statsMap[item.provider_id] = {
+                    pendingCount: parseInt(item.pending_accounts_count || 0),
+                    realDebt: parseFloat(item.real_pending_debt || 0),
+                    unassignedBalance: 0
+                };
+            });
+
+            unassignedStats.forEach(item => {
+                if (!statsMap[item.provider_id]) {
+                    statsMap[item.provider_id] = { pendingCount: 0, realDebt: 0, unassignedBalance: 0 };
+                }
+                statsMap[item.provider_id].unassignedBalance = parseFloat(item.unassigned_balance || 0);
+            });
+
+            const formattedProviders = providers.map(p => {
+                const stats = statsMap[p.id] || { pendingCount: 0, realDebt: 0, unassignedBalance: 0 };
+                return {
+                    ...p,
+                    balance: parseFloat(p.balance || 0),
+                    payments: parseFloat(p.payments || 0),
+                    deudaNet: parseFloat(p.balance || 0) - parseFloat(p.payments || 0),
+                    realDebt: stats.realDebt,
+                    pendingCount: stats.pendingCount,
+                    unassignedBalance: stats.unassignedBalance
+                };
+            });
+
+            res.render('Financial/providers', {
+                title: 'Lista de Proveedores - Gestión Financiera',
+                providers: formattedProviders
+            });
+        } catch (error) {
+            res.status(500).send("Error al cargar lista de proveedores: " + error.message);
+        }
+    }
 
 };
-

@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const DTEController = require("../DTE/Controllers/DTEController");
 const PosController = require("../CRM/Controllers/PosController");
-
+const Auth = require('../System/Middleware/Auth');
 
 /**Providers Routes */
 router.get('/', PosController.posMode);

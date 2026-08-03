@@ -1,6 +1,6 @@
 const PurchaseController = require("../Purchase/Controllers/PurchaseController");
 const router = require("express").Router();
-
+const Auth = require('../System/Middleware/Auth');
 router.get("/", function (req, res) {
     return res.render('Purchase/index', {pageTitle : 'Modulo de compras'});
 });

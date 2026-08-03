@@ -617,6 +617,10 @@ const UtilsController = {
             type: QueryTypes.SELECT
         });
         list.forEach(obj => clean_list.push(obj.image));
+        list = await sequelize.query('SELECT DISTINCT(image) FROM `inventory_product_classification`;', {
+            type: QueryTypes.SELECT
+        });
+        list.forEach(obj => clean_list.push(obj.image));
         _files.forEach(file_name => {
             if (!clean_list.includes(file_name)) {
                 _files_deleted.push(file_name);
@@ -810,26 +814,26 @@ const UtilsController = {
     },
 
     execute_sql: async (req, res) => {
-    //     let tmp = await sequelize.query(
-    //         'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND location LIKE "%Bodega #7"',
-    //         {
-    //             type: QueryTypes.SELECT,
-    //             model: StockLocation
-    //         }
-    //     );
+        //     let tmp = await sequelize.query(
+        //         'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND location LIKE "%Bodega #7"',
+        //         {
+        //             type: QueryTypes.SELECT,
+        //             model: StockLocation
+        //         }
+        //     );
 
-    //     let result = []
+        //     let result = []
 
-    //     for (let index = 0; index < tmp.length; index++) {
-    //         const element = tmp[index];
-    //         element.location = 'Bodega #10';
-    //         result.push(await element.save());
-    //     }
+        //     for (let index = 0; index < tmp.length; index++) {
+        //         const element = tmp[index];
+        //         element.location = 'Bodega #10';
+        //         result.push(await element.save());
+        //     }
 
 
-    //    return res.json(result);
+        //    return res.json(result);
 
-    return res.render('Utils/prorrateo_v1_2');
+        return res.render('Utils/prorrateo_v1_2');
 
     }
 };

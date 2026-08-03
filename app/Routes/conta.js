@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const ReportController = require("../Accounting/Controllers/ReportController");
-
+const Auth = require('../System/Middleware/Auth');
 /**Providers Routes */
 router.get('/', ReportController.dashboard);
 router.get('/sales_book', ReportController.salesBook);

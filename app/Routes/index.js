@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const fs = require('fs');
 const pathRouter = `${__dirname}`;
+const Auth = require('../System/Middleware/Auth');
 
 fs.readdirSync(pathRouter).filter(file => {
     const fileWithOutExtension = file.split('.').shift();

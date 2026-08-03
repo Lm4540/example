@@ -1386,7 +1386,7 @@ module.exports = {
             } catch (error) {
                 return res.json({
                     status: 'errorMessage',
-                    message: 'Orden o Cliente no encontrados' + (error.message ? error.message : ''),
+                    message: 'Error: ' + (error.message ? error.message : ''),
                     error,
                     json: dte_json
                 });

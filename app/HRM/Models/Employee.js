@@ -36,7 +36,6 @@ const Employee = sequelize.define('Employee', {
     tableName: 'hrm_employee',
 });
 
-// alter table `hrm_employee` add municipio char(2), add departamento char(2), add distrito varchar(50);
-// ALTER TABLE crm_client add distrito varchar(50);
+
 
 module.exports = Employee;

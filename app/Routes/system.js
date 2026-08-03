@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const UtilsController = require("../System/Controllers/utilsController");
-
+const Auth = require('../System/Middleware/Auth');
 // Home page route.
 router.get("/icons", function (req, res) {
     
