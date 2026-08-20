@@ -12,5 +12,7 @@ router.get('/clean_dir', UtilsController.cleanImagesDir);
 router.get('/prods_to_delete', UtilsController.prods_to_delete);
 router.get('/reporte1', UtilsController.reporte1);
 
+router.get('/printer_test', UtilsController.printerTest);
+
 
 module.exports = router;

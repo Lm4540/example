@@ -835,6 +835,11 @@ const UtilsController = {
 
         return res.render('Utils/prorrateo_v1_2');
 
+    },
+
+    printerTest: async (req, res) => {
+
+        return res.render('Utils/printer_test', { pageTitle: 'Prueba de la impresora' });
     }
 };
 

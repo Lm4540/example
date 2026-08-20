@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../Layouts/Head.ejs') %>
+</head>
+
+<body class="<%= darkMode %>">
+
+  <div class="container-fluid py-4">
+
+
+
+
+  </div>
+
+  <span class="mt-5 text-danger" style="cursor: pointer;">Errores: </span>
+  <span id="descargar_error" class="ml-5 mt-5 text-primary" style="cursor: pointer;"> Click para descargar el error</span>
+  
+  <span class="ml-5 mt-5 text-warning" onclick="openChashDrwaerCommand()">Forzar apertura de Caja</span>
+
+  <span class="ml-5 mt-5 text-warning" id="probarImpresion">Forzar apertura de Caja</span>
+
+  <input type="checkbox" id="printTicket" name="printTicket" checked="checked">
+  imprimir
+  
+
+  <div id="for_errors">
+  </div>
+</body>
+<%- include('../Layouts/Scripts.ejs') %>
+
+
+<script src="assets/js/escpos-printer.js"></script>
+<script>
+  const printerClient = new WebPOSPrinterLocalServer(obtenerDeLocalStorage('local_print_server_ip') || 'wss://localhost:4567');
+  printerClient.connect();
+
+  var data = {
+    "identificacion": {
+      "version": 1,
+      "ambiente": "01",
+      "tipoDte": "01",
+      "numeroControl": "DTE-01-S004P001-000000000001003",
+      "codigoGeneracion": "EF0C0126-4684-468D-A0F5-E32B1844D694",
+      "tipoModelo": 1,
+      "tipoOperacion": 1,
+      "fecEmi": "2026-04-17",
+      "horEmi": "13:10:17",
+      "tipoMoneda": "USD",
+      "tipoContingencia": null,
+      "motivoContin": null
+    },
+    "documentoRelacionado": null,
+    "emisor": {
+      "nit": "061403318",
+      "nrc": "3359852",
+      "nombre": "Gerardo Alfonso Rivera Cortez",
+      "codActividad": "10006",
+      "descActividad": "Comerciante",
+      "nombreComercial": "Riveras Group",
+      "tipoEstablecimiento": "01",
+      "direccion": {
+        "departamento": "02",
+        "municipio": "15",
+        "complemento": "3A, Calle Oriente y 1A. AV Sur Esquina, Local 1"
+      },
+      "telefono": "25278683",
+      "correo": "facturacion@riverasgroup.com",
+      "codEstableMH": "S004",
+      "codEstable": "S004",
+      "codPuntoVentaMH": "P001",
+      "codPuntoVenta": "P001"
+    },
+    "receptor": {
+      "tipoDocumento": null,
+      "numDocumento": null,
+      "nrc": null,
+      "nombre": null,
+      "codActividad": null,
+      "descActividad": null,
+      "direccion": null,
+      "telefono": null,
+      "correo": null
+    },
+    "otrosDocumentos": null,
+    "ventaTercero": null,
+    "cuerpoDocumento": [{
+      "numItem": 1,
+      "tipoItem": 1,
+      "numeroDocumento": null,
+      "cantidad": 1,
+      "codigo": "G-5844",
+      "codTributo": null,
+      "descripcion": "Juego de Mochila GrandePequeñaEstuche Rosa",
+      "uniMedida": 59,
+      "precioUni": 22,
+      "montoDescu": 0,
+      "ventaNoSuj": 0,
+      "ventaExenta": 0,
+      "ventaGravada": 22,
+      "tributos": null,
+      "psv": 0,
+      "noGravado": 0,
+      "ivaItem": 2.531
+    }],
+    "resumen": {
+      "totalNoSuj": 0,
+      "totalExenta": 0,
+      "totalGravada": 22,
+      "subTotalVentas": 22,
+      "descuNoSuj": 0,
+      "descuExenta": 0,
+      "descuGravada": 0,
+      "porcentajeDescuento": 0,
+      "totalDescu": 0,
+      "tributos": null,
+      "subTotal": 22,
+      "ivaRete1": 0,
+      "reteRenta": 0,
+      "montoTotalOperacion": 22,
+      "totalNoGravado": 0,
+      "totalPagar": 22,
+      "totalLetras": "VEINTIDOS 00/100 DOLARES",
+      "totalIva": 2.53,
+      "saldoFavor": 0,
+      "condicionOperacion": 1,
+      "pagos": null,
+      "numPagoElectronico": null
+    },
+    "extension": {
+      "nombEntrega": "Josselinne García",
+      "docuEntrega": null,
+      "nombRecibe": null,
+      "docuRecibe": null,
+      "observaciones": null,
+      "placaVehiculo": null
+    },
+    "apendice": null,
+    "selloRecibido": "2026B98526C6DC6C4CF98A612799F7430BE51R5Y",
+    "firmaElectronica": "eyJhbGciOiJSUzUxMiJ9.ewogICJpZGVudGlmaWNhY2lvbiIgOiB7CiAgICAidmVyc2lvbiIgOiAxLAogICAgImFtYmllbnRlIiA6ICIwMSIsCiAgICAidGlwb0R0ZSIgOiAiMDEiLAogICAgIm51bWVyb0NvbnRyb2wiIDogIkRURS0wMS1TMDA0UDAwMS0wMDAwMDAwMDAwMDEwMDMiLAogICAgImNvZGlnb0dlbmVyYWNpb24iIDogIkVGMEMwMTI2LTQ2ODQtNDY4RC1BMEY1LUUzMkIxODQ0RDY5NCIsCiAgICAidGlwb01vZGVsbyIgOiAxLAogICAgInRpcG9PcGVyYWNpb24iIDogMSwKICAgICJmZWNFbWkiIDogIjIwMjYtMDQtMTciLAogICAgImhvckVtaSIgOiAiMTM6MTA6MTciLAogICAgInRpcG9Nb25lZGEiIDogIlVTRCIsCiAgICAidGlwb0NvbnRpbmdlbmNpYSIgOiBudWxsLAogICAgIm1vdGl2b0NvbnRpbiIgOiBudWxsCiAgfSwKICAiZG9jdW1lbnRvUmVsYWNpb25hZG8iIDogbnVsbCwKICAiZW1pc29yIiA6IHsKICAgICJuaXQiIDogIjA2MTQwMzMxOCIsCiAgICAibnJjIiA6ICIzMzU5ODUyIiwKICAgICJub21icmUiIDogIkdlcmFyZG8gQWxmb25zbyBSaXZlcmEgQ29ydGV6IiwKICAgICJjb2RBY3RpdmlkYWQiIDogIjEwMDA2IiwKICAgICJkZXNjQWN0aXZpZGFkIiA6ICJDb21lcmNpYW50ZSIsCiAgICAibm9tYnJlQ29tZXJjaWFsIiA6ICJSaXZlcmFzIEdyb3VwIiwKICAgICJ0aXBvRXN0YWJsZWNpbWllbnRvIiA6ICIwMSIsCiAgICAiZGlyZWNjaW9uIiA6IHsKICAgICAgImRlcGFydGFtZW50byIgOiAiMDIiLAogICAgICAibXVuaWNpcGlvIiA6ICIxNSIsCiAgICAgICJjb21wbGVtZW50byIgOiAiM0EsIENhbGxlIE9yaWVudGUgeSAxQS4gQVYgU3VyIEVzcXVpbmEsIExvY2FsIDEiCiAgICB9LAogICAgInRlbGVmb25vIiA6ICIyNTI3ODY4MyIsCiAgICAiY29ycmVvIiA6ICJmYWN0dXJhY2lvbkByaXZlcmFzZ3JvdXAuY29tIiwKICAgICJjb2RFc3RhYmxlTUgiIDogIlMwMDQiLAogICAgImNvZEVzdGFibGUiIDogIlMwMDQiLAogICAgImNvZFB1bnRvVmVudGFNSCIgOiAiUDAwMSIsCiAgICAiY29kUHVudG9WZW50YSIgOiAiUDAwMSIKICB9LAogICJyZWNlcHRvciIgOiB7CiAgICAidGlwb0RvY3VtZW50byIgOiBudWxsLAogICAgIm51bURvY3VtZW50byIgOiBudWxsLAogICAgIm5yYyIgOiBudWxsLAogICAgIm5vbWJyZSIgOiBudWxsLAogICAgImNvZEFjdGl2aWRhZCIgOiBudWxsLAogICAgImRlc2NBY3RpdmlkYWQiIDogbnVsbCwKICAgICJkaXJlY2Npb24iIDogbnVsbCwKICAgICJ0ZWxlZm9ubyIgOiBudWxsLAogICAgImNvcnJlbyIgOiBudWxsCiAgfSwKICAib3Ryb3NEb2N1bWVudG9zIiA6IG51bGwsCiAgInZlbnRhVGVyY2VybyIgOiBudWxsLAogICJjdWVycG9Eb2N1bWVudG8iIDogWyB7CiAgICAibnVtSXRlbSIgOiAxLAogICAgInRpcG9JdGVtIiA6IDEsCiAgICAibnVtZXJvRG9jdW1lbnRvIiA6IG51bGwsCiAgICAiY2FudGlkYWQiIDogMSwKICAgICJjb2RpZ28iIDogIkctNTg0NCIsCiAgICAiY29kVHJpYnV0byIgOiBudWxsLAogICAgImRlc2NyaXBjaW9uIiA6ICJKdWVnbyBkZSBNb2NoaWxhIEdyYW5kZVBlcXVlw7FhRXN0dWNoZSBSb3NhIiwKICAgICJ1bmlNZWRpZGEiIDogNTksCiAgICAicHJlY2lvVW5pIiA6IDIyLAogICAgIm1vbnRvRGVzY3UiIDogMCwKICAgICJ2ZW50YU5vU3VqIiA6IDAsCiAgICAidmVudGFFeGVudGEiIDogMCwKICAgICJ2ZW50YUdyYXZhZGEiIDogMjIsCiAgICAidHJpYnV0b3MiIDogbnVsbCwKICAgICJwc3YiIDogMCwKICAgICJub0dyYXZhZG8iIDogMCwKICAgICJpdmFJdGVtIiA6IDIuNTMxCiAgfSBdLAogICJyZXN1bWVuIiA6IHsKICAgICJ0b3RhbE5vU3VqIiA6IDAsCiAgICAidG90YWxFeGVudGEiIDogMCwKICAgICJ0b3RhbEdyYXZhZGEiIDogMjIsCiAgICAic3ViVG90YWxWZW50YXMiIDogMjIsCiAgICAiZGVzY3VOb1N1aiIgOiAwLAogICAgImRlc2N1RXhlbnRhIiA6IDAsCiAgICAiZGVzY3VHcmF2YWRhIiA6IDAsCiAgICAicG9yY2VudGFqZURlc2N1ZW50byIgOiAwLAogICAgInRvdGFsRGVzY3UiIDogMCwKICAgICJ0cmlidXRvcyIgOiBudWxsLAogICAgInN1YlRvdGFsIiA6IDIyLAogICAgIml2YVJldGUxIiA6IDAsCiAgICAicmV0ZVJlbnRhIiA6IDAsCiAgICAibW9udG9Ub3RhbE9wZXJhY2lvbiIgOiAyMiwKICAgICJ0b3RhbE5vR3JhdmFkbyIgOiAwLAogICAgInRvdGFsUGFnYXIiIDogMjIsCiAgICAidG90YWxMZXRyYXMiIDogIlZFSU5USURPUyAwMC8xMDAgRE9MQVJFUyIsCiAgICAidG90YWxJdmEiIDogMi41MywKICAgICJzYWxkb0Zhdm9yIiA6IDAsCiAgICAiY29uZGljaW9uT3BlcmFjaW9uIiA6IDEsCiAgICAicGFnb3MiIDogbnVsbCwKICAgICJudW1QYWdvRWxlY3Ryb25pY28iIDogbnVsbAogIH0sCiAgImV4dGVuc2lvbiIgOiB7CiAgICAibm9tYkVudHJlZ2EiIDogIkpvc3NlbGlubmUgR2FyY8OtYSIsCiAgICAiZG9jdUVudHJlZ2EiIDogbnVsbCwKICAgICJub21iUmVjaWJlIiA6IG51bGwsCiAgICAiZG9jdVJlY2liZSIgOiBudWxsLAogICAgIm9ic2VydmFjaW9uZXMiIDogbnVsbCwKICAgICJwbGFjYVZlaGljdWxvIiA6IG51bGwKICB9LAogICJhcGVuZGljZSIgOiBudWxsCn0.dBpklP04sS1E85vlHb6PfX1QW6kY0nzqYTqHoPclhnV3JgaCmwaZHYPAOBxn9ZRDZioU9Ji4Jv6e-YCpuORMXW8SYTyq8EXY0W8_BKg4PG0LiTKx6NLUrQKIMxDxgXWric7qc0XFuwaNyPa-lbtRnAfliferh84sDPNdr-nXt_SwQt_d3V19RT41yCVzJngLgi2aotxxsYsWiCCPhBaN8fy1onW46H1wfUhiL1LX1IyaxcsOYZDGX9ZsWmffjr0Q5yRP08450UQ1nNEitW9BpfNMo0Dx67pamYEtzR8ypiuyak5uGzCgJFdc3UtKc0qHH0i3qdor0S5OsypfPwVOsw"
+  };
+
+  let current_sucursal = "Casa Matriz";
+  let helper_url = "google.com"
+
+  const print_ticket = async (data, amount = 0.00) => {
+    const isPrintEnabled = document.getElementById('printTicket')?.checked;
+
+    if (!isPrintEnabled && !isNaN(amount) && amount > 0) {
+      try {
+        const builder = new ESCPOSBuilder();
+        builder.initialize().cashDrawer().newLineN(2);
+        await printerClient.sendCommands(builder.build());
+        console.log('comandos de apertura realizado');
+      } catch (err) {
+        console.error('Error al abrir cajón:', err);
+      }
+      return;
+    }
+    try {
+      const logoImgData = await window.loadImageData('/assets/images/favicon.png', 384).catch(() => null);
+      commands = null;
+      const esc = new ESCPOSBuilder();
+      esc.initialize().setFont('A')
+        .align('center');
+      if (logoImgData) {
+        esc.image(logoImgData).newLine();
+      }
+      esc.bold(true).doubleHeightWidth(true)
+        .text(data.emisor.nombreComercial)
+        .doubleHeightWidth(false).newLine()
+        .text(data.emisor.nombre)
+        .bold(false).newLine()
+        .text('NRC: ' + data.emisor.nrc + ' NIT: ' + data.emisor.nit)
+        .newLine()
+        .text(current_sucursal)
+        .newLineN(2)
+        .text('=========================================')
+        .newLine().text('Datos del Cliente');
+      if (data.receptor.nombre != "" && data.receptor.nombre != null) {
+        esc.newLine().text(data.receptor.nombre);
+        if (data.receptor.tipoDocumento) {
+          esc.newLine().text(`Documento ${documents[data.receptor.tipoDocumento]} ${data.receptor.numDocumento}`);
+        }
+      } else {
+        esc.newLine().text('CONSUMIDOR FINAL');
+      }
+      esc.newLine().text('=========================================').setFont('B')
+        .newLine().text(`Tipo DTE: ${data.identificacion.tipoDte == "03" ? 'Credito Fiscal' : 'Factura'}`)
+        .newLine().text(`Modelo de Facturacion: ${data.identificacion.tipoModelo == 1 ? 'Previo' : 'Diferido'}`)
+        .newLine().text(`Tipo de Transmision: ${data.identificacion.tipoOperacion == 1 ? 'Normal' : 'Contingencia'}`)
+        .newLine().text('Fecha de Emision: ' + format_date(data.identificacion.fecEmi + " " + data.identificacion.horEmi, true))
+        .newLine().text('Codigo de Generacion:')
+        .newLine().text(data.identificacion.codigoGeneracion)
+        .newLine().text('Numero de Control:')
+        .newLine().text(data.identificacion.numeroControl);
+
+      if (data.identificacion.tipoOperacion == 1) {
+        esc.newLine().text('Sello de Recibido:')
+          .newLine().text(data.selloRecibido);
+      }
+      esc.newLine().qr(`https://admin.factura.gob.sv/consultaPublica?ambiente=${data.identificacion.ambiente}&codGen=${data.identificacion.codigoGeneracion}&fechaEmi=${data.identificacion.fecEmi}`, 5).newLine();
+      esc.align('left')
+        .newLine()
+        .text(`${String('Codigo').padEnd(23, ' ')}${String('cant').padStart(7)}${String('Precio').padStart(11)}${String('Subtotal').padStart(11, ' ')}`);
+
+      const lar_ = data.cuerpoDocumento.length;
+      for (let i = 0; i < lar_; i++) {
+        let item = data.cuerpoDocumento[i];
+        let name = item.descripcion.length > 48 ? item.descripcion.substring(0, 48) : item.descripcion.padEnd(48)
+        let code = item.codigo.length > 23 ? item.codigo.substring(0, 23) : item.codigo.padEnd(23);
+        const qty = String(item.cantidad).padStart(7);
+        const price = String(`$ ${money_format(item.precioUni)}`).padStart(10);
+        const itemTotal = String(`$ ${money_format(item.ventaGravada)}`).padStart(10);
+        esc.newLine().text(`${name}`)
+          .newLine().text(`${code}${qty}${price}${itemTotal}`);
+      }
+
+      esc.newLineN(2)
+        .text(`${String("Sub-Total Ventas Gravadas").padEnd(39, ' ')}$${String(money_format(data.resumen.totalGravada)).padStart(10, ' ')}`);
+      if (data.resumen.tributos !== null && data.resumen.tributos.length > 0) {
+        for (let index = 0; index < data.resumen.tributos.length; index++) {
+          const element = data.resumen.tributos[index];
+          esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`)
+        }
+      }
+      esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`)
+        .newLine().text(`${String("Retencion de Renta").padEnd(39, ' ')}$${String(money_format(data.resumen.reteRenta)).padStart(10, ' ')}`)
+        .newLine().setFont('A').bold(true).text(`${String("Total a Pagar    $")}${String(money_format(data.resumen.montoTotalOperacion)).padStart(10, ' ')}`)
+        .bold(false)
+        .align('center')
+        .newLineN(2)
+        .text('Descargue su factura en el siguiente QR:')
+        .qr(`${helper_url}/utils/services/dte/inline?uuid=${data.identificacion.codigoGeneracion}&fecha=${data.identificacion.fecEmi}`, 4).newLineN(2)
+        .text('Gracias por su compra')
+        .newLineN(5)
+        .cut();
+
+      if (!isNaN(amount) && amount > 0) {
+        esc.cashDrawer();
+      }
+
+      commands = esc.build();
+      await printerClient.sendCommands(commands);
+      console.log(commands, "Impresion realizada");
+      return;
+    } catch (error) {
+      console.error('Error al imprimir ticket:', error);
+      return errorMessage('Error de conexion con la impresora');
+    }
+
+
+  };
+
+  async function openChashDrwaerCommand() {
+    try {
+      if (printerClient.status !== 'connected') {
+        showToast('La impresora no está conectada. No se puede abrir el cajón.', 'error');
+        return;
+      }
+      await printerClient.openCashDrawer();
+      showToast('Cajón de dinero abierto con éxito.', 'success');
+    } catch (err) {
+      console.error('Error al abrir el cajón de dinero:', err);
+      showToast('Error al abrir el cajón de dinero.', 'error');
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", event => {
+    setTimeout(() => {
+      // print_ticket(data, 25.00);
+    }, 2000);
+
+    document.querySelector("#probarImpresion").addEventListener('click', e =>{
+      print_ticket(data, 25.00);
+    });
+  })
+</script>
+
+
+
+</html>
