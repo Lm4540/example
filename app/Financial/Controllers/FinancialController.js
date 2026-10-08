@@ -570,6 +570,11 @@ module.exports = {
             const provider = await InventoryProvider.findByPk(account.provider);
 
             const currentBalance = parseFloat(account.amount) + totalApplied;
+            if (currentBalance < 0.001) {
+
+                account._status = "Pagado";
+                await account.save();
+            }
 
             res.render('Financial/account_detail', {
                 account,

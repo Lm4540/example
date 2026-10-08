@@ -301,9 +301,7 @@ const SalesStatusController = {
         let client = await Client.findByPk(sale.client);
         try {
             return await sequelize.transaction(async (t) => {
-
                 let sale_cost = 0.00;
-
                 var concept = `Egreso por venta id: ${sale.id}, cliente ${client.name}`;
                 let len = details.length;
 
@@ -347,17 +345,21 @@ const SalesStatusController = {
                                 stock_to_dicount[stock.id] = stock_to_dicount[stock.id] !== undefined ? stock_to_dicount[stock.id] + reserve.cant : reserve.cant;
                                 product_to_discount[product.id] = product_to_discount[product.id] !== undefined ? product_to_discount[product.id] + reserve.cant : reserve.cant;
 
-                                await reserve.destroy({ transaction: t })
+                                
 
                                 //actualizar el detalle
                                 sale_cost += Helper.fix_number(product.cost * reserve.cant);
                                 product_cost += Helper.fix_number(product.cost * reserve.cant);
                                 dt.delivered += reserve.cant;
                                 dt.product_cost = product.cost;
+
+                                await reserve.destroy({ transaction: t })
+
+
                             } else {
                                 return { status: 'errorMessage', message: 'producto id ' + reserve.product + ' no encontrado' };
                             }
-                            //TOEKN REVISAR ESTA MIERDA
+
                         } else {
                             return { status: 'errorMessage', message: 'Stock not found for product id ' + reserve.product + ' and sucursal ' + reserve.sucursal + '!' };
                         }
@@ -372,13 +374,8 @@ const SalesStatusController = {
                 for (let index = 0; index < keys.length; index++) {
                     let _stock_id = keys[index];
                     await sequelize.query(
-                        'update `inventory_product_stock` set cant = cant - :_cant, reserved = reserved - :_reserved  WHERE id = :_stock_id',
+                        `update inventory_product_stock set cant = cant - ${stock_to_dicount[_stock_id]}, reserved = reserved - ${stock_to_dicount[_stock_id]}  WHERE id = ${_stock_id}`,
                         {
-                            replacements: {
-                                _cant: stock_to_dicount[_stock_id],
-                                _reserved: stock_to_dicount[_stock_id],
-                                _stock_id: _stock_id
-                            },
                             type: QueryTypes.UPDATE,
                             transaction: t
                         }
@@ -392,13 +389,8 @@ const SalesStatusController = {
                 for (let index = 0; index < keys.length; index++) {
                     let _stock_id = keys[index];
                     await sequelize.query(
-                        'update `inventory_product` set stock = stock - :_cant, reserved = reserved - :_reserved  WHERE id = :_stock_id',
+                        `update inventory_product set stock = stock - ${product_to_discount[_stock_id]}, reserved = reserved - ${product_to_discount[_stock_id]}  WHERE id = ${_stock_id}`,
                         {
-                            replacements: {
-                                _cant: product_to_discount[_stock_id],
-                                _reserved: product_to_discount[_stock_id],
-                                _stock_id: _stock_id
-                            },
                             type: QueryTypes.UPDATE,
                             transaction: t
                         }

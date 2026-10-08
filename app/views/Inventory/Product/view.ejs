@@ -94,6 +94,25 @@
                   </td>
                 </tr>
 
+                <% if (permission.includes('view_kardex')) { %>
+                <tr>
+                  <td>Costo Promedio: </td>
+                  <td style="font-weight: bold; font-size: 1.5em;" class="text-info">
+                    $ <%= product.cost %> 
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Venta minimo Sugerido (1.5%):</td>
+                  <td style="font-weight: bold; font-size: 1.5em;" class="text-danger">
+                    $ <%= product.cost * 1.5 %>
+                  </td>
+                </tr>
+
+                <% } %>
+
+                
+
 
 
               </table>
