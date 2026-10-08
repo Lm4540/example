@@ -560,7 +560,7 @@ const ApiController = {
 
                   if (size.width > 800 || size.height > 800) {
                         const resizedBuffer = await image.resize(800, 800).toBuffer();
-                        await fs.writeFile(location, resizedBuffer);
+                        await fs.promises.writeFile(location, resizedBuffer);
                   }
 
                   return res.json({
