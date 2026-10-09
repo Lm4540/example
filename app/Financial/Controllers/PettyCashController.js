@@ -206,11 +206,7 @@ const PettyCashController = {
     },
 
     getArqueoView: async (req, res) => {
-
         try {
-
-
-
             const { id } = req.params;
             let cash = await PettyCash.findByPk(id);
             if (cash) {
@@ -223,8 +219,6 @@ const PettyCashController = {
                 if (arqueo) {
                     console.log(arqueo)
                     const denominations = arqueo.denominations;
-                    
-
                     let lb = [
                         ["Billetes $100.00", 100, denominations[100] || 0],
                         ["Billetes $50.00", 50, denominations[50] || 0],
@@ -236,11 +230,9 @@ const PettyCashController = {
                         ["Monedas $0.10", 0.1, denominations[0.1] || 0],
                         ["Monedas $0.05", 0.05, denominations[0.05] || 0],
                         ["Monedas $0.01", 0.01, denominations[0.01] || 0]
-                     
                     ]
-
                     return res.render('Financial/PettyCash/verify_arqueo', {
-                        title: 'Cuentas por Pagar',
+                        pageTitle: 'Arqueo de caja',
                         arqueo,
                         denominations,
                         cash, lb
@@ -248,7 +240,7 @@ const PettyCashController = {
                 }
 
                 return res.render('Financial/PettyCash/petty_cash_closing', {
-                    title: 'Cuentas por Pagar',
+                    pageTitle: 'Arqueo de caja',
                     cash,
                 });
             }
@@ -301,15 +293,15 @@ const PettyCashController = {
         const t = await sequelize.transaction();
         try {
             const { closing_id, action, notes } = req.body;
-            if (action == 'Delete') {
+            if (action == 'delete') {
                 await PettyCashClosing.destroy({ where: { id: closing_id } }, { transaction: t });
                 await t.commit();
                 return res.json({ success: true, message: `Arqueo eliminado` });
             }
-            const verifier_user = req.session.userSession.shortName;
+            const verifier_user = req.session.userSession.name;
             const closing = await PettyCashClosing.findByPk(closing_id, { transaction: t });
 
-            if (closing.cashier_user === verifier_user) {
+            if (closing.cashier_user === verifier_user && !req.session.userSession.permission.includes('verify_self_petty_cash_closing')) {
                 throw new Error("El cajero y el verificador no pueden ser la misma persona.");
             }
 

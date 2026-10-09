@@ -100,9 +100,9 @@
               </div>
 
               <div class="d-grid gap-2">
-                <% if (user.name == arqueo.cashier_user) { %>
+                <% if (user.AllName == arqueo.cashier_user && !permission.includes('verify_self_petty_cash_closing')) { %>
 
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmVerify('Rechazado')">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmVerify('delete')">
                   Corregir y Volver a Comenzar
                 </button>
 
@@ -110,12 +110,12 @@
                 <button type="button" class="btn btn-warning fw-bold py-2" onclick="confirmVerify('Verificado')">
                   Confirmar y Verificar
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmVerify('Rechazado')">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmVerify('delete')">
                   Rechazar Arqueo
                 </button>
 
                 <p class="text-muted small mt-3 text-center">
-                  <i class="fa fa-info-circle me-1"></i> Al verificar, se registrará su usuario (<strong><%= user.name %></strong>) como responsable de la supervisión.
+                  <i class="fa fa-info-circle me-1"></i> Al verificar, se registrará su usuario (<strong><%= user.AllName %></strong>) como responsable de la supervisión.
                 </p>
 
                 <% } %>
@@ -133,14 +133,14 @@
 </body>
 <%- include('../../Layouts/Scripts.ejs') %>
 
-<% if (user.name == arqueo.cashier_user) { %>
+<% if (user.AllName == arqueo.cashier_user && !permission.includes('verify_self_petty_cash_closing')) { %>
 <script>
   async function confirmVerify(action) {
     if (!confirm(`Volvera al conteo ¿Esta seguro?`)) return;
 
     const data = {
       closing_id: '<%= arqueo.id %>',
-      action: 'Delete',
+      action: 'delete',
       notes: ''
     };
 

@@ -81,7 +81,7 @@
                 <label class="form-label small fw-bold">Notas de la Jornada</label>
                 <textarea id="notes" class="form-control border-secondary" rows="2"></textarea>
               </div>
-              <button class="btn btn-primary w-100 py-2" onclick="processArqueo()">
+              <button class="btn btn-primary w-100 py-2" onclick="processArqueo()" id="processBtn">
                 Procesar
               </button>
               <br>
@@ -178,13 +178,14 @@
   document.addEventListener('DOMContentLoaded', loadSavedCounts);
 
   async function processArqueo() {
-    // Recopilar denominaciones en un JSON
+    const processBtn = document.getElementById('processBtn');
+    processBtn.disabled = true;
     const denominations = {};
     let physical_balance = 0;
     document.querySelectorAll('.denomination-input').forEach(input => {
       const qty = parseInt(input.value) || 0;
       if (qty > 0) denominations[input.dataset.value] = qty;
-      physical_balance += (parseFloat(input.dataset.value) * qty);
+      physical_balance += parseFloat((parseFloat(input.dataset.value) * qty).toFixed(2));
     });
 
     const data = {
@@ -197,14 +198,14 @@
     postData('/financial/arqueo', data).then(data => {
       if (data.status == 'success') {
 
-        // clearArqueoCache();
+        clearArqueoCache();
         successMessage('Guardado')
         window.location.reload();
 
 
 
       } else if (data.status == 'errorMessage') {
-        e.target.disabled = false;
+        processBtn.disabled = false;
         return errorMessage(data.message);
       } else {
         return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');

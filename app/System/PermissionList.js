@@ -398,7 +398,12 @@ module.exports = [
         "group": "Finanzas",
         "permission": "create_petty_cash_clossing"
     },
-
+    {
+        "name": "Verificar Arqueo de caja de Efectivo realizado por el mismo usuario",
+        "explication": "Permite finalizar y cerrar el Arqueo de caja de efectivo, creado por el mismo usuario que lo realizo",
+        "group": "Finanzas",
+        "permission": "verify_self_petty_cash_closing"
+    },
     {
         "name": "Verificar Arqueo de caja de Efectivo",
         "explication": "Permite finalizar y cerrar el Arqueo de caja de efectivo",
