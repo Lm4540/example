@@ -274,9 +274,10 @@
             document.getElementById('btnLogIn').disabled = false;
             document.getElementById('btnLogIn').innerHTML = 'Iniciar Session';
             return errorMessage(data.message);
+          }else{
+              return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
           }
 
-          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
         });
       }
     }
