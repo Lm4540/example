@@ -178,11 +178,11 @@
 
             <div class="modal-footer">
               <button class="btn btn-outline-success mr-2 mr-2" onclick="verHistorial()" data-bs-target="#modalHistorialConsignacion" data-bs-toggle="modal">Ver Historial</button>
-              <button class="btn btn-outline-primary mr-2 mr-2" onclick="consignar(true)" data-bs-dismiss="modal">
+              <button class="btn btn-outline-primary mr-2 mr-2" onclick="consignar(true)" data-bs-dismiss="modal" id ="btn_consignar">
                 Consignar
               </button>
 
-              <button class="btn btn-outline-danger mr-2 mr-2" onclick="consignar(false)" data-bs-dismiss="modal">
+              <button class="btn btn-outline-danger mr-2 mr-2" onclick="consignar(false)" data-bs-dismiss="modal" id ="btn_devolver">
                 Devolver
               </button>
             </div>
@@ -359,6 +359,9 @@
 
 
   async function consignar(isConsignar) {
+
+    document.getElementById('btn_consignar').disabled = true;
+    document.getElementById('btn_devolver').disabled = true;
     const data = {
       amount: document.getElementById('consigned_amount').value,
       comment: document.getElementById('consigned_comment').value,

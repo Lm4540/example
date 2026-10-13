@@ -12,28 +12,170 @@
   <link rel="stylesheet" href="assets/css/app.css">
   <link rel="stylesheet" href="assets/css/toastr.css">
   <style>
-    #btnLogIn {
-      background-color: #1c2136;
+    body {
+      background-color: #0f172a;
+      font-family: system-ui, -apple-system, sans-serif;
     }
 
     #auth {
-      background-image: url('assets/images/background/auth<%= Helper.getRandomInt(6) %>.jpg');
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: radial-gradient(circle at top right, rgba(30, 41, 59, 0.7), #0f172a);
+      padding: 1rem 0;
     }
 
     #auth .card {
-      box-shadow: 0 1.5px 1px #eeeee4;
-      border: none;
-      background: hsla(228, 48%, 16%, 0.801);
-      color: white;
-      border-radius: 2em;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      color: #f8fafc;
+      padding: 1rem;
+    }
+
+    h3 {
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      margin-top: 0.5rem;
+    }
+
+    /* Inputs y etiquetas */
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
     }
 
     .form-control {
-      color: white;
+      background-color: rgba(15, 23, 42, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff !important;
+      padding: 0.75rem .5rem 0.75rem 1rem;
+      height: auto;
+      transition: all 0.2s ease;
     }
 
     .form-control:focus {
-      color: #cccccc;
+      background-color: #0f172a !important;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      outline: none;
+      color: #ffffff !important;
+    }
+
+    .form-control::placeholder {
+      color: #64748b;
+    }
+
+    .input-container {
+      position: relative;
+    }
+
+    #EyeIcon {
+      position: absolute;
+      right: 1rem;
+      top: 65%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      height: 100%;
+    }
+
+    #EyeIcon i {
+      color: #64748b;
+      transition: color 0.2s;
+      margin-top: 0 !important;
+    }
+
+    #EyeIcon i:hover {
+      color: #3b82f6;
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+      padding-left: 0;
+    }
+
+    .form-check-input {
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0;
+      margin-right: 0.5rem;
+      background-color: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      position: relative;
+    }
+
+    .form-check-input:checked {
+      background-color: #3b82f6;
+      border-color: #3b82f6;
+    }
+
+    .form-check-input:checked::before {
+      content: "✓";
+      position: absolute;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .form-check label {
+      margin-bottom: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #btnLogIn {
+      background-color: #3b82f6 !important;
+      border: none;
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      padding: 0.75rem 2rem;
+      width: 100%;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+    }
+
+    #btnLogIn:hover {
+      background-color: #2563eb !important;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+
+    #btnLogIn:active {
+      transform: translateY(0);
+    }
+
+    #btnLogIn:disabled {
+      background-color: #1e293b !important;
+      color: #64748b;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   </style>
 </head>
@@ -49,34 +191,31 @@
             <div class="card-body">
               <div class="text-center mb-5">
                 <img src="assets/images/favicon.svg" height="48" class='mb-4'>
-                <h3>Iniciar Sesion</h3>
+                <h3>Iniciar Sesión</h3>
               </div>
               <form>
                 <div class="form-group">
                   <label for="username">Usuario</label>
                   <input type="text" class="form-control" id="username" name="username">
                 </div>
-
                 <div class="form-group position-relative has-icon-right">
                   <div class="clearfix">
                     <label for="InputPass">Contraseña</label>
                   </div>
                   <input type="password" class="form-control" placeholder="Contraseña" id="InputPass" name="InputPass">
                   <div class="form-control-icon" id="EyeIcon">
-                    <i class="fas fa-eye" style="margin-top: 18px; font-size: 125%; cursor: pointer;" onclick="showPass()"></i>
-
+                    <i class="fas fa-eye" style="font-size: 125%; cursor: pointer;" onclick="showPass()"></i>
                   </div>
                 </div>
-
-                <div class='form-check clearfix'>
+                <div>
                   <div class="checkbox float-left">
-                    <input type="checkbox" id="checkRememberMe" class='form-check-input' name="checkRememberMe">
-                    <label for="checkRememberMe">Recuerdame</label>
+                    <input type="checkbox" id="checkRememberMe" class='form-check-input' name="checkRememberMe" checked="checked">
+                    <label for="checkRememberMe">Recuérdame</label>
                   </div>
                 </div>
               </form>
               <div class="clearfix text-center">
-                <button class="btn btn-secondary  mt-3" id="btnLogIn" onclick="sendData()">Iniciar Session</button>
+                <button class="btn btn-secondary mt-3" id="btnLogIn" onclick="sendData()">Iniciar Sesión</button>
               </div>
             </div>
           </div>
@@ -84,7 +223,6 @@
         <div class="col-1 col-md-4"></div>
       </div>
     </div>
-
   </div>
   <script>
     const _baseURL = '<%=baseURL%>';
@@ -106,7 +244,7 @@
 
     const sendData = () => {
       document.getElementById('btnLogIn').disabled = true;
-      document.getElementById('btnLogIn').innerHTML = 'Buscando usuario...';
+      document.getElementById('btnLogIn').innerHTML = 'Buscando Usuario...';
       let username = document.getElementById('username').value;
       let password = document.getElementById('InputPass').value;
       let remember = document.getElementById('checkRememberMe').checked;
@@ -126,15 +264,19 @@
           remember,
         }).then(data => {
           if (data.status == 'success') {
+            document.getElementById('btnLogIn').innerHTML = 'Cargando Datos...';
             successMessage(data.message);
             fetch('/loginValidate');
             setTimeout(() => {
               window.location.reload();
-            }, 3000);
-          } else {
-            return errorMessage(data.status == 'errorMessage' ? data.message : 'Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
+            }, 2000);
+          } else if (data.status == 'errorMessage') {
+            document.getElementById('btnLogIn').disabled = false;
+            document.getElementById('btnLogIn').innerHTML = 'Iniciar Session';
+            return errorMessage(data.message);
           }
 
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página he inténtalo nuevamente');
         });
       }
     }
