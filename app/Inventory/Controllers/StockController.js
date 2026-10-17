@@ -1350,7 +1350,7 @@ const StockController = {
 
         //buscar los movimientos de esos productos hasta la fecha seleccionada, podemos hacerlos por medio de lotes para no sobrecargar el servidor de base de datos e ir acumulando la informacion en un arreglo.
 
-        let sql = `WITH RankedMovements AS ( SELECT inventory_product_movement.*, ROW_NUMBER() OVER(PARTITION BY product ORDER BY createdAt DESC) as rn FROM inventory_product_movement WHERE sucursal = :sucursal AND createdAt <= :date ) SELECT rm.* FROM RankedMovements rm WHERE rm.rn = 1;`
+        let sql = `WITH RankedMovements AS ( SELECT inventory_product_movement.*, ROW_NUMBER() OVER(PARTITION BY product ORDER BY createdAt DESC, id DESC) as rn FROM inventory_product_movement WHERE sucursal = :sucursal AND createdAt <= :date ) SELECT rm.* FROM RankedMovements rm WHERE rm.rn = 1;`
         //ordenar los movimientos dando el ultimo movimiento de cada producto, si ya hay un movimiento anterior se puede comparar la fecha y obtener la fecha mas reciente.
 
         tmp = await sequelize.query(sql, {
@@ -1408,13 +1408,11 @@ const StockController = {
             tmp.forEach(move => {
                 let product = products[move.product];
                 let cant = 0, cost = 0.00;
-                //determinar la cantidad
-
-                if (move.in == true || move.in == 1) {
+                if (move.in) {
                     cant = move.last_sucursal_stock + move.cant;
                     cost = ((move.last_sucursal_stock * move.last_cost) + (move.cant * move.cost)) / cant;
                 } else {
-                    cant = Number.parseInt(move.last_sucursal_stock) - Number.parseInt(move.cant);
+                    cant = move.last_sucursal_stock - move.cant;
                     cost = move.cost;
                 }
 
