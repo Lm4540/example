@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs');
 const wkhtmltopdf = require('wkhtmltopdf');
-const nodemailer = require('nodemailer');
 const fetch = require('node-fetch'); // En Node.js <18, necesario
 
 const app = express();
@@ -21,30 +20,7 @@ const generatePDF = (htmlContent, outputPath) => {
 };
 
 // Función para enviar correo electrónico con el PDF adjunto
-const sendEmail = async (email, filePath) => {
-      const transporter = nodemailer.createTransport({
-            service: 'gmail', // Cambia según tu proveedor de correo
-            auth: {
-                  user: '<your_email>@gmail.com',
-                  pass: '<your_password>' // Usa variables de entorno para mayor seguridad
-            }
-      });
 
-      const mailOptions = {
-            from: '<your_email>@gmail.com',
-            to: email,
-            subject: 'Aquí tienes tu PDF adjunto',
-            text: 'Por favor, encuentra el archivo adjunto.',
-            attachments: [
-                  {
-                        filename: 'archivo.pdf',
-                        path: filePath
-                  }
-            ]
-      };
-
-      return transporter.sendMail(mailOptions);
-};
 
 // Función para enviar el PDF por WhatsApp
 const sendWhatsApp = async (phoneNumber, filePath) => {

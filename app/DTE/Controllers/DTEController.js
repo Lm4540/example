@@ -3,13 +3,11 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const DTE = require('../Models/DTE');
-const Money = require('../../System/Money');
 const TokenManager = require('../TokenManager');
-const { validateDteData } = require('../dteValidator');
 const { response } = require('express');
 const variables = process.env;
-const cache = require("memory-cache");
 const sequelize = require('../../DataBase/DataBase');
+const signerService = require('./dteSigner.service');
 
 // --- Constantes y Configuración ---
 const SIGNER_URL = variables.SIGNER_URL;
@@ -22,14 +20,20 @@ const USER_NIT = variables.COMPANY_NIT; // NIT del usuario que firma el DTE
 
 // --- URLs API MH ---
 function getMhApiUrl(endpoint) {
-    const isProduction = variables.DTE_AMBIENTE === '01';
-    const baseUrls = {
-        reception: isProduction ? variables.MH_RECEPTION_URL_PROD : variables.MH_RECEPTION_URL_TEST,
-        consulta: isProduction ? variables.MH_CONSULTA_URL_PROD : variables.MH_CONSULTA_URL_TEST,
-        anulacion: isProduction ? variables.MH_ANULACION_URL_PROD : variables.MH_ANULACION_URL_TEST,
-        contingencia: isProduction ? variables.MH_CONTINGENCIA_URL_PROD : variables.MH_CONTINGENCIA_URL_TEST,
-        loteReception: isProduction ? variables.MH_LOTE_RECEPTION_URL_PROD : variables.MH_LOTE_RECEPTION_URL_TEST,
-        loteConsulta: isProduction ? variables.MH_LOTE_CONSULTA_URL_PROD : variables.MH_LOTE_CONSULTA_URL_TEST,
+    const baseUrls = variables.DTE_AMBIENTE === '01' ? {
+        reception: variables.MH_RECEPTION_URL_PROD,
+        consulta: variables.MH_CONSULTA_URL_PROD,
+        anulacion: variables.MH_ANULACION_URL_PROD,
+        contingencia: variables.MH_CONTINGENCIA_URL_PROD,
+        loteReception: variables.MH_LOTE_RECEPTION_URL_PROD,
+        loteConsulta: variables.MH_LOTE_CONSULTA_URL_PROD,
+    } : {
+        reception: variables.MH_RECEPTION_URL_TEST,
+        consulta: variables.MH_CONSULTA_URL_TEST,
+        anulacion: variables.MH_ANULACION_URL_TEST,
+        contingencia: variables.MH_CONTINGENCIA_URL_TEST,
+        loteReception: variables.MH_LOTE_RECEPTION_URL_TEST,
+        loteConsulta: variables.MH_LOTE_CONSULTA_URL_TEST,
     };
     return baseUrls[endpoint];
 }
@@ -39,7 +43,7 @@ function getMhApiUrl(endpoint) {
  * @returns {string} UUID v4 en mayúsculas.
  */
 function generarCodigoGeneracion() {
-    generacion =  uuidv4().toUpperCase();
+    generacion = uuidv4().toUpperCase();
     sequelize.query('INSERT INTO `crm_dte_generacion_asignados` (`id`, `code_`, `createdAt`) VALUES (NULL, :_code, :_date)', {
         replacements: {
             _code: generacion,
@@ -47,12 +51,9 @@ function generarCodigoGeneracion() {
         },
         type: sequelize.QueryTypes.INSERT
     });
-
-    
     return generacion;
 }
 
-// --- Función Placeholder para Correlativo ---
 async function getNextCorrelativo(tipoDte, year, sucursal, puntoVenta) {
     let correlativo = await DTE.findOne({
         where: {
@@ -63,31 +64,19 @@ async function getNextCorrelativo(tipoDte, year, sucursal, puntoVenta) {
         },
         order: [['id', 'DESC']]
     });
-
-    // let correlativo = { correlativo: 5 }; // Simulación de correlativo, reemplazar con lógica real
-
     return correlativo ? correlativo.correlativo + 1 : 1; // Incrementar el correlativo
 }
 
 /**
- * Genera un Número de Control (requiere lógica específica).
- * Esta es una implementación de ejemplo simple, DEBES adaptarla.
  * @param {string} tipoDte - Ej: '01', '03'.
  * @param {string} codEstable - Código de establecimiento (ej: '0000').
  * @param {string} codPuntoVenta - Código de punto de venta (ej: '0000').
  * @returns {Promise<string>} El número de control generado.
  */
 async function generarNumeroControl(tipoDte, sucursal, puntoVenta, codEstable, codPuntoVenta) {
-    // console.log(tipoDte, sucursal, puntoVenta, codEstable, codPuntoVenta);
-    // Lógica para obtener el siguiente correlativo (ej. desde BD o archivo)
-    // ¡¡¡IMPLEMENTACIÓN DE EJEMPLO MUY BÁSICA!!!
     const year = new Date().getFullYear().toString();
-    // Deberías tener un contador persistente por tipoDte, establecimiento, puntoVenta y año
     const correlativo = await getNextCorrelativo(tipoDte, year, sucursal, puntoVenta);
     var correlativoPadding = correlativo.toString().padStart(15, '0');
-    // Formato: DTE-TT-EEEEPPPP-CCCCCCCCCCCCCCC (TT=Tipo, E=Estable, P=PVenta, C=Correlativo)
-    // El formato del manual parece ser DTE-TT-EEEEPPPP-CCCCCCCCCCCCCCC
-
     if (codEstable == null || codEstable == "" || codPuntoVenta == null || codPuntoVenta == "") {
         codEstable = "0000";
         codPuntoVenta = "0000";
@@ -111,7 +100,6 @@ async function consultaEstadoDTE(tipoDte, codigoGeneracion, nitEmisor = USER_NIT
 
     console.log(tipoDte, codigoGeneracion, nitEmisor);
     const consultaUrl = getMhApiUrl('consulta');
-    // const consultaUrl = "https://api.dtes.mh.gob.sv/fesv/recepcion/consultadte/"
     if (!consultaUrl) {
         return {
             status: 'errorToken',
@@ -180,6 +168,15 @@ async function consultaEstadoDTE(tipoDte, codigoGeneracion, nitEmisor = USER_NIT
     }
 }
 
+async function signDTE(dteJson, complete = false) {
+    let jws = await signerService.signDte(dteJson);
+    return {
+        status: 'success',
+        message: 'Firmado exitosamente',
+        data: complete ? jws : jws.data
+    }
+}
+
 /**
  * 
  * Firma un documento DTE JSON usando el servicio local.
@@ -187,14 +184,13 @@ async function consultaEstadoDTE(tipoDte, codigoGeneracion, nitEmisor = USER_NIT
  * @returns {Promise<string>} El DTE firmado en formato JWS (string).
  * @throws {Error} Si falla la firma.
  */
-async function signDTE(dteJson, complete = false) {
+async function signDTEold(dteJson, complete = false) {
     if (!SIGNER_URL || !SIGNER_PASSWORD) {
         return {
             status: 'error',
             message: 'URL del firmador (SIGNER_URL) o contraseña (SIGNER_PASSWORD) no configuradas en .env',
         }
     }
-
 
     try {
 
@@ -262,6 +258,7 @@ async function transmitDTEWithRetry(dteData) {
         }
     }
 
+
     var payload = {
         ambiente: dteData.identificacion.ambiente,
         idEnvio: new Date().getTime(), // ID único para este intento de envío
@@ -310,7 +307,7 @@ async function transmitDTEWithRetry(dteData) {
                 }
             }
 
-            
+
             return {
                 status: 'errorFatal',
                 message: `Error no procesado, comuniquelo al desarrollador del Sistema`,
@@ -642,197 +639,6 @@ async function transmitirContingencia(dteData) {
 
 }
 
-
-async function handleInvalidationEvent(req, res) {
-    const eventData = req.body;
-    const dteTypeToInvalidate = eventData?.documento?.tipoDte;
-    const nitEmisor = eventData?.emisor?.nit;
-
-    console.log("Procesando evento de invalidación para DTE:", eventData?.documento?.codigoGeneracion);
-
-    if (!nitEmisor || !dteTypeToInvalidate) {
-        return res.status(400).json({ message: 'Faltan datos del emisor o del documento a invalidar.' });
-    }
-
-    // 1. Validar datos del evento contra anulacion-schema-v2.json
-    const validationResult = validateDteData('anulacion', eventData);
-    if (!validationResult.isValid) {
-        console.error("Errores de validación Evento Anulación:", validationResult.errors);
-        return res.status(400).json({
-            message: 'Datos del evento de anulación inválidos.',
-            errors: formatAjvErrors(validationResult.errors)
-        });
-    }
-    console.log("Evento de anulación validado.");
-
-    // 2. Aplicar reglas de invalidación (Ej: verificar si se necesita doc. reemplazo)
-    const tipoAnulacion = eventData.motivo.tipoAnulacion;
-    const requiereReemplazo = (tipoAnulacion === 1 || tipoAnulacion === 3) && !['05', '08'].includes(dteTypeToInvalidate); // Regla general, ajustar si es necesario
-
-    if (requiereReemplazo && !eventData.documento.codigoGeneracionR) {
-        return res.status(400).json({ message: `Para este tipo de anulación (${tipoAnulacion}) y DTE (${dteTypeToInvalidate}), se requiere el Código de Generación del documento que lo reemplaza.` });
-    }
-    if (!requiereReemplazo && eventData.documento.codigoGeneracionR) {
-        // Asegurarse que sea null si no se requiere reemplazo o es NC/CL
-        eventData.documento.codigoGeneracionR = null;
-    }
-
-
-    try {
-        // 3. Generar código de generación para el evento si no existe
-        if (!eventData.identificacion.codigoGeneracion) {
-            eventData.identificacion.codigoGeneracion = generarCodigoGeneracion();
-        }
-
-        // 4. Firmar el evento de anulación
-        console.log("Firmando evento de anulación...");
-        const eventoFirmado = await signDTE(eventData, nitEmisor);
-
-        // 5. Enviar evento al MH
-        const anulacionUrl = getMhApiUrl('anulacion');
-        if (!anulacionUrl) throw new Error("URL de anulación MH no configurada.");
-        const token = await TokenManager.getToken();
-
-
-        if (!token) {
-            return {
-                status: 'error',
-                message: `No se pudo autenticar con el MH. Token no disponible.`,
-            }
-        }
-
-        const payload = {
-            ambiente: eventData.identificacion.ambiente,
-            idEnvio: uuidv4().toUpperCase(),
-            version: eventData.identificacion.version,
-            documento: eventoFirmado // El evento firmado
-        };
-
-        console.log("Enviando evento de anulación a MH...");
-        const mhResponse = await axios.post(anulacionUrl, payload, {
-            headers: {
-                'Authorization': token,
-                'Content-Type': 'application/json',
-                'User-Agent': 'dte-app-nodejs/1.0'
-            },
-            timeout: MH_API_TIMEOUT
-        });
-
-        console.log("Respuesta MH Anulación:", mhResponse.data);
-
-        // 6. Procesar respuesta MH
-        if (mhResponse.data && (mhResponse.data.estado === 'PROCESADO' || mhResponse.data.estado === 'RECIBIDO')) {
-            res.status(200).json({
-                message: `Evento de anulación para ${eventData.documento.codigoGeneracion} procesado exitosamente.`,
-                estadoMH: mhResponse.data.estado,
-                selloRecibido: mhResponse.data.selloRecibido,
-                codigoGeneracionEvento: eventData.identificacion.codigoGeneracion,
-                mhResponse: mhResponse.data
-            });
-        } else {
-            throw new Error(`MH rechazó el evento de anulación: ${mhResponse.data?.descripcionMsg || 'Error desconocido'}`);
-        }
-
-    } catch (error) {
-        console.error(`Error procesando evento de anulación para ${eventData?.documento?.codigoGeneracion}:`, error.message);
-        let statusCode = 500;
-        if (error.response && error.response.status === 401) { clearCachedToken(); statusCode = 401; }
-        if (error.message.includes('inválidos')) statusCode = 400;
-
-        res.status(statusCode).json({
-            message: `Error al procesar evento de anulación: ${error.message}`,
-            errorDetails: error.mhResponse || error.toString()
-        });
-    }
-}
-
-/**
- * Maneja el envío de un evento de contingencia.
- */
-async function handleContingencyEvent(req, res) {
-    const eventData = req.body;
-    const nitEmisor = eventData?.emisor?.nit;
-    console.log("Procesando evento de contingencia...");
-
-    if (!nitEmisor) {
-        return res.status(400).json({ message: 'Falta NIT del emisor en los datos del evento.' });
-    }
-
-    // 1. Validar evento contra contingencia-schema-v3.json
-    const validationResult = validateDteData('contingencia', eventData);
-    if (!validationResult.isValid) {
-        console.error("Errores de validación Evento Contingencia:", validationResult.errors);
-        return res.status(400).json({
-            message: 'Datos del evento de contingencia inválidos.',
-            errors: formatAjvErrors(validationResult.errors)
-        });
-    }
-    console.log("Evento de contingencia validado.");
-
-    try {
-        // 2. Generar código de generación para el evento si no existe
-        if (!eventData.identificacion.codigoGeneracion) {
-            eventData.identificacion.codigoGeneracion = generarCodigoGeneracion();
-        }
-
-        // 3. Firmar el evento
-        console.log("Firmando evento de contingencia...");
-        const eventoFirmado = await signDTE(eventData, nitEmisor);
-
-        // 4. Enviar evento al MH
-        const contingenciaUrl = getMhApiUrl('contingencia');
-        if (!contingenciaUrl) throw new Error("URL de contingencia MH no configurada.");
-        const token = await TokenManager.getToken();
-        if (!token) {
-            return {
-                status: 'error',
-                message: `No se pudo autenticar con el MH. Token no disponible.`,
-            }
-        }
-
-        const payload = {
-            nit: nitEmisor, // Endpoint contingencia pide NIT en payload
-            documento: eventoFirmado
-        };
-
-        console.log("Enviando evento de contingencia a MH...");
-        const mhResponse = await axios.post(contingenciaUrl, payload, {
-            headers: {
-                'Authorization': token,
-                'Content-Type': 'application/json',
-                'User-Agent': 'dte-app-nodejs/1.0'
-            },
-            timeout: MH_API_TIMEOUT
-        });
-
-        console.log("Respuesta MH Contingencia:", mhResponse.data);
-
-        // 5. Procesar respuesta MH
-        if (mhResponse.data && mhResponse.data.estado === 'RECIBIDO') { // Estado específico para contingencia
-            res.status(200).json({
-                message: `Evento de contingencia procesado exitosamente.`,
-                estadoMH: mhResponse.data.estado,
-                selloRecibido: mhResponse.data.selloRecibido, // Sello del evento
-                codigoGeneracionEvento: eventData.identificacion.codigoGeneracion,
-                mhResponse: mhResponse.data
-            });
-        } else {
-            throw new Error(`MH rechazó el evento de contingencia: ${mhResponse.data?.mensaje || 'Error desconocido'}`);
-        }
-
-    } catch (error) {
-        console.error(`Error procesando evento de contingencia:`, error.message);
-        // Manejar errores específicos (401, etc.)
-        let statusCode = 500;
-        if (error.response && error.response.status === 401) { clearCachedToken(); statusCode = 401; }
-        if (error.message.includes('inválidos')) statusCode = 400;
-
-        res.status(statusCode).json({
-            message: `Error al procesar evento de contingencia: ${error.message}`,
-            errorDetails: error.mhResponse || error.toString()
-        });
-    }
-}
 
 
 

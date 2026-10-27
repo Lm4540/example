@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const UtilsController = require('../System/Controllers/utilsController');
 const Auth = require('../System/Middleware/Auth');
+const { testMail } = require('../DTE/Controllers/mailer.service');
 // Home page route.
 router.get("/image_from_url", UtilsController.getImageFromUrl);
 router.get('', UtilsController.index);
@@ -13,6 +14,7 @@ router.get('/prods_to_delete', UtilsController.prods_to_delete);
 router.get('/reporte1', UtilsController.reporte1);
 
 router.get('/printer_test', UtilsController.printerTest);
+router.get('/test_mail', testMail);
 
 
 module.exports = router;

@@ -23,17 +23,25 @@
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
     "memory-cache": "^0.2.0",
-    "mysql2": "^3.10.0",
-    "nodemailer": "^6.10.0",
+    "mysql2": "^3.24.0",
     "qrcode": "^1.5.4",
+    "resend": "^6.34.1",
     "sequelize": "^6.29.0",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "socket.io": "^4.7.1",
-    "uuid": "^9.0.0",
-    "wkhtmltopdf": "^0.4.0"
+    "uuid": "^14.0.3",
+    "wkhtmltopdf": "^0.4.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "faker": "^5.5.3",
     "nodemon": "^3.0.0"
+  },
+  "allowScripts": {
+    "sharp@0.33.5": true
+  },
+  "overrides": {
+    "mysql2": "$mysql2",
+    "uuid": "$uuid"
   }
 }
