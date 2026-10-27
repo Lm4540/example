@@ -130,14 +130,6 @@ const SalesStatusController = {
         tmp.forEach(detail => {
 
 
-            // sum_mayor_details += (detail.reserved - detail.ready);
-            // detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';
-            // mayor[detail.sale].details.push(detail);
-            // if (mayor[detail.sale].open == false) {
-            //     mayor[detail.sale].open = (detail.ready > 0);
-            // }
-
-
             if (detail.reserved > detail.ready) {
                 sum_mayor_details += (detail.reserved - detail.ready);
                 detail.image = detail.image !== null ? (detail.image.includes('http') ? detail.image : `/upload/images/${detail.image}`) : '/upload/images/image-not-found.png';

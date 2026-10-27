@@ -52,7 +52,7 @@ const Auth = {
     },
 
     Login: async (req, res) => {
-        if (req.body.username.length < 5) {
+        if (req.body.username?.length < 5) {
             return res.json({
                 status: 'errorMessage',
                 message: 'Proporcione un email válido'
