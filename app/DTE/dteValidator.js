@@ -3,26 +3,35 @@
 const Ajv = require("ajv");
 const addFormats = require("ajv-formats"); // To handle formats like date, email, etc.
 
-// --- Cargar los Schemas ---
-// Nota: En una aplicación real, podrías cargar estos archivos dinámicamente.
-// Aquí los incluimos directamente para simplicidad del ejemplo.
-// Asegúrate de que las rutas sean correctas si los guardas como archivos separados.
+// DTEs (identificados por tipoDte)
+// Factura Electrónica (01), 
+// Comprobante Crédito Fiscal (03),
+// Nota de Remisión (04),
+// Nota de Crédito (05), 
+// Nota de Débito (06), 
+// Comprobante Retención (07), 
+// Comprobante Liquidación (08), 
+// Documento Contable Liquidación (09), 
+// Factura Exportación (11), 
+// Factura Sujeto Excluido (14),
+// Comprobante Donación (15)
 const schemas = {
-      // DTEs (identificados por tipoDte)
-      "01": require('./schemas/fe-fc-v1.json'),
-      "03": require('./schemas/fe-ccf-v3.json'),
-      "04": require('./schemas/fe-nr-v3.json'),
-      "05": require('./schemas/fe-nc-v3.json'),
-      "06": require('./schemas/fe-nd-v3.json'),
-      "07": require('./schemas/fe-cr-v1.json'),
-      "08": require('./schemas/fe-cl-v1.json'),
-      "09": require('./schemas/fe-dcl-v1.json'),
-      "11": require('./schemas/fe-fex-v1.json'),
-      "14": require('./schemas/fe-fse-v1.json'),
-      "15": require('./schemas/fe-cd-v1.json'),
+      "01": require('./schemas/v2/fe-f-v2.json'),
+      "03": require('./schemas/v4/fe-ccf-v4.json'),
+      "04": require('./schemas/v4/fe-nr-v4.json'),
+      "05": require('./schemas/v4/fe-nc-v4.json'),
+      "06": require('./schemas/v4/fe-nd-v4.json'),
+      "07": require('./schemas/v2/fe-cr-v2.json'),
+      "08": require('./schemas/v2/fe-cl-v2.json'),
+      "09": require('./schemas/v2/fe-dcl-v2.json'),
+      "11": require('./schemas/v3/fe-fex-v3.json'),
+      "14": require('./schemas/v2/fe-fse-v2.json'),
+      "15": require('./schemas/v2/fe-cd-v2.json'),
       // Eventos (identificados por un nombre clave)
-      "anulacion": require('./schemas/anulacion-schema-v2.json'),
-      "contingencia": require('./schemas/contingencia-schema-v3.json'),
+      "anulacion": require('./schemas/v3/invalidacion-schema-v3.json'),
+      "especial": require('./schemas/v1/fe-eop-v1.json'),
+      "retorno": require('./schemas/v1/fe-eret-v1.json'),
+      "contingencia": require('./schemas/v4/contingencia-schema-v4.json'),
 };
 
 // --- Configurar AJV y Compilar Schemas ---

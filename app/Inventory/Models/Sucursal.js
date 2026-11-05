@@ -51,6 +51,7 @@ module.exports = sequelize.define('Sucursal', {
     abreviation: DataTypes.STRING(10),
     departamento: DataTypes.STRING(10),
     municipio: DataTypes.STRING(10),
+    distrito: DataTypes.STRING(10),
     tipoEstablecimiento: DataTypes.STRING(10),
     codEstableMH: DataTypes.STRING(10),
     codEstable: DataTypes.STRING(10),
@@ -60,6 +61,7 @@ module.exports = sequelize.define('Sucursal', {
             return {
                 "departamento": this.departamento,
                 "municipio": this.municipio,
+                "distrito": this.distrito,
                 "complemento": this.location
             };
         }
@@ -75,14 +77,14 @@ module.exports = sequelize.define('Sucursal', {
                 codActividad: process.env.COD_ACTIVIDAD,
                 descActividad: process.env.DESC_ACTIVIDAD,
                 nombreComercial: process.env.COMPANY_NAME,
-                tipoEstablecimiento: this.tipoEstablecimiento,
                 direccion: this.direccion,
                 telefono: process.env.COMPNY_TEL,
                 correo: process.env.COMPANY_EMAIL,
-                codEstableMH: this.codEstableMH,
                 codEstable: this.codEstable,
-                codPuntoVentaMH: null,
                 codPuntoVenta: null,
+                // tipoEstablecimiento: this.tipoEstablecimiento, en version 2 se elimina el tipo de establecimiento
+                //codEstableMH: this.codEstableMH,
+                //codPuntoVentaMH: null,
             }
         }
 

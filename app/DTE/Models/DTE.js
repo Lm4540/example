@@ -89,7 +89,14 @@ const DTE = sequelize.define('DTE', {
       nc: {
             type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: null,
-      }
+      },
+      pdf_version: {
+            type: DataTypes.STRING(10),
+            get() {
+                  let v = this.getDataValue('pdf_version');
+                  return v == null || v == "" ? 'old': v;
+            }
+      },
 }, {
       tableName: 'crm_dte',
 });

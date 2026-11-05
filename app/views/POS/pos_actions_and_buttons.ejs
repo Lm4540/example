@@ -237,7 +237,6 @@
   const load_client = (client, force_type = null) => {
     have_problems = false;
     have_warnings = false;
-    console.log(client)
 
     if (client == null) {
       document.querySelector("#clientlabel").innerHTML = 'No Seleccionado';
@@ -261,7 +260,7 @@
         _error += `<span class="text-danger">NIT no registrado</span><br>`;
       }
 
-      if (client.departamento == null || client.departamento == "" || client.municipio == null || client.municipio == "" || client.direccion == null || client.direccion == "") {
+      if (client.departamento == null || client.departamento == "" || client.municipio == null || client.municipio == "" || client.direccion == null || client.direccion == "" || client.distrito_id == null || client.distrito_id == "") {
         _error += `<span class="text-danger">Departamento, Municipio o Direccion no registrado</span><br>`;
       }
 

@@ -41,34 +41,13 @@
 
               <h5>Dirección del Cliente</h5>
 
-              <div class="form-group">
+              <div class="form-group mb-3 col-md-12">
                 <label for="distrito">Seleccione el Distrito</label>
                 <select name="distrito" id="distrito" class="form-control">
                   <option value="">Ninguno</option>
                 </select>
+                <span id="direction-info"></span>
               </div>
-
-              <div class="form-group">
-                <label for="departamento">Departamento</label>
-                <select name="departamento" id="departamento" class="form-control" disabled>
-                  <option value="" selected>Sin Dirección</option>
-
-                  <% departamentos.forEach(element => { %>
-                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
-
-                  <% }) %>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="municipio">Municipio</label>
-                <select name="municipio" id="municipio" class="form-control" disabled>
-                  <option value="" selected>No registrado</option>
-                </select>
-              </div>
-
-
-
 
               <div class="form-group mb-3 col-md-12">
                 <label for="clientDirection">Complemento Dirección</label>
@@ -171,50 +150,30 @@
   const departamentos = JSON.parse(distritos);
   let selected_departamento = null;
   let selected_municipio = null;
+  let selected_distrito = null;
 
 
   distritos = '<%- dis %>';
   distritos = JSON.parse(distritos);
 
-  const cargarMunicipios = (index) => {
-    let muni = departamentos[index];
-    document.querySelector("#municipio").innerHTML = '';
-    muni.forEach(element => {
-      document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
-    });
-
-  }
-
-
-  //document ready
   document.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("clientName").focus();
     document.getElementById("clientSeller").value = '<%= user.employee %>';
 
-
-    document.querySelector("#departamento").addEventListener('change', e => {
-      cargarMunicipios(document.querySelector("#departamento").value);
-    });
-
     document.querySelector("#distrito").addEventListener('choice', e => {
       let option = e.detail.choice;
       if (option.value == '') {
-        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
-        document.querySelector("#departamento").value = '00';
+        selected_distrito = null;
         selected_departamento = null;
         selected_municipio = null;
       } else if (option.value == '00') {
         selected_departamento = '00';
         selected_municipio = '00';
-        cargarMunicipios('00');
-        document.querySelector("#municipio").value = '00';
-        document.querySelector("#departamento").value = '00';
+        selected_distrito = '00';
       } else {
         selected_departamento = option.customProperties.departamento;
         selected_municipio = option.customProperties.municipio;
-        cargarMunicipios(option.customProperties.departamento);
-        document.querySelector("#municipio").value = option.customProperties.municipio;
-        document.querySelector("#departamento").value = option.customProperties.departamento;
+        selected_distrito = option.customProperties.codigo;
       }
     });
 
@@ -246,14 +205,14 @@
     });
 
 
-    //form controls validation
     document.getElementById('saveClient').addEventListener('click', async (e) => {
-      // e.target.disabled = true;
+      e.target.disabled = true;
       let data = {
         name: document.getElementById("clientName").value.trim(),
         phone: document.getElementById("clientPhone").value.trim(),
         mail: document.getElementById("clientMail").value.trim(),
         distrito: document.querySelector("#distrito").value,
+        distrito_id: selected_distrito,
         departamento: selected_departamento,
         municipio: selected_municipio,
         direction: document.getElementById("clientDirection").value.trim(),
@@ -290,8 +249,7 @@
             e.target.disabled = false;
             return errorMessage('Debe seleccionar el distrito, departamento y municipio para este Cliente');
 
-          }
-          else if (!data.isLocal && data.departamento !== "00" && data.municipio !== "00") {
+          } else if (!data.isLocal && data.departamento !== "00" && data.municipio !== "00") {
             e.target.disabled = false;
             return errorMessage('Debe seleccionar "Otro (Para extranjeros)" para el departamento y municipio de clientes no Locales');
           }
@@ -325,6 +283,7 @@
           data.distrito = null;
           data.departamento = '00';
           data.municipio = '00';
+          data.distrito_id = null;
         }
 
         /** Enviar Informacion al Servidor y volver a Validar*/

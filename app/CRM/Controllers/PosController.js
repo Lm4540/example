@@ -62,7 +62,7 @@ const status = {
     'closed': 'Cerrado'
 };
 
-const helper_url = process.env.PDF_GENERATION_URL;
+const helper_url = process.env.PDF_GENERATION_URL || "http://localhost:3001";
 
 
 module.exports = {
@@ -298,10 +298,12 @@ module.exports = {
                 }
 
             } else {
-                receptor = {
-                    documento: dte.dte.receptor.tipoDocumento && dte.dte.receptor.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
-                    direccion: dte.dte.receptor.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
+                receptor =dte.dte.receptor !== null
+                ? {
+                    documento: dte.dte.receptor?.tipoDocumento && dte.dte.receptor?.numDocumento ? `${documentos[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})` : "",
+                    direccion: dte.dte.receptor?.direccion !== null ? `${dte.dte.receptor.direccion.complemento}, ${municipios[dte.dte.receptor.direccion.departamento][dte.dte.receptor.direccion.municipio]}, ${departamentos[dte.dte.receptor.direccion.departamento]?.toUpperCase()}` : "",
                 }
+                : null;
             }
 
             let data = {
@@ -311,7 +313,7 @@ module.exports = {
             dte_json = dte.dte;
             dte_json.responseMH = dte.responseMH;
             //direccion de las vistas
-            let filePath = path.join(__dirname, '..', '..', 'views', 'POS', 'pdf_views', `${dte.tipo}.ejs`);
+            let filePath = path.join(__dirname, '..', '..', 'views', 'POS', 'pdf_views',`v${dte.pdf_version}`, `${dte.tipo}.ejs`);
             const html = await renderFileAsync(filePath, {
                 pageTitle: `DTE ${dte.codigo}`,
                 sucursal: sucursal.name,
@@ -353,6 +355,7 @@ module.exports = {
 
             return res.send({ status: "success", data: html, dte: dte_json });
         } catch (err) {
+            console.log(err)
             return res.json({ status: "error", message: "", err });
         }
 
@@ -1003,26 +1006,27 @@ module.exports = {
                 ventaTercero: null,
                 cuerpoDocumento: null,
                 resumen: null,
-                extension: {
-                    nombEntrega: req.session.userSession.shortName,
-                    docuEntrega: null,
-                    nombRecibe: null,
-                    docuRecibe: null,
-                    observaciones: null,
-                    placaVehiculo: null,
-                },
-                apendice: null,
+                apendice: null
+                //  V2 desaparece Extension
+                // extension: {
+                //     nombEntrega: req.session.userSession.shortName,
+                //     docuEntrega: null,
+                //     nombRecibe: null,
+                //     docuRecibe: null,
+                //     observaciones: null,
+                //     placaVehiculo: null,
+                // },
             };
 
-            dte_json.emisor.codPuntoVentaMH = caja.codPuntoVentaMH;
-            dte_json.emisor.codPuntoVenta = caja.codPuntoVenta;
+            // dte_json.emisor.codPuntoVentaMH = caja.codPuntoVentaMH;
+            // dte_json.emisor.codPuntoVenta = caja.codPuntoVenta; V2 desaparece estos campos
             let contador = 0;
 
             var isValid = null;
 
             if (data.dte_type == '01') {
                 //Aqui se va a procesar la estructura para la factura electronica
-                dte_json.identificacion.version = 1;
+                dte_json.identificacion.version = 2;
                 dte_json.receptor = client.for_fc_dte;
 
                 data.calcular_retencion = data.calcular_retencion && !data.exento;
@@ -1130,8 +1134,8 @@ module.exports = {
                     totalDescu: 0,
                     tributos: null,
                     subTotal: Helper.fix_number(sum_exenta + sum_gravadas),
-                    ivaRete1: retencion,
-                    reteRenta: 0,
+                    //ivarete1 cambia a ivaRete
+                    ivaRete: retencion,
                     montoTotalOperacion: total,
                     totalNoGravado: 0,
                     totalPagar: total,
@@ -1140,14 +1144,17 @@ module.exports = {
                     saldoFavor: 0,
                     condicionOperacion: 1,
                     pagos: restante_venta < 0.01 && pagos.length > 0 ? pagos : null,
-                    numPagoElectronico: null
+                    numPagoElectronico: null,
+                    observaciones: data.observaciones ? data.observaciones : null,
+                    //rete renta desaparece
+                    //reteRenta: 0,
                 }
 
                 isValid = dteValidator.validateFC(dte_json);
 
             } else if (data.dte_type == '03') {
                 //Aqui se va a procesar la el comprobante de credito fiscal
-                dte_json.identificacion.version = 3;
+                dte_json.identificacion.version = 4;
                 dte_json.receptor = client.for_ccf_dte;
 
                 let cuerpo = [];
@@ -1230,9 +1237,12 @@ module.exports = {
                     porcentajeDescuento: 0,
                     totalDescu: 0,
                     subTotal: Helper.fix_number(sum_gravadas),
-                    ivaPerci1: 0,
-                    ivaRete1: retencion,
-                    reteRenta: 0,
+                    //ivarete1 cambia a ivaRete, representa el IVA Percibido
+                    ivaPerci: 0,
+                    //v2 cambia de ivaRete1 a IvaReteRepresenta el IVA Retenido
+                    ivaRete: retencion,
+                    //rete renta desaparece
+                    // reteRenta: 0,
                     montoTotalOperacion: total,
                     totalNoGravado: 0,
                     totalPagar: total,
@@ -1246,7 +1256,8 @@ module.exports = {
                     saldoFavor: 0,
                     condicionOperacion: 1,
                     pagos: restante_venta < 0.01 && pagos.length > 0 ? pagos : null,
-                    numPagoElectronico: null
+                    numPagoElectronico: null,
+                    observaciones: data.observaciones ? data.observaciones : null,
                 }
 
                 isValid = dteValidator.validateCCF(dte_json);
@@ -1264,7 +1275,7 @@ module.exports = {
             try {
 
                 let enviado = await DTEController.transmitDTEWithRetry(dte_json);
-                console.log(enviado)
+
                 if (enviado.status === 'errorFirma') {
                     throw new Error("Error al firmar el DTE, verifique la configuracion de la firma electronica");
                 } else if (enviado.status === 'errorToken') {
@@ -1272,7 +1283,7 @@ module.exports = {
                 } else if (enviado.status === 'errorFatal') {
                     throw new Error(enviado.message);
                 } else if (enviado.status === 'errorRejected') {
-                    let failed = FailedDte.create({
+                    let failed = await FailedDte.create({
                         _request: req.body,
                         _user: req.session.userSession.shortName,
                         opt: "Proceso automatizado",
@@ -1295,21 +1306,20 @@ module.exports = {
                         entregado: false,
                         responseMH: null,
                         fecEmi: dte_json.identificacion.fecEmi,
-                        client_label: dte_json.receptor.nombre,
+                        client_label: dte_json.receptor?.nombre,
                         correlativo: dte_correlativo.correlativo,
                         dte: null,
                         intentos: 1,
-                        _errors: null
+                        _errors: null,
+                        pdf_version: dte_json.identificacion.version
                     }
 
-                    //enviar el DTE
                     if (enviado.status === 'errorContingencia') {
                         dte_json.identificacion.tipoContingencia = 1;
                         dte_json.identificacion.motivoContin = "Tiempo de espera del sistema de Hacienda y reintentos superados";
                         dte_json.identificacion.tipoModelo = 2;
                         dte_json.identificacion.tipoOperacion = 2;
                         dte_json.firmaElectronica = await DTEController.signDTE(dte_json)?.data;
-
                         dteModel.intentos = process.env.MH_API_MAX_RETRIES;
 
                     } else if (enviado.status === 'success') {
@@ -1370,10 +1380,8 @@ module.exports = {
                         await sale.save({ transaction: t });
 
                         if (client.correo !== null && client.correo !== "") {
-                            //enviar correo
-                            axios.get(`${helper_url}/utils/services/sendPDF/${dteModel.id}?dummy_key=03b10bac1ef3b941?hl=es`).then(response => {
-                                //  console.log(response) 
-                            });
+                            //aqui implementar el servivio de envio de correo
+                            
                         }
 
                         return res.json({

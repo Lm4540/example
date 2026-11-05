@@ -124,11 +124,11 @@ const ClientController = {
 
     getCreationView: async (req, res, next) => {
         let sellers = await Employee.findAll({ where: { isSeller: 1 } }).catch(e => next(e));
-        let distritos = require('../../DTE/Catalogos/distritos.json').values;
+        let distritos = require('../../DTE/Catalogos/distritosv2.json').values;
         let municipios = require('../../DTE/Catalogos/CAT-013.json').items;
         let departamentos = require('../../DTE/Catalogos/CAT-012.json').items;
         let dptos = JSON.stringify(require('../../DTE/Catalogos/direction.json'));
-        let dis = JSON.stringify(require('../../DTE/Catalogos/distritos_.json'));
+        let dis = JSON.stringify(require('../../DTE/Catalogos/distritosv2.json'));
         let giros = require('../../DTE/Catalogos/CAT-019.json').items;
         return res.render('CRM/Client/create', { pageTitle: 'Registrar un nuevo Cliente', sellers, distritos, municipios, departamentos, dptos, dis, giros });
     },
@@ -240,6 +240,7 @@ const ClientController = {
                 phone: data.phone,
                 email: data.mail.length > 0 ? data.mail : '',
                 distrito: data.distrito,
+                distrito_id: data.distrito_id,
                 direction: data.direction.length > 0 ? data.direction : 'No Registrado',
                 seller: _seller,
                 tipoDocumento: data.documentType,
@@ -272,7 +273,7 @@ const ClientController = {
             let municipios = require('../../DTE/Catalogos/CAT-013.json').items;
             let departamentos = require('../../DTE/Catalogos/CAT-012.json').items;
             let dptos = JSON.stringify(require('../../DTE/Catalogos/direction.json'));
-            let dis = JSON.stringify(require('../../DTE/Catalogos/distritos_.json'));
+            let dis = JSON.stringify(require('../../DTE/Catalogos/distritosv2.json'));
             let giros = require('../../DTE/Catalogos/CAT-019.json').items;
             return res.render('CRM/Client/edit', { pageTitle: 'Editando: ' + cliente.name, cliente, sellers, distritos, municipios, departamentos, dptos, dis, giros });
         }
@@ -356,13 +357,10 @@ const ClientController = {
                     for_update.documentType = null;
                     for_update.NIT_DUI = null;
                 }
-
-
-
-
-
-
-                if (client.NRC != data.nrc && data.nrc != "") {
+                if(data.nrc == "" || data.nrc == null){
+                    for_update.NRC = null;
+                }
+                else if (client.NRC != data.nrc) {
                     other = await Client.count({
                         where: {
                             [Op.and]: [
@@ -387,6 +385,8 @@ const ClientController = {
                         for_update.direction = data.direction;
                         for_update.departamento = "00";
                         for_update.municipio = "00";
+                        for_update.distrito = null;
+                        for_update.distrito_id = "00";
 
                     }
                 }
@@ -398,6 +398,7 @@ const ClientController = {
                         for_update.departamento = data.departamento;
                         for_update.municipio = data.municipio;
                         for_update.distrito = data.distrito;
+                        for_update.distrito_id = data.distrito_id;
                         comment += `Depratamento ${client.departamento} y Municipio ${client.municipio}`;
                     }
                     comment += `</p>`;
@@ -405,11 +406,13 @@ const ClientController = {
                     for_update.departamento = data.departamento;
                     for_update.municipio = data.municipio;
                     for_update.distrito = data.distrito;
+                    for_update.distrito_id = data.distrito_id;
                 }
 
 
-                if (client.distrito !== data.distrito) {
+                if (client.distrito_id !== data.distrito_id) {
                     for_update.distrito = data.distrito;
+                    for_update.distrito_id = data.distrito_id;
                 }
 
                 if (client.seller != data.seller) {
@@ -429,6 +432,8 @@ const ClientController = {
                         for_update.codActividad = null;
                         for_update.giro = null;
                         for_update.nombreComercial = null;
+                        for_update.isRetentionAgent = false;
+                        for_update.NRC = null;
 
                     } else {
                         if (client.codActividad !== data.codActividad) {

@@ -279,7 +279,7 @@ async function transmitDTEWithRetry(dteData) {
         }
 
         try {
-            var token = await TokenManager.getToken(); // Obtener token fresco en cada intento podría ser más seguro
+            var token = await TokenManager.getToken();
             if (!token) {
                 return {
                     status: 'errorToken',
@@ -294,7 +294,7 @@ async function transmitDTEWithRetry(dteData) {
                     'Content-Type': 'application/json',
                     'User-Agent': 'dte-app-nodejs/1.0'
                 },
-                timeout: MH_API_TIMEOUT // Timeout para la respuesta inicial
+                timeout: MH_API_TIMEOUT
             });
 
             // Procesar respuesta exitosa
@@ -307,15 +307,11 @@ async function transmitDTEWithRetry(dteData) {
                 }
             }
 
-
             return {
                 status: 'errorFatal',
                 message: `Error no procesado, comuniquelo al desarrollador del Sistema`,
                 data: response,
             };
-
-
-
 
         } catch (error) {
             lastError = error; // Guardar el último error
@@ -409,9 +405,6 @@ async function transmitDTEWithRetry(dteData) {
             data: lastError,
         };
     }
-
-
-
 
     return {
         status: 'errorFatal',

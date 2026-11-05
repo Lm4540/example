@@ -136,15 +136,20 @@ const Client = sequelize.define('Client', {
         type: DataTypes.VIRTUAL,
         get() {
 
-            return this.departamento != null && this.municipio !== null && this.direction !== null && this.direction != "" ? {
+            return this.departamento != null && this.municipio !== null && this.direction !== null && this.direction != "" && this.distrito_id !== null ? {
                 'departamento': this.departamento,
                 'municipio': this.municipio,
-                'complemento': this.direction.slice(0,200)
+                'complemento': this.direction.slice(0,200),
+                'distrito': this.distrito_id
             } : null;
 
         }
     },
     distrito: {
+        type: DataTypes.STRING(50),
+        defaultValue: null
+    },
+    distrito_id: {
         type: DataTypes.STRING(50),
         defaultValue: null
     },
@@ -187,17 +192,19 @@ const Client = sequelize.define('Client', {
         type: DataTypes.VIRTUAL,
         get() {
             if (this.proccess_client) {
-                return {
-                    "tipoDocumento": null,
-                    "numDocumento": null,
-                    "nrc": null,
-                    "nombre": null,
-                    "codActividad": null,
-                    "descActividad": null,
-                    "direccion": null,
-                    "telefono": null,
-                    "correo": null
-                }
+                return null;
+                //v2 ahora permite un valor nulo oara consumidor final, por lo que se puede enviar un objeto con valores nulos
+                // return {
+                //     "tipoDocumento": null,
+                //     "numDocumento": null,
+                //     "nrc": null,
+                //     "nombre": null,
+                //     "codActividad": null,
+                //     "descActividad": null,
+                //     "direccion": null,
+                //     "telefono": null,
+                //     "correo": null
+                // }
             }
 
             let data = {
@@ -221,8 +228,8 @@ const Client = sequelize.define('Client', {
                 if (this.tipoDocumento == "13") {
                     let regex = /^[0-9]{8}-[0-9]{1}$/;
                     if (regex.test(this.NIT_DUI)) {
-                        data.numDocumento = this.NIT_DUI;
-                        // data.numDocumento = this.NIT_DUI.replace(/[^0-9]/g, '');
+                        //data.numDocumento = this.NIT_DUI;
+                        data.numDocumento = this.NIT_DUI.replace(/[^0-9]/g, '');
                         data.tipoDocumento = "13";
                     }
                 } else if (this.tipoDocumento == "36") {

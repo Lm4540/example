@@ -13,11 +13,24 @@ const corsOptions = {
 
 
 app.use(express.urlencoded({ extended: false, limit: '150mb' }));
-app.use(express.json({ limit: '150mb' }));
+app.use(express.json({ limit: '10kb' })); 
 app.use(express.static('public', { etag: true, maxAge: 86400000 * 30 }));
 app.use(cors(corsOptions));
 
 app.locals.baseURL = `${process.env.URL_HOST}:${process.env.API_PORT}`;
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).send({ error: 'Petición inválida' }); 
+  }
+
+  if (err.type === 'encoding.unsupported') {
+    return res.status(415).json({ 
+      error: "Codificación no soportada. No se permiten peticiones comprimidas en este endpoint." 
+    });
+  }
+  
+  next();
+});
 
 app.use("/api/v1",  require('./app/ApiRoutes'));
 
