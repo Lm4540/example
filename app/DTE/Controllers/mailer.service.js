@@ -21,7 +21,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 function generatePdfBuffer(htmlContent) {
       return new Promise((resolve, reject) => {
-            wkhtmltopdf.command = directorio;
+            // wkhtmltopdf.command = directorio;
             const chunks = [];
             const stream = wkhtmltopdf(htmlContent, {
                   pageSize: "Letter",

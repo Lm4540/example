@@ -34,7 +34,6 @@ const wkhtmltopdf = require('wkhtmltopdf');
 const renderFileAsync = util.promisify(ejs_.renderFile);
 
 // wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
-wkhtmltopdf.command = path.join(__dirname, '..', '..', 'System', 'wkhtmltopdf');
 
 const municipios = require('../../DTE/Catalogos/municipios.json');
 const departamentos = require('../../DTE/Catalogos/departamentos.json');
@@ -221,11 +220,11 @@ module.exports = {
                 },
             });
 
-            if (process.env.WKHTMLTOPDF_PATH) {
-                wkhtmltopdf.command = process.env.WKHTMLTOPDF_PATH
-                    .replace(/^['"]+|['"]+$/g, '')
-                    .replace(/\\\\/g, '\\');
-            }
+            // if (process.env.WKHTMLTOPDF_PATH) {
+            //     wkhtmltopdf.command = process.env.WKHTMLTOPDF_PATH
+            //         .replace(/^['"]+|['"]+$/g, '')
+            //         .replace(/\\\\/g, '\\');
+            // }
 
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `inline; filename="${codigoGeneracion}.pdf"`);
