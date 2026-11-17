@@ -17,11 +17,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 //const directorio = path.join(__dirname, '..', '..', 'System', 'wkhtmltopdf');
 //wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
-// wkhtmltopdf.command = '/usr/bin/wkhtmltopdf';
+wkhtmltopdf.command = '/usr/local/bin/wkhtmltopdf_custom';
 
 function generatePdfBuffer(htmlContent) {
       return new Promise((resolve, reject) => {
-            // wkhtmltopdf.command = directorio;
+            wkhtmltopdf.command = directorio;
             const chunks = [];
             const stream = wkhtmltopdf(htmlContent, {
                   pageSize: "Letter",

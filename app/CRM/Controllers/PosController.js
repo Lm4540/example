@@ -220,11 +220,7 @@ module.exports = {
                 },
             });
 
-            // if (process.env.WKHTMLTOPDF_PATH) {
-            //     wkhtmltopdf.command = process.env.WKHTMLTOPDF_PATH
-            //         .replace(/^['"]+|['"]+$/g, '')
-            //         .replace(/\\\\/g, '\\');
-            // }
+            wkhtmltopdf.command = '/usr/local/bin/wkhtmltopdf_custom';
 
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `inline; filename="${codigoGeneracion}.pdf"`);
