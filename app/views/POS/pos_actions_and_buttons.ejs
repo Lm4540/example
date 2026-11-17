@@ -534,7 +534,7 @@
         .newLineN(2)
         .text('=========================================')
         .newLine().text('Datos del Cliente');
-      if (data.receptor.nombre != "" && data.receptor.nombre != null) {
+      if (data.receptor !== null && data.receptor !== undefined && data.receptor.nombre != "" && data.receptor.nombre != null) {
         esc.newLine().text(data.receptor.nombre);
         if (data.receptor.tipoDocumento) {
           esc.newLine().text(`Documento ${documents[data.receptor.tipoDocumento]} ${data.receptor.numDocumento}`);
