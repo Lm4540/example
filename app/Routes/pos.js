@@ -39,8 +39,8 @@ router.post('/cost_report', PosController.dte_cost_report_data);
 router.get('/test_wkhtmltopdf', (req, res) => {
     const wkhtmltopdf = require("wkhtmltopdf");
     try {
-        wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
-        // wkhtmltopdf.command = path.join(__dirname, '..', 'System', 'wkhtmltopdf');
+        //wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
+        wkhtmltopdf.command = path.join(__dirname, '..', 'System', 'wkhtmltopdf');
 
         const html = `
             <!DOCTYPE html>
