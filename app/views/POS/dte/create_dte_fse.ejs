@@ -248,6 +248,7 @@
   const departamentos = JSON.parse(distritos);
   var selected_departamento = null;
   var selected_municipio = null;
+  var selected_distrito = null;
   distritos = '<%- dis %>';
   distritos = JSON.parse(distritos);
 
@@ -447,15 +448,16 @@
         tipoDocumento: tipoDocumento,
         numDocumento: numDocumento,
         nombre: nombre,
-        codActividad: null,
-        descActividad: null,
+        codActividad: clientCodActividad.value !== "" ? clientCodActividad.value : null,
+        descActividad: clientCodActividad.value !== "" ? clientCodActividad.options[clientCodActividad.selectedIndex].text : null,
         direccion: document.querySelector("#distrito").value !== "" ? {
           departamento: document.getElementById('departamento').value,
           municipio: document.getElementById('municipio').value,
-          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`
+          distrito: selected_distrito,
+          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`.trim()
         } : null,
-        telefono: document.getElementById('telefono').value.length > 7 ? document.getElementById('telefono').value : null,
-        correo: document.getElementById('correo').value.length > 5 ? document.getElementById('correo').value : null
+        telefono: document.getElementById('telefono').value.trim().length > 7 ? document.getElementById('telefono').value.trim() : null,
+        correo: document.getElementById('correo').value.trim().length > 5 ? document.getElementById('correo').value.trim() : null
       };
 
 
@@ -502,7 +504,6 @@
         descu: 0,
         totalDescu: 0,
         subTotal: suma_compra,
-        ivaRete1: 0,
         reteRenta: retencion,
         totalPagar: fix_number(suma_compra - retencion),
         totalLetras: String(money_to_string(fix_number(suma_compra - retencion))).toLocaleUpperCase(),
@@ -533,6 +534,7 @@
 
       let data = {
         'dte_type': '14',
+        "receptor": receptor,
         "sujetoExcluido": receptor,
         "cuerpoDocumento": cuerpoDocumento,
         "resumen": resumen,
@@ -571,15 +573,18 @@
         document.querySelector("#departamento").value = '00';
         selected_departamento = null;
         selected_municipio = null;
+        selected_distrito = null;
       } else if (option.value == '00') {
         selected_departamento = '00';
         selected_municipio = '00';
+        selected_distrito = '00';
         cargarMunicipios('00');
         document.querySelector("#municipio").value = '00';
         document.querySelector("#departamento").value = '00';
       } else {
         selected_departamento = option.customProperties.departamento;
         selected_municipio = option.customProperties.municipio;
+        selected_distrito = option.customProperties.codigo;
         cargarMunicipios(option.customProperties.departamento);
         document.querySelector("#municipio").value = option.customProperties.municipio;
         document.querySelector("#departamento").value = option.customProperties.departamento;
@@ -603,9 +608,13 @@
         document.querySelector("#complemento").value = emple.direction || '';
         if (emple.distrito) {
           choices_distrito.setChoiceByValue(emple.distrito);
-          cargarMunicipios(emple.departamento);
-          document.querySelector("#municipio").value = emple.municipio;
-          document.querySelector("#departamento").value = emple.departamento;
+          let distObj = distritos.find(d => d.value === emple.distrito);
+          selected_distrito = distObj?.customProperties?.codigo || null;
+          selected_departamento = emple.departamento || distObj?.customProperties?.departamento || null;
+          selected_municipio = emple.municipio || distObj?.customProperties?.municipio || null;
+          cargarMunicipios(selected_departamento);
+          document.querySelector("#municipio").value = selected_municipio;
+          document.querySelector("#departamento").value = selected_departamento;
         }
 
         document.querySelector('.descripcion-item').value = "Comisiones por Ventas";

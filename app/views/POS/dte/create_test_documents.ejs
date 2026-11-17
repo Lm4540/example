@@ -158,8 +158,7 @@
         totalDescu: 0,
         tributos: null,
         subTotal: suma_gravadas,
-        ivaRete1: 0,
-        reteRenta: 0,
+        ivaRete: 0,
         montoTotalOperacion: suma_gravadas,
         totalNoGravado: 0,
         totalPagar: suma_gravadas,
@@ -168,7 +167,8 @@
         saldoFavor: 0,
         condicionOperacion: 1,
         pagos: null,
-        numPagoElectronico: null
+        numPagoElectronico: null,
+        observaciones: null
       }
 
       let data = {
@@ -281,9 +281,8 @@
           porcentajeDescuento: 0,
           totalDescu: 0,
           subTotal: suma_gravadas,
-          ivaPerci1: 0,
-          ivaRete1: 0,
-          reteRenta: 0,
+          ivaPerci: 0,
+          ivaRete: 0,
           montoTotalOperacion: total,
           totalNoGravado: 0,
           totalPagar: total,
@@ -296,7 +295,8 @@
           saldoFavor: 0,
           condicionOperacion: 1,
           pagos: null,
-          numPagoElectronico: null
+          numPagoElectronico: null,
+          observaciones: null
         }
 
 
@@ -348,6 +348,7 @@
   const nota_credito = async (model) => {
         var  cuerpoDocumento = [];
         let price = fix_number((model.dte.resumen.totalPagar * .10),2);
+        let item_iva = fix_number((price * IVA_VAL), 4);
 
         cuerpoDocumento.push({
             numItem: 1,
@@ -363,11 +364,12 @@
             ventaNoSuj: 0,
             ventaExenta: 0,
             ventaGravada: price,
-            tributos: ['20']
-           
+            tributos: ['20'],
+            noGravado: 0,
+            ivaPerci: 0,
+            totalIva: item_iva,
+            ivaRete: 0
           });
-
-          
 
           total = fix_number((price * (1+IVA_VAL)),2)
        const resumen = {
@@ -375,22 +377,22 @@
         totalExenta: 0,
         totalGravada: price,
         subTotalVentas: price,
-        descuNoSuj: 0,
-        descuExenta: 0,
-        descuGravada: 0,
         totalDescu: 0,
         tributos: [{
           codigo: "20",
           descripcion: "Impuesto al Valor Agregado 13%",
           valor: fix_number((price * IVA_VAL),2)
-        }] ,
-        subTotal: price,
-        ivaPerci1: 0,
-        ivaRete1: 0,
-        reteRenta: 0,
+        }],
         montoTotalOperacion: total,
+        ivaPerci: 0,
+        totalIva: fix_number((price * IVA_VAL),2),
+        ivaRete: 0,
+        totalNoGravado: 0,
+        totalPagar: total,
         totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
         condicionOperacion: 1,
+        observaciones: null,
+        codigoRetencionMH: null
       }
 
 

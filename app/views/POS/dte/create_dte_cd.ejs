@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Comprobante de Donación (DTE Manual)</h2>
+        </div>
+        <div class="card-body">
+          <h4 class="text-center">Datos del Donante (Receptor)</h4>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="tipoDocumento" class="form-label">Tipo Documento:</label>
+                <select id="tipoDocumento" class="form-control">
+                  <option value="36">36 - NIT</option>
+                  <option value="13">13 - DUI</option>
+                  <option value="03">03 - Pasaporte</option>
+                  <option value="02">02 - Carnet de Residente</option>
+                  <option value="37">37 - Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="numDocumento" class="form-label">Número Documento:</label>
+                <input type="text" class="form-control" id="numDocumento" placeholder="Número de identificación" required>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="nrc" class="form-label">NRC (Opcional):</label>
+                <input type="text" class="form-control" id="nrc" placeholder="Ingrese NRC">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="codDomiciliado" class="form-label">Domicilio Fiscal:</label>
+                <select id="codDomiciliado" class="form-control">
+                  <% domiciliosFiscales.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nombre" class="form-label">Nombre / Razón Social del Donante:</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Nombre completo o razón social" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="codPais" class="form-label">País del Donante:</label>
+                <select id="codPais" class="form-control">
+                  <% paises.forEach(element => { %>
+                  <option value="<%= element.codigo %>" <%= element.codigo === 'SV' ? 'selected' : '' %>><%= element.Valor %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="form-group mb-3 col-md-12">
+              <label for="clientCodActividad">Giro, Actividad Económica del Donante (Opcional)</label>
+              <select class="form-control" id="clientCodActividad">
+                <option value="">Seleccione la Actividad Económica</option>
+                <% giros.forEach(element => { %>
+                <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="telefono" class="form-label">Teléfono:</label>
+                <input type="text" class="form-control" id="telefono" placeholder="Ingrese teléfono">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="correo" class="form-label">Correo:</label>
+                <input type="email" class="form-control" id="correo" placeholder="Ingrese correo electrónico">
+              </div>
+            </div>
+          </div>
+
+          <h5>Dirección del Donante</h5>
+
+          <div class="form-group">
+            <label for="distrito">Seleccione el Distrito</label>
+            <select name="distrito" id="distrito" class="form-control">
+              <option value="">Ninguno</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="departamento">Departamento</label>
+            <select name="departamento" id="departamento" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+              <% departamentos.forEach(element => { %>
+              <option value="<%= element.codigo %>"><%= element.Valor %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="municipio">Municipio</label>
+            <select name="municipio" id="municipio" class="form-control" disabled>
+              <option value="" selected>Sin Dirección</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="complemento">Complemento de la Dirección:</label>
+            <input type="text" name="complemento" id="complemento" class="form-control">
+          </div>
+
+          <hr>
+          <h5>Documento Asociado a la Donación</h5>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="codDocAsociado" class="form-label">Tipo Documento Asociado:</label>
+                <select id="codDocAsociado" class="form-control">
+                  <option value="1">1 - Emisor</option>
+                  <option value="2">2 - Receptor</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="descDocumento" class="form-label">Identificación del Documento:</label>
+                <input type="text" class="form-control" id="descDocumento" value="ACTA DE DONACION" placeholder="Ej. Acta / Convenio" required>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="form-group">
+                <label for="detalleDocumento" class="form-label">Descripción del Documento Asociado:</label>
+                <input type="text" class="form-control" id="detalleDocumento" value="DOCUMENTO DE RESPALDO DE DONACION" placeholder="Detalle del documento" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4 class="text-center">Detalles de la Donación</h4>
+          <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Tipo Donación</th>
+                  <th>Cant.</th>
+                  <th>Descripción</th>
+                  <th>Valor Unitario ($)</th>
+                  <th>Valor Donado ($)</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="documentoDetalleTableBody"></tbody>
+              <tbody id="detalleTotales">
+                <tr>
+                  <td colspan="4" class="text-right">Total de la Donación</td>
+                  <td id="_total"></td>
+                  <td></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-center">
+                    <button type="button" class="btn btn-outline-primary mr-3 mt-3 ml-3 round" id="addDetalleBtn">Agregar Ítem</button>
+                    <button type="button" class="btn btn-outline-success mr-3 mt-3 ml-3 round" id="Totalizar">Totalizar</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4>Apéndices</h4>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Etiqueta</th>
+                  <th>Valor</th>
+                  <th>opt</th>
+                </tr>
+              </thead>
+              <tbody id="TBodyApendices"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <button class="btn round btn-outline-primary" onclick="addApendiceRow()" id="btnAddApendices">
+                      Agregar Apéndice
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer text-center">
+          <div id="results" class="mt-2 mb-4"></div>
+          <button class="round btn-lg btn btn-primary mt-2" id="btnSave" disabled>
+            Procesar DTE
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
+  const TBodyApendices = document.querySelector("#TBodyApendices");
+  const addDetalleBtn = document.querySelector('#addDetalleBtn');
+  const helper_url = '<%= helper_url %>';
+  var distritos = '<%- dptos %>';
+  const departamentos = JSON.parse(distritos);
+  var selected_departamento = null;
+  var selected_municipio = null;
+  var selected_distrito = null;
+  distritos = '<%- dis %>';
+  distritos = JSON.parse(distritos);
+
+  const cargarMunicipios = (index) => {
+    let muni = departamentos[index];
+    document.querySelector("#municipio").innerHTML = '';
+    muni.forEach(element => {
+      document.querySelector("#municipio").innerHTML += `<option value="${element.codigo}">${element.Valor}</option>`;
+    });
+  };
+
+  const calcularFila = (node) => {
+    const cantidad = parseFloat(node.querySelector('.cantidad-item').value);
+    const precio = parseFloat(node.querySelector('.precio-uni-item').value);
+    node.querySelector('.subtotal-item').value = (!isNaN(cantidad) && !isNaN(precio)) ? fix_number(cantidad * precio, 2) : 0.00;
+  };
+
+  const addDetalleRow = () => {
+    document.querySelector("#btnSave").disabled = true;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td>
+        <select class="form-select tipo-donacion-select">
+          <% tiposDonacion.forEach(element => { %>
+          <option value="<%= element.codigo %>"><%= element.Valor %></option>
+          <% }) %>
+        </select>
+      </td>
+      <td><input type="number" class="form-control cantidad-item" oninput="calcularFila(this.parentNode.parentNode)" placeholder="Cant." value="1" min="0.01" step="0.01" required></td>
+      <td><input type="text" class="form-control descripcion-item" placeholder="Descripción de la donación" required></td>
+      <td><input type="number" class="form-control precio-uni-item" oninput="calcularFila(this.parentNode.parentNode)" placeholder="Valor Unit." step="0.01" required></td>
+      <td><input type="number" class="form-control subtotal-item" disabled></td>
+      <td><span class="badge bg-danger btn-sm remove-item-btn">Eliminar</span></td>
+    `;
+    newRow.querySelector('.remove-item-btn').addEventListener('click', () => newRow.remove());
+    documentoDetalleTableBody.appendChild(newRow);
+  };
+
+  const addApendiceRow = () => {
+    const newApendiceRow = document.createElement('tr');
+    newApendiceRow.innerHTML = `
+      <td><input type="text" class="form-control apendice-campo"></td>
+      <td><input type="text" class="form-control apendice-etiqueta"></td>
+      <td><input type="text" class="form-control apendice-valor"></td>
+      <td><span class="bg-danger badge btn-delete-apendice">Eliminar</span></td>
+    `;
+    newApendiceRow.querySelector('.btn-delete-apendice').addEventListener('click', () => newApendiceRow.remove());
+    TBodyApendices.appendChild(newApendiceRow);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector("#Totalizar").addEventListener('click', () => {
+      let rows = documentoDetalleTableBody.querySelectorAll('tr');
+      if (rows.length < 1) return errorMessage('Agregue al menos un ítem válido');
+
+      var suma = 0, contador = 0;
+      rows.forEach(row => {
+        const cant = parseFloat(row.querySelector('.cantidad-item').value);
+        const price = parseFloat(row.querySelector('.precio-uni-item').value);
+        if (!isNaN(cant) && !isNaN(price) && cant > 0 && price > 0) {
+          contador++;
+          let sub = fix_number(cant * price, 2);
+          row.querySelector('.subtotal-item').value = sub;
+          suma = fix_number(suma + sub, 2);
+        }
+      });
+
+      if (contador < 1) return errorMessage('Agregue al menos un ítem válido');
+
+      document.querySelector("#_total").innerHTML = `$ ${money_format(suma)}`;
+      document.querySelector("#btnSave").disabled = false;
+    });
+
+    document.querySelector("#btnSave").addEventListener('click', e => {
+      e.target.disabled = true;
+      var cuerpoDocumento = [];
+
+      const clientCodActividad = document.getElementById('clientCodActividad');
+      const tipoDocumento = document.getElementById('tipoDocumento').value;
+      var numDocumento = document.getElementById('numDocumento').value.trim();
+      if (tipoDocumento == "36") numDocumento = numDocumento.replace(/[^0-9]/g, '');
+      const nrcVal = document.getElementById('nrc').value.replace(/[^0-9]/g, '');
+      const telefonoVal = document.getElementById('telefono').value.trim();
+      const correoVal = document.getElementById('correo').value.trim();
+
+      const receptor = {
+        tipoDocumento: tipoDocumento,
+        numDocumento: numDocumento,
+        nrc: nrcVal.length > 0 ? nrcVal : null,
+        nombre: document.getElementById('nombre').value.trim(),
+        codActividad: clientCodActividad.value !== "" ? clientCodActividad.value : null,
+        descActividad: clientCodActividad.value !== "" ? clientCodActividad.options[clientCodActividad.selectedIndex].text : null,
+        direccion: selected_distrito ? {
+          departamento: document.getElementById('departamento').value,
+          municipio: document.getElementById('municipio').value,
+          distrito: selected_distrito,
+          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`.trim()
+        } : null,
+        telefono: telefonoVal.length >= 8 ? telefonoVal : null,
+        correo: correoVal.length >= 6 ? correoVal : null,
+        codDomiciliado: Number.parseInt(document.getElementById('codDomiciliado').value),
+        codPais: document.getElementById('codPais').value
+      };
+
+      const otrosDocumentos = [{
+        codDocAsociado: Number.parseInt(document.getElementById('codDocAsociado').value),
+        descDocumento: document.getElementById('descDocumento').value.trim(),
+        detalleDocumento: document.getElementById('detalleDocumento').value.trim()
+      }];
+
+      const rows = documentoDetalleTableBody.querySelectorAll('tr');
+      let contador = 1;
+      var valorTotal = 0;
+
+      rows.forEach(row => {
+        const tipoDonacion = Number.parseInt(row.querySelector('.tipo-donacion-select').value);
+        const cantidad = Number.parseFloat(row.querySelector('.cantidad-item').value);
+        const descripcion = row.querySelector('.descripcion-item').value.trim();
+        const valorUni = Number.parseFloat(row.querySelector('.precio-uni-item').value);
+
+        if (descripcion && !isNaN(cantidad) && !isNaN(valorUni)) {
+          let valor = fix_number(cantidad * valorUni, 2);
+          cuerpoDocumento.push({
+            numItem: contador,
+            tipoDonacion: tipoDonacion,
+            cantidad: cantidad,
+            codigo: `DON-${contador}`,
+            uniMedida: tipoDonacion == 2 ? 59 : 99,
+            descripcion: descripcion,
+            tipoDepreciacion: 0,
+            valorUni: valorUni,
+            valor: valor
+          });
+          contador++;
+          valorTotal = fix_number(valorTotal + valor, 2);
+        }
+      });
+
+      const resumen = {
+        valorTotal: valorTotal,
+        totalLetras: String(money_to_string(valorTotal)).toLocaleUpperCase(),
+        pagos: [{
+          codigo: "01",
+          montoPago: valorTotal,
+          referencia: null
+        }]
+      };
+
+      var apendices = null;
+      let ApendiceRows = TBodyApendices.querySelectorAll('tr');
+      if (ApendiceRows.length > 0) {
+        apendices = [];
+        ApendiceRows.forEach(row => {
+          let apendice = {
+            campo: row.querySelector('.apendice-campo').value.trim(),
+            etiqueta: row.querySelector('.apendice-etiqueta').value.trim(),
+            valor: row.querySelector('.apendice-valor').value.trim(),
+          };
+          if (apendice.campo.length > 0 && apendice.valor.length > 0) apendices.push(apendice);
+        });
+        apendices = apendices.length > 0 ? apendices : null;
+      }
+
+      let data = {
+        dte_type: '15',
+        receptor: receptor,
+        otrosDocumentos: otrosDocumentos,
+        cuerpoDocumento: cuerpoDocumento,
+        resumen: resumen,
+        apendice: apendices
+      };
+
+      postData('/pos/procces_dte_manual', data).then(data => {
+        if (data.status == 'success') {
+          document.querySelector("#results").innerHTML = `
+          <h4> DTE: ${data.json.codigo} generada con exito</h4>
+          <a href="${helper_url}/utils/services/dte/inline?uuid=${data.json.dte.identificacion.codigoGeneracion}&fecha=${data.json.dte.identificacion.fecEmi}" target="_blank" class="btn round btn-outline-secondary">Ver DTE</a>
+          <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a>`;
+          e.target.remove();
+          successMessage(data.message);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página e inténtalo nuevamente');
+        }
+      });
+    });
+
+    document.querySelector("#departamento").addEventListener('change', () => {
+      cargarMunicipios(document.querySelector("#departamento").value);
+    });
+
+    document.querySelector("#distrito").addEventListener('choice', e => {
+      let option = e.detail.choice;
+      if (option.value == '') {
+        document.querySelector("#municipio").innerHTML += `<option value="00" selected>Otro (Para extranjeros)</option>`;
+        document.querySelector("#departamento").value = '00';
+        selected_departamento = null;
+        selected_municipio = null;
+        selected_distrito = null;
+      } else if (option.value == '00') {
+        selected_departamento = '00';
+        selected_municipio = '00';
+        selected_distrito = '00';
+        cargarMunicipios('00');
+        document.querySelector("#municipio").value = '00';
+        document.querySelector("#departamento").value = '00';
+      } else {
+        selected_departamento = option.customProperties.departamento;
+        selected_municipio = option.customProperties.municipio;
+        selected_distrito = option.customProperties.codigo;
+        cargarMunicipios(option.customProperties.departamento);
+        document.querySelector("#municipio").value = option.customProperties.municipio;
+        document.querySelector("#departamento").value = option.customProperties.departamento;
+      }
+    });
+
+    new Choices(document.querySelector('#distrito'), { searchChoices: true }).setChoices(distritos);
+    new Choices(document.querySelector('#clientCodActividad'), { searchChoices: true });
+    new Choices(document.querySelector('#codPais'), { searchChoices: true });
+    addDetalleRow();
+    addDetalleBtn.addEventListener('click', addDetalleRow);
+  });
+</script>
+</html>
+

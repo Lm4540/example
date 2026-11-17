@@ -107,10 +107,6 @@
             </p>
 
             <p class="mb-1">
-              <strong>Establecimiento:</strong>
-              <%= dte.emisor.tipoEstablecimiento == "01" ?  `Sucursal ${sucursal}` : "Casa Matriz"  %> 
-            </p>
-            <p class="mb-1">
               <strong>Dirección:</strong>
               <%= data.emisor_direction %>
               <%= sucursal.name %>
@@ -128,14 +124,14 @@
               <p class="mb-1">
                 <strong>Documento:</strong>
                 <span>
-                  <%= data.receptor.documento %>
+                  <%= data?.receptor?.documento || dte.receptor.numDocumento %>
                 </span>
               </p>
               
               <p class="mb-1">
                 <strong>Direccion:</strong>
                 <span>
-                  <%= data.receptor.direccion %>
+                  <%= data?.receptor?.direccion %>
                 </span>
               </p>
               
@@ -282,7 +278,7 @@
       <br>
       <p>
         Fecha de Procesamiento: <span></span>
-        <%= dte.responseMH.fhProcesamiento %>
+        <%= dte.responseMH?.fhProcesamiento %>
       </p>
 
     </footer>

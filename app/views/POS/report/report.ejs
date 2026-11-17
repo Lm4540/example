@@ -26,8 +26,17 @@
                 <select name="tipo" id="tipo" class="form-control">
                   <option value="01">Factura Electronica</option>
                   <option value="03">Comprobante de Credito Fiscal Electronico</option>
+                  <option value="04">Nota de Remision Electronica</option>
                   <option value="05">Nota de Credito Electronica</option>
+                  <option value="06">Nota de Debito Electronica</option>
+                  <option value="07">Comprobante de Retencion Electronico</option>
+                  <option value="08">Comprobante de Liquidacion Electronico</option>
+                  <option value="09">Documento Contable de Liquidacion Electronico</option>
+                  <option value="11">Factura de Exportacion Electronica</option>
                   <option value="14">Factura de Sujeto Excluido Electronica</option>
+                  <option value="15">Comprobante de Donacion Electronico</option>
+                  <option value="17">Evento de Operaciones Especiales</option>
+                  <option value="18">Evento de Retorno</option>
                   <option value="anulacion">Invalidaciones Realizadas</option>
                 </select>
               </div>
@@ -136,6 +145,18 @@
     return datosTabla;
   }
 
+  const getReceptorDoc = (dteObj) => {
+    const rec = dteObj?.receptor || dteObj?.sujetoExcluido || {};
+    return rec.nit || rec.numDocumento || rec.nrc || '';
+  };
+
+  const getTributoIva = (resumen) => {
+    if (resumen && Array.isArray(resumen.tributos) && resumen.tributos.length > 0) {
+      return resumen.tributos[0].valor;
+    }
+    return 0.00;
+  };
+
   const generar_reporte = () => {
     document.getElementById('reportHeader').innerHTML = '';
     if (report_data.length < 1) {
@@ -186,6 +207,8 @@
         filas.push(fila);
 
         report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
           if (dte.invalidacion !== null) {
             contentBody += `
                 <tr>
@@ -193,8 +216,8 @@
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
-                  <td>${dte.dte.receptor.nit}</td>
-                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${docCli}</td>
+                  <td>${dte.dte.receptor?.nombre || ''}</td>
                   <td>0.00</td>
                   <td>0.00</td>
                   <td>0.00</td>
@@ -205,21 +228,21 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.receptor.nit,
-                  dte.dte.receptor.nombre,
-                  0.00,
-                  0.00,
-                  0.00,
-                  0.00,
-                  'SI',
-                  dte.nc !== null ? "SI" : "NO",
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              0.00,
+              0.00,
+              0.00,
+              0.00,
+              'SI',
+              dte.nc !== null ? "SI" : "NO",
+              _sucursales[dte.sucursal],
+            ]);
           } else {
             contentBody += `
                 <tr>
@@ -227,11 +250,11 @@
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
-                  <td>${dte.dte.receptor.nit}</td>
-                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${docCli}</td>
+                  <td>${dte.dte.receptor?.nombre || ''}</td>
                   <td>${dte.dte.resumen.totalExenta}</td>
                   <td>${dte.dte.resumen.totalGravada}</td>
-                  <td>${dte.dte.resumen.tributos[0].valor}</td>
+                  <td>${ivaVal}</td>
                   <td>${dte.dte.resumen.montoTotalOperacion}</td>
                   <td>NO</td>
                   <td>${dte.nc !== null ? "SI" : "NO"}</td>
@@ -239,56 +262,56 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.receptor.nit,
-                  dte.dte.receptor.nombre,
-                  dte.dte.resumen.totalExenta,
-                  dte.dte.resumen.totalGravada,
-                  dte.dte.resumen.tributos[0].valor,
-                  dte.dte.resumen.montoTotalOperacion,
-                  'NO',
-                  dte.nc !== null ? "SI" : "NO",
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              ivaVal,
+              dte.dte.resumen.montoTotalOperacion,
+              'NO',
+              dte.nc !== null ? "SI" : "NO",
+              _sucursales[dte.sucursal],
+            ]);
           }
-
         });
 
       } else {
         filas.push(fila);
         report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
           if (dte.invalidacion !== null) {
-
             contentBody += `
                    <tr>
                      <td>${f_date(dte.fecEmi)}</td>
                      <td>${dte.dte.identificacion.numeroControl}</td>
                      <td>${dte.dte.selloRecibido}</td>
                      <td>${dte.codigo}</td>
-                     <td>${dte.dte.receptor.nit}</td>
-                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${docCli}</td>
+                     <td>${dte.dte.receptor?.nombre || ''}</td>
                      <td>0.00</td>
                      <td>0.00</td>
                      <td>0.00</td>
                      <td>0.00</td>
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.receptor.nit,
-                     dte.dte.receptor.nombre,
-                     0.00,
-                     0.00,
-                     0.00,
-                     0.00,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              0.00,
+              0.00,
+              0.00,
+              0.00,
+            ]);
           } else {
             contentBody += `
                    <tr>
@@ -296,33 +319,31 @@
                      <td>${dte.dte.identificacion.numeroControl}</td>
                      <td>${dte.dte.selloRecibido}</td>
                      <td>${dte.codigo}</td>
-                     <td>${dte.dte.receptor.nit}</td>
-                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${docCli}</td>
+                     <td>${dte.dte.receptor?.nombre || ''}</td>
                      <td>${dte.dte.resumen.totalExenta}</td>
                      <td>${dte.dte.resumen.totalGravada}</td>
-                     <td>${dte.dte.resumen.tributos[0].valor}</td>
+                     <td>${ivaVal}</td>
                      <td>${dte.dte.resumen.montoTotalOperacion}</td>
                    </tr>`;
 
-
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.receptor.nit,
-                     dte.dte.receptor.nombre,
-                     dte.dte.resumen.totalExenta,
-                     dte.dte.resumen.totalGravada,
-                     dte.dte.resumen.tributos[0].valor,
-                     dte.dte.resumen.montoTotalOperacion,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              ivaVal,
+              dte.dte.resumen.montoTotalOperacion,
+            ]);
           }
         });
       }
 
-
-    } else if (tipo_documento == "05") {
+    } else if (tipo_documento == "04" || tipo_documento == "05" || tipo_documento == "06") {
       let fila = [
         'FECHA',
         'NUMERO DE CONTROL',
@@ -355,10 +376,12 @@
             <th>Sucursal</th>
             <th>ACCIONES</th>`;
 
-            fila.push('Invalidado', 'Sucursal');
-            filas.push(fila);
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
 
         report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
           if (dte.invalidacion !== null) {
             contentBody += `
                 <tr>
@@ -366,8 +389,8 @@
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
-                  <td>${dte.dte.receptor.nit}</td>
-                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${docCli}</td>
+                  <td>${dte.dte.receptor?.nombre || ''}</td>
                   <td>0.00</td>
                   <td>0.00</td>
                   <td>0.00</td>
@@ -377,20 +400,20 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.receptor.nit,
-                  dte.dte.receptor.nombre,
-                  0.00,
-                  0.00,
-                  0.00,
-                  0.00,
-                  'SI',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              0.00,
+              0.00,
+              0.00,
+              0.00,
+              'SI',
+              _sucursales[dte.sucursal],
+            ]);
 
           } else {
             contentBody += `
@@ -399,67 +422,66 @@
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
-                  <td>${dte.dte.receptor.nit}</td>
-                  <td>${dte.dte.receptor.nombre}</td>
+                  <td>${docCli}</td>
+                  <td>${dte.dte.receptor?.nombre || ''}</td>
                   <td>${dte.dte.resumen.totalExenta}</td>
                   <td>${dte.dte.resumen.totalGravada}</td>
-                  <td>${dte.dte.resumen.tributos[0].valor}</td>
+                  <td>${ivaVal}</td>
                   <td>${dte.dte.resumen.montoTotalOperacion}</td>
                   <td>NO</td>
                   <td>${_sucursales[dte.sucursal]}</td>
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.receptor.nit,
-                  dte.dte.receptor.nombre,
-                  dte.dte.resumen.totalExenta,
-                  dte.dte.resumen.totalGravada,
-                  dte.dte.resumen.tributos[0].valor,
-                  dte.dte.resumen.montoTotalOperacion,
-                  'NO',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              ivaVal,
+              dte.dte.resumen.montoTotalOperacion,
+              'NO',
+              _sucursales[dte.sucursal],
+            ]);
           }
-
         });
 
       } else {
-
         filas.push(fila);
         report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
           if (dte.invalidacion !== null) {
-
             contentBody += `
                    <tr>
                      <td>${f_date(dte.fecEmi)}</td>
                      <td>${dte.dte.identificacion.numeroControl}</td>
                      <td>${dte.dte.selloRecibido}</td>
                      <td>${dte.codigo}</td>
-                     <td>${dte.dte.receptor.nit}</td>
-                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${docCli}</td>
+                     <td>${dte.dte.receptor?.nombre || ''}</td>
                      <td>0.00</td>
                      <td>0.00</td>
                      <td>0.00</td>
                      <td>0.00</td>
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.receptor.nit,
-                     dte.dte.receptor.nombre,
-                     0.00,
-                     0.00,
-                     0.00,
-                     0.00,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              0.00,
+              0.00,
+              0.00,
+              0.00,
+            ]);
           } else {
             contentBody += `
                    <tr>
@@ -467,31 +489,29 @@
                      <td>${dte.dte.identificacion.numeroControl}</td>
                      <td>${dte.dte.selloRecibido}</td>
                      <td>${dte.codigo}</td>
-                     <td>${dte.dte.receptor.nit}</td>
-                     <td>${dte.dte.receptor.nombre}</td>
+                     <td>${docCli}</td>
+                     <td>${dte.dte.receptor?.nombre || ''}</td>
                      <td>${dte.dte.resumen.totalExenta}</td>
                      <td>${dte.dte.resumen.totalGravada}</td>
-                     <td>${dte.dte.resumen.tributos[0].valor}</td>
+                     <td>${ivaVal}</td>
                      <td>${dte.dte.resumen.montoTotalOperacion}</td>
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.receptor.nit,
-                     dte.dte.receptor.nombre,
-                     dte.dte.resumen.totalExenta,
-                     dte.dte.resumen.totalGravada,
-                     dte.dte.resumen.tributos[0].valor,
-                     dte.dte.resumen.montoTotalOperacion,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              docCli,
+              dte.dte.receptor?.nombre || '',
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              ivaVal,
+              dte.dte.resumen.montoTotalOperacion,
+            ]);
           }
         });
       }
-
-
 
     } else if (tipo_documento == "01") {
 
@@ -522,8 +542,8 @@
                 <th>Sucursal</th>
                 <th>ACCIONES</th>`;
 
-                fila.push('NOMBRE RAZÓN SOCIAL O DENOMINACIÓN', 'Invalidado', 'Sucursal');
-                filas.push(fila);
+        fila.push('NOMBRE RAZÓN SOCIAL O DENOMINACIÓN', 'Invalidado', 'Sucursal');
+        filas.push(fila);
 
         report_data.forEach(dte => {
           if (dte.invalidacion !== null) {
@@ -536,25 +556,24 @@
                   <td>0.00</td>
                   <td>0.00</td>
                   <td>0.00</td>
-                  <td>${dte.dte.receptor.nombre || "CONSUMIDOR FINAL"}</td>
+                  <td>${dte.dte.receptor?.nombre || "CONSUMIDOR FINAL"}</td>
                   <td>SI</td>
                   <td>${_sucursales[dte.sucursal]}</td>
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  0.00,
-                  0.00,
-                  0.00,
-                  dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
-                  'SI',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              0.00,
+              0.00,
+              0.00,
+              dte.dte.receptor?.nombre || "CONSUMIDOR FINAL",
+              'SI',
+              _sucursales[dte.sucursal],
+            ]);
           } else {
             contentBody += `
                 <tr>
@@ -565,33 +584,31 @@
                   <td>${dte.dte.resumen.totalExenta}</td>
                   <td>${dte.dte.resumen.totalGravada}</td>
                   <td>${dte.dte.resumen.totalPagar}</td>
-                  <td>${dte.dte.receptor.nombre || "CONSUMIDOR FINAL"}</td>
+                  <td>${dte.dte.receptor?.nombre || "CONSUMIDOR FINAL"}</td>
                   <td>NO</td>
                   <td>${_sucursales[dte.sucursal]}</td>
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.resumen.totalExenta,
-                  dte.dte.resumen.totalGravada,
-                  dte.dte.resumen.totalPagar,
-                  dte.dte.receptor.nombre || "CONSUMIDOR FINAL",
-                  'NO',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              dte.dte.resumen.totalPagar,
+              dte.dte.receptor?.nombre || "CONSUMIDOR FINAL",
+              'NO',
+              _sucursales[dte.sucursal],
+            ]);
           }
-
         });
 
       } else {
         filas.push(fila);
         report_data.forEach(dte => {
           if (dte.invalidacion !== null) {
-
             contentBody += `
                    <tr>
                      <td>${f_date(dte.fecEmi)}</td>
@@ -603,16 +620,15 @@
                      <td>0.00</td>
                    </tr>`;
 
-
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     0.00,
-                     0.00,
-                     0.00,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              0.00,
+              0.00,
+              0.00,
+            ]);
           } else {
             contentBody += `
                    <tr>
@@ -625,18 +641,669 @@
                      <td>${dte.dte.resumen.totalPagar}</td>
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.resumen.totalExenta,
-                     dte.dte.resumen.totalGravada,
-                     dte.dte.resumen.totalPagar,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              dte.dte.resumen.totalExenta,
+              dte.dte.resumen.totalGravada,
+              dte.dte.resumen.totalPagar,
+            ]);
           }
         });
       }
+
+    } else if (tipo_documento == "07") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'DOCUMENTO RECEPTOR',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'MONTO SUJETO A RETENCIÓN',
+        'IVA RETENIDO',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>DOCUMENTO RECEPTOR</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>MONTO SUJETO A RETENCIÓN</th>
+              <th>IVA RETENIDO</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalSujetoRetencion}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalIVAretenido}</td>
+                <td>${inv ? 'SI' : 'NO'}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.totalSujetoRetencion,
+            inv ? 0.00 : dte.dte.resumen.totalIVAretenido,
+            inv ? 'SI' : 'NO',
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalSujetoRetencion}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalIVAretenido}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.totalSujetoRetencion,
+            inv ? 0.00 : dte.dte.resumen.totalIVAretenido,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "08") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'NIT O NRC DEL CLIENTE',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'VENTAS EXENTAS',
+        'VENTAS GRAVADAS',
+        'DEBITO FISCAL',
+        'IVA PERCIBIDO',
+        'TOTAL',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>NIT O NRC DEL CLIENTE</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>VENTAS EXENTAS</th>
+              <th>VENTAS GRAVADAS</th>
+              <th>DEBITO FISCAL</th>
+              <th>IVA PERCIBIDO</th>
+              <th>TOTAL</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalExenta}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalGravada}</td>
+                <td>${inv ? '0.00' : ivaVal}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.ivaPerci}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.total}</td>
+                <td>${inv ? 'SI' : 'NO'}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.totalExenta,
+            inv ? 0.00 : dte.dte.resumen.totalGravada,
+            inv ? 0.00 : ivaVal,
+            inv ? 0.00 : dte.dte.resumen.ivaPerci,
+            inv ? 0.00 : dte.dte.resumen.total,
+            inv ? 'SI' : 'NO',
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const ivaVal = getTributoIva(dte.dte.resumen);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalExenta}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalGravada}</td>
+                <td>${inv ? '0.00' : ivaVal}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.ivaPerci}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.total}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.totalExenta,
+            inv ? 0.00 : dte.dte.resumen.totalGravada,
+            inv ? 0.00 : ivaVal,
+            inv ? 0.00 : dte.dte.resumen.ivaPerci,
+            inv ? 0.00 : dte.dte.resumen.total,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "09") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'NIT O NRC DEL RECEPTOR',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'VALOR OPERACIONES',
+        'IVA OPERACIONES',
+        'IVA PERCIBIDO',
+        'COMISIÓN',
+        'LÍQUIDO A PAGAR',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>NIT O NRC DEL RECEPTOR</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>VALOR OPERACIONES</th>
+              <th>IVA OPERACIONES</th>
+              <th>IVA PERCIBIDO</th>
+              <th>COMISIÓN</th>
+              <th>LÍQUIDO A PAGAR</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const cd = dte.dte.cuerpoDocumento || {};
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : cd.valorOperaciones}</td>
+                <td>${inv ? '0.00' : cd.iva}</td>
+                <td>${inv ? '0.00' : cd.ivaPercibido}</td>
+                <td>${inv ? '0.00' : cd.comision}</td>
+                <td>${inv ? '0.00' : cd.liquidoApagar}</td>
+                <td>${inv ? 'SI' : 'NO'}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : cd.valorOperaciones,
+            inv ? 0.00 : cd.iva,
+            inv ? 0.00 : cd.ivaPercibido,
+            inv ? 0.00 : cd.comision,
+            inv ? 0.00 : cd.liquidoApagar,
+            inv ? 'SI' : 'NO',
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const cd = dte.dte.cuerpoDocumento || {};
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : cd.valorOperaciones}</td>
+                <td>${inv ? '0.00' : cd.iva}</td>
+                <td>${inv ? '0.00' : cd.ivaPercibido}</td>
+                <td>${inv ? '0.00' : cd.comision}</td>
+                <td>${inv ? '0.00' : cd.liquidoApagar}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : cd.valorOperaciones,
+            inv ? 0.00 : cd.iva,
+            inv ? 0.00 : cd.ivaPercibido,
+            inv ? 0.00 : cd.comision,
+            inv ? 0.00 : cd.liquidoApagar,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "11") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'DOCUMENTO RECEPTOR',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'PAÍS DESTINO',
+        'VENTAS GRAVADAS',
+        'SEGURO',
+        'FLETE',
+        'TOTAL A PAGAR',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>DOCUMENTO RECEPTOR</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>PAÍS DESTINO</th>
+              <th>VENTAS GRAVADAS</th>
+              <th>SEGURO</th>
+              <th>FLETE</th>
+              <th>TOTAL A PAGAR</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${dte.dte.receptor?.nombrePais || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalGravada}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.seguro}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.flete}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalPagar}</td>
+                <td>${inv ? 'SI' : 'NO'}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            dte.dte.receptor?.nombrePais || '',
+            inv ? 0.00 : dte.dte.resumen.totalGravada,
+            inv ? 0.00 : dte.dte.resumen.seguro,
+            inv ? 0.00 : dte.dte.resumen.flete,
+            inv ? 0.00 : dte.dte.resumen.totalPagar,
+            inv ? 'SI' : 'NO',
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${dte.dte.receptor?.nombrePais || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalGravada}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.seguro}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.flete}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.totalPagar}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            dte.dte.receptor?.nombrePais || '',
+            inv ? 0.00 : dte.dte.resumen.totalGravada,
+            inv ? 0.00 : dte.dte.resumen.seguro,
+            inv ? 0.00 : dte.dte.resumen.flete,
+            inv ? 0.00 : dte.dte.resumen.totalPagar,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "15") {
+      let fila = [
+        'FECHA',
+        'NUMERO DE CONTROL',
+        'SELLO DE RECEPCION',
+        'CODIGO DE GENERACION',
+        'DOCUMENTO DONANTE',
+        'NOMBRE DONANTE',
+        'VALOR TOTAL DONACIÓN',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>NUMERO DE CONTROL</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>DOCUMENTO DONANTE</th>
+              <th>NOMBRE DONANTE</th>
+              <th>VALOR TOTAL DONACIÓN</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Invalidado</th>
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.valorTotal}</td>
+                <td>${inv ? 'SI' : 'NO'}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.valorTotal,
+            inv ? 'SI' : 'NO',
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          const inv = dte.invalidacion !== null;
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi)}</td>
+                <td>${dte.dte.identificacion.numeroControl}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${dte.codigo}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${inv ? '0.00' : dte.dte.resumen.valorTotal}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.dte.identificacion.numeroControl,
+            dte.dte.selloRecibido,
+            dte.codigo,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            inv ? 0.00 : dte.dte.resumen.valorTotal,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "17") {
+      let fila = [
+        'FECHA',
+        'CODIGO DE GENERACION',
+        'SELLO DE RECEPCION',
+        'CANTIDAD DOCUMENTOS',
+        'MONTO TOTAL REPORTADO',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>CANTIDAD DOCUMENTOS</th>
+              <th>MONTO TOTAL REPORTADO</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const items = Array.isArray(dte.dte.cuerpoDocumento) ? dte.dte.cuerpoDocumento : [];
+          const totalMonto = items.reduce((acc, it) => acc + Number(it.montoTotal || 0), 0).toFixed(2);
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision)}</td>
+                <td>${dte.codigo}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${items.length}</td>
+                <td>${totalMonto}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            items.length,
+            totalMonto,
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const items = Array.isArray(dte.dte.cuerpoDocumento) ? dte.dte.cuerpoDocumento : [];
+          const totalMonto = items.reduce((acc, it) => acc + Number(it.montoTotal || 0), 0).toFixed(2);
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision)}</td>
+                <td>${dte.codigo}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${items.length}</td>
+                <td>${totalMonto}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            items.length,
+            totalMonto,
+          ]);
+        });
+      }
+
+    } else if (tipo_documento == "18") {
+      let fila = [
+        'FECHA',
+        'CODIGO DE GENERACION',
+        'SELLO DE RECEPCION',
+        'DOCUMENTO RECEPTOR',
+        'NOMBRE RAZÓN SOCIAL O DENOMINACIÓN',
+        'MONTO RETORNO',
+        'IVA RETORNO',
+      ];
+
+      header.innerHTML = `
+              <th>FECHA</th>
+              <th>CODIGO DE GENERACION</th>
+              <th>SELLO DE RECEPCION</th>
+              <th>DOCUMENTO RECEPTOR</th>
+              <th>NOMBRE RAZÓN SOCIAL O DENOMINACIÓN</th>
+              <th>MONTO RETORNO</th>
+              <th>IVA RETORNO</th>
+            `;
+
+      if (tipo_reporte == "completo") {
+        header.innerHTML += `
+            <th>Sucursal</th>
+            <th>ACCIONES</th>`;
+        fila.push('Sucursal');
+        filas.push(fila);
+
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision)}</td>
+                <td>${dte.codigo}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${dte.dte.resumen?.totalMontoRetorno ?? 0}</td>
+                <td>${dte.dte.resumen?.totalIvaRetorno ?? 0}</td>
+                <td>${_sucursales[dte.sucursal]}</td>
+                <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a></td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            dte.dte.resumen?.totalMontoRetorno ?? 0,
+            dte.dte.resumen?.totalIvaRetorno ?? 0,
+            _sucursales[dte.sucursal],
+          ]);
+        });
+      } else {
+        filas.push(fila);
+        report_data.forEach(dte => {
+          const docCli = getReceptorDoc(dte.dte);
+          contentBody += `
+              <tr>
+                <td>${f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision)}</td>
+                <td>${dte.codigo}</td>
+                <td>${dte.dte.selloRecibido}</td>
+                <td>${docCli}</td>
+                <td>${dte.dte.receptor?.nombre || ''}</td>
+                <td>${dte.dte.resumen?.totalMontoRetorno ?? 0}</td>
+                <td>${dte.dte.resumen?.totalIvaRetorno ?? 0}</td>
+              </tr>`;
+          filas.push([
+            f_date(dte.fecEmi || dte.dte.identificacion?.fTransmision),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            docCli,
+            dte.dte.receptor?.nombre || '',
+            dte.dte.resumen?.totalMontoRetorno ?? 0,
+            dte.dte.resumen?.totalIvaRetorno ?? 0,
+          ]);
+        });
+      }
+
     } else if (tipo_documento == "anulacion") {
 
       header.innerHTML = `
@@ -650,18 +1317,16 @@
               <th>MONTO DE IVA</th>
             `;
 
-            let fila = [
-              'FECHA',
-              'CODIGO DE GENERACION',
-              'SELLO DE RECEPCION',
-              'TIPO DTE ANULADO',
-              'DTE ANULADO NUMERO DE CONTROL',
-              'DTE ANULADO CODIGO DE GENERACION',
-              'DTE ANULADO SELLO DE RECEPCION',
-              'MONTO DE IVA',
-            ];
-
-
+      let fila = [
+        'FECHA',
+        'CODIGO DE GENERACION',
+        'SELLO DE RECEPCION',
+        'TIPO DTE ANULADO',
+        'DTE ANULADO NUMERO DE CONTROL',
+        'DTE ANULADO CODIGO DE GENERACION',
+        'DTE ANULADO SELLO DE RECEPCION',
+        'MONTO DE IVA',
+      ];
 
       if (tipo_reporte == "completo") {
         header.innerHTML += `
@@ -686,17 +1351,17 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.codigo,
-                  dte.dte.selloRecibido,
-                  dte_types[dte.dte.documento.tipoDte],
-                  dte.dte.documento.numeroControl,
-                  dte.dte.documento.codigoGeneracion,
-                  dte.dte.documento.selloRecibido,
-                  dte.dte.documento.montoIva,
-                  _sucursales[dte.sucursal],
-                ]);
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            dte_types[dte.dte.documento.tipoDte],
+            dte.dte.documento.numeroControl,
+            dte.dte.documento.codigoGeneracion,
+            dte.dte.documento.selloRecibido,
+            dte.dte.documento.montoIva,
+            _sucursales[dte.sucursal],
+          ]);
         });
 
       } else {
@@ -714,17 +1379,16 @@
                   <td>${dte.dte.documento.montoIva}</td>
                 </tr>`;
 
-
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.codigo,
-                  dte.dte.selloRecibido,
-                  dte_types[dte.dte.documento.tipoDte],
-                  dte.dte.documento.numeroControl,
-                  dte.dte.documento.codigoGeneracion,
-                  dte.dte.documento.selloRecibido,
-                  dte.dte.documento.montoIva,
-                ]);
+          filas.push([
+            f_date(dte.fecEmi),
+            dte.codigo,
+            dte.dte.selloRecibido,
+            dte_types[dte.dte.documento.tipoDte],
+            dte.dte.documento.numeroControl,
+            dte.dte.documento.codigoGeneracion,
+            dte.dte.documento.selloRecibido,
+            dte.dte.documento.montoIva,
+          ]);
         });
 
       }
@@ -754,25 +1418,23 @@
               <th>RETENCION ISR 10%</th>
             `;
 
-
-
-
       if (tipo_reporte == "completo") {
         header.innerHTML += `
             <th>Invalidado</th>
             <th>Sucursal</th>
             <th>ACCIONES</th>`;
 
-            fila.push('Invalidado', 'Sucursal');
-            filas.push(fila);
+        fila.push('Invalidado', 'Sucursal');
+        filas.push(fila);
 
         report_data.forEach(dte => {
+          const suj = dte.dte.receptor || dte.dte.sujetoExcluido || {};
           if (dte.invalidacion !== null) {
             contentBody += `
                 <tr>
                   <td>${f_date(dte.fecEmi)}</td>
-                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
-                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${suj.numDocumento || ''}</td>
+                  <td>${suj.nombre || ''}</td>
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
@@ -784,25 +1446,25 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.sujetoExcluido.numDocumento,
-                  dte.dte.sujetoExcluido.nombre,
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  0.00,
-                  0.00,
-                  0.00,
-                  'SI',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              suj.numDocumento || '',
+              suj.nombre || '',
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              0.00,
+              0.00,
+              0.00,
+              'SI',
+              _sucursales[dte.sucursal],
+            ]);
           } else {
             contentBody += `
                 <tr>
                   <td>${f_date(dte.fecEmi)}</td>
-                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
-                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${suj.numDocumento || ''}</td>
+                  <td>${suj.nombre || ''}</td>
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
@@ -814,19 +1476,19 @@
                   <td><a target="_blank" href="/pos/viewDTE/${dte.id}" class="bg-danger badge">Ver</a> </td>
                 </tr>`;
 
-                filas.push([
-                  f_date(dte.fecEmi),
-                  dte.dte.sujetoExcluido.numDocumento,
-                  dte.dte.sujetoExcluido.nombre,
-                  dte.dte.identificacion.numeroControl,
-                  dte.dte.selloRecibido,
-                  dte.codigo,
-                  dte.dte.resumen.totalCompra,
-                  dte.dte.resumen.ivaRete1,
-                  dte.dte.resumen.reteRenta,
-                  'NO',
-                  _sucursales[dte.sucursal],
-                ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              suj.numDocumento || '',
+              suj.nombre || '',
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              dte.dte.resumen.totalCompra,
+              dte.dte.resumen.ivaRete1,
+              dte.dte.resumen.reteRenta,
+              'NO',
+              _sucursales[dte.sucursal],
+            ]);
           }
 
         });
@@ -834,13 +1496,14 @@
       } else {
         filas.push(fila);
         report_data.forEach(dte => {
+          const suj = dte.dte.receptor || dte.dte.sujetoExcluido || {};
           if (dte.invalidacion !== null) {
 
             contentBody += `
                    <tr>
                      <td>${f_date(dte.fecEmi)}</td>
-                      <td>${dte.dte.sujetoExcluido.numDocumento}</td>
-                      <td>${dte.dte.sujetoExcluido.nombre}</td>
+                      <td>${suj.numDocumento || ''}</td>
+                      <td>${suj.nombre || ''}</td>
                       <td>${dte.dte.identificacion.numeroControl}</td>
                       <td>${dte.dte.selloRecibido}</td>
                       <td>${dte.codigo}</td>
@@ -850,23 +1513,23 @@
                      
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.sujetoExcluido.numDocumento,
-                     dte.dte.sujetoExcluido.nombre,
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     0.00,
-                     0.00,
-                     0.00,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              suj.numDocumento || '',
+              suj.nombre || '',
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              0.00,
+              0.00,
+              0.00,
+            ]);
           } else {
             contentBody += `
                    <tr>
                      <td>${f_date(dte.fecEmi)}</td>
-                  <td>${dte.dte.sujetoExcluido.numDocumento}</td>
-                  <td>${dte.dte.sujetoExcluido.nombre}</td>
+                  <td>${suj.numDocumento || ''}</td>
+                  <td>${suj.nombre || ''}</td>
                   <td>${dte.dte.identificacion.numeroControl}</td>
                   <td>${dte.dte.selloRecibido}</td>
                   <td>${dte.codigo}</td>
@@ -875,29 +1538,29 @@
                   <td>${dte.dte.resumen.reteRenta}</td>
                    </tr>`;
 
-                   filas.push([
-                     f_date(dte.fecEmi),
-                     dte.dte.sujetoExcluido.numDocumento,
-                     dte.dte.sujetoExcluido.nombre,
-                     dte.dte.identificacion.numeroControl,
-                     dte.dte.selloRecibido,
-                     dte.codigo,
-                     dte.dte.resumen.totalCompra,
-                     dte.dte.resumen.ivaRete1,
-                     dte.dte.resumen.reteRenta,
-                   ]);
+            filas.push([
+              f_date(dte.fecEmi),
+              suj.numDocumento || '',
+              suj.nombre || '',
+              dte.dte.identificacion.numeroControl,
+              dte.dte.selloRecibido,
+              dte.codigo,
+              dte.dte.resumen.totalCompra,
+              dte.dte.resumen.ivaRete1,
+              dte.dte.resumen.reteRenta,
+            ]);
           }
         });
       }
 
     }
 
-    
+
     header.classList.add('text-center');
     document.getElementById('reportHeader').appendChild(header);
     document.getElementById('reportData').innerHTML = contentBody;
 
-  _data = filas;
+    _data = filas;
 
   };
 

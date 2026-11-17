@@ -178,8 +178,8 @@
     // Parse the response body as JSON
     const data = await response.json();
     if (data.status == "success") {
-      if (data.json.identificacion.tipoDte !== "03") {
-        return errorMessage('Se encontro el Documento, pero no es un Comprobante de Credito Fiscal Electronico');
+      if (data.json.identificacion.tipoDte !== "03" && data.json.identificacion.tipoDte !== "01") {
+        return errorMessage('Se encontro el Documento, pero no es un Comprobante de Credito Fiscal Electronico ni Factura');
       }
       selected_dte = data.model;
       current_dte = data.json;
@@ -216,9 +216,9 @@
           <h5 class="card-title text-primary mb-3">Receptor</h5>
           <div class="row mb-3">
             <div class="col-md-6">
-              <p><strong>NIT:</strong> ${dte.receptor.nit }</p>
-              <p><strong>NRC:</strong> ${dte.receptor.nrc }</p>
-              <p><strong>Nombre:</strong> ${dte.receptor.nombre}</p>
+              <p><strong>NIT/DUI:</strong> ${dte.receptor.nit || dte.receptor.numDocumento || '' }</p>
+              <p><strong>NRC:</strong> ${dte.receptor.nrc || 'N/A' }</p>
+              <p><strong>Nombre:</strong> ${dte.receptor.nombre || ''}</p>
             </div>
             <div class="col-md-6">
               <p><strong>Teléfono:</strong> ${dte.receptor.telefono || '' }</p>
@@ -398,7 +398,7 @@
             return errorMessage('Primero debe identificar el CCFE a Afectar')
       }
 
-      let retencion = current_dte.resumen.ivaRete1 > 0;
+      let aplicaRetencion = (current_dte.resumen.ivaRete > 0 || current_dte.resumen.ivaRete1 > 0);
       e.target.disabled = true;
       var cuerpoDocumento = [];
       let subtotal = 0.00;
@@ -418,7 +418,7 @@
         const descripcion = row.querySelector('.descripcion-item').value;
         const tipoItem = Number.parseInt(row.querySelector('.tipo-item').value);
         const uniMedida = Number.parseInt(row.querySelector('.uni-medida-item').value);
-        const cantidad = Number.parseInt(row.querySelector('.cantidad-item').value);
+        const cantidad = Number.parseFloat(row.querySelector('.cantidad-item').value);
         const precioUni = Number.parseFloat(row.querySelector('.precio-uni-item').value);
 
         // Solo agregar si la descripción y la cantidad son válidas (puedes ajustar esta validación)
@@ -431,7 +431,7 @@
             venta_exenta = fix_number((cantidad * precioUni), 4);
           } else {
             venta_gravada = fix_number((cantidad * precioUni), 4);
-            iva = venta_gravada * IVA_VAL;
+            iva = fix_number(venta_gravada * IVA_VAL, 4);
           }
           cuerpoDocumento.push({
             numItem: contador,
@@ -448,6 +448,10 @@
             ventaExenta: venta_exenta,
             ventaGravada: venta_gravada,
             tributos: venta_gravada > 0 ? ['20'] : null,
+            noGravado: 0,
+            ivaPerci: 0,
+            totalIva: iva,
+            ivaRete: 0
           });
           contador++;
           suma_gravadas = fix_number(suma_gravadas + venta_gravada, 2);
@@ -457,9 +461,12 @@
         }
       });
 
-      retencion = (retencion && suma_gravadas > 100.00) ? fix_number((suma_gravadas * 0.01), 2) : 0;
-      let total = fix_number((suma_gravadas + suma_iva - retencion), 2);
+      let retencion = (aplicaRetencion && suma_gravadas > 100.00) ? fix_number((suma_gravadas * 0.01), 2) : 0;
+      let subTotalVentas = fix_number(suma_gravadas + suma_exenta, 2);
+      let montoTotalOperacion = fix_number(subTotalVentas + suma_iva, 2);
+      let total = fix_number((montoTotalOperacion - retencion), 2);
       if (total > current_dte.resumen.totalPagar) {
+        e.target.disabled = false;
         return errorMessage(`El monto Maximo no puede ser mas de ${current_dte.resumen.totalPagar}`)
       }
 
@@ -467,25 +474,25 @@
 
       const resumen = {
         totalNoSuj: 0,
-        totalExenta: 0,
+        totalExenta: suma_exenta,
         totalGravada: suma_gravadas,
-        subTotalVentas: suma_gravadas,
-        descuNoSuj: 0,
-        descuExenta: 0,
-        descuGravada: 0,
+        subTotalVentas: subTotalVentas,
         totalDescu: 0,
         tributos: suma_gravadas > 0 ? [{
           codigo: "20",
           descripcion: "Impuesto al Valor Agregado 13%",
-          valor: fix_number(suma_iva)
+          valor: fix_number(suma_iva, 2)
         }] : null,
-        subTotal: suma_gravadas,
-        ivaPerci1: 0,
-        ivaRete1: retencion,
-        reteRenta: 0,
-        montoTotalOperacion: total,
+        montoTotalOperacion: montoTotalOperacion,
+        ivaPerci: 0,
+        totalIva: fix_number(suma_iva, 2),
+        ivaRete: retencion,
+        totalNoGravado: 0,
+        totalPagar: total,
         totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
         condicionOperacion: 1,
+        observaciones: null,
+        codigoRetencionMH: retencion > 0 ? "22" : null
       }
 
 

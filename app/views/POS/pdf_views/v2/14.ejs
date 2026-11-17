@@ -109,27 +109,34 @@
         <td colspan="2">
           <div class="info-box">
             <h5>SUJETO EXCLUIDO</h5>
-            <h5><%= dte.sujetoExcluido.nombre %></h5>
+            <% const sujeto = dte.receptor || dte.sujetoExcluido || {}; %>
+            <h5><%= sujeto.nombre %></h5>
 
             <p class="mb-1">
               <strong>Documento:</strong>
               <span>
-                <%= data.receptor.documento %>
+                <%= data?.receptor?.documento || sujeto.numDocumento %>
               </span>
             </p>
 
             <p class="mb-1">
               <strong>Direccion:</strong>
               <span>
-                <%= data.receptor.direccion %>
+                <%= data?.receptor?.direccion || sujeto.direccion?.complemento %>
               </span>
             </p>
 
+            <p class="mb-1">
+              <strong>Teléfono:</strong>
+              <span>
+                <%= sujeto.telefono %>
+              </span>
+            </p>
 
             <p class="mb-0">
               <strong>Correo Electrónico:</strong>
               <span>
-                <%= dte.sujetoExcluido.correo %>
+                <%= sujeto.correo %>
               </span>
             </p>
           </div>

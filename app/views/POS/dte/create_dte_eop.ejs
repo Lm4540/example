@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Evento de Operaciones Especiales (DTE Manual - v1)</h2>
+          <p class="text-center text-muted mb-0">Informe de operaciones respaldadas por Facturas de Venta Simplificada (02) o Comprobantes de Control Interno (97)</p>
+        </div>
+
+        <div class="card-body mt-3">
+          <h4 class="text-center mb-3">Detalles del Cuerpo del Documento</h4>
+
+          <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered table-striped align-middle">
+              <thead>
+                <tr>
+                  <th style="min-width: 130px;">Modo</th>
+                  <th style="min-width: 190px;">Tipo Doc. (CAT-023)</th>
+                  <th style="min-width: 140px;">Fecha Emisión</th>
+                  <th style="min-width: 140px;">N° Doc. (Uno a Uno)</th>
+                  <th style="min-width: 130px;">Doc. Del (Rango)</th>
+                  <th style="min-width: 130px;">Doc. Al (Rango)</th>
+                  <th style="min-width: 220px;">Descripción</th>
+                  <th style="min-width: 100px;">Cant.</th>
+                  <th style="min-width: 130px;">Precio Uni. (Sin IVA)</th>
+                  <th style="min-width: 130px;">Tipo Venta</th>
+                  <th style="min-width: 110px;">Subtotal</th>
+                  <th style="min-width: 200px;">Cód. Gen. Ref. (Anulación EOE)</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="documentoDetalleTableBody">
+              </tbody>
+              <tbody id="detalleTotales">
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">Total No Sujeta</td>
+                  <td id="_no_suj">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">Total Exenta</td>
+                  <td id="_exenta">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">Total Gravada</td>
+                  <td id="_gravada">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">SubTotal</td>
+                  <td id="_subtotal">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">IVA (13%)</td>
+                  <td id="_iva">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+                <tr>
+                  <td colspan="10" class="text-end fw-bold">Total Operación</td>
+                  <td id="_total" class="fw-bold">$ 0.00</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="13" class="text-center">
+                    <button type="button" class="btn btn-outline-primary mr-3 mt-3 ml-3 round" id="addDetalleBtn">Agregar Ítem</button>
+                    <button type="button" class="btn btn-outline-success mr-3 mt-3 ml-3 round" id="Totalizar">Totalizar</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4>Apéndices</h4>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Etiqueta</th>
+                  <th>Valor</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="TBodyApendices"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <button class="btn round btn-outline-primary" onclick="addApendiceRow()" id="btnAddApendices">
+                      Agregar Apéndice
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer text-center">
+          <div id="results" class="mt-2 mb-4"></div>
+          <button class="round btn-lg btn btn-primary mt-2" id="btnSave" disabled>
+            Procesar Evento de Operaciones Especiales
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
+  const TBodyApendices = document.querySelector("#TBodyApendices");
+  const addDetalleBtn = document.querySelector('#addDetalleBtn');
+  const IVA_VAL = Number.parseFloat('<%= VALOR_IVA %>') || 0.13;
+  const helper_url = '<%= helper_url %>';
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  const getTodayStr = () => {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  };
+
+  const toggleModoRow = (selectEl) => {
+    const row = selectEl.closest('tr');
+    const tipoDocSelect = row.querySelector('.tipo-doc-item');
+    if (tipoDocSelect.value === '02' && selectEl.value === 'uno') {
+      selectEl.value = 'rango';
+    }
+    const modo = selectEl.value;
+    const fechaInput = row.querySelector('.fecha-emision-item');
+    const numDocInput = row.querySelector('.num-doc-item');
+    const docDelInput = row.querySelector('.doc-del-item');
+    const docAlInput = row.querySelector('.doc-al-item');
+    const cantInput = row.querySelector('.cantidad-item');
+
+    if (modo === 'uno') {
+      fechaInput.disabled = false;
+      if (!fechaInput.value) fechaInput.value = getTodayStr();
+      numDocInput.disabled = false;
+      docDelInput.value = '';
+      docAlInput.value = '';
+      docDelInput.disabled = true;
+      docAlInput.disabled = true;
+      cantInput.value = 1;
+      cantInput.readOnly = true;
+    } else {
+      fechaInput.value = '';
+      fechaInput.disabled = true;
+      numDocInput.value = '';
+      numDocInput.disabled = true;
+      docDelInput.disabled = false;
+      docAlInput.disabled = false;
+      cantInput.readOnly = false;
+    }
+    subtotalizar(row);
+  };
+
+  const onChangeTipoDocRow = (selectEl) => {
+    const row = selectEl.closest('tr');
+    const modoSelect = row.querySelector('.modo-item');
+    const unoOpt = modoSelect.querySelector('option[value="uno"]');
+    if (selectEl.value === '02') {
+      if (unoOpt) unoOpt.disabled = true;
+      modoSelect.value = 'rango';
+    } else {
+      if (unoOpt) unoOpt.disabled = false;
+    }
+    toggleModoRow(modoSelect);
+  };
+
+  const subtotalizar = (node) => {
+    document.querySelector("#btnSave").disabled = true;
+    let cant = Number.parseInt(node.querySelector('.cantidad-item').value, 10);
+    let price = Number.parseFloat(node.querySelector('.precio-uni-item').value);
+    node.querySelector(".subtotal-td").innerHTML = (isNaN(cant) || isNaN(price)) ? '$ 0.00' : `$ ${money_format(cant * price)}`;
+  };
+
+  const addDetalleRow = () => {
+    document.querySelector("#btnSave").disabled = true;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td>
+        <select class="form-select modo-item" onchange="toggleModoRow(this)">
+          <option value="uno">Uno a Uno</option>
+          <option value="rango">Por Rango</option>
+        </select>
+      </td>
+      <td>
+        <select class="form-select tipo-doc-item" onchange="onChangeTipoDocRow(this)" required>
+          <option value="97">97 - Comprobantes de Control Interno</option>
+          <option value="02">02 - Factura de venta simplificada</option>
+        </select>
+      </td>
+      <td>
+        <input type="date" class="form-control fecha-emision-item" value="${getTodayStr()}" required>
+      </td>
+      <td>
+        <input type="text" class="form-control num-doc-item" placeholder="N° Documento" maxlength="36">
+      </td>
+      <td>
+        <input type="text" class="form-control doc-del-item" placeholder="Del N°" maxlength="36" disabled>
+      </td>
+      <td>
+        <input type="text" class="form-control doc-al-item" placeholder="Al N°" maxlength="36" disabled>
+      </td>
+      <td>
+        <input type="text" class="form-control descripcion-item" placeholder="Descripción de la operación" maxlength="1500" required>
+      </td>
+      <td>
+        <input type="number" class="form-control cantidad-item" oninput="subtotalizar(this.closest('tr'))" value="1" min="1" step="1" readonly required>
+      </td>
+      <td>
+        <input type="number" class="form-control precio-uni-item" oninput="subtotalizar(this.closest('tr'))" placeholder="0.00" min="0" step="0.01" required>
+      </td>
+      <td>
+        <select class="form-select tipo-venta-item" onchange="subtotalizar(this.closest('tr'))">
+          <option value="gravada">Gravada</option>
+          <option value="exenta">Exenta</option>
+          <option value="nosujeta">No Sujeta</option>
+        </select>
+      </td>
+      <td class="subtotal-td">$ 0.00</td>
+      <td>
+        <input type="text" class="form-control cod-ref-item" placeholder="UUID EOE previo (opcional)" maxlength="36">
+      </td>
+      <td>
+        <span class="badge bg-danger btn-sm remove-item-btn" style="cursor:pointer;">Eliminar</span>
+      </td>
+    `;
+    newRow.querySelector('.remove-item-btn').addEventListener('click', function() {
+      newRow.remove();
+      document.querySelector("#btnSave").disabled = true;
+    });
+    documentoDetalleTableBody.appendChild(newRow);
+  };
+
+  const addApendiceRow = () => {
+    const newApendiceRow = document.createElement('tr');
+    newApendiceRow.innerHTML = `
+      <td><input type="text" class="form-control apendice-campo" maxlength="25"></td>
+      <td><input type="text" class="form-control apendice-etiqueta" maxlength="50"></td>
+      <td><input type="text" class="form-control apendice-valor" maxlength="150"></td>
+      <td><span class="bg-danger badge btn-delete-apendice" style="cursor:pointer;">Eliminar</span></td>
+    `;
+    newApendiceRow.querySelector('.btn-delete-apendice').addEventListener('click', function() {
+      newApendiceRow.remove();
+    });
+    TBodyApendices.appendChild(newApendiceRow);
+  };
+
+  const calcularDatosEOP = () => {
+    const rows = documentoDetalleTableBody.querySelectorAll('tr');
+    if (rows.length < 1) {
+      errorMessage('Agregue al menos un detalle válido al cuerpo del documento');
+      return null;
+    }
+
+    let totalNoSuj = 0;
+    let totalExenta = 0;
+    let totalGravada = 0;
+    const cuerpoDocumento = [];
+    let index = 1;
+    let primerTipoDoc = null;
+
+    for (const row of rows) {
+      const modo = row.querySelector('.modo-item').value;
+      const tipoDocumento = row.querySelector('.tipo-doc-item').value;
+      if (primerTipoDoc === null) {
+        primerTipoDoc = tipoDocumento;
+      } else if (tipoDocumento !== primerTipoDoc) {
+        errorMessage(`No se permite combinar diferentes Tipos de Documento (02 y 97) en un mismo Evento de Operaciones Especiales (ítem #${index})`);
+        return null;
+      }
+      const fechaEmision = row.querySelector('.fecha-emision-item').value.trim();
+      const numDocRaw = row.querySelector('.num-doc-item').value.trim();
+      const docDelRaw = row.querySelector('.doc-del-item').value.trim();
+      const docAlRaw = row.querySelector('.doc-al-item').value.trim();
+      const descripcion = row.querySelector('.descripcion-item').value.trim();
+      const cantidad = parseInt(row.querySelector('.cantidad-item').value, 10);
+      const precioUni = parseFloat(row.querySelector('.precio-uni-item').value);
+      const tipoVenta = row.querySelector('.tipo-venta-item').value;
+      const codRefRaw = row.querySelector('.cod-ref-item').value.trim().toUpperCase();
+
+      if (!descripcion) {
+        errorMessage(`Ingrese la descripción en el ítem #${index}`);
+        return null;
+      }
+      if (isNaN(cantidad) || cantidad < 1) {
+        errorMessage(`La cantidad debe ser un entero mayor o igual a 1 en el ítem #${index}`);
+        return null;
+      }
+      if (isNaN(precioUni) || precioUni < 0) {
+        errorMessage(`El precio unitario debe ser válido en el ítem #${index}`);
+        return null;
+      }
+
+      let numDocumento = null;
+      let docDel = null;
+      let docAl = null;
+      let fechaEmisionFinal = null;
+
+      if (modo === 'uno') {
+        if (tipoDocumento === '02') {
+          errorMessage(`Las Facturas de Venta Simplificada (02) únicamente pueden informarse por rango (ítem #${index})`);
+          return null;
+        }
+        if (!fechaEmision || fechaEmision.length < 10) {
+          errorMessage(`Ingrese la fecha de emisión en el ítem #${index}`);
+          return null;
+        }
+        if (!numDocRaw) {
+          errorMessage(`Ingrese el número de documento en el ítem #${index}`);
+          return null;
+        }
+        numDocumento = numDocRaw;
+        fechaEmisionFinal = fechaEmision;
+      } else {
+        if (!docDelRaw || !docAlRaw) {
+          errorMessage(`Ingrese los números de documento inicial (Del) y final (Al) en el ítem #${index}`);
+          return null;
+        }
+        docDel = docDelRaw;
+        docAl = docAlRaw;
+        fechaEmisionFinal = null;
+      }
+
+      let codigoGeneracionRef = null;
+      if (codRefRaw.length > 0) {
+        if (!uuidRegex.test(codRefRaw)) {
+          errorMessage(`El código de generación de referencia en el ítem #${index} no tiene formato UUID válido`);
+          return null;
+        }
+        codigoGeneracionRef = codRefRaw;
+      }
+
+      const montoLinea = fix_number(cantidad * precioUni, 2);
+      let ventaNoSuj = 0;
+      let ventaExenta = 0;
+      let ventaGravada = 0;
+      let tributosItem = null;
+
+      if (tipoVenta === 'gravada') {
+        ventaGravada = montoLinea;
+        totalGravada = fix_number(totalGravada + ventaGravada, 2);
+        tributosItem = ventaGravada > 0 ? ["20"] : null;
+      } else if (tipoVenta === 'exenta') {
+        ventaExenta = montoLinea;
+        totalExenta = fix_number(totalExenta + ventaExenta, 2);
+      } else {
+        ventaNoSuj = montoLinea;
+        totalNoSuj = fix_number(totalNoSuj + ventaNoSuj, 2);
+      }
+
+      cuerpoDocumento.push({
+        numItem: index,
+        codigoGeneracionRef: codigoGeneracionRef,
+        tipoDocumento: tipoDocumento,
+        numDocumento: numDocumento,
+        fechaEmision: fechaEmisionFinal,
+        cantidad: cantidad,
+        descripcion: descripcion,
+        docDel: docDel,
+        docAl: docAl,
+        precioUni: fix_number(precioUni, 4),
+        ventaNoSuj: ventaNoSuj,
+        ventaExenta: ventaExenta,
+        ventaGravada: ventaGravada,
+        tributos: tributosItem
+      });
+
+      index++;
+    }
+
+    const subTotal = fix_number(totalNoSuj + totalExenta + totalGravada, 2);
+    const totalIva = fix_number(totalGravada * IVA_VAL, 2);
+    const total = fix_number(subTotal + totalIva, 2);
+
+    const resumen = {
+      totalNoSuj: totalNoSuj,
+      totalExenta: totalExenta,
+      totalGravada: totalGravada,
+      subTotal: subTotal,
+      tributos: totalGravada > 0 ? [{
+        codigo: "20",
+        descripcion: "Impuesto al Valor Agregado 13%",
+        valor: totalIva
+      }] : null,
+      total: total,
+      totalLetras: String(money_to_string(total)).toLocaleUpperCase()
+    };
+
+    return {
+      cuerpoDocumento,
+      resumen,
+      totalIva
+    };
+  };
+
+  document.addEventListener('DOMContentLoaded', event => {
+    addDetalleRow();
+
+    addDetalleBtn.addEventListener('click', addDetalleRow);
+
+    document.querySelector("#Totalizar").addEventListener('click', e => {
+      const calc = calcularDatosEOP();
+      if (!calc) return;
+
+      document.querySelector("#_no_suj").innerHTML = `$ ${money_format(calc.resumen.totalNoSuj)}`;
+      document.querySelector("#_exenta").innerHTML = `$ ${money_format(calc.resumen.totalExenta)}`;
+      document.querySelector("#_gravada").innerHTML = `$ ${money_format(calc.resumen.totalGravada)}`;
+      document.querySelector("#_subtotal").innerHTML = `$ ${money_format(calc.resumen.subTotal)}`;
+      document.querySelector("#_iva").innerHTML = `$ ${money_format(calc.totalIva)}`;
+      document.querySelector("#_total").innerHTML = `$ ${money_format(calc.resumen.total)}`;
+      document.querySelector("#btnSave").disabled = false;
+    });
+
+    document.querySelector("#btnSave").addEventListener('click', e => {
+      const calc = calcularDatosEOP();
+      if (!calc) return;
+
+      let apendice = [];
+      const apendiceRows = TBodyApendices.querySelectorAll('tr');
+      for (let i = 0; i < apendiceRows.length; i++) {
+        let campo = apendiceRows[i].querySelector('.apendice-campo').value.trim();
+        let etiqueta = apendiceRows[i].querySelector('.apendice-etiqueta').value.trim();
+        let valor = apendiceRows[i].querySelector('.apendice-valor').value.trim();
+        if (campo.length > 0 && etiqueta.length > 0 && valor.length > 0) {
+          apendice.push({
+            campo,
+            etiqueta,
+            valor
+          });
+        }
+      }
+      apendice = apendice.length > 0 ? apendice : null;
+
+      const data = {
+        dte_type: '17',
+        cuerpoDocumento: calc.cuerpoDocumento,
+        resumen: calc.resumen,
+        apendice: apendice
+      };
+
+      e.target.disabled = true;
+      postData('/pos/procces_dte_manual', data).then(data => {
+        if (data.status == 'success') {
+          successMessage(data.message);
+          document.querySelector("#results").innerHTML += `
+            <div class="alert alert-light-success">
+              <p>Evento de Operaciones Especiales generado exitosamente.</p>
+              <a href="/pos/viewDTE/${data.json.id}" target="_blank" class="btn btn-sm btn-primary round">Ver Documento</a>
+              <a href="/pos/getPdf/${data.json.id}" target="_blank" class="btn btn-sm btn-danger round">Descargar PDF</a>
+              <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn btn-sm btn-info round">Descargar JSON</a>
+            </div>
+          `;
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor intenta nuevamente');
+        }
+      });
+    });
+  });
+</script>
+
+</html>

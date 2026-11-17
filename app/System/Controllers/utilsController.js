@@ -814,24 +814,7 @@ const UtilsController = {
     },
 
     execute_sql: async (req, res) => {
-        //     let tmp = await sequelize.query(
-        //         'SELECT * from inventory_product_stock_locations WHERE sucursal = 1 AND location LIKE "%Bodega #7"',
-        //         {
-        //             type: QueryTypes.SELECT,
-        //             model: StockLocation
-        //         }
-        //     );
 
-        //     let result = []
-
-        //     for (let index = 0; index < tmp.length; index++) {
-        //         const element = tmp[index];
-        //         element.location = 'Bodega #10';
-        //         result.push(await element.save());
-        //     }
-
-
-        //    return res.json(result);
 
         return res.render('Utils/prorrateo_v1_2');
 

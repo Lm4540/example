@@ -12,6 +12,7 @@
   const departamentos = JSON.parse(distritos);
   var selected_departamento = null;
   var selected_municipio = null;
+  var selected_distrito = null;
   distritos = '<%- dis %>';
   distritos = JSON.parse(distritos);
 
@@ -230,7 +231,7 @@
       e.target.disabled = true;
       var cuerpoDocumento = [];
       var pagos = null;
-      let retencion = document.querySelector('#clientClassification').value === "gran";
+      let aplicaRetencion = document.querySelector('#clientClassification').value === "gran";
       let exenta = document.querySelector("#gravamen").value == 'exentas';
       let subtotal = 0.00;
       const clientCodActividad = document.getElementById('clientCodActividad');
@@ -251,7 +252,7 @@
 
       if (nombre.length > 2) {
         var tipoDocumento = document.getElementById('tipoDocumento').value;
-        var numDocumento = document.getElementById('numDocumento').value;
+        var numDocumento = document.getElementById('numDocumento').value.trim();
         if (tipoDocumento == "") {
           tipoDocumento = null;
           numDocumento = null;
@@ -266,15 +267,16 @@
           numDocumento: numDocumento || null,
           nrc: nrc.length > 0 ? nrc : null,
           nombre: nombre,
-          codActividad: null,
-          descActividad: null,
-          direccion: document.querySelector("#distrito").value !== "" ? {
+          codActividad: clientCodActividad.value !== "" ? clientCodActividad.value : null,
+          descActividad: clientCodActividad.value !== "" ? clientCodActividad.options[clientCodActividad.selectedIndex].text : null,
+          direccion: (document.querySelector("#distrito").value !== "" && selected_distrito) ? {
             departamento: document.getElementById('departamento').value,
             municipio: document.getElementById('municipio').value,
-            complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`
+            distrito: selected_distrito,
+            complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`.trim()
           } : null,
-          telefono: document.getElementById('telefono').value.length > 7 ? document.getElementById('telefono').value : null,
-          correo: document.getElementById('correo').value.length > 5 ? document.getElementById('correo').value : null
+          telefono: document.getElementById('telefono').value.trim().length > 7 ? document.getElementById('telefono').value.trim() : null,
+          correo: document.getElementById('correo').value.trim().length > 5 ? document.getElementById('correo').value.trim() : null
         };
 
       }
@@ -339,14 +341,10 @@
         }
       });
 
-      retencion = 0;
-      if (retencion && suma_gravadas > 100.00) {
-        let sin_iva = fix_number(suma_gravadas / (1 + IVA_VAL), 4);
-        retencion = fix_number((sin_iva * 0.01), 2)
-      }
-
-
-      let total = fix_number((suma_gravadas - retencion), 2);
+      let sin_iva = fix_number(suma_gravadas / (1 + IVA_VAL), 4);
+      let retencion = (aplicaRetencion && sin_iva >= 100.00) ? fix_number((sin_iva * 0.01), 2) : 0;
+      let subTotalVentas = fix_number((suma_gravadas + suma_exenta), 2);
+      let total = fix_number((subTotalVentas - retencion), 2);
 
       let paysrows = pagosRecibidoTbody.querySelectorAll('tr');
       if (paysrows.length > 0) {
@@ -371,17 +369,16 @@
         totalNoSuj: 0,
         totalExenta: suma_exenta,
         totalGravada: suma_gravadas,
-        subTotalVentas: suma_gravadas,
+        subTotalVentas: subTotalVentas,
         descuNoSuj: 0,
         descuExenta: 0,
         descuGravada: 0,
         porcentajeDescuento: 0,
         totalDescu: 0,
         tributos: null,
-        subTotal: suma_gravadas,
-        ivaRete1: retencion,
-        reteRenta: 0,
-        montoTotalOperacion: total,
+        subTotal: subTotalVentas,
+        ivaRete: retencion,
+        montoTotalOperacion: subTotalVentas,
         totalNoGravado: 0,
         totalPagar: total,
         totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
@@ -389,7 +386,8 @@
         saldoFavor: 0,
         condicionOperacion: 1,
         pagos: pagos,
-        numPagoElectronico: null
+        numPagoElectronico: null,
+        observaciones: null
       }
 
 
@@ -453,15 +451,18 @@
         document.querySelector("#departamento").value = '00';
         selected_departamento = null;
         selected_municipio = null;
+        selected_distrito = null;
       } else if (option.value == '00') {
         selected_departamento = '00';
         selected_municipio = '00';
+        selected_distrito = '00';
         cargarMunicipios('00');
         document.querySelector("#municipio").value = '00';
         document.querySelector("#departamento").value = '00';
       } else {
         selected_departamento = option.customProperties.departamento;
         selected_municipio = option.customProperties.municipio;
+        selected_distrito = option.customProperties.codigo;
         cargarMunicipios(option.customProperties.departamento);
         document.querySelector("#municipio").value = option.customProperties.municipio;
         document.querySelector("#departamento").value = option.customProperties.departamento;

@@ -20,6 +20,14 @@ app.use(cors(corsOptions));
 app.locals.baseURL = `${process.env.URL_HOST}:${process.env.API_PORT}`;
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    // Imprimir información útil sobre el ataque
+    console.error(`JSON malformado detectado:`);
+    console.error(` - Endpoint: ${req.originalUrl}`);
+    console.error(` - Método: ${req.method}`);
+    console.error(` - IP Origen: ${req.ip || req.headers['x-forwarded-for']}`);
+    console.log(` - Cuerpo de la petición: ${JSON.stringify(req.body)}`);
+    console.error(` - Error: ${err.message}`);
+    
     return res.status(400).send({ error: 'Petición inválida' }); 
   }
 

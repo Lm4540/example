@@ -274,13 +274,13 @@
           <h5 class="card-title text-primary mb-3">Receptor</h5>
           <div class="row mb-3">
             <div class="col-md-6">
-              <p><strong>NIT:</strong> ${dte.receptor.nit }</p>
-              <p><strong>NRC:</strong> ${dte.receptor.nrc }</p>
-              <p><strong>Nombre:</strong> ${dte.receptor.nombre}</p>
+              <p><strong>NIT / Doc:</strong> ${(dte.receptor || dte.sujetoExcluido)?.nit || (dte.receptor || dte.sujetoExcluido)?.numDocumento || 'N/A' }</p>
+              <p><strong>NRC:</strong> ${(dte.receptor || dte.sujetoExcluido)?.nrc || 'N/A' }</p>
+              <p><strong>Nombre:</strong> ${(dte.receptor || dte.sujetoExcluido)?.nombre || 'Consumidor Final'}</p>
             </div>
             <div class="col-md-6">
-              <p><strong>Teléfono:</strong> ${dte.receptor.telefono || '' }</p>
-              <p><strong>Correo:</strong> ${dte.receptor.correo || 'N/A' }</p>
+              <p><strong>Teléfono:</strong> ${(dte.receptor || dte.sujetoExcluido)?.telefono || '' }</p>
+              <p><strong>Correo:</strong> ${(dte.receptor || dte.sujetoExcluido)?.correo || 'N/A' }</p>
             </div>
           </div> `;
 

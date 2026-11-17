@@ -524,63 +524,7 @@ class WebPOSPrinterLocalServer {
             });
       }
 
-      /**
-       * Imprime un ticket de ejemplo usando los comandos ESC/POS.
-       */
-      async printExampleTicket({ storeName, ticketNumber, items, total }) {
-            const builder = new ESCPOSBuilder();
-            builder.initialize()
-                   .cashDrawer()
-                   .setFont('A')
-                   .align('center')
-                   .bold(true)
-                   .text(storeName || 'MI TIENDA EJEMPLO')
-                   .newLine()
-                   .bold(false)
-                   .text('TICKET DE PRUEBA')
-                   .newLine()
-                   .text(`No: ${ticketNumber || '000001'}`)
-                   .newLine()
-                   .text('----------------------------------------')
-                   .newLine()
-                   .align('left');
-
-            builder.itemLine('Articulo', 'Cant', 'Precio', 'Subtotal');
-            builder.newLine();
-
-            if (items && items.length > 0) {
-                  items.forEach(i => {
-                        builder.itemLine(i.name, i.qty, i.price, i.qty * i.price);
-                        builder.newLine();
-                  });
-            } else {
-                  builder.itemLine('Producto Prueba 1', 1, 10.00, 10.00);
-                  builder.newLine();
-                  builder.itemLine('Producto Prueba 2', 2, 5.00, 10.00);
-                  builder.newLine();
-            }
-
-            builder.text('----------------------------------------')
-                   .newLine()
-                   .align('right')
-                   .bold(true)
-                   .text(`TOTAL: $${(total || 20.00).toFixed(2)}`)
-                   .bold(false)
-                   .newLine()
-                   .align('center')
-                   .newLine()
-                   .text('¡Gracias por su compra!')
-                   .newLine()
-                   .qr(ticketNumber || '000001', 6, 'L')
-                   .newLineN(4)
-                   .cut();
-
-            return this.sendCommands(builder.build());
-      }
-
-      /**
-       * Abre el cajón de dinero enviando el comando ESC/POS.
-       */
+      
       async openCashDrawer() {
             const builder = new ESCPOSBuilder();
             builder.initialize().cashDrawer();

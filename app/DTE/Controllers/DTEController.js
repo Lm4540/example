@@ -263,7 +263,7 @@ async function transmitDTEWithRetry(dteData) {
         ambiente: dteData.identificacion.ambiente,
         idEnvio: new Date().getTime(), // ID único para este intento de envío
         version: dteData.identificacion.version,
-        tipoDte: dteData.identificacion.tipoDte,
+        tipoDte: dteData.identificacion.tipoDte || dteData.identificacion.tipoEvento,
         documento: dteFirmado.data,
         codigoGeneracion: dteData.identificacion.codigoGeneracion
     };

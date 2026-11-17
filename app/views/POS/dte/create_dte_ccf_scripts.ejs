@@ -12,6 +12,7 @@
   const departamentos = JSON.parse(distritos);
   var selected_departamento = null;
   var selected_municipio = null;
+  var selected_distrito = null;
   distritos = '<%- dis %>';
   distritos = JSON.parse(distritos);
 
@@ -225,20 +226,26 @@
       let subtotal = 0.00;
       const clientCodActividad = document.getElementById('clientCodActividad');
 
+      const nrcVal = document.getElementById('nrc').value.replace(/[^0-9]/g, '');
+      const nombreComercialVal = document.getElementById('nombreComercial').value.trim();
+      const telefonoVal = document.getElementById('telefono').value.trim();
+      const correoVal = document.getElementById('correo').value.trim();
+
       const receptor = {
         nit: document.getElementById('nit').value.replace(/[^0-9]/g, ''),
-        nrc: document.getElementById('nrc').value.replace(/[^0-9]/g, ''),
-        nombre: document.getElementById('nombre').value,
+        nrc: nrcVal.length > 0 ? nrcVal : null,
+        nombre: document.getElementById('nombre').value.trim(),
         codActividad: clientCodActividad.value,
-        descActividad: clientCodActividad.options[clientCodActividad.selectedIndex].text,
-        nombreComercial: document.getElementById('nombreComercial').value,
+        descActividad: clientCodActividad.value !== "" ? clientCodActividad.options[clientCodActividad.selectedIndex].text : "",
+        nombreComercial: nombreComercialVal.length > 0 ? nombreComercialVal : null,
         direccion: {
           departamento: document.getElementById('departamento').value,
           municipio: document.getElementById('municipio').value,
-          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`
+          distrito: selected_distrito,
+          complemento: `Distrito de ${document.querySelector("#distrito").value}, ${document.getElementById('complemento').value}`.trim()
         },
-        telefono: document.getElementById('telefono').value,
-        correo: document.getElementById('correo').value
+        telefono: telefonoVal.length >= 8 ? telefonoVal : null,
+        correo: correoVal.length > 0 ? correoVal : null
       };
       const rows = documentoDetalleTableBody.querySelectorAll('tr');
       if (rows.length < 0) {
@@ -254,7 +261,7 @@
         const descripcion = row.querySelector('.descripcion-item').value;
         const tipoItem = Number.parseInt(row.querySelector('.tipo-item').value);
         const uniMedida = Number.parseInt(row.querySelector('.uni-medida-item').value);
-        const cantidad = Number.parseInt(row.querySelector('.cantidad-item').value);
+        const cantidad = Number.parseFloat(row.querySelector('.cantidad-item').value);
         const precioUni = Number.parseFloat(row.querySelector('.precio-uni-item').value);
 
         // Solo agregar si la descripción y la cantidad son válidas (puedes ajustar esta validación)
@@ -296,7 +303,9 @@
       });
 
       retencion = (retencion && suma_gravadas > 100.00) ? fix_number((suma_gravadas * 0.01), 2) : 0;
-      let total = fix_number((suma_gravadas + suma_iva - retencion), 2);
+      let subTotalVentas = fix_number((suma_gravadas + suma_exenta), 2);
+      let montoTotalOperacion = fix_number((subTotalVentas + suma_iva), 2);
+      let total = fix_number((montoTotalOperacion - retencion), 2);
 
       let paysrows = pagosRecibidoTbody.querySelectorAll('tr');
       if (paysrows.length > 0) {
@@ -319,23 +328,21 @@
 
       const resumen = {
         totalNoSuj: 0,
-        totalExenta: 0,
+        totalExenta: suma_exenta,
         totalGravada: suma_gravadas,
-        subTotalVentas: suma_gravadas,
+        subTotalVentas: subTotalVentas,
         descuNoSuj: 0,
         descuExenta: 0,
         descuGravada: 0,
         porcentajeDescuento: 0,
         totalDescu: 0,
-        subTotal: suma_gravadas,
-        ivaPerci1: 0,
-        ivaRete1: retencion,
-        reteRenta: 0,
-        montoTotalOperacion: total,
+        subTotal: subTotalVentas,
+        ivaPerci: 0,
+        ivaRete: retencion,
+        montoTotalOperacion: montoTotalOperacion,
         totalNoGravado: 0,
         totalPagar: total,
         totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
-        // totalIva: Helper.fix_number(sum_iva),
         tributos: suma_gravadas > 0 ? [{
           codigo: "20",
           descripcion: "Impuesto al Valor Agregado 13%",
@@ -344,7 +351,8 @@
         saldoFavor: 0,
         condicionOperacion: 1,
         pagos: pagos,
-        numPagoElectronico: null
+        numPagoElectronico: null,
+        observaciones: null
       }
 
 
@@ -406,15 +414,18 @@
         document.querySelector("#departamento").value = '00';
         selected_departamento = null;
         selected_municipio = null;
+        selected_distrito = null;
       } else if (option.value == '00') {
         selected_departamento = '00';
         selected_municipio = '00';
+        selected_distrito = '00';
         cargarMunicipios('00');
         document.querySelector("#municipio").value = '00';
         document.querySelector("#departamento").value = '00';
       } else {
         selected_departamento = option.customProperties.departamento;
         selected_municipio = option.customProperties.municipio;
+        selected_distrito = option.customProperties.codigo;
         cargarMunicipios(option.customProperties.departamento);
         document.querySelector("#municipio").value = option.customProperties.municipio;
         document.querySelector("#departamento").value = option.customProperties.departamento;

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <%- include('../../Layouts/Head.ejs') %>
+  <link rel="stylesheet" href="assets/libs/choices/choices.min.css">
+</head>
+
+<body class="<%= darkMode %>">
+  <%- include('../../Layouts/SideBar.ejs') %>
+  <div id="main">
+    <%- include('../../Layouts/NavBar.ejs') %>
+
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Factura de Exportación (DTE Manual)</h2>
+        </div>
+        <div class="card-body">
+          <h4 class="text-center">Datos de Exportación (Emisor)</h4>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="tipoItemExpor" class="form-label">Tipo Ítem Exportación:</label>
+                <select id="tipoItemExpor" class="form-control">
+                  <option value="1">1 - Bienes</option>
+                  <option value="2">2 - Servicios</option>
+                  <option value="3">3 - Ambos</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="tipoRegimen" class="form-label">Tipo de Régimen (CAT-033):</label>
+                <select id="tipoRegimen" class="form-control">
+                  <option value="EX-1" selected>EX-1 - Exportación Definitiva</option>
+                  <option value="EX-2">EX-2 - Exportación Temporal</option>
+                  <option value="EX-3">EX-3 - Reexportación</option>
+                  <option value="TA-1">TA-1 - Tránsito Aduanero</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="recintoFiscal" class="form-label">Recinto Fiscal (CAT-027):</label>
+                <select id="recintoFiscal" class="form-control">
+                  <option value="01">01 - Aduana Terrestre San Bartolo</option>
+                  <% recintosFiscales.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.codigo %> - <%= element.Valor %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="regimen" class="form-label">Código Régimen (CAT-028):</label>
+                <input type="text" id="regimen" class="form-control" maxlength="13" value="1000.000" placeholder="1000.000">
+              </div>
+            </div>
+          </div>
+
+          <hr>
+          <h4 class="text-center">Datos del Receptor (Extranjero)</h4>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="tipoPersona" class="form-label">Tipo de Persona:</label>
+                <select id="tipoPersona" class="form-control">
+                  <option value="1">1 - Persona Natural</option>
+                  <option value="2">2 - Persona Jurídica</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="tipoDocumento" class="form-label">Tipo Documento:</label>
+                <select id="tipoDocumento" class="form-control">
+                  <option value="37">37 - Otro (Extranjero)</option>
+                  <option value="03">03 - Pasaporte</option>
+                  <option value="02">02 - Carnet de Residente</option>
+                  <option value="36">36 - NIT</option>
+                  <option value="13">13 - DUI</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="numDocumento" class="form-label">Número de Documento:</label>
+                <input type="text" class="form-control" id="numDocumento" placeholder="Número de identificación" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nombre" class="form-label">Nombre / Razón Social:</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Nombre completo o razón social" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nombreComercial" class="form-label">Nombre Comercial (Opcional):</label>
+                <input type="text" class="form-control" id="nombreComercial" placeholder="Nombre comercial">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="codPais" class="form-label">País Destino:</label>
+                <select id="codPais" class="form-control">
+                  <% paises.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="descActividad" class="form-label">Actividad Económica del Receptor:</label>
+                <input type="text" class="form-control" id="descActividad" placeholder="Descripción de actividad económica (mín. 5 caracteres)" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="complemento" class="form-label">Dirección en País Destino:</label>
+                <input type="text" class="form-control" id="complemento" placeholder="Dirección completa" required>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="telefono" class="form-label">Teléfono (Opcional):</label>
+                <input type="text" class="form-control" id="telefono" placeholder="Ingrese teléfono">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="correo" class="form-label">Correo (Opcional):</label>
+                <input type="email" class="form-control" id="correo" placeholder="Ingrese correo electrónico">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="codIncoterms" class="form-label">INCOTERMS (Opcional):</label>
+                <select id="codIncoterms" class="form-control">
+                  <option value="">Ninguno</option>
+                  <% incoterms.forEach(element => { %>
+                  <option value="<%= element.codigo %>"><%= element.Valor %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="seguro" class="form-label">Seguro ($):</label>
+                <input type="number" class="form-control" id="seguro" value="0" min="0" step="0.01">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="flete" class="form-label">Flete ($):</label>
+                <input type="number" class="form-control" id="flete" value="0" min="0" step="0.01">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4 class="text-center">Detalles de Exportación</h4>
+          <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Cant.</th>
+                  <th>Descripción</th>
+                  <th>Precio Unitario ($)</th>
+                  <th>SubTotal ($)</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="documentoDetalleTableBody"></tbody>
+              <tbody id="detalleTotales">
+                <tr>
+                  <td colspan="4" class="text-right">Total Operaciones Gravadas</td>
+                  <td id="_subtotal"></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="text-right">Total a Pagar (Incluye Seguro y Flete)</td>
+                  <td id="_total"></td>
+                  <td></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-center">
+                    <button type="button" class="btn btn-outline-primary mr-3 mt-3 ml-3 round" id="addDetalleBtn">Agregar Ítem</button>
+                    <button type="button" class="btn btn-outline-success mr-3 mt-3 ml-3 round" id="Totalizar">Totalizar</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4>Apéndices</h4>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Etiqueta</th>
+                  <th>Valor</th>
+                  <th>opt</th>
+                </tr>
+              </thead>
+              <tbody id="TBodyApendices"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <button class="btn round btn-outline-primary" onclick="addApendiceRow()" id="btnAddApendices">
+                      Agregar Apéndice
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer text-center">
+          <div id="results" class="mt-2 mb-4"></div>
+          <button class="round btn-lg btn btn-primary mt-2" id="btnSave" disabled>
+            Procesar DTE
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <%- include('../../Layouts/Footer.ejs') %>
+  </div>
+</body>
+<%- include('../../Layouts/Scripts.ejs') %>
+<script src="assets/libs/choices/choices.min.js"></script>
+<script>
+  const documentoDetalleTableBody = document.querySelector("#documentoDetalleTableBody");
+  const TBodyApendices = document.querySelector("#TBodyApendices");
+  const addDetalleBtn = document.querySelector('#addDetalleBtn');
+  const helper_url = '<%= helper_url %>';
+
+  const calcularFila = (node) => {
+    const cantidad = parseFloat(node.querySelector('.cantidad-item').value);
+    const precio = parseFloat(node.querySelector('.precio-uni-item').value);
+    node.querySelector('.subtotal-item').value = (!isNaN(cantidad) && !isNaN(precio)) ? fix_number(cantidad * precio, 2) : 0.00;
+  };
+
+  const addDetalleRow = () => {
+    document.querySelector("#btnSave").disabled = true;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td>
+        <select class="form-select tipo-item-select">
+          <option value="1">Bienes</option>
+          <option value="2">Servicios</option>
+          <option value="3">Ambos</option>
+        </select>
+      </td>
+      <td><input type="number" class="form-control cantidad-item" oninput="calcularFila(this.parentNode.parentNode)" placeholder="Cant." min="0.01" step="0.01" required></td>
+      <td><input type="text" class="form-control descripcion-item" placeholder="Descripción" required></td>
+      <td><input type="number" class="form-control precio-uni-item" oninput="calcularFila(this.parentNode.parentNode)" placeholder="Precio Unit." step="0.01" required></td>
+      <td><input type="number" class="form-control subtotal-item" disabled></td>
+      <td><span class="badge bg-danger btn-sm remove-item-btn">Eliminar</span></td>
+    `;
+    newRow.querySelector('.remove-item-btn').addEventListener('click', () => newRow.remove());
+    documentoDetalleTableBody.appendChild(newRow);
+  };
+
+  const addApendiceRow = () => {
+    const newApendiceRow = document.createElement('tr');
+    newApendiceRow.innerHTML = `
+      <td><input type="text" class="form-control apendice-campo"></td>
+      <td><input type="text" class="form-control apendice-etiqueta"></td>
+      <td><input type="text" class="form-control apendice-valor"></td>
+      <td><span class="bg-danger badge btn-delete-apendice">Eliminar</span></td>
+    `;
+    newApendiceRow.querySelector('.btn-delete-apendice').addEventListener('click', () => newApendiceRow.remove());
+    TBodyApendices.appendChild(newApendiceRow);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector("#Totalizar").addEventListener('click', () => {
+      let rows = documentoDetalleTableBody.querySelectorAll('tr');
+      if (rows.length < 1) return errorMessage('Agregue al menos un ítem válido');
+
+      var suma = 0, contador = 0;
+      rows.forEach(row => {
+        const cant = parseFloat(row.querySelector('.cantidad-item').value);
+        const price = parseFloat(row.querySelector('.precio-uni-item').value);
+        if (!isNaN(cant) && !isNaN(price) && cant > 0 && price > 0) {
+          contador++;
+          let sub = fix_number(cant * price, 2);
+          row.querySelector('.subtotal-item').value = sub;
+          suma = fix_number(suma + sub, 2);
+        }
+      });
+
+      if (contador < 1) return errorMessage('Agregue al menos un ítem válido');
+
+      const seguro = parseFloat(document.getElementById('seguro').value) || 0;
+      const flete = parseFloat(document.getElementById('flete').value) || 0;
+      const total = fix_number(suma + seguro + flete, 2);
+
+      document.querySelector("#_subtotal").innerHTML = `$ ${money_format(suma)}`;
+      document.querySelector("#_total").innerHTML = `$ ${money_format(total)}`;
+      document.querySelector("#btnSave").disabled = false;
+    });
+
+    document.querySelector("#btnSave").addEventListener('click', e => {
+      e.target.disabled = true;
+      var cuerpoDocumento = [];
+
+      const codPaisSelect = document.getElementById('codPais');
+      const nombreComercialVal = document.getElementById('nombreComercial').value.trim();
+      const telefonoVal = document.getElementById('telefono').value.trim();
+      const correoVal = document.getElementById('correo').value.trim();
+      const tipoRegimenVal = document.getElementById('tipoRegimen')?.value || "EX-1";
+      const recintoVal = document.getElementById('recintoFiscal')?.value || "01";
+      const regimenVal = document.getElementById('regimen')?.value.trim() || "1000.000";
+      const incotermSelect = document.getElementById('codIncoterms');
+
+      const receptor = {
+        nombre: document.getElementById('nombre').value.trim(),
+        tipoDocumento: document.getElementById('tipoDocumento').value,
+        numDocumento: document.getElementById('numDocumento').value.trim(),
+        descActividad: document.getElementById('descActividad').value.trim(),
+        nombreComercial: nombreComercialVal.length > 0 ? nombreComercialVal : null,
+        codPais: codPaisSelect.value || "US",
+        nombrePais: (codPaisSelect.selectedIndex >= 0 && codPaisSelect.options[codPaisSelect.selectedIndex])
+          ? codPaisSelect.options[codPaisSelect.selectedIndex].text.trim()
+          : "ESTADOS UNIDOS",
+        complemento: document.getElementById('complemento').value.trim(),
+        tipoPersona: Number.parseInt(document.getElementById('tipoPersona').value),
+        telefono: telefonoVal.length >= 8 ? telefonoVal : null,
+        correo: correoVal.length >= 6 ? correoVal : null
+      };
+
+      const rows = documentoDetalleTableBody.querySelectorAll('tr');
+      let contador = 1;
+      var suma_gravadas = 0;
+
+      rows.forEach(row => {
+        const tipoItem = Number.parseInt(row.querySelector('.tipo-item-select').value);
+        const cantidad = Number.parseFloat(row.querySelector('.cantidad-item').value);
+        const descripcion = row.querySelector('.descripcion-item').value.trim();
+        const precioUni = Number.parseFloat(row.querySelector('.precio-uni-item').value);
+
+        if (descripcion && !isNaN(cantidad) && !isNaN(precioUni)) {
+          let subtotal = fix_number(cantidad * precioUni, 2);
+          cuerpoDocumento.push({
+            numItem: contador,
+            tipoItem: tipoItem,
+            numeroDocumento: null,
+            cantidad: cantidad,
+            codigo: `EXP-${contador}`,
+            codTributo: null,
+            uniMedida: tipoItem == 1 ? 59 : 99,
+            descripcion: descripcion,
+            precioUni: precioUni,
+            montoDescu: 0,
+            ventaGravada: subtotal,
+            tributos: ["C3"],
+            noGravado: 0
+          });
+          contador++;
+          suma_gravadas = fix_number(suma_gravadas + subtotal, 2);
+        }
+      });
+
+      const seguro = fix_number(parseFloat(document.getElementById('seguro').value) || 0, 2);
+      const flete = fix_number(parseFloat(document.getElementById('flete').value) || 0, 2);
+      const total = fix_number(suma_gravadas + seguro + flete, 2);
+
+      const resumen = {
+        totalGravada: suma_gravadas,
+        descuGravada: 0,
+        porcentajeDescuento: 0,
+        totalDescu: 0,
+        seguro: seguro,
+        flete: flete,
+        tributos: [{
+          codigo: "C3",
+          descripcion: "Impuesto al Valor Agregado (exportaciones) 0%",
+          valor: 0.00
+        }],
+        montoTotalOperacion: total,
+        totalNoGravado: 0,
+        totalNoOnerosas: 0,
+        totalPagar: total,
+        totalLetras: String(money_to_string(total)).toLocaleUpperCase(),
+        saldoFavor: 0,
+        condicionOperacion: 1,
+        pagos: [{
+          codigo: "01",
+          montoPago: total,
+          referencia: null,
+          plazo: null,
+          periodo: null
+        }],
+        codIncoterms: incotermSelect.value !== "" ? incotermSelect.value : null,
+        descIncoterms: (incotermSelect.value !== "" && incotermSelect.selectedIndex >= 0 && incotermSelect.options[incotermSelect.selectedIndex]) ? incotermSelect.options[incotermSelect.selectedIndex].text.trim() : null,
+        numPagoElectronico: null,
+        observaciones: null
+      };
+
+      var apendices = null;
+      let ApendiceRows = TBodyApendices.querySelectorAll('tr');
+      if (ApendiceRows.length > 0) {
+        apendices = [];
+        ApendiceRows.forEach(row => {
+          let apendice = {
+            campo: row.querySelector('.apendice-campo').value.trim(),
+            etiqueta: row.querySelector('.apendice-etiqueta').value.trim(),
+            valor: row.querySelector('.apendice-valor').value.trim(),
+          };
+          if (apendice.campo.length > 0 && apendice.valor.length > 0) apendices.push(apendice);
+        });
+        apendices = apendices.length > 0 ? apendices : null;
+      }
+
+      let data = {
+        dte_type: '11',
+        emisor_extra: {
+          tipoItemExpor: Number.parseInt(document.getElementById('tipoItemExpor').value),
+          recintoFiscal: recintoVal !== "" ? recintoVal : "01",
+          tipoRegimen: tipoRegimenVal !== "" ? tipoRegimenVal : "EX-1",
+          regimen: regimenVal.length > 0 ? regimenVal : "1000.000"
+        },
+        receptor: receptor,
+        cuerpoDocumento: cuerpoDocumento,
+        resumen: resumen,
+        apendice: apendices
+      };
+
+      postData('/pos/procces_dte_manual', data).then(data => {
+        if (data.status == 'success') {
+          document.querySelector("#results").innerHTML = `
+          <h4> DTE: ${data.json.codigo} generada con exito</h4>
+          <a href="${helper_url}/utils/services/dte/inline?uuid=${data.json.dte.identificacion.codigoGeneracion}&fecha=${data.json.dte.identificacion.fecEmi}" target="_blank" class="btn round btn-outline-secondary">Ver DTE</a>
+          <a href="/pos/getJson/${data.json.id}" target="_blank" class="btn round btn-outline-secondary ml-2 mr-2">Descargar DTE.json</a>`;
+          e.target.remove();
+          successMessage(data.message);
+        } else if (data.status == 'errorMessage') {
+          e.target.disabled = false;
+          return errorMessage(data.message);
+        } else {
+          return errorMessage('Lo sentimos, ha ocurrido un error, por favor recarga la página e inténtalo nuevamente');
+        }
+      });
+    });
+
+    new Choices(document.querySelector('#codPais'), { searchChoices: true });
+    addDetalleRow();
+    addDetalleBtn.addEventListener('click', addDetalleRow);
+  });
+</script>
+</html>
+

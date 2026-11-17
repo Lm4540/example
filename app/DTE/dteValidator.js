@@ -28,6 +28,8 @@ const schemas = {
       "14": require('./schemas/v2/fe-fse-v2.json'),
       "15": require('./schemas/v2/fe-cd-v2.json'),
       // Eventos (identificados por un nombre clave)
+      "17": require('./schemas/v1/fe-eop-v1.json'),
+      "18": require('./schemas/v1/fe-eret-v1.json'),
       "anulacion": require('./schemas/v3/invalidacion-schema-v3.json'),
       "especial": require('./schemas/v1/fe-eop-v1.json'),
       "retorno": require('./schemas/v1/fe-eret-v1.json'),
@@ -131,6 +133,14 @@ function validateCD(jsonData) { // Comprobante Donación (15)
       return validateWithSchema("15", jsonData);
 }
 
+function validateEOP(jsonData) { // Evento de Operaciones Especiales (17)
+      return validateWithSchema("especial", jsonData);
+}
+
+function validateERET(jsonData) { // Evento de Retorno (18)
+      return validateWithSchema("retorno", jsonData);
+}
+
 function validateAnulacion(jsonData) { // Evento Anulación
       return validateWithSchema("anulacion", jsonData);
 }
@@ -192,6 +202,8 @@ module.exports = {
       validateFEX,
       validateFSE,
       validateCD,
+      validateEOP,
+      validateERET,
       validateAnulacion,
       validateContingencia,
       // Exportar la instancia de Ajv o validadores compilados si es necesario externamente

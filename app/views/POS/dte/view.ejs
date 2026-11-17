@@ -3,9 +3,15 @@
 
 <head>
   <%- include('../../Layouts/Head.ejs') %>
-
 </head>
 
+<%
+  const tipoDte = String(dte.tipo || dte.dte.identificacion?.tipoDte || dte.dte.identificacion?.tipoEvento || '01');
+  const rec = dte.dte.receptor || dte.dte.sujetoExcluido || dte.dte.donante || dte.dte.documento || null;
+  const fecEmi = dte.dte.identificacion?.fecEmi || dte.dte.identificacion?.fTransmision || '';
+  const horEmi = dte.dte.identificacion?.horEmi || dte.dte.identificacion?.hTransmision || '';
+  const selloRecibido = dte.dte.selloRecibido || dte.responseMH?.selloRecibido || 'Pendiente';
+%>
 
 <body class="<%= darkMode %>">
   <%- include('../../Layouts/SideBar.ejs') %>
@@ -14,7 +20,7 @@
     <section class="container my-4">
       <div class="card shadow-sm mb-4 rounded-3">
         <div class="card-header bg-primary text-white rounded-top-3">
-          <h4 class="mb-0">Información del DTE</h4>
+          <h4 class="mb-0">Información del DTE - <%= dte_types[tipoDte] || tipoDte %></h4>
         </div>
         <div class="card-body">
           <!-- Identificación del Documento -->
@@ -23,125 +29,454 @@
             <div class="col-md-6">
               <p><strong>Versión:</strong> <%= dte.dte.identificacion.version %></p>
               <p><strong>Ambiente:</strong> <%= dte.dte.identificacion.ambiente %></p>
-              <p><strong>Tipo DTE:</strong> <%= dte_types[dte.dte.identificacion.tipoDte] %></p>
+              <p><strong>Tipo DTE:</strong> <%= dte_types[tipoDte] || tipoDte %></p>
+              <% if (dte.dte.identificacion.numeroControl) { %>
               <p><strong>Número de Control:</strong> <%= dte.dte.identificacion.numeroControl %></p>
+              <% } %>
             </div>
             <div class="col-md-6">
               <p><strong>Código de Generación:</strong> <%= dte.dte.identificacion.codigoGeneracion %></p>
-              <p><strong>Fecha de Emisión:</strong> <%= dte.dte.identificacion.fecEmi %></p>
-              <p><strong>Hora de Emisión:</strong> <%= dte.dte.identificacion.horEmi %></p>
-              <p><strong>Tipo de Moneda:</strong> <%=dte.dte.identificacion.tipoMoneda %></p>
+              <p><strong>Fecha de Emisión / Transmisión:</strong> <%= fecEmi %></p>
+              <p><strong>Hora de Emisión / Transmisión:</strong> <%= horEmi %></p>
+              <% if (dte.dte.identificacion.tipoMoneda) { %>
+              <p><strong>Tipo de Moneda:</strong> <%= dte.dte.identificacion.tipoMoneda %></p>
+              <% } %>
+              <p><strong>Sello de Recepción:</strong> <%= selloRecibido %></p>
             </div>
           </div>
 
-          <% if (dte.invalidacion  != null) { %>
+          <% if (dte.invalidacion != null) { %>
           <div class="text-center">
-
             <hr class="my-4">
             <h3 class="text-danger">Este documento ha sido Invalidado</h3>
-
-            <a target="_blank" href="/pos/viewDTE/<%=dte.invalidacion %>">Click aqui para ver la invalidación</a>
-
+            <a target="_blank" href="/pos/viewDTE/<%= dte.invalidacion %>">Click aqui para ver la invalidación</a>
           </div>
           <% } %>
 
-          <% if (dte.nc  != null) { %>
+          <% if (dte.nc != null) { %>
           <div class="text-center">
-
             <hr class="my-4">
             <h3 class="text-danger">Este documento ha sido Ajustado con una Nota de Credito</h3>
-
-            <a target="_blank" href="/pos/viewDTE/<%=dte.nc %>">Click aqui para ver la Nota de Credito</a>
-
+            <a target="_blank" href="/pos/viewDTE/<%= dte.nc %>">Click aqui para ver la Nota de Credito</a>
           </div>
           <% } %>
 
           <hr class="my-4">
 
-          <!-- Información del Receptor -->
-          <h5 class="card-title text-primary mb-3 text-center">Receptor</h5>
+          <!-- Información del Receptor / Emisor -->
+          <% if (rec) { %>
+          <h5 class="card-title text-primary mb-3 text-center">
+            <%= tipoDte == '14' ? 'Sujeto Excluido (Receptor)' : (tipoDte == '15' ? 'Donante (Receptor)' : 'Receptor') %>
+          </h5>
           <div class="row mb-3">
-            <div class="col">
-
-              <% if (dte.dte.identificacion.tipoDte == "03") { %>
-              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %> <%= dte.dte.receptor.nombreComercial !== null ? `(${dte.dte.receptor.nombreComercial})` : '' %> </p>
-              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
-              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
+            <div class="col-md-6">
+              <p><strong>Nombre:</strong> <%= rec.nombre || 'CONSUMIDOR FINAL' %> <%= rec.nombreComercial ? `(${rec.nombreComercial})` : '' %></p>
+              <p><strong>Correo:</strong> <%= rec.correo || 'Ninguno' %></p>
+              <p><strong>Teléfono:</strong> <%= rec.telefono || 'Ninguno' %></p>
+            </div>
+            <div class="col-md-6">
               <p>
-                <strong>NIT: </strong> <%= dte.dte.receptor.nit %> / <strong>NRC: </strong> <%= dte.dte.receptor.nrc %>
+                <strong>Documento / NIT:</strong>
+                <% if (rec.tipoDocumento && rec.numDocumento) { %>
+                  <%= `${tipos_documento[rec.tipoDocumento] || rec.tipoDocumento} (${rec.numDocumento})` %>
+                <% } else { %>
+                  <%= rec.numDocumento || rec.nit || 'N/A' %>
+                <% } %>
+                <% if (rec.nrc) { %>
+                  / <strong>NRC:</strong> <%= rec.nrc %>
+                <% } %>
               </p>
-
-              <% } else if (dte.dte.identificacion.tipoDte == "01") { %>
-
-              <p><strong>Nombre:</strong> <%= dte.dte.receptor.nombre %></p>
-              <p><strong>Correo:</strong> <%= dte.dte.receptor.correo || 'Ninguno' %></p>
-              <p><strong>Teléfono:</strong> <%= dte.dte.receptor.telefono || 'Ninguno' %></p>
-              <p><strong>Documento:</strong> <%= dte.dte.receptor.tipoDocumento !== null ? (`${tipos_documento[dte.dte.receptor.tipoDocumento]} (${dte.dte.receptor.numDocumento})`) : ""%></p>
+              <% if (rec.descActividad) { %>
+              <p><strong>Actividad Económica:</strong> <%= rec.descActividad %></p>
+              <% } %>
+              <% if (rec.nombrePais) { %>
+              <p><strong>País:</strong> <%= rec.nombrePais %> (<%= rec.codPais %>)</p>
+              <% } %>
+              <% if (rec.bienTitulo) { %>
+              <p><strong>Título Bienes:</strong> <%= rec.bienTitulo %></p>
               <% } %>
             </div>
           </div>
+          <% } else if (dte.dte.emisor) { %>
+          <h5 class="card-title text-primary mb-3 text-center">Emisor</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Nombre:</strong> <%= dte.dte.emisor.nombre %> <%= dte.dte.emisor.nombreComercial ? `(${dte.dte.emisor.nombreComercial})` : '' %></p>
+              <p><strong>NIT:</strong> <%= dte.dte.emisor.nit || dte.dte.emisor.numDocumento %> / <strong>NRC:</strong> <%= dte.dte.emisor.nrc %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Correo:</strong> <%= dte.dte.emisor.correo || 'Ninguno' %></p>
+              <p><strong>Teléfono:</strong> <%= dte.dte.emisor.telefono || 'Ninguno' %></p>
+            </div>
+          </div>
+          <% } %>
 
           <hr class="my-4">
 
           <!-- Cuerpo del Documento -->
           <h5 class="card-title text-primary mb-3">Detalle del Documento</h5>
           <div class="table-responsive mb-3">
+            <% if (tipoDte == '09' && dte.dte.cuerpoDocumento && !Array.isArray(dte.dte.cuerpoDocumento)) { %>
+            <% const cd = dte.dte.cuerpoDocumento; %>
             <table class="table table-bordered table-striped rounded-3">
-              <thead class="">
+              <tbody>
+                <tr>
+                  <th>Periodo de Liquidación Inicio</th>
+                  <td><%= cd.periodoLiquidacionFechaInicio %></td>
+                  <th>Periodo de Liquidación Fin</th>
+                  <td><%= cd.periodoLiquidacionFechaFin %></td>
+                </tr>
+                <tr>
+                  <th>Código de Liquidación</th>
+                  <td><%= cd.codLiquidacion %></td>
+                  <th>Cantidad de Documentos</th>
+                  <td><%= cd.cantidadDoc %></td>
+                </tr>
+                <tr>
+                  <th>Valor de las Operaciones</th>
+                  <td>$<%= cd.valorOperaciones %></td>
+                  <th>Monto Sin Percepción</th>
+                  <td>$<%= cd.montoSinPercepcion %> (<%= cd.descripSinPercepcion || 'N/A' %>)</td>
+                </tr>
+                <tr>
+                  <th>Sub-Total</th>
+                  <td>$<%= cd.subTotal %></td>
+                  <th>IVA de las Operaciones</th>
+                  <td>$<%= cd.iva %></td>
+                </tr>
+                <tr>
+                  <th>Monto Sujeto a Percepción</th>
+                  <td>$<%= cd.montoSujetoPercepcion %></td>
+                  <th>IVA Percibido (2%)</th>
+                  <td>$<%= cd.ivaPercibido %></td>
+                </tr>
+                <tr>
+                  <th>Comisión (<%= cd.porcentComision %>)</th>
+                  <td>$<%= cd.comision %></td>
+                  <th>IVA de la Comisión</th>
+                  <td>$<%= cd.ivaComision %></td>
+                </tr>
+                <tr>
+                  <th>Líquido a Pagar</th>
+                  <td><strong>$<%= cd.liquidoApagar %></strong></td>
+                  <th>Total en Letras</th>
+                  <td><%= cd.totalLetras %></td>
+                </tr>
+                <% if (cd.observaciones) { %>
+                <tr>
+                  <th>Observaciones</th>
+                  <td colspan="3"><%= cd.observaciones %></td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '07') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tipo Doc.</th>
+                  <th>N° Documento</th>
+                  <th>Fecha Emisión</th>
+                  <th>Descripción</th>
+                  <th>Cód. Retención</th>
+                  <th>Monto Sujeto</th>
+                  <th>IVA Retenido</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.tipoDte %></td>
+                  <td><%= item.numDocumento %></td>
+                  <td><%= item.fechaEmision %></td>
+                  <td><%= item.descripcion %></td>
+                  <td><%= item.codigoRetencionMH %></td>
+                  <td>$<%= item.montoSujetoGrav %></td>
+                  <td>$<%= item.ivaRetenido %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '08') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tipo DTE</th>
+                  <th>N° Documento</th>
+                  <th>Fecha</th>
+                  <th>Observaciones</th>
+                  <th>Venta No Suj.</th>
+                  <th>Venta Exenta</th>
+                  <th>Venta Gravada</th>
+                  <th>Exportaciones</th>
+                  <th>IVA Ítem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.tipoDte %></td>
+                  <td><%= item.numeroDocumento %></td>
+                  <td><%= item.fechaGeneracion %></td>
+                  <td><%= item.obsItem || '' %></td>
+                  <td>$<%= item.ventaNoSuj %></td>
+                  <td>$<%= item.ventaExenta %></td>
+                  <td>$<%= item.ventaGravada %></td>
+                  <td>$<%= item.exportaciones %></td>
+                  <td>$<%= item.ivaItem %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '14') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Código</th>
+                  <th>Descripción</th>
+                  <th>Cantidad</th>
+                  <th>Precio Unitario</th>
+                  <th>Descuento</th>
+                  <th>Compra</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.codigo || '' %></td>
+                  <td><%= item.descripcion %></td>
+                  <td><%= item.cantidad %></td>
+                  <td>$<%= item.precioUni %></td>
+                  <td>$<%= item.montoDescu %></td>
+                  <td>$<%= item.compra %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '15') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Código</th>
+                  <th>Descripción</th>
+                  <th>Cantidad</th>
+                  <th>Depreciación</th>
+                  <th>Valor Unitario</th>
+                  <th>Valor Donado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.codigo || '' %></td>
+                  <td><%= item.descripcion %></td>
+                  <td><%= item.cantidad %></td>
+                  <td>$<%= item.depreciacion %></td>
+                  <td>$<%= item.valorUni %></td>
+                  <td>$<%= item.valor %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '17') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tipo Doc.</th>
+                  <th>Fecha Emisión</th>
+                  <th>N° Doc. / Rango</th>
+                  <th>Cantidad</th>
+                  <th>Descripción</th>
+                  <th>Precio Unitario</th>
+                  <th>Venta No Suj.</th>
+                  <th>Venta Exenta</th>
+                  <th>Venta Gravada</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.tipoDocumento == '02' ? '02 - Factura Simplificada' : (item.tipoDocumento == '97' ? '97 - Control Interno' : item.tipoDocumento) %></td>
+                  <td><%= item.fechaEmision || 'N/A (Rango)' %></td>
+                  <td><%= item.numDocumento ? item.numDocumento : `${item.docDel || ''} - ${item.docAl || ''}` %></td>
+                  <td><%= item.cantidad %></td>
+                  <td><%= item.descripcion %></td>
+                  <td>$<%= item.precioUni %></td>
+                  <td>$<%= item.ventaNoSuj ?? 0 %></td>
+                  <td>$<%= item.ventaExenta ?? 0 %></td>
+                  <td>$<%= item.ventaGravada ?? 0 %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else if (tipoDte == '18') { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Código Gen. DTE</th>
+                  <th>Descripción</th>
+                  <th>Cantidad</th>
+                  <th>Precio Unitario</th>
+                  <th>Venta No Suj.</th>
+                  <th>Venta Exenta</th>
+                  <th>Venta Gravada</th>
+                  <th>Compra Excluidos</th>
+                  <th>IVA Ítem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
+                <tr>
+                  <th scope="row"><%= item.numItem %></th>
+                  <td><%= item.codigoGeneracion %></td>
+                  <td><%= item.descripcion %></td>
+                  <td><%= item.cantidad %></td>
+                  <td>$<%= item.precioUni %></td>
+                  <td>$<%= item.ventaNoSuj ?? 0 %></td>
+                  <td>$<%= item.ventaExenta ?? 0 %></td>
+                  <td>$<%= item.ventaGravada ?? 0 %></td>
+                  <td>$<%= item.compra ?? 0 %></td>
+                  <td>$<%= item.ivaItem ?? 0 %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else { %>
+            <table class="table table-bordered table-striped rounded-3">
+              <thead>
                 <tr>
                   <th scope="col">#</th>
                   <th scope="col">Código</th>
                   <th scope="col">Descripción</th>
                   <th scope="col">Cantidad</th>
                   <th scope="col">Precio Unitario</th>
+                  <th scope="col">Venta Exenta</th>
                   <th scope="col">Venta Gravada</th>
                   <th scope="col">IVA Ítem</th>
                 </tr>
               </thead>
               <tbody>
-                <% dte.dte.cuerpoDocumento.forEach((item, index) => { %>
+                <% (dte.dte.cuerpoDocumento || []).forEach(item => { %>
                 <tr>
                   <th scope="row"><%= item.numItem %></th>
-                  <td><%= item.codigo %></td>
+                  <td><%= item.codigo || '' %></td>
                   <td><%= item.descripcion %></td>
                   <td><%= item.cantidad %></td>
-                  <td><%= item.precioUni %></td>
-                  <td><%= item.ventaGravada %></td>
-                  <td><%= item.ivaItem %></td>
+                  <td>$<%= item.precioUni %></td>
+                  <td>$<%= item.ventaExenta ?? 0 %></td>
+                  <td>$<%= item.ventaGravada ?? 0 %></td>
+                  <td>$<%= item.ivaItem ?? 0 %></td>
                 </tr>
                 <% }); %>
               </tbody>
             </table>
+            <% } %>
           </div>
 
+          <% if (dte.dte.resumen) { %>
           <hr class="my-4">
-
           <!-- Resumen del Documento -->
           <h5 class="card-title text-primary mb-3">Resumen</h5>
           <div class="row">
+            <% if (tipoDte == '07') { %>
             <div class="col-md-6">
-              <p><strong>Total Gravada:</strong> $<%= dte.dte.resumen.totalGravada %></p>
-              <p><strong>Subtotal de Ventas:</strong> $<%= dte.dte.resumen.subTotalVentas %></p>
-              <p><strong>Total Descuento:</strong> $<%= dte.dte.resumen.totalDescu %></p>
-              <p><strong>Subtotal:</strong> $<%= dte.dte.resumen.subTotal %></p>
+              <p><strong>Total Sujeto a Retención:</strong> $<%= dte.dte.resumen.totalSujetoRetencion %></p>
+              <p><strong>Total IVA Retenido:</strong> $<%= dte.dte.resumen.totalIVAretenido %></p>
             </div>
             <div class="col-md-6">
-              <p><strong>Monto Total Operación:</strong> $<%= dte.dte.resumen.montoTotalOperacion %></p>
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalIVAretenidoLetras %></p>
+            </div>
+            <% } else if (tipoDte == '14') { %>
+            <div class="col-md-6">
+              <p><strong>Total Compra:</strong> $<%= dte.dte.resumen.totalCompra %></p>
+              <p><strong>Total Descuento:</strong> $<%= dte.dte.resumen.totalDescu %></p>
+              <p><strong>SubTotal:</strong> $<%= dte.dte.resumen.subTotal %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>IVA Retenido:</strong> $<%= dte.dte.resumen.ivaRete1 %></p>
+              <p><strong>Retención Renta:</strong> $<%= dte.dte.resumen.reteRenta %></p>
               <p><strong>Total a Pagar:</strong> $<%= dte.dte.resumen.totalPagar %></p>
               <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
-
             </div>
+            <% } else if (tipoDte == '15') { %>
+            <div class="col-md-6">
+              <p><strong>Valor Total de la Donación:</strong> $<%= dte.dte.resumen.valorTotal %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
+            </div>
+            <% } else if (tipoDte == '17') { %>
+            <div class="col-md-6">
+              <p><strong>Total No Sujeta:</strong> $<%= dte.dte.resumen.totalNoSuj ?? 0 %></p>
+              <p><strong>Total Exenta:</strong> $<%= dte.dte.resumen.totalExenta ?? 0 %></p>
+              <p><strong>Total Gravada:</strong> $<%= dte.dte.resumen.totalGravada ?? 0 %></p>
+              <p><strong>SubTotal:</strong> $<%= dte.dte.resumen.subTotal ?? 0 %></p>
+            </div>
+            <div class="col-md-6">
+              <% if (dte.dte.resumen.tributos && dte.dte.resumen.tributos.length > 0) { %>
+                <% dte.dte.resumen.tributos.forEach(t => { %>
+                  <p><strong><%= t.descripcion %>:</strong> $<%= t.valor %></p>
+                <% }); %>
+              <% } %>
+              <p><strong>Total Operación:</strong> $<%= dte.dte.resumen.total ?? 0 %></p>
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
+            </div>
+            <% } else if (tipoDte == '18') { %>
+            <div class="col-md-6">
+              <p><strong>Total No Sujeta:</strong> $<%= dte.dte.resumen.totalNoSuj ?? 0 %></p>
+              <p><strong>Total Exenta:</strong> $<%= dte.dte.resumen.totalExenta ?? 0 %></p>
+              <p><strong>Total Gravada:</strong> $<%= dte.dte.resumen.totalGravada ?? 0 %></p>
+              <p><strong>Total Compra Sujeto Excluido:</strong> $<%= dte.dte.resumen.totalCompraExcluidos ?? 0 %></p>
+              <p><strong>SubTotal Ventas:</strong> $<%= dte.dte.resumen.subTotalVentas ?? 0 %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Total IVA:</strong> $<%= dte.dte.resumen.totalIva ?? 0 %></p>
+              <p><strong>IVA Retenido:</strong> $<%= dte.dte.resumen.ivaRete ?? 0 %></p>
+              <p><strong>Retención Renta:</strong> $<%= dte.dte.resumen.reteRenta ?? 0 %></p>
+              <p><strong>Monto Total Operación:</strong> $<%= dte.dte.resumen.montoTotalOperacion ?? 0 %></p>
+              <p><strong>Total a Pagar (Retorno):</strong> $<%= dte.dte.resumen.totalPagar ?? 0 %></p>
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
+            </div>
+            <% } else { %>
+            <div class="col-md-6">
+              <p><strong>Total Exenta:</strong> $<%= dte.dte.resumen.totalExenta ?? 0 %></p>
+              <p><strong>Total Gravada:</strong> $<%= dte.dte.resumen.totalGravada ?? 0 %></p>
+              <p><strong>Subtotal de Ventas:</strong> $<%= dte.dte.resumen.subTotalVentas ?? dte.dte.resumen.totalGravada ?? 0 %></p>
+              <p><strong>Total Descuento:</strong> $<%= dte.dte.resumen.totalDescu ?? 0 %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Monto Total Operación:</strong> $<%= dte.dte.resumen.montoTotalOperacion ?? 0 %></p>
+              <p><strong>Total a Pagar:</strong> $<%= dte.dte.resumen.totalPagar ?? dte.dte.resumen.total ?? dte.dte.resumen.montoTotalOperacion ?? 0 %></p>
+              <p><strong>Total en Letras:</strong> <%= dte.dte.resumen.totalLetras %></p>
+            </div>
+            <% } %>
           </div>
+          <% } %>
         </div>
       </div>
 
       <!-- Botones en la parte inferior -->
-      <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-        <a target="_blank" href="<%= helper_url %>/utils/services/dte/inline?uuid=<%= dte.dte.identificacion.codigoGeneracion %>&fecha=<%= dte.dte.identificacion.fecEmi %>" class="btn btn-outline-success btn-lg rounded-pill ml-2 mr-2 shadow-sm">PDF</a>
-        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class=" ml-2 mr-2 btn btn-outline-danger btn-lg rounded-pill shadow-sm">JSON </a>
-        <% if (dte.dte.identificacion.tipoDte == "01") { %>
+      <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mt-4">
+        <a target="_blank" href="/pos/getPdf/<%= dte.id %>" class="btn btn-outline-success btn-lg rounded-pill ml-2 mr-2 shadow-sm">PDF</a>
+        <a target="_blank" href="/pos/getJson/<%= dte.id %>" class="ml-2 mr-2 btn btn-outline-danger btn-lg rounded-pill shadow-sm">JSON</a>
+        <% if (tipoDte == "01") { %>
         <button class="btn btn-outline-primary btn-lg rounded-pill shadow-sm ml-2 mr-2" onclick="print_ticket();">Reimprimir Ticket</button>
         <% } %>
+        <div class="d-flex align-items-center ml-2 mr-2" style="gap: 8px;">
+          <input type="email" id="correocustom_input" class="form-control form-control-lg rounded-pill shadow-sm" placeholder="correo@ejemplo.com" value="<%= rec?.correo || '' %>" style="min-width: 260px;">
+          <button type="button" id="btnReenviarDte" class="btn btn-outline-info btn-lg rounded-pill shadow-sm text-nowrap" onclick="reenviar_dte_correo();">Reenviar DTE</button>
+        </div>
       </div>
     </section>
 
@@ -151,7 +486,38 @@
 </body>
 
 <%- include('../../Layouts/Scripts.ejs') %>
-<% if (dte.dte.identificacion.tipoDte == "01") { %>
+<script>
+  const reenviar_dte_correo = async () => {
+    const btn = document.getElementById('btnReenviarDte');
+    const correoInput = document.getElementById('correocustom_input');
+    const correocustom = correoInput ? correoInput.value.trim() : '';
+
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Enviando...';
+
+    try {
+      const resp = await postData('/pos/resend_dte_email', {
+        id: '<%= dte.id %>',
+        correocustom: correocustom
+      });
+
+      if (resp && resp.status === 'success') {
+        successMessage(resp.message || 'DTE enviado por correo exitosamente');
+      } else {
+        errorMessage((resp && resp.message) || 'No se pudo enviar el DTE por correo');
+      }
+    } catch (error) {
+      console.error(error);
+      errorMessage('Error al procesar el envío del correo');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  };
+</script>
+
+<% if (tipoDte == "01") { %>
 <script src="assets/js/web-escpos-printer-localserver.js?v=20251107"></script>
 <script>
   const printer = new WebPOSPrinterLocalServer('https://localhost:4567/print');
@@ -161,7 +527,7 @@
   var error_printing = null;
   const helper_url = '<%= helper_url %>';
 
-  const print_ticket = async ( ) => {
+  const print_ticket = async () => {
     if (!isConnected) {
       isConnected = await printer.connect();
     }
@@ -184,14 +550,13 @@
         .newLineN(2)
         .text('=========================================')
         .newLine().text('Datos del Cliente');
-      if (data.receptor.nombre != "" && data.receptor.nombre != null) {
+      if (data.receptor && data.receptor.nombre != "" && data.receptor.nombre != null) {
         esc.newLine().text(data.receptor.nombre);
-        
       } else {
         esc.newLine().text('CONSUMIDOR FINAL');
       }
       esc.newLine().text('=========================================').setFont('B')
-        .newLine().text(`Tipo DTE: Factura}`)
+        .newLine().text(`Tipo DTE: Factura`)
         .newLine().text(`Modelo de Facturacion: ${data.identificacion.tipoModelo == 1 ? 'Previo' : 'Diferido'}`)
         .newLine().text(`Tipo de Transmision: ${data.identificacion.tipoOperacion == 1 ? 'Normal' : 'Contingencia'}`)
         .newLine().text('Fecha de Emision: ' + format_date(data.identificacion.fecEmi + " " + data.identificacion.horEmi, true))
@@ -212,8 +577,8 @@
       const lar_ = data.cuerpoDocumento.length;
       for (let i = 0; i < lar_; i++) {
         let item = data.cuerpoDocumento[i];
-        let name = item.descripcion.length > 48 ? item.descripcion.substring(0, 48) : item.descripcion.padEnd(48)
-        let code = item.codigo.length > 23 ? item.codigo.substring(0, 23) : item.codigo.padEnd(23);
+        let name = item.descripcion.length > 48 ? item.descripcion.substring(0, 48) : item.descripcion.padEnd(48);
+        let code = (item.codigo || '').length > 23 ? (item.codigo || '').substring(0, 23) : (item.codigo || '').padEnd(23);
         const qty = String(item.cantidad).padStart(7);
         const price = String(`$ ${money_format(item.precioUni)}`).padStart(10);
         const itemTotal = String(`$ ${money_format(item.ventaGravada)}`).padStart(10);
@@ -226,7 +591,7 @@
       if (data.resumen.tributos !== null && data.resumen.tributos.length > 0) {
         for (let index = 0; index < data.resumen.tributos.length; index++) {
           const element = data.resumen.tributos[index];
-          esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`)
+          esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`);
         }
       }
       esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`)
@@ -236,12 +601,10 @@
         .align('center')
         .newLineN(2)
         .text('Descargue su factura en el siguiente QR:')
-        .qr(`${helper_url}/utils/services/dte/inline?uuid=${data.identificacion.codigoGeneracion}&fecha=${data.identificacion.fecEmi}`, 4).newLineN(2)
+        .qr(`${window.location.origin}/pos/getPdf/<%= dte.id %>`, 4).newLineN(2)
         .text('Gracias por su compra')
         .newLineN(5)
         .cut();
-
-     
 
       commands = esc.build();
       await printer.sendCommands(commands);
@@ -249,8 +612,6 @@
     } else {
       error_printing = "Impresora no disponible";
     }
-
-
   };
 </script>
 <% } %>
