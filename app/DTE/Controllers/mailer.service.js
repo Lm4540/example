@@ -15,9 +15,9 @@ const documentos = require("../Catalogos/tipo_documento.json");
 const renderFileAsync = util.promisify(ejs.renderFile);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const directorio = path.join(__dirname, '..', '..', 'System', 'wkhtmltopdf');
+//const directorio = path.join(__dirname, '..', '..', 'System', 'wkhtmltopdf');
 //wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
-wkhtmltopdf.command = directorio;
+// wkhtmltopdf.command = '/usr/bin/wkhtmltopdf';
 
 function generatePdfBuffer(htmlContent) {
       return new Promise((resolve, reject) => {
