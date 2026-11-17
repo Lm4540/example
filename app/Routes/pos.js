@@ -37,6 +37,7 @@ router.post('/cost_report', PosController.dte_cost_report_data);
 
 
 router.get('/test_wkhtmltopdf', (req, res) => {
+    const path = require("path");
     const wkhtmltopdf = require("wkhtmltopdf");
     try {
         //wkhtmltopdf.command = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe";
@@ -99,6 +100,7 @@ router.get('/test_wkhtmltopdf', (req, res) => {
             }
         });
     } catch (err) {
+        console.log(err);
         return res.status(500).json({
             status: 'error',
             message: 'Excepción al intentar probar wkhtmltopdf',
