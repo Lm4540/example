@@ -1551,7 +1551,7 @@ module.exports = {
 
                         if (client.correo !== null && client.correo !== "") {
                             //verificar de donde tomar el correo
-                            /*sendDteEmail({ dte: dteModel, correocustom: client.correo }).catch(err => console.error("Error enviando correo DTE:", err));*/
+                            sendDteEmail({ dte: dteModel, correocustom: client.correo }).catch(err => console.error("Error enviando correo DTE:", err));
                         }
 
                         return res.json({
