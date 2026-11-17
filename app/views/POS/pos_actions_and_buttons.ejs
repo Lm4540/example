@@ -581,9 +581,15 @@
           esc.newLine().text(`${String(element.descripcion).padEnd(39, ' ')}$${String(money_format(element.valor)).padStart(10, ' ')}`)
         }
       }
-      esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`)
-        .newLine().text(`${String("Retencion de Renta").padEnd(39, ' ')}$${String(money_format(data.resumen.reteRenta)).padStart(10, ' ')}`)
-        .newLine().setFont('A').bold(true).text(`${String("Total a Pagar    $")}${String(money_format(data.resumen.montoTotalOperacion)).padStart(10, ' ')}`)
+      if (data.resumen.ivaRete != null && data.resumen.ivaRete !== undefined && data.resumen.ivaRete > 0) {
+        esc.newLine().text(`${String("IVA Retenido").padEnd(39, ' ')}$${String(money_format(data.resumen.ivaRete1)).padStart(10, ' ')}`);
+      }
+
+      if (data.resumen.reteRenta !== null && data.resumen.reteRenta !== undefined && data.resumen.reteRenta > 0) {
+        esc.newLine().text(`${String("Retencion de Renta").padEnd(39, ' ')}$${String(money_format(data.resumen.reteRenta)).padStart(10, ' ')}`);
+      }
+
+      esc.newLine().setFont('A').bold(true).text(`${String("Total a Pagar    $")}${String(money_format(data.resumen.montoTotalOperacion)).padStart(10, ' ')}`)
         .bold(false)
         .align('center')
         .newLineN(2)

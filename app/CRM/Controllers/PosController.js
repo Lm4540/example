@@ -1334,10 +1334,10 @@ module.exports = {
                     contador++;
                     let product = products[detail.product];
                     let gravadas = 0, exenta = 0;
-                    let price = Helper.fix_number(detail.price / (1 + valor_iva), 4);
+                    let price = Helper.fix_number(detail.price / (1 + valor_iva), 6);
 
-                    gravadas = Helper.fix_number(detail.cant * price);
-                    sum_gravadas = Helper.fix_number(sum_gravadas + gravadas, 4);
+                    gravadas = Helper.fix_number(detail.cant * price, 6);
+                    sum_gravadas = Helper.fix_number(sum_gravadas + gravadas, 6);
 
                     cuerpo.push({
                         numItem: contador,
@@ -1363,10 +1363,10 @@ module.exports = {
                 if (sale.delivery_amount > 0) {
                     contador++;
                     let gravadas = 0.00, exenta = 0, iva = 0;
-                    price = Helper.fix_number(sale.delivery_amount / (1 + valor_iva), 4);
+                    price = Helper.fix_number(sale.delivery_amount / (1 + valor_iva), 6);
 
                     gravadas = (price);
-                    sum_gravadas = Helper.fix_number(sum_gravadas + gravadas, 4);
+                    sum_gravadas = Helper.fix_number(sum_gravadas + gravadas, 6);
 
                     cuerpo.push({
                         numItem: contador,
